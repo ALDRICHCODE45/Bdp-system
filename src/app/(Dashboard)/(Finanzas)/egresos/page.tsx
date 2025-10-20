@@ -1,9 +1,9 @@
-import { EgresosTablePage } from "@/features/finanzas/egresos/pages/EgresosTablePage";
+import { EgresosTablePageExample } from "@/features/finanzas/egresos/pages/EgresosTablePageExample";
 
 const EgresosPage = () => {
   return (
     <>
-      <EgresosTablePage />
+      <EgresosTablePageExample />
     </>
   );
 };

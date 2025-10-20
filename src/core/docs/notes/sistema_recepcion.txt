@@ -1,0 +1,19 @@
+Sistema para el personal de recepcion.
+Integrado al sistema principal, esta funcionalidad o modulo estara asignada a
+un role en especifico
+objetivo -> Tener el control detallado de todas las personas que ingresan
+al despacho.
+
+
+FUNCIONALIDAD-> Llenar un formulario de entrada con datos clave para mantener
+un historial de las personas que ingresan al despacho
+
+Principales campos a llenar del formulario principal: 
+  NOMBRE -> nombre de la persona que ingresa
+  A QUIEN VISITA -> Nombre de la persona o institucion a la que visita
+  MOTIVO DE LA VISITA -> Motivo de la visita
+  TELEFONO DE CONTACTO -> Telefono de contacto del visitante
+  CORRESPONDENCIA (solo si aplica) -> Si el visitante es de una correspondencia,
+    que correspondencia es, ej: dhl, etc..
+  HORA DE ENTRADA -> hora de entrada del visitante
+  HORA DE SALIDA (opcional) - hora de salida del visitante

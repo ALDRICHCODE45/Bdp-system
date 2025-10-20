@@ -1,0 +1,65 @@
+Sistema para administracion de ingresos y egresos.
+
+Es imperativo que el sistema este basado en roles para garantizar la privacidad
+de datos sencibles.
+
+FUNCIONALIDAD PRINCIPAL -> Poder dar seguimiento a los ingresos y egresos
+de la empresa
+
+que se puedan seguir llenando los campos como sean necesarios.
+que la busqueda sea rapida
+
+Hoy emito la factura pero la pagan un mes y cuando se actualize a pagada, 
+la fecha de pago se actualize en el momento
+
+
+FUNCIONALIDADES SECUNDARIAS IMPORTANTES -> 
+  Sistema basado en llenar una vez y no volver a llenar mas (en la medida de lo posible)
+  Modulo de clientes/Proveedores con informacion relevante para un mejor seguimiento
+  Modulo de colaboradores para relaciones con la tabla principal de ingresos y egresos.
+  Modulo de cuentas bancarias para relaciones con la tabla principal
+
+Notas de los campos de la tabla de facturas.
+
+1. Clasif ->  clasificacion 
+de la transacccion (si es un gasto un ingreso, honorarios, etc) 
+  opciones:gasto op (operativo), ingresos, 
+  honorarios, 
+  egresos, facturacion, 
+  arrendamiento,servicios
+
+
+2. Categoria = Facturacion, comisiones, disposicion, bancarizaciones. 
+
+==== Proovedores y clientes.
+3. Proveedor/Cliente = Relacion con la tabla de proveedores y de clientes,  (nombre de proveedor o cliente)  
+
+Solicitantes = RJS, RGZ, CALFC,
+Autorizacion = RJS, RGZ, CALFC,
+
+2. Numeros de factura =  abierto
+
+
+5. Folio fiscal -> abierto
+
+5. Periodo -> campo de mes y ano
+
+6. FORMA DE PAGO -> forma de pago (transferencia, efectivo, cheque) 
+
+7. ORIGEN -> Abierto
+
+8. Numero de cuenta de cliente o proveedor -> Relacion con el cliente
+
+9. Cargo/Abono -> Empresa a la cual se hara el cargo o el abono
+
+10. Cantidad -> Cantidad en pesos mexicanos (mantener la opcion para ponerlo en dolares) abierta
+
+11. Estatus ->  Estado de la operacion, pagado, pendiente, pendiente por cancelar, cancelado, etc..
+
+12. Fecha de pago -> Fecha en la que se pago la operacion.
+
+13. Facturado por -> BDP, CALFC, GLOBAL, RGZ, RJS, APP.
+
+14. Cliente/proy ->  relacion con la tabla de clientes.
+
+Subida de archivos -> Facturas (.pdf)

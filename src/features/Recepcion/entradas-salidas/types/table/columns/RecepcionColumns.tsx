@@ -132,7 +132,7 @@ export const RecepcionColumns: ColumnDef<Visitante>[] = [
   },
 ];
 
-function RowActions({ row }: { row: Row<Visitante> }) {
+function RowActions({ row: _row }: { row: Row<Visitante> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

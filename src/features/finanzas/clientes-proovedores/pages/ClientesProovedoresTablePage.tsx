@@ -1,4 +1,7 @@
+import { DataTable } from "@/core/shared/components/DataTable";
 import { TablePresentation } from "@/core/shared/components/TablePresentation";
+import { ClientesProveedoresColumns } from "../helpers/ClientesProveedoresColumns";
+import { clientesProveedoresMockData } from "../types/data/ClientesProveedoresMockData.data";
 
 export const ClientesProovedoresTablePage = () => {
   return (
@@ -9,7 +12,10 @@ export const ClientesProovedoresTablePage = () => {
           title="Clientes y Proovedores"
         />
 
-        {/* <DataTable columns={columns} data={colaboradoresMockData} /> */}
+        <DataTable
+          columns={ClientesProveedoresColumns}
+          data={clientesProveedoresMockData}
+        />
       </section>
     </>
   );

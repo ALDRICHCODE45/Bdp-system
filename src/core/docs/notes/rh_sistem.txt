@@ -1,0 +1,29 @@
+===================================================
+Sistema de gestion de empleados o recursos humanos
+===================================================
+
+nombre
+posicion
+sueldo
+clave interbancaria
+banco
+activo
+jefe inmediato
+
+====== Booleano ===========
+activo en el imss
+===========================
+
+==== Realizar el checador de entrada ====
+Datos biometricos 
+Registrar hora de entrada
+Registrar hora de salida
+ya esta implementado, lo unico que falta es tener el control
+===========================
+
+===== reportes ============
+De los 7 dias de la semana que dias ingresarion
+===========================
+
+Telefonia ip
+controlar cada uno de los conmutadores
