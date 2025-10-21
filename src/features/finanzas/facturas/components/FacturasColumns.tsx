@@ -36,7 +36,7 @@ export const FacturasColumns: ColumnDef<Factura>[] = [
             "text-xs",
             tipo === "ingreso"
               ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
+              : "bg-red-100 text-red-800",
           )}
         >
           {tipo === "ingreso" ? "Ingreso" : "Egreso"}
@@ -100,7 +100,7 @@ export const FacturasColumns: ColumnDef<Factura>[] = [
         <div
           className={cn(
             "font-medium truncate",
-            tipo === "ingreso" ? "text-green-600" : "text-red-600"
+            tipo === "ingreso" ? "text-green-600" : "text-red-600",
           )}
         >
           {formatted}
@@ -122,10 +122,10 @@ export const FacturasColumns: ColumnDef<Factura>[] = [
             estado === "Pagada"
               ? "bg-green-100 text-green-800"
               : estado === "Enviada"
-              ? "bg-blue-100 text-blue-800"
-              : estado === "Borrador"
-              ? "bg-gray-100 text-gray-800"
-              : "bg-red-100 text-red-800"
+                ? "bg-blue-100 text-blue-800"
+                : estado === "Borrador"
+                  ? "bg-gray-100 text-gray-800"
+                  : "bg-red-100 text-red-800",
           )}
         >
           {estado}
@@ -188,8 +188,8 @@ export const FacturasColumns: ColumnDef<Factura>[] = [
             formaPago === "Transferencia"
               ? "bg-blue-100 text-blue-800"
               : formaPago === "Efectivo"
-              ? "bg-green-100 text-green-800"
-              : "bg-orange-100 text-orange-800"
+                ? "bg-green-100 text-green-800"
+                : "bg-orange-100 text-orange-800",
           )}
         >
           {formaPago}

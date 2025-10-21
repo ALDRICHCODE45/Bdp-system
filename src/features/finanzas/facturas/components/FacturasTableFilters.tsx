@@ -46,9 +46,9 @@ export const FacturasTableFilters = ({
 
   const filterMetodoPagoOptions = [
     { value: "todos", label: "Todos los estados" },
-    { value: "transferencia", label: "Transferencia" },
-    { value: "efectivo", label: "Efectivo" },
-    { value: "cheque", label: "Cheque" },
+    { value: "Transferencia", label: "Transferencia" },
+    { value: "Efectivo", label: "Efectivo" },
+    { value: "Cheque", label: "Cheque" },
   ] as const;
 
   //funcion para filtrar por tipo (del origen)
@@ -85,7 +85,8 @@ export const FacturasTableFilters = ({
       table.getColumn("formaPago")?.setFilterValue(undefined);
       return;
     }
-    table.getColumn("formaPago")?.setFilterValue(undefined);
+    setSelectedMetodoPago(newMethod);
+    table.getColumn("formaPago")?.setFilterValue(newMethod);
     table.setPageIndex(0);
   };
 
@@ -244,23 +245,23 @@ export const FacturasTableFilters = ({
             </Select>
           </div>
           {/* Indicadores de filtros activos */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {activeFilters.map((filter, index) =>
-              filter.condition ? (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="flex items-center gap-1"
-                >
-                  {filter.label}
-                  <X
-                    className="h-3 w-3 ml-1 cursor-pointer"
-                    onClick={filter.clear}
-                  />
-                </Badge>
-              ) : null
-            )}
-          </div>
+          {/* <div className="flex flex-wrap gap-2 mt-4"> */}
+          {/*   {activeFilters.map((filter, index) => */}
+          {/*     filter.condition ? ( */}
+          {/*       <Badge */}
+          {/*         key={index} */}
+          {/*         variant="secondary" */}
+          {/*         className="flex items-center gap-1" */}
+          {/*       > */}
+          {/*         {filter.label} */}
+          {/*         <X */}
+          {/*           className="h-3 w-3 ml-1 cursor-pointer" */}
+          {/*           onClick={filter.clear} */}
+          {/*         /> */}
+          {/*       </Badge> */}
+          {/*     ) : null, */}
+          {/*   )} */}
+          {/* </div> */}
         </div>
       </CardContent>
     </Card>
