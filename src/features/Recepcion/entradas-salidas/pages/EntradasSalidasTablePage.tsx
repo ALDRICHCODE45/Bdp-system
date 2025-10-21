@@ -11,7 +11,6 @@ export const EntradasYSalidasTablePage = () => {
           subtitle="¡Gestiona toda la información de las entradas y salidas!"
           title="Recepción"
         />
-
         <DataTable columns={RecepcionColumns} data={recepcionMockData} />
       </section>
     </>

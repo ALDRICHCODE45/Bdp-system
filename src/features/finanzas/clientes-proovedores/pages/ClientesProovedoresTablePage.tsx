@@ -1,7 +1,9 @@
+"use client";
 import { DataTable } from "@/core/shared/components/DataTable";
 import { TablePresentation } from "@/core/shared/components/TablePresentation";
-import { ClientesProveedoresColumns } from "../helpers/ClientesProveedoresColumns";
+import { ClientesProveedoresColumns } from "../components/ClientesProveedoresColumns";
 import { clientesProveedoresMockData } from "../types/data/ClientesProveedoresMockData.data";
+import { ClientesProovedoresTableConfig } from "../components/ClientesProovedoresTableConfig";
 
 export const ClientesProovedoresTablePage = () => {
   return (
@@ -15,6 +17,7 @@ export const ClientesProovedoresTablePage = () => {
         <DataTable
           columns={ClientesProveedoresColumns}
           data={clientesProveedoresMockData}
+          config={ClientesProovedoresTableConfig}
         />
       </section>
     </>

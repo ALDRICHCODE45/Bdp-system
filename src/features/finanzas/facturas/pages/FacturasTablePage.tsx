@@ -1,19 +1,22 @@
 "use client";
-
-import { TablePresentation } from "@/core/shared/components/TablePresentation";
-import { FacturasColumns } from "../helpers/FacturasColumns";
-import { facturasMockData } from "../types/data/FacturasMockData.data";
 import { DataTable } from "@/core/shared/components/DataTable";
+import { FacturasColumns } from "../components/FacturasColumns";
+import { facturasMockData } from "../types/data/FacturasMockData.data";
+import { FacturasTableConfig } from "../components/FacturasTableConfig";
 
-export const FacturasTablePage = () => {
+export function FacturasTablePage() {
+  const data = facturasMockData;
+  const columns = FacturasColumns;
+
   return (
-    <section className="mx-auto max-w-[75vw] max-h-[100vh] py-10">
-      <TablePresentation
-        subtitle="Gestión de facturas del sistema"
-        title="Facturas"
-      />
-
-      <DataTable columns={FacturasColumns} data={facturasMockData} />
-    </section>
+    <div className="container mx-auto py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Gestión de Facturas</h1>
+        <p className="text-muted-foreground">
+          Administra las facturas de tu empresa
+        </p>
+      </div>
+      <DataTable columns={columns} data={data} config={FacturasTableConfig} />
+    </div>
   );
-};
+}

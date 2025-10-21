@@ -32,8 +32,9 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/core/lib/utils";
+import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 
-interface EgresosFiltersProps {
+interface EgresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
 }
@@ -41,6 +42,9 @@ interface EgresosFiltersProps {
 export function EgresosFilters({
   table,
   onGlobalFilterChange,
+  showAddButton = false,
+  addButtonText = "Agregar",
+  addButtonIcon: AddButtonIcon,
 }: EgresosFiltersProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [selectedCategoria, setSelectedCategoria] = useState<string>("todos");
@@ -158,12 +162,21 @@ export function EgresosFilters({
       <CardHeader className="pb-2 flex flex-row items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-medium">Filtros de Egresos</h3>
           <Badge variant="outline" className="ml-2">
             {table.getFilteredRowModel().rows.length} resultados
           </Badge>
         </div>
         <div className="flex gap-2">
+          {showAddButton && (
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8 px-3 flex items-center gap-1"
+            >
+              {AddButtonIcon && <AddButtonIcon className="h-4 w-4" />}
+              <span>{addButtonText}</span>
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"

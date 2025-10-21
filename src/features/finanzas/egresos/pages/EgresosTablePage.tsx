@@ -1,16 +1,23 @@
 "use client";
-
-import { TablePresentation } from "@/core/shared/components/TablePresentation";
-import { EgresosColumns } from "../helpers/EgresosColumns";
-import { egresosMockData } from "../types/data/EgresosMockData.data";
 import { DataTable } from "@/core/shared/components/DataTable";
+import { EgresosColumns } from "../components/EgresosTableColumns";
+import { egresosMockData } from "../types/data/EgresosMockData.data";
+import { EgresosTableConfig } from "../components/EgresosTableConfig";
 
-export const EgresosTablePage = () => {
+export function EgresosTablePage() {
+  const data = egresosMockData;
+  const columns = EgresosColumns;
+
   return (
-    <section className="mx-auto max-w-[75vw] max-h-[100vh] py-10">
-      <TablePresentation subtitle="Gestión de egresos" title="Egresos" />
+    <div className="container mx-auto py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Gestión de Egresos</h1>
+        <p className="text-muted-foreground">
+          Administra y filtra los egresos de tu empresa
+        </p>
+      </div>
 
-      <DataTable columns={EgresosColumns} data={egresosMockData} />
-    </section>
+      <DataTable columns={columns} data={data} config={EgresosTableConfig} />
+    </div>
   );
-};
+}

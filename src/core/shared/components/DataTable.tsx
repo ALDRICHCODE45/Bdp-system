@@ -68,7 +68,7 @@ export function DataTable<TData, TValue>({
   // Configuración por defecto
   const defaultConfig: Required<TableConfig<TData>> = {
     filters: {
-      searchColumn: "nombre",
+      searchColumn: "id",
       searchPlaceholder: "Buscar...",
       showSearch: true,
     },

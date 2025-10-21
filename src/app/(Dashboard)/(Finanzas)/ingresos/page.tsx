@@ -1,9 +1,9 @@
-import { IngresosTablePageExample } from "@/features/finanzas/ingresos/pages/IngresosTablePageExample";
+import { IngresosTablePage } from "@/features/finanzas/ingresos/pages/IngresosTablePage";
 
 const IngresosPage = () => {
   return (
     <>
-      <IngresosTablePageExample />
+      <IngresosTablePage />
     </>
   );
 };

@@ -1,16 +1,23 @@
 "use client";
-
-import { TablePresentation } from "@/core/shared/components/TablePresentation";
-import { IngresosColumns } from "../helpers/IngresosColumns";
-import { ingresosMockData } from "../types/data/IngresosMockData.data";
 import { DataTable } from "@/core/shared/components/DataTable";
+import { IngresosColumns } from "../components/IngresosColumns";
+import { ingresosMockData } from "../types/data/IngresosMockData.data";
+import { IngresosTableConfig } from "../components/IngresosTableConfig";
 
-export const IngresosTablePage = () => {
+export function IngresosTablePage() {
+  const data = ingresosMockData;
+  const columns = IngresosColumns;
+
   return (
-    <section className="mx-auto max-w-[75vw] max-h-[100vh] py-10">
-      <TablePresentation subtitle="Gestión de ingresos" title="Ingresos" />
+    <div className="container mx-auto py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Gestión de Ingresos</h1>
+        <p className="text-muted-foreground">
+          Administra y filtra los ingresos de tu empresa
+        </p>
+      </div>
 
-      <DataTable columns={IngresosColumns} data={ingresosMockData} />
-    </section>
+      <DataTable columns={columns} data={data} config={IngresosTableConfig} />
+    </div>
   );
-};
+}
