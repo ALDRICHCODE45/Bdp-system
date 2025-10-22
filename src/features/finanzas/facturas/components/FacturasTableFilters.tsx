@@ -14,6 +14,7 @@ import {
 import { Table } from "@tanstack/react-table";
 import { Download, Filter, RefreshCw, Search } from "lucide-react";
 import { useState } from "react";
+import { FacturasFilterActions } from "./FacturasFilterActions";
 
 interface FacturasFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
@@ -23,7 +24,7 @@ interface FacturasFiltersProps extends BaseFilterProps {
 export const FacturasTableFilters = ({
   table,
   onGlobalFilerChange,
-  addButtonIcon: AddButtonIcon,
+  addButtonIcon,
   addButtonText = "Agregar",
   showAddButton = false,
 }: FacturasFiltersProps) => {
@@ -106,7 +107,7 @@ export const FacturasTableFilters = ({
 
   return (
     <Card className="mb-6 border-0 shadow-md">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-primary" />
           <Badge variant="outline" className="ml-2">
@@ -114,29 +115,12 @@ export const FacturasTableFilters = ({
           </Badge>
         </div>
         <div className="flex gap-2">
-          {showAddButton && (
-            <Button
-              variant="default"
-              size="sm"
-              className="h-8 px-3 flex items-center gap-1"
-            >
-              {AddButtonIcon && <AddButtonIcon className="h-4 w-4" />}
-              <span>{addButtonText}</span>
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearFilters}
-            className="h-8 px-3 flex items-center gap-1"
-          >
-            <RefreshCw />
-            <span>Limpiar</span>
-          </Button>
-          <Button variant="outline" size="sm" className="h-8 px-3">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
+          <FacturasFilterActions
+            showAddButton={showAddButton}
+            AddButtonIcon={addButtonIcon}
+            addButtonText={addButtonText}
+            onClearFilters={clearFilters}
+          />
         </div>
       </CardHeader>
 
