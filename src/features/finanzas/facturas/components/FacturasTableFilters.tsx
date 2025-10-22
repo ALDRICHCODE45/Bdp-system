@@ -7,7 +7,7 @@ import { Table } from "@tanstack/react-table";
 import { Filter, Search } from "lucide-react";
 import { FacturasFilterActions } from "./FacturasFilterActions";
 import { useFacturasTableFilters } from "../hooks/useFacturasTableFilters.hook";
-import { FacturasFilterSelect } from "./FacturasFilterSelect";
+import { FilterSelect } from "@/core/shared/components/FilterSelect";
 import {
   filterEstadoOptions,
   filterMetodoPagoOptions,
@@ -84,7 +84,7 @@ export const FacturasTableFilters = ({
           </div>
 
           {/* Filtro de estado */}
-          <FacturasFilterSelect
+          <FilterSelect
             label="Estado"
             onValueChange={handleEstadoChange}
             options={filterEstadoOptions}
@@ -92,7 +92,7 @@ export const FacturasTableFilters = ({
           />
 
           {/* Filtro de método de pago */}
-          <FacturasFilterSelect
+          <FilterSelect
             label="Metodo de Pago"
             onValueChange={handleMetodoPagoChange}
             options={filterMetodoPagoOptions}
@@ -100,7 +100,7 @@ export const FacturasTableFilters = ({
           />
 
           {/* Filtro de tipo*/}
-          <FacturasFilterSelect
+          <FilterSelect
             label="Tipo"
             onValueChange={handleTipoChange}
             options={filterTipoOptions}

@@ -7,26 +7,24 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 
-interface FacturasFilterSelectProps {
+interface FilterSelectProps {
   value: string;
   label: string;
   options: readonly { value: string; label: string }[];
   onValueChange: (value: string) => void;
-  placeholder?: string;
 }
 
-export const FacturasFilterSelect = ({
+export const FilterSelect = ({
   label,
   onValueChange,
   options,
   value,
-  placeholder,
-}: FacturasFilterSelectProps) => {
+}: FilterSelectProps) => {
   return (
     <>
       <div className="space-y-2">
         <Label htmlFor="categoria-filter" className="text-xs font-medium">
-          Tipo
+          {label}
         </Label>
         <Select value={value} onValueChange={onValueChange}>
           <SelectTrigger className="w-full">
