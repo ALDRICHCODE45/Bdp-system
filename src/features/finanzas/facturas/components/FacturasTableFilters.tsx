@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 import { Table } from "@tanstack/react-table";
-import { Download, Filter, RefreshCw, Search, X } from "lucide-react";
+import { Download, Filter, RefreshCw, Search } from "lucide-react";
 import { useState } from "react";
 
 interface FacturasFiltersProps extends BaseFilterProps {
@@ -81,11 +81,15 @@ export const FacturasTableFilters = ({
   };
 
   const handleMetodoPagoChange = (newMethod: string) => {
-    if (!newMethod || newMethod === "todos") {
+    if (!newMethod) {
       table.getColumn("formaPago")?.setFilterValue(undefined);
       return;
     }
     setSelectedMetodoPago(newMethod);
+    if (newMethod === "todos") {
+      table.getColumn("formaPago")?.setFilterValue(undefined);
+      return;
+    }
     table.getColumn("formaPago")?.setFilterValue(newMethod);
     table.setPageIndex(0);
   };
@@ -99,31 +103,6 @@ export const FacturasTableFilters = ({
     table.getColumn("tipoOrigen")?.setFilterValue(undefined);
     onGlobalFilerChange?.("");
   };
-
-  const activeFilters = [
-    {
-      condition: selectedEstado !== "todos",
-      label: `Estado: ${
-        filterEstadoOptions.find((c) => c.value === selectedEstado)?.label
-      }`,
-      clear: () => handleEstadoChange("todos"),
-    },
-    {
-      condition: selectedTipo !== "todos",
-      label: `Tipo: ${
-        filterTipoOptions.find((e) => e.value === selectedTipo)?.label
-      }`,
-      clear: () => handleTipoChange("todos"),
-    },
-    {
-      condition: selectedMetodoPago !== "todos",
-      label: `Metodo/Pago: ${
-        filterMetodoPagoOptions.find((e) => e.value === selectedMetodoPago)
-          ?.label
-      }`,
-      clear: () => handleMetodoPagoChange("todos"),
-    },
-  ];
 
   return (
     <Card className="mb-6 border-0 shadow-md">

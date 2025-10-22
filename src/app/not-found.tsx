@@ -1,4 +1,5 @@
 import { Button } from "@/core/shared/ui/button";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -10,15 +11,16 @@ export default function NotFound() {
         <p className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl">
           Algo salió mal.
         </p>
-        <p className="mb-4 text-lg font-light text-gray-500 dark:text-gray-400">
+        <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-gray-400">
           Lo sentimos, no pudimos encontrar esa página. Hay mucho por explorar
           en la página principal.
         </p>
         <Button
+          asChild
           className="hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-primary-900 my-4"
           variant="outline"
         >
-          Volver a la página principal
+          <Link href="/">Volver a la página principal</Link>
         </Button>
       </div>
     </section>
