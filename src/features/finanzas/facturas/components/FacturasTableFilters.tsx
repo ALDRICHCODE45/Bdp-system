@@ -223,24 +223,6 @@ export const FacturasTableFilters = ({
               </SelectContent>
             </Select>
           </div>
-          {/* Indicadores de filtros activos */}
-          {/* <div className="flex flex-wrap gap-2 mt-4"> */}
-          {/*   {activeFilters.map((filter, index) => */}
-          {/*     filter.condition ? ( */}
-          {/*       <Badge */}
-          {/*         key={index} */}
-          {/*         variant="secondary" */}
-          {/*         className="flex items-center gap-1" */}
-          {/*       > */}
-          {/*         {filter.label} */}
-          {/*         <X */}
-          {/*           className="h-3 w-3 ml-1 cursor-pointer" */}
-          {/*           onClick={filter.clear} */}
-          {/*         /> */}
-          {/*       </Badge> */}
-          {/*     ) : null, */}
-          {/*   )} */}
-          {/* </div> */}
         </div>
       </CardContent>
     </Card>
