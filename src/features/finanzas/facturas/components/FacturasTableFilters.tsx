@@ -5,7 +5,7 @@ import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
 import { Table } from "@tanstack/react-table";
 import { Filter, Search } from "lucide-react";
-import { FacturasFilterActions } from "./FacturasFilterActions";
+import { FilterHeaderActions } from "@/core/shared/components/FilterHeaderActions";
 import { useFacturasTableFilters } from "../hooks/useFacturasTableFilters.hook";
 import { FilterSelect } from "@/core/shared/components/FilterSelect";
 import {
@@ -46,7 +46,7 @@ export const FacturasTableFilters = ({
           </Badge>
         </div>
         <div className="flex gap-2">
-          <FacturasFilterActions
+          <FilterHeaderActions
             showAddButton={showAddButton}
             AddButtonIcon={addButtonIcon}
             addButtonText={addButtonText}

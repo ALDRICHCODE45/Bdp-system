@@ -1,7 +1,7 @@
 import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { Ingreso } from "../types/Ingreso.type";
 import { IngresosFilters } from "./IngresosFilters";
-import { Plus } from "lucide-react";
+import { BanknoteArrowUp, Plus } from "lucide-react";
 
 // Configuración personalizada para el DataTable
 export const IngresosTableConfig: TableConfig<Ingreso> = {
@@ -10,6 +10,9 @@ export const IngresosTableConfig: TableConfig<Ingreso> = {
       component: IngresosFilters,
       props: {
         // Aquí puedes pasar props adicionales específicas para el componente de filtros
+        addButtonIcon: BanknoteArrowUp,
+        addButtonText: "",
+        showAddButton: true,
       },
     },
   },

@@ -1,19 +1,19 @@
 import { Button } from "@/core/shared/ui/button";
 import { Download, LucideIcon, RefreshCw } from "lucide-react";
 
-interface FacturasFilterActionsProps {
+interface FilterHeaderActions {
   showAddButton?: boolean;
   AddButtonIcon?: LucideIcon;
   addButtonText: string;
   onClearFilters: () => void;
 }
 
-export const FacturasFilterActions = ({
+export const FilterHeaderActions = ({
   AddButtonIcon,
   addButtonText,
   onClearFilters,
   showAddButton = false,
-}: FacturasFilterActionsProps) => {
+}: FilterHeaderActions) => {
   return (
     <>
       {showAddButton && (
