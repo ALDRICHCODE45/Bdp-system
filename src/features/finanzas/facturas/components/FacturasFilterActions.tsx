@@ -18,12 +18,13 @@ export const FacturasFilterActions = ({
     <>
       {showAddButton && (
         <Button
+          buttonTooltip
+          buttonTooltipText="Agregar factura"
           variant="default"
-          size="sm"
+          size="icon"
           className="h-8 px-3 flex items-center gap-1"
         >
           {AddButtonIcon && <AddButtonIcon className="h-4 w-4" />}
-          <span>{addButtonText}</span>
         </Button>
       )}
       <Button
