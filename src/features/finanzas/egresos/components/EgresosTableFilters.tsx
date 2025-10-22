@@ -159,7 +159,7 @@ export function EgresosFilters({
 
   return (
     <Card className="mb-6 border-0 shadow-md">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-primary" />
           <Badge variant="outline" className="ml-2">
