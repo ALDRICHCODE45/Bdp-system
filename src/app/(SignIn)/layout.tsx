@@ -15,10 +15,12 @@ export default function SignInLayout({
       <div className="relative hidden lg:block md:border md:border-l">
         <Image
           src="/signIn/login-bg.png"
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-contain dark:brightness-[0.2] dark:grayscale"
-          width={1500}
-          height={1500}
+          alt="Login Background"
+          fill
+          className="object-contain dark:brightness-[0.2] dark:grayscale"
+          sizes="(max-width: 768px) 0vw, 50vw"
+          quality={90}
+          priority
         />
       </div>
     </div>
