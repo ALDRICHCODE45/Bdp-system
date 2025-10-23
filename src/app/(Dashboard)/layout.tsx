@@ -23,7 +23,7 @@ export default function DashboardLayout({
       disableTransitionOnChange
     >
       <AuthGuard>
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={false}>
           <AppSidebar />
           <SidebarInset className="flex flex-col min-h-screen">
             <header className="sticky bg-white dark:bg-black top-0 z-50 flex justify-between w-full h-16 shrink-0 items-center gap-2 border-b">
