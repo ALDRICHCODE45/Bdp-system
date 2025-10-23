@@ -2,10 +2,12 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
 export function useAuth() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { setTheme } = useTheme();
 
   const login = async (email: string, password: string) => {
     const result = await signIn("credentials", {
@@ -23,6 +25,8 @@ export function useAuth() {
 
   const logout = async () => {
     await signOut({ redirect: false });
+    setTheme("light");
+
     router.push("/sign-in");
   };
 

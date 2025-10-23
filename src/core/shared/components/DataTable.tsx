@@ -68,7 +68,7 @@ export function DataTable<TData, TValue>({
   // Configuración por defecto
   const defaultConfig: Required<TableConfig<TData>> = {
     filters: {
-      searchColumn: "id",
+      searchColumn: "nombre",
       searchPlaceholder: "Buscar...",
       showSearch: true,
     },
@@ -80,7 +80,7 @@ export function DataTable<TData, TValue>({
       showRefreshButton: false,
     },
     pagination: {
-      defaultPageSize: 10,
+      defaultPageSize: 5,
       pageSizeOptions: [5, 10, 20, 50],
       showPageSizeSelector: true,
       showPaginationInfo: true,

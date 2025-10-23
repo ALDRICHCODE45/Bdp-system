@@ -17,7 +17,7 @@ export default function SignInLayout({
           src="/signIn/login-bg.png"
           alt="Login Background"
           fill
-          className="object-contain dark:brightness-[0.2] dark:grayscale"
+          className="object-contain"
           sizes="(max-width: 768px) 0vw, 50vw"
           quality={90}
           priority
