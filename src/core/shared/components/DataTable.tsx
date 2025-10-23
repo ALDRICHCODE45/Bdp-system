@@ -333,7 +333,7 @@ export function DataTable<TData, TValue>({
         <div className="flex flex-col sm:flex-row items-center gap-4">
           {/* Información de paginación */}
           {finalConfig.pagination.showPaginationInfo && (
-            <div className="text-sm text-gray-700 text-center sm:text-left">
+            <div className="text-sm text-gray-400 text-center sm:text-left">
               Mostrando{" "}
               {table.getState().pagination.pageIndex *
                 table.getState().pagination.pageSize +
@@ -388,7 +388,7 @@ export function DataTable<TData, TValue>({
             <ChevronLeftIcon className="h-4 w-4" />
           </Button>
 
-          <span className="text-sm text-gray-700 whitespace-nowrap">
+          <span className="text-sm text-gray-400 whitespace-nowrap">
             Página {table.getState().pagination.pageIndex + 1} de{" "}
             {table.getPageCount()}
           </span>

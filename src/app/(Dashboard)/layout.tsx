@@ -16,13 +16,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <AuthGuard>
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset className="flex flex-col min-h-screen">
@@ -44,7 +44,7 @@ export default function DashboardLayout({
             </div>
           </SidebarInset>
         </SidebarProvider>
-      </ThemeProvider>
-    </AuthGuard>
+      </AuthGuard>
+    </ThemeProvider>
   );
 }
