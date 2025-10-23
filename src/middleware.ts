@@ -27,7 +27,7 @@ export default auth((req) => {
 
   // Si el usuario está logueado y trata de acceder a la página de login
   if (isLoggedIn && nextUrl.pathname.startsWith("/sign-in")) {
-    return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    return NextResponse.redirect(new URL("/facturas", nextUrl));
   }
 
   return NextResponse.next();

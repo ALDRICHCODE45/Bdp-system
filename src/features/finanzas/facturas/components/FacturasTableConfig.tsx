@@ -35,7 +35,7 @@ export const FacturasTableConfig: TableConfig<Factura> = {
     },
   },
   pagination: {
-    defaultPageSize: 10,
+    defaultPageSize: 5,
     pageSizeOptions: [5, 10, 20, 100],
     showPageSizeSelector: true,
     showPaginationInfo: true,
