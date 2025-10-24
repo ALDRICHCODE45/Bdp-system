@@ -17,7 +17,7 @@ import {
 import { UserPlus } from "lucide-react";
 
 import { TableConfig } from "./types";
-import { TableBodyDataTable } from "./TableBody";
+import { TableBodyDataTable } from "./DataTableBody";
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableFilters } from "./DataTableFilters";
 
