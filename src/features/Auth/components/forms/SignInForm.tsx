@@ -1,6 +1,5 @@
 "use client";
 import * as React from "react";
-import { useForm } from "@tanstack/react-form";
 import {
   Card,
   CardHeader,
@@ -17,37 +16,10 @@ import {
 } from "@/core/shared/ui/field";
 import { Input } from "@/core/shared/ui/input";
 import { Button } from "@/core/shared/ui/button";
-import { useAuth } from "@/core/shared/hooks/use-auth";
-import { useRouter } from "next/navigation";
-import { TryCatch } from "@/core/shared/helpers/tryCatch";
-import { userLoginSchema } from "@/features/Auth/schemas/userLogin.schema";
+import { useSignInForm } from "@/features/Auth/hooks/useSignInForm";
 
 export function SignInForm() {
-  const { login } = useAuth();
-  const router = useRouter();
-
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    validators: {
-      onSubmit: userLoginSchema,
-    },
-    onSubmit: async ({ value }) => {
-      const [_data, error] = await TryCatch(login(value.email, value.password));
-
-      if (error) {
-        //Cambiar esta línea por un logger
-        console.error("Error en login:", error);
-        throw new Error("Error al iniciar sesión");
-      }
-
-      //TODO: Cambiar '/facturas' por la ruta para redirigir al
-      //usuario basado en su rol
-      router.push("/facturas");
-    },
-  });
+  const form = useSignInForm();
 
   return (
     <Card className="w-full sm:max-w-lg">
