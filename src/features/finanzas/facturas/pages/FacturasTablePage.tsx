@@ -1,8 +1,8 @@
 "use client";
-import { DataTable } from "@/core/shared/components/DataTable";
 import { FacturasColumns } from "../components/FacturasColumns";
 import { facturasMockData } from "../types/data/FacturasMockData.data";
 import { FacturasTableConfig } from "../components/FacturasTableConfig";
+import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 
 export function FacturasTablePage() {
   const data = facturasMockData;

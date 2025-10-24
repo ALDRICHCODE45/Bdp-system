@@ -1,7 +1,7 @@
-import { DataTable } from "@/core/shared/components/DataTable";
+import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { columns } from "../helpers/TableColumns";
 import { colaboradoresMockData } from "../types/ColaboradoresTableData";
-import { TablePresentation } from "@/core/shared/components/TablePresentation";
+import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 
 export const ColaboradoresTablePage = () => {
   return (

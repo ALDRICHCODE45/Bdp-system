@@ -24,7 +24,7 @@ import { es } from "date-fns/locale";
 import { cn } from "@/core/lib/utils";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 import { useEgresosTableFilters } from "../hooks/useEgresosTableFilters";
-import { FilterSelect } from "@/core/shared/components/FilterSelect";
+import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import {
   categoriasEgresoOptions,
   estadosEgresosOptions,

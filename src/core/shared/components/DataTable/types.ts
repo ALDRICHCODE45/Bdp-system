@@ -40,15 +40,15 @@ export interface CustomActionComponent<TData = unknown> {
 }
 
 // Configuración de filtros
-export interface FilterConfig {
+export interface FilterConfig<TData = unknown> {
   searchColumn?: string;
   searchPlaceholder?: string;
   showSearch?: boolean;
-  customFilter?: CustomFilterComponent<unknown>;
+  customFilter?: CustomFilterComponent<TData>;
 }
 
 // Configuración de acciones
-export interface ActionConfig {
+export interface ActionConfig<TData = unknown> {
   showAddButton?: boolean;
   addButtonText?: string;
   addButtonIcon?: ReactNode;
@@ -58,7 +58,7 @@ export interface ActionConfig {
   showRefreshButton?: boolean;
   onRefresh?: () => void;
   customActions?: ReactNode;
-  customActionComponent?: CustomActionComponent<unknown>;
+  customActionComponent?: CustomActionComponent<TData>;
 }
 
 // Configuración de paginación

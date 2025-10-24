@@ -1,7 +1,7 @@
-import { DataTable } from "@/core/shared/components/DataTable";
-import { TablePresentation } from "@/core/shared/components/TablePresentation";
+import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { recepcionMockData } from "../types/table/data/RecepcionMockData.data";
 import { RecepcionColumns } from "../types/table/columns/RecepcionColumns";
+import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 
 export const EntradasYSalidasTablePage = () => {
   return (

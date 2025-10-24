@@ -16,13 +16,13 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/core/lib/utils";
 import { useIngresosTableFilters } from "../hooks/useIngresosTableFilters";
-import { FilterSelect } from "@/core/shared/components/FilterSelect";
+import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import {
   estadosIngresoOptions,
   formaPagoOptions,
 } from "../types/filterOptions.type";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
-import { FilterHeaderActions } from "@/core/shared/components/FilterHeaderActions";
+import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
 
 interface IngresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;

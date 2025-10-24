@@ -1,9 +1,9 @@
 "use client";
-import { DataTable } from "@/core/shared/components/DataTable";
-import { TablePresentation } from "@/core/shared/components/TablePresentation";
+import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { ClientesProveedoresColumns } from "../components/ClientesProveedoresColumns";
 import { clientesProveedoresMockData } from "../types/data/ClientesProveedoresMockData.data";
 import { ClientesProovedoresTableConfig } from "../components/ClientesProovedoresTableConfig";
+import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 
 export const ClientesProovedoresTablePage = () => {
   return (

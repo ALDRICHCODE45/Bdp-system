@@ -1,8 +1,8 @@
 "use client";
-import { DataTable } from "@/core/shared/components/DataTable";
 import { EgresosColumns } from "../components/EgresosTableColumns";
 import { egresosMockData } from "../types/data/EgresosMockData.data";
 import { EgresosTableConfig } from "../components/EgresosTableConfig";
+import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 
 export function EgresosTablePage() {
   const data = egresosMockData;

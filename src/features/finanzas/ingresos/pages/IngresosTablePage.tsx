@@ -1,8 +1,8 @@
 "use client";
-import { DataTable } from "@/core/shared/components/DataTable";
 import { IngresosColumns } from "../components/IngresosColumns";
 import { ingresosMockData } from "../types/data/IngresosMockData.data";
 import { IngresosTableConfig } from "../components/IngresosTableConfig";
+import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 
 export function IngresosTablePage() {
   const data = ingresosMockData;
