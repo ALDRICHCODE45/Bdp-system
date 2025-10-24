@@ -2,8 +2,6 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 
-// TODO: Configurar variables de entorno en .env.local
-
 // Extender los tipos de NextAuth para incluir el rol
 declare module "next-auth" {
   interface User {
@@ -79,8 +77,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    signIn: "/sign-in", // TODO: Crear página de login personalizada
-    error: "/error", // TODO: Crear página de error personalizada
+    signIn: "/sign-in",
+    error: "/error",
   },
   session: {
     strategy: "jwt",
