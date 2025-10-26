@@ -22,7 +22,7 @@ export function SignInForm() {
   const form = useSignInForm();
 
   return (
-    <Card className="w-full sm:max-w-lg">
+    <Card className="w-sm md:w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle>Iniciar Sesión</CardTitle>
         <CardDescription>

@@ -15,7 +15,7 @@ export function useSignInForm() {
       password: "",
     },
     validators: {
-      onSubmit: userLoginSchema,
+      onBlur: userLoginSchema,
     },
     onSubmit: async ({ value }) => {
       const [_data, error] = await TryCatch(login(value.email, value.password));
