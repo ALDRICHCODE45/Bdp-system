@@ -26,7 +26,7 @@ export const TableBodyDataTable = <TData, TValue>({
   return (
     <>
       <div className="rounded-lg border shadow-sm w-full min-w-0 overflow-hidden">
-        <div className="overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+        <div className="overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 table-scroll-container">
           <TableComponent className="w-full min-w-max">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -39,7 +39,7 @@ export const TableBodyDataTable = <TData, TValue>({
                         className="h-12 px-6 text-left font-medium whitespace-nowrap"
                         style={{
                           width: `${size}%`,
-                          minWidth: `${Math.max(size * 1.5, 100)}px`,
+                          minWidth: `${Math.max(size * 1.2, 80)}px`,
                         }}
                       >
                         {header.isPlaceholder ? null : config.enableSorting &&
@@ -85,7 +85,7 @@ export const TableBodyDataTable = <TData, TValue>({
                           className="px-6 py-4"
                           style={{
                             width: `${size}%`,
-                            minWidth: `${Math.max(size * 1.5, 100)}px`,
+                            minWidth: `${Math.max(size * 1.2, 80)}px`,
                           }}
                         >
                           {flexRender(

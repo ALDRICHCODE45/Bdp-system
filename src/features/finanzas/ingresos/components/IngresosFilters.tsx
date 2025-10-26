@@ -47,15 +47,15 @@ export function IngresosFilters({
   } = useIngresosTableFilters(table);
 
   return (
-    <Card className="mb-6 border-0 shadow-md">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-primary" />
-          <Badge variant="outline" className="ml-2">
+    <Card className="mb-6 border-0 shadow-md w-full min-w-0 overflow-hidden">
+      <CardHeader className="pb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Filter className="h-5 w-5 text-primary flex-shrink-0" />
+          <Badge variant="outline" className="ml-2 flex-shrink-0">
             {table.getFilteredRowModel().rows.length} resultados
           </Badge>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
           <FilterHeaderActions
             showAddButton={showAddButton}
             AddButtonIcon={addButtonIcon}

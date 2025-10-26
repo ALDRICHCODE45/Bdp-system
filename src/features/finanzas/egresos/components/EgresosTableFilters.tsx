@@ -29,6 +29,7 @@ import {
   categoriasEgresoOptions,
   estadosEgresosOptions,
 } from "../types/EgresosFilterOptions";
+import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
 
 interface EgresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
@@ -40,6 +41,7 @@ export function EgresosFilters({
   onGlobalFilterChange,
   showAddButton = false,
   addButtonIcon: AddButtonIcon,
+  addButtonText = "Agregar Egreso",
 }: EgresosFiltersProps) {
   const {
     clearFilters,
@@ -64,34 +66,16 @@ export function EgresosFilters({
           </Badge>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
-          {showAddButton && (
-            <Button
-              variant="default"
-              size="sm"
-              buttonTooltip
-              buttonTooltipText="Agregar Egreso"
-              className="h-8 px-3 flex items-center gap-1 flex-shrink-0"
-            >
-              {AddButtonIcon && <AddButtonIcon className="h-4 w-4" />}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearFilters}
-            className="h-8 px-3 flex items-center gap-1 flex-shrink-0"
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span className="hidden sm:inline">Limpiar</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 px-3 flex-shrink-0"
-          >
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline ml-2">Exportar</span>
-          </Button>
+          <FilterHeaderActions
+            showAddButton={showAddButton}
+            AddButtonIcon={AddButtonIcon}
+            addButtonText={addButtonText}
+            buttonTooltipText="Agregar Egreso"
+            onClearFilters={() => {
+              clearFilters();
+              onGlobalFilterChange?.("");
+            }}
+          />
         </div>
       </CardHeader>
 

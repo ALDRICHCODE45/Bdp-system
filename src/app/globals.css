@@ -125,6 +125,7 @@
   /* Scrollbar personalizado para tablas */
   .scrollbar-thin {
     scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch; /* Mejora el scroll en iOS */
   }
   
   .scrollbar-thin::-webkit-scrollbar {
@@ -142,6 +143,12 @@
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-400 dark:bg-gray-500;
+  }
+  
+  /* Asegurar que el scroll horizontal funcione en móviles */
+  .table-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 }
 

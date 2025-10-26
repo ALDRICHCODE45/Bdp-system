@@ -1,18 +1,17 @@
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { columns } from "../helpers/TableColumns";
 import { colaboradoresMockData } from "../types/ColaboradoresTableData";
-import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 
 export const ColaboradoresTablePage = () => {
   return (
-    <>
-      <section className="mx-auto max-w-[75vw] max-h-[100vh] py-10">
-        <TablePresentation
-          subtitle="Gestiona toda la información de tus colaboradores en este apartado!"
-          title="Colaboradores"
-        />
-        <DataTable columns={columns} data={colaboradoresMockData} />
-      </section>
-    </>
+    <div className="container mx-auto py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Gestión de Colaboradores</h1>
+        <p className="text-muted-foreground">
+          Administra la información de tus colaboradores
+        </p>
+      </div>
+      <DataTable columns={columns} data={colaboradoresMockData} />
+    </div>
   );
 };
