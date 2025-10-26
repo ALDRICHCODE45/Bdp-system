@@ -1,5 +1,5 @@
 import { ColumnDef, Table } from "@tanstack/react-table";
-import { TableConfig } from "./types";
+import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { flexRender } from "@tanstack/react-table";
 
 import {
@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/core/shared/ui/table";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { getColumnMinWidth } from "@/core/shared/helpers/getColumnMinWidth.helper";
 
 interface TableBodyProps<TData, TValue> {
   table: Table<TData>;
@@ -27,7 +28,7 @@ export const TableBodyDataTable = <TData, TValue>({
     <>
       <div className="rounded-lg border shadow-sm w-full min-w-0 overflow-hidden">
         <div className="overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 table-scroll-container">
-          <TableComponent className="w-full min-w-max">
+          <TableComponent className="w-full min-w-fit">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="border-b">
@@ -36,10 +37,10 @@ export const TableBodyDataTable = <TData, TValue>({
                     return (
                       <TableHead
                         key={header.id}
-                        className="h-12 px-6 text-left font-medium whitespace-nowrap"
+                        className="h-12 px-2 sm:px-6 text-left font-medium whitespace-nowrap"
                         style={{
                           width: `${size}%`,
-                          minWidth: `${Math.max(size * 1.2, 80)}px`,
+                          minWidth: `${getColumnMinWidth(size)}px`,
                         }}
                       >
                         {header.isPlaceholder ? null : config.enableSorting &&
@@ -82,10 +83,10 @@ export const TableBodyDataTable = <TData, TValue>({
                       return (
                         <TableCell
                           key={cell.id}
-                          className="px-6 py-4"
+                          className="px-2 sm:px-6 py-4"
                           style={{
                             width: `${size}%`,
-                            minWidth: `${Math.max(size * 1.2, 80)}px`,
+                            minWidth: `${getColumnMinWidth(size)}px`,
                           }}
                         >
                           {flexRender(
