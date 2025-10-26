@@ -39,7 +39,6 @@ export function EgresosFilters({
   table,
   onGlobalFilterChange,
   showAddButton = false,
-  addButtonText = "Agregar",
   addButtonIcon: AddButtonIcon,
 }: EgresosFiltersProps) {
   const {

@@ -46,7 +46,7 @@ export const clientesProveedoresMockData: ClienteProveedor[] = [
     numeroCuenta: "3456789012",
     clabe: "234567890123456789",
     banco: "HSBC",
-    activo: true,
+    activo: false,
     fechaRegistro: "2024-03-10",
     notas: "Empresa hermana - Consultoría legal",
   },

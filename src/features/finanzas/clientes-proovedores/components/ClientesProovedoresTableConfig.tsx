@@ -1,12 +1,21 @@
 import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { ClienteProveedor } from "../types/ClienteProveedor.type";
-import { PlusCircle } from "lucide-react";
+import { CircleUser, PlusCircle } from "lucide-react";
+import { ClientesProovedoresTableFilters } from "./ClientesProovedoresTableFilters";
 
 export const ClientesProovedoresTableConfig: TableConfig<ClienteProveedor> = {
   filters: {
-    searchColumn: "nombre",
-    searchPlaceholder: "Buscar por nombre del Proovedor",
-    showSearch: true,
+    customFilter: {
+      component: ClientesProovedoresTableFilters,
+      props: {
+        addButtonIcon: CircleUser,
+        addButtonText: "Agregar Cliente/Proovedor",
+        showAddButton: true,
+      },
+    },
+    // searchColumn: "nombre",
+    // searchPlaceholder: "Buscar por nombre del Proovedor",
+    // showSearch: true,
   },
   actions: {
     showExportButton: true,
