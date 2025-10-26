@@ -6,6 +6,7 @@ interface FilterHeaderActions {
   AddButtonIcon?: LucideIcon;
   addButtonText: string;
   onClearFilters: () => void;
+  buttonTooltipText: string;
 }
 
 export const FilterHeaderActions = ({
@@ -13,13 +14,14 @@ export const FilterHeaderActions = ({
   addButtonText,
   onClearFilters,
   showAddButton = false,
+  buttonTooltipText,
 }: FilterHeaderActions) => {
   return (
     <>
       {showAddButton && (
         <Button
           buttonTooltip
-          buttonTooltipText="Agregar factura"
+          buttonTooltipText={buttonTooltipText}
           variant="default"
           size="icon"
           className="h-8 px-3 flex items-center gap-1"

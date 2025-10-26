@@ -47,6 +47,7 @@ export const FacturasTableFilters = ({
         </div>
         <div className="flex gap-2">
           <FilterHeaderActions
+            buttonTooltipText="Agregar Factura"
             showAddButton={showAddButton}
             AddButtonIcon={addButtonIcon}
             addButtonText={addButtonText}

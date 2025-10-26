@@ -60,6 +60,7 @@ export function IngresosFilters({
             showAddButton={showAddButton}
             AddButtonIcon={addButtonIcon}
             addButtonText={addButtonText}
+            buttonTooltipText="Agregar Ingreso"
             onClearFilters={() => {
               clearFilters();
               onGlobalFilterChange?.("");

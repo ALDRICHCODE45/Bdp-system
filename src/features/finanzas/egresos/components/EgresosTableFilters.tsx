@@ -69,11 +69,11 @@ export function EgresosFilters({
             <Button
               variant="default"
               size="sm"
+              buttonTooltip
+              buttonTooltipText="Agregar Egreso"
               className="h-8 px-3 flex items-center gap-1 flex-shrink-0"
             >
               {AddButtonIcon && <AddButtonIcon className="h-4 w-4" />}
-              <span className="hidden sm:inline">{addButtonText}</span>
-              <span className="sm:hidden">+</span>
             </Button>
           )}
           <Button
