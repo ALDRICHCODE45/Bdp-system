@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
+import { env } from "@/core/shared/config/env.config";
 
 // Extender los tipos de NextAuth para incluir el rol
 declare module "next-auth" {
@@ -83,5 +84,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET, // TODO: Agregar NEXTAUTH_SECRET a .env.local
+  secret: env.AUTH_SECRET, // TODO: Agregar NEXTAUTH_SECRET a .env.local
 });

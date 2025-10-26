@@ -93,7 +93,7 @@ export function SignInForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="submit" form="sign-in-form">
+          <Button type="submit" className="w-full" form="sign-in-form">
             Ingresar
           </Button>
         </Field>
