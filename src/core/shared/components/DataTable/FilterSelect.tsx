@@ -22,13 +22,13 @@ export const FilterSelect = ({
 }: FilterSelectProps) => {
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-2 w-full min-w-0">
         <Label htmlFor="categoria-filter" className="text-xs font-medium">
           {label}
         </Label>
         <Select value={value} onValueChange={onValueChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Seleccionar categoría" />
+          <SelectTrigger className="w-full min-w-0">
+            <SelectValue placeholder={`Seleccionar ${label.toLowerCase()}`} />
           </SelectTrigger>
           <SelectContent>
             {options.map((item) => (

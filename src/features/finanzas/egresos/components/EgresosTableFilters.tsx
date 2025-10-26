@@ -56,52 +56,57 @@ export function EgresosFilters({
   } = useEgresosTableFilters(table);
 
   return (
-    <Card className="mb-6 border-0 shadow-md">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-primary" />
-          <Badge variant="outline" className="ml-2">
+    <Card className="mb-6 border-0 shadow-md w-full min-w-0 overflow-hidden">
+      <CardHeader className="pb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Filter className="h-5 w-5 text-primary flex-shrink-0" />
+          <Badge variant="outline" className="ml-2 flex-shrink-0">
             {table.getFilteredRowModel().rows.length} resultados
           </Badge>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
           {showAddButton && (
             <Button
               variant="default"
               size="sm"
-              className="h-8 px-3 flex items-center gap-1"
+              className="h-8 px-3 flex items-center gap-1 flex-shrink-0"
             >
               {AddButtonIcon && <AddButtonIcon className="h-4 w-4" />}
-              <span>{addButtonText}</span>
+              <span className="hidden sm:inline">{addButtonText}</span>
+              <span className="sm:hidden">+</span>
             </Button>
           )}
           <Button
             variant="outline"
             size="sm"
             onClick={clearFilters}
-            className="h-8 px-3 flex items-center gap-1"
+            className="h-8 px-3 flex items-center gap-1 flex-shrink-0"
           >
-            <RefreshCw />
-            <span>Limpiar</span>
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Limpiar</span>
           </Button>
-          <Button variant="outline" size="sm" className="h-8 px-3">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 px-3 flex-shrink-0"
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline ml-2">Exportar</span>
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4 pb-3 px-6">
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
+      <CardContent className="pt-4 pb-3 px-4 sm:px-6 w-full min-w-0">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full min-w-0">
           {/* Búsqueda global */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full min-w-0">
             <Label htmlFor="search" className="text-xs font-medium">
               Búsqueda
             </Label>
-            <div className="relative">
+            <div className="relative w-full min-w-0">
               <Input
                 id="search"
-                className="w-full pl-9"
+                className="w-full pl-9 min-w-0"
                 placeholder="Buscar egresos..."
                 value={
                   (table.getColumn("concepto")?.getFilterValue() ??
@@ -132,7 +137,7 @@ export function EgresosFilters({
           />
 
           {/* Filtro de rango de fechas */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full min-w-0">
             <Label htmlFor="date-range-filter" className="text-xs font-medium">
               Rango de Fechas
             </Label>
@@ -141,26 +146,30 @@ export function EgresosFilters({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-full justify-start text-left font-normal min-w-0",
                     !selectedDateRange && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDateRange?.from ? (
-                    selectedDateRange.to ? (
-                      <>
-                        {format(selectedDateRange.from, "d/M/yy", {
-                          locale: es,
-                        })}{" "}
-                        -{" "}
-                        {format(selectedDateRange.to, "d/M/yy", { locale: es })}
-                      </>
+                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {selectedDateRange?.from ? (
+                      selectedDateRange.to ? (
+                        <>
+                          {format(selectedDateRange.from, "d/M/yy", {
+                            locale: es,
+                          })}{" "}
+                          -{" "}
+                          {format(selectedDateRange.to, "d/M/yy", {
+                            locale: es,
+                          })}
+                        </>
+                      ) : (
+                        format(selectedDateRange.from, "d/M/yy", { locale: es })
+                      )
                     ) : (
-                      format(selectedDateRange.from, "d/M/yy", { locale: es })
-                    )
-                  ) : (
-                    "Seleccionar fechas"
-                  )}
+                      "Seleccionar fechas"
+                    )}
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -176,11 +185,11 @@ export function EgresosFilters({
           </div>
 
           {/* Filtro de rango de monto */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full min-w-0">
             <Label htmlFor="monto-filter" className="text-xs font-medium">
               Rango de Cantidad
             </Label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full min-w-0">
               <Input
                 placeholder="Mín"
                 type="number"
@@ -188,7 +197,7 @@ export function EgresosFilters({
                 onChange={(e) =>
                   setMontoRange((prev) => ({ ...prev, min: e.target.value }))
                 }
-                className="flex-1"
+                className="flex-1 min-w-0"
               />
               <Input
                 placeholder="Máx"
@@ -197,9 +206,13 @@ export function EgresosFilters({
                 onChange={(e) =>
                   setMontoRange((prev) => ({ ...prev, max: e.target.value }))
                 }
-                className="flex-1"
+                className="flex-1 min-w-0"
               />
-              <Button size="sm" onClick={handleMontoFilter} className="px-3">
+              <Button
+                size="sm"
+                onClick={handleMontoFilter}
+                className="px-3 flex-shrink-0"
+              >
                 <DollarSign className="h-4 w-4" />
               </Button>
             </div>

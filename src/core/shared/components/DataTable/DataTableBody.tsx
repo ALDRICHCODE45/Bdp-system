@@ -25,9 +25,9 @@ export const TableBodyDataTable = <TData, TValue>({
 }: TableBodyProps<TData, TValue>) => {
   return (
     <>
-      <div className="rounded-lg border shadow-sm w-full min-w-0">
-        <div className="overflow-x-auto">
-          <TableComponent className="min-w-full">
+      <div className="rounded-lg border shadow-sm w-full min-w-0 overflow-hidden">
+        <div className="overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+          <TableComponent className="w-full min-w-max">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="border-b">

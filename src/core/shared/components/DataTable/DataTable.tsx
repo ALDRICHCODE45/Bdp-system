@@ -111,24 +111,32 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-4 w-full max-w-full min-w-0">
+    <div className="space-y-4 w-full max-w-full min-w-0 overflow-hidden">
       {/* Filtros personalizados o por defecto */}
-
-      <DataTableFilters
-        config={finalConfig}
-        setGlobalFilter={setGlobalFilter}
-        table={table}
-      />
+      <div className="w-full min-w-0">
+        <DataTableFilters
+          config={finalConfig}
+          setGlobalFilter={setGlobalFilter}
+          table={table}
+        />
+      </div>
 
       {/* Cuerpo de la tabla*/}
-      <TableBodyDataTable<TData, TValue>
-        columns={columns}
-        config={finalConfig}
-        table={table}
-      />
+      <div className="w-full min-w-0">
+        <TableBodyDataTable<TData, TValue>
+          columns={columns}
+          config={finalConfig}
+          table={table}
+        />
+      </div>
 
       {/* Pagination */}
-      <DataTablePagination<TData, TValue> config={finalConfig} table={table} />
+      <div className="w-full min-w-0">
+        <DataTablePagination<TData, TValue>
+          config={finalConfig}
+          table={table}
+        />
+      </div>
     </div>
   );
 }

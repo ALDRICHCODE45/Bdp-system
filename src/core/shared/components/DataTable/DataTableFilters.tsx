@@ -38,15 +38,15 @@ export function DataTableFilters<TData>({
           {...customFilterProps}
         />
       ) : (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full min-w-0">
+          <div className="flex items-center gap-3 w-full sm:w-auto min-w-0 flex-1">
             {/* Search input */}
             {config.filters?.showSearch && (
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1 max-w-md min-w-0">
                 <Input
                   id={`${id}-input`}
                   ref={inputRef}
-                  className="w-full pl-9"
+                  className="w-full pl-9 min-w-0"
                   value={
                     (table
                       .getColumn(config.filters.searchColumn || "nombre")
@@ -67,21 +67,23 @@ export function DataTableFilters<TData>({
 
           {/* Acciones personalizadas o por defecto */}
           {CustomActionComponent ? (
-            <CustomActionComponent
-              table={table as TanstackTable<unknown>}
-              onAdd={config.actions?.onAdd}
-              onExport={config.actions?.onExport}
-              onRefresh={config.actions?.onRefresh}
-              customActions={config.actions?.customActions}
-              {...customActionProps}
-            />
+            <div className="w-full sm:w-auto min-w-0 flex-shrink-0">
+              <CustomActionComponent
+                table={table as TanstackTable<unknown>}
+                onAdd={config.actions?.onAdd}
+                onExport={config.actions?.onExport}
+                onRefresh={config.actions?.onRefresh}
+                customActions={config.actions?.customActions}
+                {...customActionProps}
+              />
+            </div>
           ) : (
-            <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+            <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto min-w-0">
               {/* Botón de agregar */}
               {config.actions?.showAddButton && (
                 <Button
                   variant="default"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto min-w-0"
                   onClick={config.actions.onAdd}
                 >
                   {config.actions.addButtonIcon}
@@ -93,7 +95,7 @@ export function DataTableFilters<TData>({
               {config.actions?.showExportButton && (
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto min-w-0"
                   onClick={config.actions.onExport}
                 >
                   <Download className="h-4 w-4 mr-2" />
@@ -105,7 +107,7 @@ export function DataTableFilters<TData>({
               {config.actions?.showRefreshButton && (
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto min-w-0"
                   onClick={config.actions.onRefresh}
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
