@@ -17,6 +17,7 @@ import {
 } from "@/core/shared/ui/select";
 import { Checkbox } from "@/core/shared/ui/checkbox";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface ClienteProveedorModalProps {
   isOpen: boolean;
@@ -58,6 +59,11 @@ export const ClienteProveedorModal = ({
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       onClose();
+      toast.success(
+        `${
+          formData.tipo.charAt(0).toUpperCase() + formData.tipo.slice(1)
+        } creado satisfactoriamente`
+      );
       // Aquí podrías refrescar la tabla o mostrar un mensaje de éxito
     } catch (error) {
       console.error("Error creando cliente/proveedor:", error);
