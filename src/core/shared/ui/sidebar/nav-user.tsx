@@ -1,12 +1,9 @@
 "use client";
-
 import { ChevronsUpDown, LogOut } from "lucide-react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/core/shared/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -18,6 +15,8 @@ import {
   useSidebar,
 } from "@/core/shared/ui/sidebar";
 import { useAuth } from "@/core/shared/hooks/use-auth";
+import { ConfirmDialog } from "@/core/shared/components/ConfirmDialog";
+import { Button } from "../button";
 
 export function NavUser({
   user,
@@ -74,10 +73,24 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut />
-              Salir
-            </DropdownMenuItem>
+
+            <ConfirmDialog
+              title="Cerrar Sesión"
+              description="¿Estás seguro de que deseas salir de la aplicación? Tendrás que iniciar sesión nuevamente."
+              action={handleLogout}
+              trigger={
+                <Button
+                  variant="destructive-outline"
+                  className="w-full justify-start"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Salir
+                </Button>
+              }
+              confirmText="Sí, salir"
+              cancelText="Cancelar"
+              variant="destructive"
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
