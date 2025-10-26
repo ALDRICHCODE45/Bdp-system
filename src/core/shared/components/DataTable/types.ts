@@ -22,6 +22,7 @@ export interface BaseFilterProps extends Record<string, unknown> {
   showAddButton?: boolean;
   addButtonText?: string;
   addButtonIcon?: LucideIcon;
+  onAdd?: () => void;
 }
 
 // Tipo genérico para componentes de filtros personalizados

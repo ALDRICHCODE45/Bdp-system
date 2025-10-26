@@ -17,6 +17,7 @@ import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHe
 interface ClientesProovedoresTableFilters extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
+  onAdd?: () => void;
 }
 
 export const ClientesProovedoresTableFilters = ({
@@ -25,6 +26,7 @@ export const ClientesProovedoresTableFilters = ({
   addButtonIcon: AddButtonIcon,
   showAddButton,
   addButtonText = "Agregar",
+  onAdd,
 }: ClientesProovedoresTableFilters) => {
   const {
     clearFilters,
@@ -54,6 +56,7 @@ export const ClientesProovedoresTableFilters = ({
                 clearFilters();
                 onGlobalFilterChange?.("");
               }}
+              onAdd={onAdd}
             />
           </div>
         </CardHeader>

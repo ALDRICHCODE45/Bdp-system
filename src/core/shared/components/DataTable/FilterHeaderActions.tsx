@@ -7,6 +7,7 @@ interface FilterHeaderActions {
   addButtonText: string;
   onClearFilters: () => void;
   buttonTooltipText: string;
+  onAdd?: () => void;
 }
 
 export const FilterHeaderActions = ({
@@ -15,6 +16,7 @@ export const FilterHeaderActions = ({
   onClearFilters,
   showAddButton = false,
   buttonTooltipText,
+  onAdd,
 }: FilterHeaderActions) => {
   return (
     <>
@@ -25,6 +27,7 @@ export const FilterHeaderActions = ({
           variant="default"
           size="icon"
           className="h-8 px-3 flex items-center gap-1"
+          onClick={onAdd}
         >
           {AddButtonIcon && <AddButtonIcon className="h-4 w-4" />}
         </Button>
