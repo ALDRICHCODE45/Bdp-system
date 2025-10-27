@@ -10,8 +10,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/core/shared/ui/table";
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PackageOpen,
+} from "lucide-react";
 import { getColumnMinWidth } from "@/core/shared/helpers/getColumnMinWidth.helper";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/core/shared/ui/empty";
+import { Button } from "@/core/shared/ui/button";
 
 interface TableBodyProps<TData, TValue> {
   table: Table<TData>;
@@ -104,7 +118,18 @@ export const TableBodyDataTable = <TData, TValue>({
                     colSpan={columns.length}
                     className="h-24 text-center text-gray-500"
                   >
-                    {config.emptyStateMessage}
+                    <Empty>
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <PackageOpen strokeWidth={1} />
+                        </EmptyMedia>
+                        <EmptyTitle>{config.emptyStateMessage}</EmptyTitle>
+                        <EmptyDescription>
+                          Ingresa un registro para visualizarlos en este
+                          apartado.
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
                   </TableCell>
                 </TableRow>
               )}
