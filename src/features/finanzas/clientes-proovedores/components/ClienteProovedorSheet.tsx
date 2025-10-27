@@ -1,3 +1,4 @@
+"use client";
 import {
   Sheet,
   SheetClose,
@@ -10,6 +11,7 @@ import {
 import { Button } from "@/core/shared/ui/button";
 import { Label } from "@/core/shared/ui/label";
 import { Input } from "@/core/shared/ui/input";
+import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 
 interface ClienteProveedorSheetProps {
   isOpen: boolean;
@@ -22,9 +24,13 @@ export function ClienteProovedorSheet({
   mode,
   onClose,
 }: ClienteProveedorSheetProps) {
+  const isMobile = useIsMobile();
+
+  const sheetSide = isMobile ? "bottom" : "right";
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent>
+      <SheetContent side={sheetSide}>
         <SheetHeader>
           <SheetTitle>Agregar Cliente/Proovedor</SheetTitle>
           <SheetDescription>Ingresa los siguientes campos:</SheetDescription>
