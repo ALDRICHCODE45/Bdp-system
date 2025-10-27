@@ -7,6 +7,7 @@ import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import dynamic from "next/dynamic";
+import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 
 // Lazy loading del modal
 const ClienteProveedorModal = dynamic(
@@ -16,8 +17,8 @@ const ClienteProveedorModal = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <div>Cargando modal...</div>,
-  }
+    loading: () => <LoadingModalState />,
+  },
 );
 
 export const ClientesProovedoresTablePage = () => {
