@@ -10,15 +10,26 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 
 // Lazy loading del modal
-const ClienteProveedorModal = dynamic(
+// const ClienteProveedorModal = dynamic(
+//   () =>
+//     import("../components/ClienteProveedorModal").then((mod) => ({
+//       default: mod.ClienteProveedorModal,
+//     })),
+//   {
+//     ssr: false,
+//     loading: () => <LoadingModalState />,
+//   }
+// );
+
+const ClienteProveedorSheet = dynamic(
   () =>
-    import("../components/ClienteProveedorModal").then((mod) => ({
-      default: mod.ClienteProveedorModal,
+    import("../components/ClienteProovedorSheet").then((mod) => ({
+      default: mod.ClienteProovedorSheet,
     })),
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  },
+  }
 );
 
 export const ClientesProovedoresTablePage = () => {
@@ -47,7 +58,7 @@ export const ClientesProovedoresTablePage = () => {
 
       {/* Modal con lazy loading */}
       {isOpen && modalType === "add" && (
-        <ClienteProveedorModal isOpen={true} onClose={closeModal} mode="add" />
+        <ClienteProveedorSheet isOpen={true} onClose={closeModal} mode="add" />
       )}
     </div>
   );
