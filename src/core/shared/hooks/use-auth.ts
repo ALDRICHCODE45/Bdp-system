@@ -3,8 +3,8 @@
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { toast } from "sonner";
 import { TryCatch } from "@/core/shared/helpers/tryCatch";
+import { showToast } from "../helpers/CustomToast";
 
 export function useAuth() {
   const { data: session, status } = useSession();
@@ -21,12 +21,19 @@ export function useAuth() {
     );
 
     if (error || result?.error) {
-      toast.error("Credenciales inválidas");
+      showToast({
+        title: "Ocurrio un error",
+        description: "Credenciales inválidas",
+        type: "error",
+      });
       throw new Error("Credenciales inválidas");
     }
 
-    toast.success("Iniciaste Sesión Correctamente");
-
+    showToast({
+      title: "Bienvenido",
+      description: "Iniciaste Sesión Correctamente",
+      type: "success",
+    });
     return result;
   };
 

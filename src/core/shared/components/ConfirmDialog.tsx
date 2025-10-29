@@ -10,6 +10,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/core/shared/ui/alert-dialog";
+import { TryCatch } from "@/core/shared/helpers/tryCatch";
+import { showToast } from "@/core/shared/helpers/CustomToast";
 
 interface ConfirmDialogProps {
   title: string;
@@ -36,15 +38,21 @@ export const ConfirmDialog = ({
   const [open, setOpen] = useState(false);
 
   const handleConfirm = async () => {
-    try {
-      setIsLoading(true);
-      await action();
-      setOpen(false); // Cerrar el diálogo después de ejecutar la acción
-    } catch (error) {
-      console.error("Error en la acción de confirmación:", error);
-    } finally {
-      setIsLoading(false);
+    setIsLoading(true);
+    const [_data, error] = await TryCatch(Promise.resolve(action()));
+
+    if (error) {
+      showToast({
+        type: "error",
+        title: "Ocurrió un error",
+        description:
+          "No se pudo completar la acción. Por favor, intenta nuevamente o contacta al soporte si el problema persiste.",
+      });
+      return;
     }
+
+    setOpen(false);
+    setIsLoading(false);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
