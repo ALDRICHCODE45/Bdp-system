@@ -18,11 +18,11 @@ export function useSignInForm() {
       onSubmit: userLoginSchema,
     },
     onSubmit: async ({ value }) => {
-      const [_data, error] = await TryCatch(login(value.email, value.password));
+      const result = await TryCatch(login(value.email, value.password));
 
-      if (error) {
+      if (!result.ok) {
         //Cambiar esta línea por un logger
-        console.error("Error en login:", error);
+        console.error("Error en login:", result.error);
         throw new Error("Error al iniciar sesión");
       }
 

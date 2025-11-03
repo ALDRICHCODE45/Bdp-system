@@ -39,15 +39,16 @@ export const ConfirmDialog = ({
 
   const handleConfirm = async () => {
     setIsLoading(true);
-    const [_data, error] = await TryCatch(Promise.resolve(action()));
+    const result = await TryCatch(Promise.resolve(action()));
 
-    if (error) {
+    if (!result.ok) {
       showToast({
         type: "error",
         title: "Ocurrió un error",
         description:
           "No se pudo completar la acción. Por favor, intenta nuevamente o contacta al soporte si el problema persiste.",
       });
+      setIsLoading(false);
       return;
     }
 

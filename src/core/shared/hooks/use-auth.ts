@@ -12,7 +12,7 @@ export function useAuth() {
   const { setTheme } = useTheme();
 
   const login = async (email: string, password: string) => {
-    const [result, error] = await TryCatch(
+    const result = await TryCatch(
       signIn("credentials", {
         email,
         password,
@@ -20,7 +20,7 @@ export function useAuth() {
       })
     );
 
-    if (error || result?.error) {
+    if (!result.ok || result.value?.error) {
       showToast({
         title: "Ocurrio un error",
         description: "Credenciales inválidas",
@@ -34,7 +34,7 @@ export function useAuth() {
       description: "Iniciaste Sesión Correctamente",
       type: "success",
     });
-    return result;
+    return result.value;
   };
 
   const logout = async () => {

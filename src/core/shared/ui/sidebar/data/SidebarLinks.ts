@@ -4,6 +4,7 @@ import {
   GalleryVerticalEnd,
   Landmark,
   Handshake,
+  Cog,
   Headset,
 } from "lucide-react";
 
@@ -74,6 +75,17 @@ export const sidebarLinks = {
         {
           title: "Entradas y Salidas",
           url: "/entradas-salidas",
+        },
+      ],
+    },
+    {
+      title: "Configuracion",
+      url: "Configuracion",
+      icon: Cog,
+      items: [
+        {
+          title: "Usuarios",
+          url: "/usuarios",
         },
       ],
     },
