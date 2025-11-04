@@ -65,11 +65,10 @@ export const UsersTableFilters = ({
                   className="w-full pl-9 min-w-0"
                   placeholder="Buscar usuarios..."
                   value={
-                    (table.getColumn("nombre")?.getFilterValue() ??
-                      "") as string
+                    (table.getColumn("name")?.getFilterValue() ?? "") as string
                   }
                   onChange={(e) => {
-                    table.getColumn("nombre")?.setFilterValue(e.target.value);
+                    table.getColumn("name")?.setFilterValue(e.target.value);
                     onGlobalFilterChange?.(e.target.value);
                   }}
                 />
