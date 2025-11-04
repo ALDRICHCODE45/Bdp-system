@@ -1,4 +1,3 @@
-"use client";
 import {
   Sheet,
   SheetClose,
@@ -9,9 +8,8 @@ import {
   SheetTitle,
 } from "@/core/shared/ui/sheet";
 import { Button } from "@/core/shared/ui/button";
-import { Label } from "@/core/shared/ui/label";
-import { Input } from "@/core/shared/ui/input";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { CreateUserForm } from "./forms/CreateUserForm";
 
 interface CreateUserSheetProps {
   isOpen: boolean;
@@ -35,26 +33,8 @@ export function CreateUserSheet({
           <SheetTitle>Agregar Usuario</SheetTitle>
           <SheetDescription>Ingresa los siguientes campos:</SheetDescription>
         </SheetHeader>
-        <div className="grid flex-1 auto-rows-min gap-6 px-4">
-          <div className="grid gap-3">
-            <Label htmlFor="sheet-demo-name">Nombre</Label>
-            <Input id="sheet-demo-name" defaultValue="Aldrich" />
-          </div>
-          <div className="grid gap-3">
-            <Label htmlFor="sheet-demo-username">Email</Label>
-            <Input
-              id="sheet-demo-username"
-              defaultValue="@email.com"
-              type="email"
-            />
-          </div>
-          <div className="grid gap-3">
-            <Label htmlFor="user-roles">Roles</Label>
-            <Input id="user-roles" defaultValue="Admin" type="text" />
-          </div>
-        </div>
+        <CreateUserForm />
         <SheetFooter>
-          <Button type="submit">Guardar Cambios</Button>
           <SheetClose asChild>
             <Button variant="outline">Cerrar</Button>
           </SheetClose>

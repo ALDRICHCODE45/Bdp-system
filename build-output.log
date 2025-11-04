@@ -1,0 +1,89 @@
+   ▲ Next.js 15.5.6 (Turbopack)
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 19ms
+ ✓ Compiled successfully in 7.1s
+   Linting and checking validity of types ...
+
+./src/core/shared/components/DataTable/DataTableBody.tsx
+14:3  Warning: 'ArrowUpRightIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+22:3  Warning: 'EmptyContent' is defined but never used.  @typescript-eslint/no-unused-vars
+28:10  Warning: 'Button' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/core/shared/components/DataTable/DataTablePagination.tsx
+14:43  Warning: 'TValue' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/core/shared/components/DataTable/FilterHeaderActions.tsx
+15:3  Warning: 'addButtonText' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/core/shared/components/DataTable/types.ts
+74:30  Warning: 'TData' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/Recepcion/entradas-salidas/types/table/columns/RecepcionColumns.tsx
+135:28  Warning: '_row' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/configuracion/usuarios/components/CreateUserSheet.tsx
+22:3  Warning: 'mode' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/configuracion/usuarios/components/UsersTableColumns.tsx
+48:13  Warning: 'roles' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+78:28  Warning: '_row' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/finanzas/clientes-proovedores/components/ClienteProovedorSheet.tsx
+24:3  Warning: 'mode' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/finanzas/clientes-proovedores/components/ClientesProveedoresColumns.tsx
+140:28  Warning: '_row' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/finanzas/egresos/components/EgresosTableColumns.tsx
+237:28  Warning: '_row' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/finanzas/egresos/components/EgresosTableFilters.tsx
+18:3  Warning: 'RefreshCw' is defined but never used.  @typescript-eslint/no-unused-vars
+19:3  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/finanzas/egresos/hooks/useEgresosTableFilters.ts
+64:6  Warning: React Hook useCallback has missing dependencies: 'selectedMontoRange.max' and 'selectedMontoRange.min'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/features/finanzas/ingresos/components/IngresosColumns.tsx
+183:28  Warning: '_row' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/13) ...
+   Generating static pages (3/13) 
+   Generating static pages (6/13) 
+   Generating static pages (9/13) 
+ ✓ Generating static pages (13/13)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                         Size  First Load JS
+┌ ○ /                                0 B         186 kB
+├ ○ /_not-found                      0 B         186 kB
+├ ƒ /api/auth/[...nextauth]          0 B            0 B
+├ ○ /clientes-proovedores        33.6 kB         255 kB
+├ ○ /colaboradores               1.41 kB         249 kB
+├ ○ /egresos                     22.7 kB         280 kB
+├ ○ /entradas-salidas            27.2 kB         249 kB
+├ ○ /facturas                    31.9 kB         253 kB
+├ ○ /ingresos                    21.9 kB         279 kB
+├ ○ /sign-in                      105 kB         290 kB
+└ ○ /usuarios                    14.5 kB         262 kB
++ First Load JS shared by all     203 kB
+  ├ chunks/111c2078ff56494a.js   59.2 kB
+  ├ chunks/1664aa86a6311349.js   11.8 kB
+  ├ chunks/2008ffcf9e5b170c.js     13 kB
+  ├ chunks/42a64e524decc0c1.js   25.1 kB
+  ├ chunks/51fbd6cf8524d6be.js   25.2 kB
+  ├ chunks/8082ab48faca5ea1.js   17.2 kB
+  ├ chunks/cfdd70e320c9c4f5.css  16.4 kB
+  └ other shared chunks (total)  35.1 kB
+
+
+ƒ Middleware                      195 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
