@@ -4,8 +4,8 @@ import {
   GalleryVerticalEnd,
   Landmark,
   Handshake,
-  Cog,
   Headset,
+  Monitor,
 } from "lucide-react";
 
 export const sidebarLinks = {
@@ -79,13 +79,17 @@ export const sidebarLinks = {
       ],
     },
     {
-      title: "Configuracion",
-      url: "Configuracion",
-      icon: Cog,
+      title: "Sistema",
+      url: "Sistema",
+      icon: Monitor,
       items: [
         {
           title: "Usuarios",
           url: "/usuarios",
+        },
+        {
+          title: "Configuración",
+          url: "/config",
         },
       ],
     },
