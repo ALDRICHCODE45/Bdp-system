@@ -5,35 +5,27 @@ import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
 import { Table } from "@tanstack/react-table";
 import { Filter, Search } from "lucide-react";
-import { useClientesProovedoresTableFilters } from "../hooks/useClientesProovedoresTableFilters.hook";
 import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
-import {
-  estadosClienteProovedor,
-  tipoClienteProovedorOptions,
-} from "../types/ClientesProovedoresFiltersOptions";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
+import { useUsersTableFilters } from "../hooks/useUsersTableFilters.hook";
+import { estadosUser } from "../types/filters/UserFilterOptions";
 
-interface ClientesProovedoresTableFilters extends BaseFilterProps {
+interface UsersTableFilters extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
 }
 
-export const ClientesProovedoresTableFilters = ({
+export const UsersTableFilters = ({
   table,
   onGlobalFilterChange,
   addButtonIcon: AddButtonIcon,
   showAddButton,
   addButtonText = "Agregar",
   onAdd,
-}: ClientesProovedoresTableFilters) => {
-  const {
-    clearFilters,
-    handleEstadoChange,
-    handleTipoChange,
-    selectedEstado,
-    selectedTipo,
-  } = useClientesProovedoresTableFilters(table);
+}: UsersTableFilters) => {
+  const { clearFilters, handleEstadoChange, selectedEstado } =
+    useUsersTableFilters(table);
 
   return (
     <>
@@ -50,7 +42,7 @@ export const ClientesProovedoresTableFilters = ({
               showAddButton={showAddButton}
               AddButtonIcon={AddButtonIcon}
               addButtonText={addButtonText}
-              buttonTooltipText="Agregar Cliente/Proovedor"
+              buttonTooltipText="Agregar Usuario"
               onClearFilters={() => {
                 clearFilters();
                 onGlobalFilterChange?.("");
@@ -71,7 +63,7 @@ export const ClientesProovedoresTableFilters = ({
                 <Input
                   id="search"
                   className="w-full pl-9 min-w-0"
-                  placeholder="Buscar clientes/proveedores..."
+                  placeholder="Buscar usuarios..."
                   value={
                     (table.getColumn("nombre")?.getFilterValue() ??
                       "") as string
@@ -88,15 +80,9 @@ export const ClientesProovedoresTableFilters = ({
             {/* Filtro de categoría */}
 
             <FilterSelect
-              label="Tipo"
-              onValueChange={handleTipoChange}
-              options={tipoClienteProovedorOptions}
-              value={selectedTipo}
-            />
-            <FilterSelect
               label="Estado"
               onValueChange={handleEstadoChange}
-              options={estadosClienteProovedor}
+              options={estadosUser}
               value={selectedEstado}
             />
 

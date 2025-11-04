@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "bunx tsx src/core/seed/seed.ts"
+  },
+  "prisma": {
+    "seed": "bunx tsx src/core/seed/seed.ts"
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-beta.4",
