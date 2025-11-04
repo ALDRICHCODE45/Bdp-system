@@ -10,5 +10,6 @@ type CreateUserArgs = {
 export interface UserRepository {
   create(data: CreateUserArgs): Promise<UserWithRoles>;
   findByEmail(data: { email: string }): Promise<boolean>;
+  findByEmailWithPassword(data: { email: string }): Promise<UserWithRoles | null>;
   getAllUsers(): Promise<UserWithRoles[]>;
 }

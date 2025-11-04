@@ -2,6 +2,9 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { env } from "@/core/shared/config/env.config";
+import prisma from "@/core/lib/prisma";
+import { PrismaUserRepository } from "@/features/configuracion/usuarios/server/repositories/PrismaUserRepository.repository";
+import { BcryptPasswordHasher } from "@/core/shared/security/hasher";
 
 // Extender los tipos de NextAuth para incluir el rol
 declare module "next-auth" {
@@ -34,29 +37,52 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // TODO: Implementar lógica de validación de credenciales
-        // Aquí debes conectar con tu base de datos o API
-        // Ejemplo básico:
         const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
+          .object({ email: z.string().email(), password: z.string().min(1) })
           .safeParse(credentials);
 
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-
-          // TODO: Reemplazar con tu lógica de autenticación real
-          // Ejemplo: consultar base de datos, validar hash de contraseña, etc.
-          if (email === "admin@bdp.com" && password === "admin123") {
-            return {
-              id: "1",
-              email: "admin@bdp.com",
-              name: "Administrador",
-              role: "admin",
-            };
-          }
+        if (!parsedCredentials.success) {
+          return null;
         }
 
-        return null;
+        const { email, password } = parsedCredentials.data;
+
+        // Lazy initialization: crear instancias solo cuando se necesiten
+        const userRepository = new PrismaUserRepository(prisma);
+        const passwordHasher = new BcryptPasswordHasher();
+
+        // Buscar usuario por email con contraseña y roles
+        const user = await userRepository.findByEmailWithPassword({ email });
+
+        if (!user) {
+          return null;
+        }
+
+        // Verificar que el usuario esté activo
+        if (!user.isActive) {
+          return null;
+        }
+
+        // Verificar contraseña
+        const isPasswordValid = await passwordHasher.verify(
+          password,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          return null;
+        }
+
+        // Obtener los roles del usuario (tomamos el primer rol o todos como string)
+        const roles = user.roles.map((userRole) => userRole.role.name);
+        const primaryRole = roles[0] || "user";
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: primaryRole,
+        };
       },
     }),
   ],
