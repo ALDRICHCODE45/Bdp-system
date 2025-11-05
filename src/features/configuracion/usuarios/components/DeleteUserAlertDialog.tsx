@@ -15,19 +15,17 @@ import { Button } from "@/core/shared/ui/button";
 interface DeleteUserAlertDialogProps {
   isOpen: boolean;
   onOpenChange: () => void;
-  // en la integración real esto se recibiría como prop
-  // por ahora es solo para UI de prueba
   userNameToDelete?: string;
-  onConfirmDelete?: () => void; // opcional para completar el flujo
+  onConfirmDelete?: () => void;
+  isLoading?: boolean;
 }
-
-const USERNAME_TEST = "juan.perez"; // Variable de prueba (el nombre a confirmar)
 
 export const DeleteUserAlertDialog = ({
   isOpen,
   onOpenChange,
-  userNameToDelete = USERNAME_TEST,
+  userNameToDelete,
   onConfirmDelete,
+  isLoading = false,
 }: DeleteUserAlertDialogProps) => {
   const [inputValue, setInputValue] = useState("");
 
@@ -60,14 +58,14 @@ export const DeleteUserAlertDialog = ({
           )}
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
           <Button asChild variant={"destructive"}>
             <AlertDialogAction
-              disabled={!isMatch}
+              disabled={!isMatch || isLoading}
               onClick={onConfirmDelete}
               data-testid="delete-user-confirm-btn"
             >
-              Eliminar
+              {isLoading ? "Eliminando..." : "Eliminar"}
             </AlertDialogAction>
           </Button>
         </AlertDialogFooter>

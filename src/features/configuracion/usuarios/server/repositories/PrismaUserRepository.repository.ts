@@ -160,4 +160,17 @@ export class PrismaUserRepository implements UserRepository {
       },
     })) as UserWithRoles;
   }
+
+  async delete(data: { id: string }): Promise<void> {
+    // Prisma eliminará automáticamente las relaciones en cascada si están configuradas
+    // Si no, necesitamos eliminar primero las relaciones de roles
+    await this.prisma.userRole.deleteMany({
+      where: { userId: data.id },
+    });
+
+    // Luego eliminar el usuario
+    await this.prisma.user.delete({
+      where: { id: data.id },
+    });
+  }
 }

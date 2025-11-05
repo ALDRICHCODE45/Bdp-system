@@ -6,12 +6,24 @@ import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { UserActionsDropdown } from "./UserActionsDropdown";
 import { createUserActions } from "./userActions.config";
-import { DeleteUserAlertDialog } from "../DeleteUserAlertDialog";
+import { showToast } from "@/core/shared/helpers/CustomToast";
+import { useDeleteUser } from "../../hooks/useDeleteUser.hook";
 
 const EditUserSheet = dynamic(
   () =>
     import("../EditUserSheet").then((mod) => ({
       default: mod.EditUserSheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
+
+const DeleteUserAlertDialog = dynamic(
+  () =>
+    import("../DeleteUserAlertDialog").then((mod) => ({
+      default: mod.DeleteUserAlertDialog,
     })),
   {
     ssr: false,
@@ -27,9 +39,28 @@ export function RowCellActions({ row }: { row: Row<UserDto> }) {
     closeModal: closeDeleteModal,
   } = useModalState();
 
+  const deleteUserMutation = useDeleteUser();
+
   const handleDelete = () => {
-    // TODO: Implementar eliminación
-    console.log("Eliminar Usuario");
+    deleteUserMutation.mutate(row.original.id, {
+      onSuccess: () => {
+        closeDeleteModal();
+        showToast({
+          title: "Usuario eliminado",
+          description: "El usuario fue eliminado exitosamente.",
+          type: "success",
+        });
+      },
+      onError: () => {
+        showToast({
+          title: "Error",
+          description:
+            deleteUserMutation.error?.message ||
+            "No se pudo eliminar el usuario. Por favor, intenta nuevamente.",
+          type: "error",
+        });
+      },
+    });
   };
 
   const actions = createUserActions(openModal, openDeleteModal);
@@ -43,6 +74,8 @@ export function RowCellActions({ row }: { row: Row<UserDto> }) {
           isOpen={isDeleteOpen}
           onOpenChange={closeDeleteModal}
           onConfirmDelete={handleDelete}
+          userNameToDelete={row.original.name}
+          isLoading={deleteUserMutation.isPending}
         />
       )}
 

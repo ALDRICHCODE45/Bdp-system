@@ -19,6 +19,7 @@ type UpdateUserArgs = {
 export interface UserRepository {
   create(data: CreateUserArgs): Promise<UserWithRoles>;
   update(data: UpdateUserArgs): Promise<UserWithRoles>;
+  delete(data: { id: string }): Promise<void>;
   findByEmail(data: { email: string }): Promise<boolean>;
   findByEmailWithPassword(data: {
     email: string;
