@@ -2,9 +2,20 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/core/lib/prisma";
 import { PrismaUserRepository } from "../repositories/PrismaUserRepository.repository";
+import { auth } from "@/core/lib/auth/auth";
 
 export const deleteUserAction = async (userId: string) => {
   try {
+    const authenticatedUser = await auth();
+    const authenticatedUserId = authenticatedUser?.user.id;
+
+    if (authenticatedUserId === userId) {
+      return {
+        ok: false,
+        error: "No puedes eliminar a un usuario autenticado",
+      };
+    }
+
     const userRepository = new PrismaUserRepository(prisma);
 
     // Verificar que el usuario existe antes de eliminar
@@ -30,4 +41,3 @@ export const deleteUserAction = async (userId: string) => {
     };
   }
 };
-
