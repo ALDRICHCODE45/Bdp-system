@@ -30,6 +30,7 @@ export const UsuariosTablePage = ({ tableData }: UsuariosTablePageProps) => {
   const handleAdd = () => {
     openModal("add");
   };
+
   const tableConfig = createTableConfig(UsersTableConfig, {
     onAdd: handleAdd,
   });

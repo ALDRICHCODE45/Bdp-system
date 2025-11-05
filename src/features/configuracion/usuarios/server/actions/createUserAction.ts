@@ -12,7 +12,7 @@ export const createUserAction = async (input: FormData) => {
   let roles: string[] = [];
   try {
     roles = JSON.parse(input.get("roles") as string); // deserializamos el string JSON a su valor original
-  } catch (e) {
+  } catch {
     return { ok: false, error: "Error al parsear roles enviados" };
   }
 

@@ -10,6 +10,7 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
+import { QueryProvider } from "@/core/shared/providers/query-provider";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -51,7 +52,9 @@ export default function RootLayout({
             loading: <Loader2Icon className="size-4 animate-spin" />,
           }}
         />
+        <QueryProvider>
         <SessionProvider>{children}</SessionProvider>
+        </QueryProvider>
       </body>
     </html>
   );
