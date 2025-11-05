@@ -20,6 +20,9 @@ export const CreateUserForm = () => {
     <div className="p-4">
       <form
         id="create-user-form"
+        // Deshabilita autocomplete a nivel de formulario, recomendación común para evitar guardar contraseñas en formularios fuera de login
+        autoComplete="off"
+        // Previene sugerencias para guardado de contraseñas
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();
@@ -42,6 +45,7 @@ export const CreateUserForm = () => {
                     onChange={(e) => field.handleChange(e.target.value)}
                     aria-invalid={isInvalid}
                     placeholder="usuario@ejemplo.com"
+                    // Asegura que autocomplete esté apagado en cada input también
                     autoComplete="off"
                   />
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
@@ -89,7 +93,8 @@ export const CreateUserForm = () => {
                     onChange={(e) => field.handleChange(e.target.value)}
                     aria-invalid={isInvalid}
                     placeholder="*******"
-                    autoComplete="off"
+                    // Previene el guardado de la contraseña por el navegador
+                    autoComplete="new-password"
                   />
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
