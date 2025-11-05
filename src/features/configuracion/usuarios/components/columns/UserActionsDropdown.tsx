@@ -29,6 +29,7 @@ export function UserActionsDropdown({ actions }: UserActionsDropdownProps) {
             onClick={action.onClick}
             className={action.variant === "destructive" ? "text-red-600" : ""}
           >
+            {action.icon && <action.icon />}
             {action.label}
           </DropdownMenuItem>
         ))}
@@ -36,4 +37,3 @@ export function UserActionsDropdown({ actions }: UserActionsDropdownProps) {
     </DropdownMenu>
   );
 }
-

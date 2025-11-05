@@ -1,20 +1,29 @@
+import { LucideIcon } from "lucide-react";
+
 export interface UserAction {
   id: string;
   label: string;
   variant?: "default" | "destructive";
+  icon?: LucideIcon;
   onClick: () => void;
 }
 
 export const createUserActions = (
   onEdit: () => void,
-  onViewDetails?: () => void,
-  onDelete?: () => void
+  onDelete: () => void,
+  onViewDetails?: () => void
 ): UserAction[] => {
   const actions: UserAction[] = [
     {
       id: "edit",
       label: "Editar",
       onClick: onEdit,
+    },
+    {
+      id: "delete",
+      label: "Eliminar",
+      variant: "destructive",
+      onClick: onDelete,
     },
   ];
 
@@ -26,15 +35,5 @@ export const createUserActions = (
     });
   }
 
-  if (onDelete) {
-    actions.push({
-      id: "delete",
-      label: "Eliminar",
-      variant: "destructive",
-      onClick: onDelete,
-    });
-  }
-
   return actions;
 };
-
