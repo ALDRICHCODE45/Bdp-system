@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { RolesCell } from "./columns/RolesCell";
 import { RowCellActions } from "./columns/RowCellActions";
+import { Badge } from "@/core/shared/ui/badge";
+import getUserStatusColors from "../helpers/getUserStatusColors.helper";
 
 export const UserTableColumns: ColumnDef<UserDto>[] = [
   {
@@ -63,7 +65,14 @@ export const UserTableColumns: ColumnDef<UserDto>[] = [
     accessorKey: "isActive",
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") as boolean;
-      return <div className="text-sm">{isActive ? "Activo" : "Inactivo"}</div>;
+      return (
+        <Badge
+          variant={"outline"}
+          className={`${getUserStatusColors(isActive)}`}
+        >
+          {isActive ? "Activo" : "Inactivo"}
+        </Badge>
+      );
     },
     size: 10,
     enableHiding: true,
