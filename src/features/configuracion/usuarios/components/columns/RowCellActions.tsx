@@ -3,9 +3,10 @@ import { Row } from "@tanstack/react-table";
 import { UserDto } from "../../server/dtos/UserDto.dto";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
-import { useEditUserModal } from "../../hooks/useEditUserModal.hook";
+import { useModalState } from "@/core/shared/hooks/useModalState";
 import { UserActionsDropdown } from "./UserActionsDropdown";
 import { createUserActions } from "./userActions.config";
+import { DeleteUserAlertDialog } from "../DeleteUserAlertDialog";
 
 const EditUserSheet = dynamic(
   () =>
@@ -19,28 +20,36 @@ const EditUserSheet = dynamic(
 );
 
 export function RowCellActions({ row }: { row: Row<UserDto> }) {
+  const { isOpen, openModal, closeModal } = useModalState();
   const {
-    isEditUserModalOpen,
-    editModalType,
-    handleOpenEditModal,
-    closeEditModal,
-  } = useEditUserModal();
+    isOpen: isDeleteOpen,
+    openModal: openDeleteModal,
+    closeModal: closeDeleteModal,
+  } = useModalState();
 
   const handleDelete = () => {
     // TODO: Implementar eliminación
     console.log("Eliminar Usuario");
   };
 
-  const actions = createUserActions(handleOpenEditModal, handleDelete);
+  const actions = createUserActions(openModal, openDeleteModal);
 
   return (
     <>
       <UserActionsDropdown actions={actions} />
 
-      {isEditUserModalOpen && editModalType === "add" && (
+      {isDeleteOpen && (
+        <DeleteUserAlertDialog
+          isOpen={isDeleteOpen}
+          onOpenChange={closeDeleteModal}
+          onConfirmDelete={handleDelete}
+        />
+      )}
+
+      {isOpen && (
         <EditUserSheet
           isOpen={true}
-          onClose={closeEditModal}
+          onClose={closeModal}
           mode="add"
           userId={row.original.id}
         />

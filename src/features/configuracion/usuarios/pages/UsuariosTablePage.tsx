@@ -25,10 +25,10 @@ interface UsuariosTablePageProps {
 }
 
 export const UsuariosTablePage = ({ tableData }: UsuariosTablePageProps) => {
-  const { isOpen, modalType, openModal, closeModal } = useModalState();
+  const { isOpen, openModal, closeModal } = useModalState();
 
   const handleAdd = () => {
-    openModal("add");
+    openModal();
   };
 
   const tableConfig = createTableConfig(UsersTableConfig, {
@@ -49,7 +49,7 @@ export const UsuariosTablePage = ({ tableData }: UsuariosTablePageProps) => {
         />
 
         {/* Modal con lazy loading */}
-        {isOpen && modalType === "add" && (
+        {isOpen && (
           <CreateUserSheet isOpen={true} onClose={closeModal} mode="add" />
         )}
       </div>

@@ -6,13 +6,13 @@ Este patrón permite manejar la apertura de modales, sheets, drawers, etc. desde
 
 ### 1. `useModalState` Hook
 
-Maneja el estado de los modales de forma centralizada.
+Maneja el estado de los modales, sheets, drawers, etc. de forma centralizada.
 
 ```typescript
-const { isOpen, modalType, openModal, closeModal } = useModalState();
+const { isOpen, openModal, closeModal } = useModalState();
 
 // Abrir modal
-openModal("add");
+openModal();
 
 // Cerrar modal
 closeModal();
@@ -65,10 +65,10 @@ const MyEntityModal = dynamic(
 );
 
 export const MyEntityTablePage = () => {
-  const { isOpen, modalType, openModal, closeModal } = useModalState();
+  const { isOpen, openModal, closeModal } = useModalState();
 
   const handleAdd = () => {
-    openModal("add");
+    openModal();
   };
 
   const tableConfig = createTableConfig(MyEntityTableConfig, {
@@ -81,7 +81,7 @@ export const MyEntityTablePage = () => {
       <DataTable config={tableConfig} />
 
       {/* Modal con lazy loading */}
-      {isOpen && modalType === "add" && (
+      {isOpen && (
         <MyEntityModal isOpen={true} onClose={closeModal} mode="add" />
       )}
     </div>

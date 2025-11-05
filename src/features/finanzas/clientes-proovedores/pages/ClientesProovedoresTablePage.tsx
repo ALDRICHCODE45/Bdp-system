@@ -33,10 +33,10 @@ const ClienteProveedorSheet = dynamic(
 );
 
 export const ClientesProovedoresTablePage = () => {
-  const { isOpen, modalType, openModal, closeModal } = useModalState();
+  const { isOpen, openModal, closeModal } = useModalState();
 
   const handleAdd = () => {
-    openModal("add");
+    openModal();
   };
 
   // Crear configuración con handlers
@@ -57,7 +57,7 @@ export const ClientesProovedoresTablePage = () => {
       />
 
       {/* Modal con lazy loading */}
-      {isOpen && modalType === "add" && (
+      {isOpen && (
         <ClienteProveedorSheet isOpen={true} onClose={closeModal} mode="add" />
       )}
     </div>
