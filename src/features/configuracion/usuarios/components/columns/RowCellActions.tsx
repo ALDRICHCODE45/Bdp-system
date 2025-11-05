@@ -10,8 +10,19 @@ import {
 import { Button } from "@/core/shared/ui/button";
 import { EllipsisIcon } from "lucide-react";
 import { useModalState } from "@/core/shared/hooks/useModalState";
-import { EditUserSheet } from "../EditUserSheet";
+import dynamic from "next/dynamic";
+import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 
+const EditUserSheet = dynamic(
+  () =>
+    import("../EditUserSheet").then((mod) => ({
+      default: mod.EditUserSheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
 export function RowCellActions({ row }: { row: Row<UserDto> }) {
   const {
     isOpen: isEditUserModalOpen,
