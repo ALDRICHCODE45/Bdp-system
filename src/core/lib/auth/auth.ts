@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { env } from "@/core/shared/config/env.config";
 import prisma from "@/core/lib/prisma";
-import { PrismaUserRepository } from "@/features/configuracion/usuarios/server/repositories/PrismaUserRepository.repository";
+import { PrismaUserRepository } from "@/features/sistema/usuarios/server/repositories/PrismaUserRepository.repository";
 import { BcryptPasswordHasher } from "@/core/shared/security/hasher";
 
 // Extender los tipos de NextAuth para incluir el rol

@@ -1,6 +1,6 @@
-import { UsuariosTablePage } from "@/features/configuracion/usuarios/pages/UsuariosTablePage";
-import { makeUserService } from "@/features/configuracion/usuarios/server/services/makeUserService";
-import { UserDto } from "@/features/configuracion/usuarios/server/dtos/UserDto.dto";
+import { UsuariosTablePage } from "@/features/sistema/usuarios/pages/UsuariosTablePage";
+import { makeUserService } from "@/features/sistema/usuarios/server/services/makeUserService";
+import { UserDto } from "@/features/sistema/usuarios/server/dtos/UserDto.dto";
 import prisma from "@/core/lib/prisma";
 
 const fetchUsersInitialData = async (): Promise<UserDto[]> => {
