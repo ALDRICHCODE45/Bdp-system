@@ -59,6 +59,17 @@ export const UserTableColumns: ColumnDef<UserDto>[] = [
     size: 15,
   },
   {
+    header: "Estado",
+    accessorKey: "isActive",
+    cell: ({ row }) => {
+      const isActive = row.getValue("isActive") as boolean;
+      return <div className="text-sm">{isActive ? "Activo" : "Inactivo"}</div>;
+    },
+    size: 10,
+    enableHiding: true,
+    enableColumnFilter: true,
+  },
+  {
     id: "actions",
     header: () => <span className="sr-only">Acciones</span>,
     cell: ({ row }) => <RowCellActions row={row} />,

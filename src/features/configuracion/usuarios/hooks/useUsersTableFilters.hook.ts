@@ -16,11 +16,11 @@ export const useUsersTableFilters = (table: Table<unknown>) => {
 
       switch (newEstado) {
         case "activo":
-          table.getColumn("activo")?.setFilterValue(true);
+          table.getColumn("isActive")?.setFilterValue(true);
           table.setPageIndex(0);
           break;
         case "inactivo":
-          table.getColumn("activo")?.setFilterValue(false);
+          table.getColumn("isActive")?.setFilterValue(false);
           table.setPageIndex(0);
           break;
         default:
@@ -32,7 +32,7 @@ export const useUsersTableFilters = (table: Table<unknown>) => {
 
   const clearFilters = useCallback(() => {
     setSelectedEstado("todos");
-    table.getColumn("activo")?.setFilterValue(undefined);
+    table.getColumn("isActive")?.setFilterValue(undefined);
     table.getColumn("tipo")?.setFilterValue(undefined);
   }, [table]);
 

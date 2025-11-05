@@ -19,6 +19,7 @@ export function toUserDto(user: UserWithRoles): UserDto {
     email: user.email,
     name: user.name,
     roles: user.roles.map((userRole) => userRole.role.name),
+    isActive: user.isActive,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
