@@ -24,7 +24,6 @@ export const createRoleActions = (
           {
             id: "permissions",
             label: "Asignar Permisos",
-            icon: Shield,
             onClick: onAssignPermissions,
           } as RoleAction,
         ]
@@ -39,4 +38,3 @@ export const createRoleActions = (
 
   return actions;
 };
-
