@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { editRoleSchemaUI } from "../schemas/editRoleSchema";
 import { showToast } from "@/core/shared/helpers/CustomToast";
 import { updateRoleAction } from "../server/actions/updateRoleAction";
-import { useRouter } from "next/navigation";
 
 type RoleData = {
   id: string;
@@ -14,7 +13,6 @@ type RoleData = {
 
 export const useEditRoleForm = (roleData: RoleData) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const form = useForm({
     defaultValues: {
@@ -55,11 +53,8 @@ export const useEditRoleForm = (roleData: RoleData) => {
         description: "Operación Exitosa",
         title: "Rol editado correctamente",
       });
-
-      router.refresh();
     },
   });
 
   return form;
 };
-

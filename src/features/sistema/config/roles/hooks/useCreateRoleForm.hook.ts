@@ -4,11 +4,8 @@ import { useForm } from "@tanstack/react-form";
 import { createRoleSchemaUI } from "../schemas/createRoleSchema";
 import { showToast } from "@/core/shared/helpers/CustomToast";
 import { createRoleAction } from "../server/actions/createRoleAction";
-import { useRouter } from "next/navigation";
 
 export const useCreateRoleForm = () => {
-  const router = useRouter();
-
   const form = useForm({
     defaultValues: {
       name: "",
@@ -35,12 +32,6 @@ export const useCreateRoleForm = () => {
         type: "success",
         description: "El rol ahora está disponible en el sistema",
         title: "Rol creado correctamente",
-      });
-
-      router.refresh();
-
-      console.log("Rol creado", {
-        name: value.name,
       });
     },
   });

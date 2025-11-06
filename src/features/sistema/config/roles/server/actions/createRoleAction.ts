@@ -28,4 +28,3 @@ export const createRoleAction = async (input: FormData) => {
   revalidatePath("/config/permisos");
   return { ok: true };
 };
-

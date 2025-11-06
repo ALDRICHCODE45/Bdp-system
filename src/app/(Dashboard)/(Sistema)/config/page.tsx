@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 const ConfigurationPage = () => {
-  redirect("/config/general");
+  redirect("/config/permisos");
 };
 
 export default ConfigurationPage;
