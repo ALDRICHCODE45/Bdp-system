@@ -12,7 +12,8 @@ import { Input } from "@/core/shared/ui/input";
 import MultipleSelector from "@/core/shared/ui/multiselect";
 import type { Option } from "@/core/shared/ui/multiselect";
 import { useEditUserForm } from "../../hooks/useEditUserForm.hook";
-import { rolesOptionsUI } from "../../types/forms/createUserForm/rolesOptions";
+import { useRoles } from "../../hooks/useRoles.hook";
+import { rolesToOptions } from "../../helpers/rolesToOptions.helper";
 import { getUserAction } from "../../server/actions/getUserAction";
 import { Checkbox } from "@/core/shared/ui/checkbox";
 
@@ -31,6 +32,12 @@ export const EditUserForm = ({ userId }: EditUserFormProps) => {
       return result.data;
     },
   });
+
+  const {
+    data: roles,
+    isLoading: isLoadingRoles,
+    error: rolesError,
+  } = useRoles();
 
   // Inicializar el hook con valores por defecto para cumplir las reglas de hooks
   const defaultUserData = {
@@ -152,7 +159,32 @@ export const EditUserForm = ({ userId }: EditUserFormProps) => {
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
-              const selectedOptions: Option[] = rolesOptionsUI.filter((opt) =>
+
+              // Si hay error o está cargando roles, mostrar mensaje
+              if (rolesError) {
+                return (
+                  <Field data-invalid={true}>
+                    <FieldLabel htmlFor={field.name}>Roles</FieldLabel>
+                    <div className="text-sm text-red-500">
+                      Error al cargar roles: {rolesError.message}
+                    </div>
+                  </Field>
+                );
+              }
+
+              if (isLoadingRoles) {
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>Roles</FieldLabel>
+                    <div className="text-sm text-muted-foreground">
+                      Cargando roles...
+                    </div>
+                  </Field>
+                );
+              }
+
+              const rolesOptions = roles ? rolesToOptions(roles) : [];
+              const selectedOptions: Option[] = rolesOptions.filter((opt) =>
                 (field.state.value || []).includes(opt.value)
               );
 
@@ -164,7 +196,7 @@ export const EditUserForm = ({ userId }: EditUserFormProps) => {
                       label: "Selecciona los roles",
                     }}
                     value={selectedOptions}
-                    defaultOptions={rolesOptionsUI}
+                    defaultOptions={rolesOptions}
                     placeholder="Selecciona los roles"
                     onChange={(options) =>
                       field.handleChange(options.map((o) => o.value))

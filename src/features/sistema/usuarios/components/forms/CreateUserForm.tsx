@@ -11,10 +11,12 @@ import { Input } from "@/core/shared/ui/input";
 import MultipleSelector from "@/core/shared/ui/multiselect";
 import type { Option } from "@/core/shared/ui/multiselect";
 import { useCreateUserForm } from "../../hooks/useCreateUserForm.hook";
-import { rolesOptionsUI } from "../../types/forms/createUserForm/rolesOptions";
+import { useRoles } from "../../hooks/useRoles.hook";
+import { rolesToOptions } from "../../helpers/rolesToOptions.helper";
 
 export const CreateUserForm = () => {
   const form = useCreateUserForm();
+  const { data: roles, isLoading: isLoadingRoles, error: rolesError } = useRoles();
 
   return (
     <div className="p-4">
@@ -106,7 +108,32 @@ export const CreateUserForm = () => {
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
-              const selectedOptions: Option[] = rolesOptionsUI.filter((opt) =>
+              
+              // Si hay error o está cargando, mostrar mensaje
+              if (rolesError) {
+                return (
+                  <Field data-invalid={true}>
+                    <FieldLabel htmlFor={field.name}>Roles</FieldLabel>
+                    <div className="text-sm text-red-500">
+                      Error al cargar roles: {rolesError.message}
+                    </div>
+                  </Field>
+                );
+              }
+
+              if (isLoadingRoles) {
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>Roles</FieldLabel>
+                    <div className="text-sm text-muted-foreground">
+                      Cargando roles...
+                    </div>
+                  </Field>
+                );
+              }
+
+              const rolesOptions = roles ? rolesToOptions(roles) : [];
+              const selectedOptions: Option[] = rolesOptions.filter((opt) =>
                 (field.state.value || []).includes(opt.value)
               );
 
@@ -118,7 +145,7 @@ export const CreateUserForm = () => {
                       label: "Selecciona los roles",
                     }}
                     value={selectedOptions}
-                    defaultOptions={rolesOptionsUI}
+                    defaultOptions={rolesOptions}
                     placeholder="Selecciona los roles"
                     onChange={(options) =>
                       field.handleChange(options.map((o) => o.value))
