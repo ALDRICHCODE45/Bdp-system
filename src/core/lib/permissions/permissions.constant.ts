@@ -50,7 +50,8 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     name: "facturas:gestionar",
     resource: "facturas",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de facturas (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de facturas (incluye todas las acciones)",
   },
 
   // Ingresos - Granulares
@@ -89,7 +90,8 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     name: "ingresos:gestionar",
     resource: "ingresos",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de ingresos (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de ingresos (incluye todas las acciones)",
   },
 
   // Egresos - Granulares
@@ -128,7 +130,8 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     name: "egresos:gestionar",
     resource: "egresos",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de egresos (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de egresos (incluye todas las acciones)",
   },
 
   // Clientes/Proveedores - Granulares
@@ -167,7 +170,8 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     name: "clientes-proovedores:gestionar",
     resource: "clientes-proovedores",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de clientes y proveedores (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de clientes y proveedores (incluye todas las acciones)",
   },
 ];
 
@@ -211,7 +215,8 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     name: "colaboradores:gestionar",
     resource: "colaboradores",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de colaboradores (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de colaboradores (incluye todas las acciones)",
   },
 ];
 
@@ -255,7 +260,8 @@ const RECEPCION_PERMISSIONS: PermissionDefinition[] = [
     name: "recepcion:gestionar",
     resource: "recepcion",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de recepción (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de recepción (incluye todas las acciones)",
   },
 ];
 
@@ -305,7 +311,8 @@ const SISTEMA_PERMISSIONS: PermissionDefinition[] = [
     name: "roles:gestionar",
     resource: "roles",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de roles (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de roles (incluye todas las acciones)",
   },
 
   // Usuarios - Granulares
@@ -350,7 +357,8 @@ const SISTEMA_PERMISSIONS: PermissionDefinition[] = [
     name: "usuarios:gestionar",
     resource: "usuarios",
     action: "gestionar",
-    description: "Gestionar completamente el módulo de usuarios (incluye todas las acciones)",
+    description:
+      "Gestionar completamente el módulo de usuarios (incluye todas las acciones)",
   },
 
   // Permisos - Granulares
@@ -404,7 +412,9 @@ export function getAllPermissionNames(): string[] {
 /**
  * Obtener permisos por recurso
  */
-export function getPermissionsByResource(resource: string): PermissionDefinition[] {
+export function getPermissionsByResource(
+  resource: string
+): PermissionDefinition[] {
   return ALL_PERMISSIONS.filter((p) => p.resource === resource);
 }
 
@@ -412,7 +422,9 @@ export function getPermissionsByResource(resource: string): PermissionDefinition
  * Verificar si un permiso es modular (gestionar)
  */
 export function isModularPermission(permissionName: string): boolean {
-  return permissionName.endsWith(":gestionar") || permissionName === "admin:all";
+  return (
+    permissionName.endsWith(":gestionar") || permissionName === "admin:all"
+  );
 }
 
 /**
@@ -424,4 +436,3 @@ export function getResourceActions(resource: string): string[] {
     .filter((p) => p.action !== "gestionar" && p.action !== "acceder")
     .map((p) => p.action);
 }
-

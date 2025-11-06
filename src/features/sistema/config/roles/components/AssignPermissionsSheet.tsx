@@ -14,8 +14,13 @@ import { useAssignPermissions } from "../hooks/useAssignPermissions.hook";
 import { Checkbox } from "@/core/shared/ui/checkbox";
 import { Label } from "@/core/shared/ui/label";
 import { Separator } from "@/core/shared/ui/separator";
-import { Loader2 } from "lucide-react";
-import { PERMISSIONS_BY_MODULE } from "@/core/lib/permissions/permissions.constant";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/core/shared/ui/collapsible";
+import { Loader2, ChevronDown } from "lucide-react";
+import { cn } from "@/core/lib/utils";
 
 interface AssignPermissionsSheetProps {
   isOpen: boolean;
@@ -65,7 +70,7 @@ export const AssignPermissionsSheet = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side={sheetSide} className="overflow-y-auto">
+      <SheetContent side={sheetSide} className="">
         <SheetHeader>
           <SheetTitle>Asignar Permisos</SheetTitle>
           <SheetDescription>
@@ -80,97 +85,147 @@ export const AssignPermissionsSheet = ({
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
-          <div className="space-y-6 py-4">
-            {Object.entries(permissionsByModule).map(([module, modulePermissions]) => {
-              // Agrupar permisos por recurso
-              const permissionsByResource: Record<string, typeof modulePermissions> = {};
-              modulePermissions.forEach((perm) => {
-                if (!permissionsByResource[perm.resource]) {
-                  permissionsByResource[perm.resource] = [];
-                }
-                permissionsByResource[perm.resource].push(perm);
-              });
+          <div className="space-y-6 py-4 p-5 h-[70vw] overflow-y-auto">
+            {Object.entries(permissionsByModule).map(
+              ([module, modulePermissions]) => {
+                // Agrupar permisos por recurso
+                const permissionsByResource: Record<
+                  string,
+                  typeof modulePermissions
+                > = {};
+                modulePermissions.forEach((perm) => {
+                  if (!permissionsByResource[perm.resource]) {
+                    permissionsByResource[perm.resource] = [];
+                  }
+                  permissionsByResource[perm.resource].push(perm);
+                });
 
-              return (
-                <div key={module} className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {MODULE_LABELS[module] || module}
-                    </h3>
-                    <Separator className="mt-2" />
-                  </div>
+                return (
+                  <div key={module} className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {MODULE_LABELS[module] || module}
+                      </h3>
+                      <Separator className="mt-2" />
+                    </div>
 
-                  {Object.entries(permissionsByResource).map(([resource, resourcePermissions]) => {
-                    const modularPermission = resourcePermissions.find(
-                      (p) => p.action === "gestionar"
-                    );
-                    const actionPermissions = resourcePermissions.filter(
-                      (p) => p.action !== "gestionar" && p.action !== "acceder"
-                    );
-                    const accessPermission = resourcePermissions.find(
-                      (p) => p.action === "acceder"
-                    );
+                    {Object.entries(permissionsByResource).map(
+                      ([resource, resourcePermissions]) => {
+                        const modularPermission = resourcePermissions.find(
+                          (p) => p.action === "gestionar"
+                        );
+                        const actionPermissions = resourcePermissions.filter(
+                          (p) =>
+                            p.action !== "gestionar" && p.action !== "acceder"
+                        );
+                        const accessPermission = resourcePermissions.find(
+                          (p) => p.action === "acceder"
+                        );
 
-                    const resourceLabel =
-                      resource.charAt(0).toUpperCase() + resource.slice(1).replace(/-/g, " ");
+                        const resourceLabel =
+                          resource.charAt(0).toUpperCase() +
+                          resource.slice(1).replace(/-/g, " ");
 
-                    return (
-                      <div key={resource} className="space-y-2 pl-4">
-                        <div className="flex items-center space-x-2">
-                          {modularPermission && (
-                            <Checkbox
-                              id={`${resource}-gestionar`}
-                              checked={isModularSelected(resource)}
-                              onCheckedChange={() => toggleModularPermission(resource)}
-                            />
-                          )}
-                          <Label
-                            htmlFor={`${resource}-gestionar`}
-                            className="font-medium cursor-pointer"
+                        const isModular = isModularSelected(resource);
+
+                        return (
+                          <Collapsible
+                            key={resource}
+                            className="group/collapsible"
                           >
-                            {resourceLabel} - Gestionar Todo
-                          </Label>
-                        </div>
-
-                        {!isModularSelected(resource) && (
-                          <div className="pl-6 space-y-2">
-                            {accessPermission && (
-                              <div className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={`${resource}-acceder`}
-                                  checked={isPermissionSelected(accessPermission.id)}
-                                  onCheckedChange={() => togglePermission(accessPermission.id)}
+                            <CollapsibleTrigger asChild className="w-full">
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-between px-3 py-2 h-auto font-normal hover:bg-accent"
+                              >
+                                <span className="font-medium">
+                                  {resourceLabel}
+                                </span>
+                                <ChevronDown
+                                  className={cn(
+                                    "h-4 w-4 transition-transform duration-200",
+                                    "group-data-[state=open]/collapsible:rotate-180"
+                                  )}
                                 />
-                                <Label
-                                  htmlFor={`${resource}-acceder`}
-                                  className="cursor-pointer"
-                                >
-                                  Acceder
-                                </Label>
-                              </div>
-                            )}
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="space-y-2 pl-4 pt-2">
+                              {modularPermission && (
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`${resource}-gestionar`}
+                                    checked={isModular}
+                                    onCheckedChange={() =>
+                                      toggleModularPermission(resource)
+                                    }
+                                  />
+                                  <Label
+                                    htmlFor={`${resource}-gestionar`}
+                                    className="font-medium cursor-pointer"
+                                  >
+                                    Gestionar Todo
+                                  </Label>
+                                </div>
+                              )}
 
-                            {actionPermissions.map((permission) => (
-                              <div key={permission.id} className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={permission.id}
-                                  checked={isPermissionSelected(permission.id)}
-                                  onCheckedChange={() => togglePermission(permission.id)}
-                                />
-                                <Label htmlFor={permission.id} className="cursor-pointer">
-                                  {permission.action.charAt(0).toUpperCase() +
-                                    permission.action.slice(1)}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
+                              {!isModular && (
+                                <div className="space-y-2">
+                                  {accessPermission && (
+                                    <div className="flex items-center space-x-2">
+                                      <Checkbox
+                                        id={`${resource}-acceder`}
+                                        checked={isPermissionSelected(
+                                          accessPermission.id
+                                        )}
+                                        onCheckedChange={() =>
+                                          togglePermission(accessPermission.id)
+                                        }
+                                      />
+                                      <Label
+                                        htmlFor={`${resource}-acceder`}
+                                        className="cursor-pointer"
+                                      >
+                                        Acceder
+                                      </Label>
+                                    </div>
+                                  )}
+
+                                  {actionPermissions.map((permission) => (
+                                    <div
+                                      key={permission.id}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      <Checkbox
+                                        id={permission.id}
+                                        checked={isPermissionSelected(
+                                          permission.id
+                                        )}
+                                        onCheckedChange={() =>
+                                          togglePermission(permission.id)
+                                        }
+                                      />
+                                      <Label
+                                        htmlFor={permission.id}
+                                        className="cursor-pointer"
+                                      >
+                                        {permission.action
+                                          .charAt(0)
+                                          .toUpperCase() +
+                                          permission.action.slice(1)}
+                                      </Label>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </CollapsibleContent>
+                          </Collapsible>
+                        );
+                      }
+                    )}
+                  </div>
+                );
+              }
+            )}
           </div>
         )}
 
@@ -193,4 +248,3 @@ export const AssignPermissionsSheet = ({
     </Sheet>
   );
 };
-

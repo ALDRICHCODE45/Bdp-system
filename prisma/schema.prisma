@@ -25,23 +25,23 @@ model User {
 }
 
 model Role {
-  id          String          @id @default(uuid())
-  name        String          @unique
+  id          String           @id @default(uuid())
+  name        String           @unique
   users       UserRole[]
   permissions RolePermission[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 model Permission {
-  id          String          @id @default(uuid())
-  name        String          @unique
+  id          String           @id @default(uuid())
+  name        String           @unique
   resource    String
   action      String
   description String?
   roles       RolePermission[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@index([resource])
   @@index([name])

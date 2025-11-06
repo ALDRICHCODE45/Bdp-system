@@ -83,7 +83,11 @@ export function RowCellActions({ row }: { row: Row<RoleDto> }) {
     });
   };
 
-  const actions = createRoleActions(openModal, openDeleteModal, openPermissionsModal);
+  const actions = createRoleActions(
+    openModal,
+    openDeleteModal,
+    openPermissionsModal
+  );
 
   return (
     <>
@@ -119,4 +123,3 @@ export function RowCellActions({ row }: { row: Row<RoleDto> }) {
     </>
   );
 }
-
