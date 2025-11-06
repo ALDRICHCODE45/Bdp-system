@@ -15,19 +15,19 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <section className="w-screen h-screen flex items-center justify-center">
+    <section className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-white dark:bg-black z-50">
       <div className="flex flex-col items-center justify-center text-center">
         <h1 className="mb-4 text-7xl tracking-tight font-extrabold lg:text-9xl text-primary-600 dark:text-primary-500">
           500
         </h1>
-        <p className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl">
+        <p className="mb-4 text-3xl tracking-tight font-bold  md:text-4xl">
           Algo salió mal.
         </p>
         <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-gray-400">
           Lo sentimos, ha ocurrido un error interno en el servidor. Por favor,
           intenta nuevamente más tarde o vuelve a la página principal.
         </p>
-        <div className="flex flex-col md:flex-row  gap-3">
+        <div className="flex flex-col md:flex-row gap-3">
           <Button
             asChild
             className="hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-primary-900"
@@ -37,7 +37,7 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
           </Button>
 
           <Button
-            className="hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-primary-900 "
+            className="hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-primary-900"
             onClick={() => {
               reset();
             }}
