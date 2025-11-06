@@ -6,9 +6,9 @@ import { makeRoleService } from "../services/makeRoleService";
 export const getRolesAction = async () => {
   try {
     const roleService = makeRoleService({ prisma });
-    const result = await roleService.getAll();
+    const result = await roleService.getAllWithPermissions();
 
-    // getAll siempre retorna Ok, así que podemos acceder directamente a result.value
+    // getAllWithPermissions siempre retorna Ok, así que podemos acceder directamente a result.value
     return {
       ok: true,
       data: result.value,

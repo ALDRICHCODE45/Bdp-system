@@ -33,6 +33,17 @@ const DeleteRoleAlertDialog = dynamic(
   }
 );
 
+const AssignPermissionsSheet = dynamic(
+  () =>
+    import("../AssignPermissionsSheet").then((mod) => ({
+      default: mod.AssignPermissionsSheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
+
 export function RowCellActions({ row }: { row: Row<RoleDto> }) {
   const router = useRouter();
   const { isOpen, openModal, closeModal } = useModalState();
@@ -40,6 +51,11 @@ export function RowCellActions({ row }: { row: Row<RoleDto> }) {
     isOpen: isDeleteOpen,
     openModal: openDeleteModal,
     closeModal: closeDeleteModal,
+  } = useModalState();
+  const {
+    isOpen: isPermissionsOpen,
+    openModal: openPermissionsModal,
+    closeModal: closePermissionsModal,
   } = useModalState();
 
   const deleteRoleMutation = useDeleteRole();
@@ -67,7 +83,7 @@ export function RowCellActions({ row }: { row: Row<RoleDto> }) {
     });
   };
 
-  const actions = createRoleActions(openModal, openDeleteModal);
+  const actions = createRoleActions(openModal, openDeleteModal, openPermissionsModal);
 
   return (
     <>
@@ -89,6 +105,15 @@ export function RowCellActions({ row }: { row: Row<RoleDto> }) {
           onClose={closeModal}
           mode="edit"
           roleId={row.original.id}
+        />
+      )}
+
+      {isPermissionsOpen && (
+        <AssignPermissionsSheet
+          isOpen={isPermissionsOpen}
+          onClose={closePermissionsModal}
+          roleId={row.original.id}
+          roleName={row.original.name}
         />
       )}
     </>

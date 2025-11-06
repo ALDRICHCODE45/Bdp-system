@@ -1,8 +1,12 @@
 import prisma from "@/core/lib/prisma";
 import bcrypt from "bcrypt";
+import { seedPermissions } from "./seedPermissions";
 
 async function main() {
   console.log("🌱 Iniciando seed de la base de datos...");
+
+  // Seedear permisos primero
+  await seedPermissions();
 
   // Crear el rol "administrador" si no existe
   const adminRole = await prisma.role.upsert({
@@ -14,6 +18,28 @@ async function main() {
   });
 
   console.log("✅ Rol 'administrador' creado/verificado:", adminRole.id);
+
+  // Asignar permiso de administrador al rol administrador
+  const adminPermission = await prisma.permission.findUnique({
+    where: { name: "admin:all" },
+  });
+
+  if (adminPermission) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId: adminRole.id,
+          permissionId: adminPermission.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId: adminRole.id,
+        permissionId: adminPermission.id,
+      },
+    });
+    console.log("✅ Permiso 'admin:all' asignado al rol administrador");
+  }
 
   // Hash de la contraseña (puedes cambiar "password" por la contraseña que desees)
   const passwordHash = await bcrypt.hash("admin123", 10);

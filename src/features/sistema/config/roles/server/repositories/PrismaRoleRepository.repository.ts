@@ -14,11 +14,41 @@ export class PrismaRoleRepository implements RoleRepository {
     });
   }
 
+  async getAllWithPermissions(): Promise<Array<import("@prisma/client").Role & { permissions: Array<{ permission: import("@prisma/client").Permission }> }>> {
+    return await this.prisma.role.findMany({
+      include: {
+        permissions: {
+          include: {
+            permission: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
   async findById(data: {
     id: string;
   }): Promise<import("@prisma/client").Role | null> {
     return await this.prisma.role.findUnique({
       where: { id: data.id },
+    });
+  }
+
+  async findByIdWithPermissions(data: {
+    id: string;
+  }): Promise<(import("@prisma/client").Role & { permissions: Array<{ permission: import("@prisma/client").Permission }> }) | null> {
+    return await this.prisma.role.findUnique({
+      where: { id: data.id },
+      include: {
+        permissions: {
+          include: {
+            permission: true,
+          },
+        },
+      },
     });
   }
 

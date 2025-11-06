@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, Shield } from "lucide-react";
 
 export interface RoleAction {
   id: string;
@@ -10,7 +10,8 @@ export interface RoleAction {
 
 export const createRoleActions = (
   onEdit: () => void,
-  onDelete: () => void
+  onDelete: () => void,
+  onAssignPermissions?: () => void
 ): RoleAction[] => {
   const actions: RoleAction[] = [
     {
@@ -18,6 +19,16 @@ export const createRoleActions = (
       label: "Editar",
       onClick: onEdit,
     },
+    ...(onAssignPermissions
+      ? [
+          {
+            id: "permissions",
+            label: "Asignar Permisos",
+            icon: Shield,
+            onClick: onAssignPermissions,
+          } as RoleAction,
+        ]
+      : []),
     {
       id: "delete",
       label: "Eliminar",

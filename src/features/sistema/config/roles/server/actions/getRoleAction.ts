@@ -7,7 +7,7 @@ import { toRoleDto } from "../mappers/roleMapper";
 export const getRoleAction = async (roleId: string) => {
   try {
     const roleRepository = new PrismaRoleRepository(prisma);
-    const role = await roleRepository.findById({ id: roleId });
+    const role = await roleRepository.findByIdWithPermissions({ id: roleId });
 
     if (!role) {
       return {

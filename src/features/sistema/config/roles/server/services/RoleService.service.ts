@@ -13,6 +13,19 @@ export class RoleService {
     return Ok(toRoleDtoArray(roles));
   }
 
+  async getAllWithPermissions() {
+    const roles = await this.roleRepository.getAllWithPermissions();
+    return Ok(toRoleDtoArray(roles));
+  }
+
+  async getByIdWithPermissions(id: string) {
+    const role = await this.roleRepository.findByIdWithPermissions({ id });
+    if (!role) {
+      return Err(new ConflictError("ROL_NO_ENCONTRADO", "El rol no existe"));
+    }
+    return Ok(toRoleDto(role));
+  }
+
   async create(createRoleDto: CreateRoleDto) {
     const exists = await this.roleRepository.findByName({
       name: createRoleDto.name,
