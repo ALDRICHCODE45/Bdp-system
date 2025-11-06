@@ -83,11 +83,12 @@ export function DataTableFilters<TData>({
               {config.actions?.showAddButton && (
                 <Button
                   variant="default"
-                  className="w-full sm:w-auto min-w-0"
+                  size={"icon"}
                   onClick={config.actions.onAdd}
+                  buttonTooltip
+                  buttonTooltipText={config.actions.addButtonText}
                 >
                   {config.actions.addButtonIcon}
-                  {config.actions.addButtonText}
                 </Button>
               )}
 

@@ -10,6 +10,12 @@ export interface ConfigTab {
 
 export const configTabs: ConfigTab[] = [
   {
+    id: "permisos",
+    label: "Roles y Permisos",
+    href: "/config/permisos",
+    icon: Shield,
+  },
+  {
     id: "general",
     label: "General",
     href: "/config/general",
@@ -22,16 +28,9 @@ export const configTabs: ConfigTab[] = [
     icon: Users,
   },
   {
-    id: "permisos",
-    label: "Roles y Permisos",
-    href: "/config/permisos",
-    icon: Shield,
-  },
-  {
     id: "notificaciones",
     label: "Notificaciones",
     href: "/config/notificaciones",
     icon: Bell,
   },
 ];
-
