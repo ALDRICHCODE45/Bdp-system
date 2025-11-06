@@ -20,5 +20,10 @@ export const createTableConfig = <T>(
           }
         : undefined,
     },
+    actions: {
+      ...baseConfig.actions,
+      // Actualizar onAdd directamente si no hay customFilter o si se necesita sobrescribir
+      onAdd: handlers.onAdd || baseConfig.actions?.onAdd,
+    },
   };
 };

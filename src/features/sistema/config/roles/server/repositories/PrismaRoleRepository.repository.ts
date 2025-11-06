@@ -1,0 +1,62 @@
+import { PrismaClient } from "@prisma/client";
+import { RoleRepository } from "./RoleRepository.repository";
+import { CreateRoleDto } from "../dtos/CreateRoleDto.dto";
+import { UpdateRoleDto } from "../dtos/UpdateRoleDto.dto";
+
+export class PrismaRoleRepository implements RoleRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async getAll(): Promise<import("@prisma/client").Role[]> {
+    return await this.prisma.role.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  async findById(data: {
+    id: string;
+  }): Promise<import("@prisma/client").Role | null> {
+    return await this.prisma.role.findUnique({
+      where: { id: data.id },
+    });
+  }
+
+  async findByName(data: {
+    name: string;
+  }): Promise<import("@prisma/client").Role | null> {
+    return await this.prisma.role.findUnique({
+      where: { name: data.name },
+    });
+  }
+
+  async create(data: CreateRoleDto): Promise<import("@prisma/client").Role> {
+    return await this.prisma.role.create({
+      data: {
+        name: data.name,
+      },
+    });
+  }
+
+  async update(data: UpdateRoleDto): Promise<import("@prisma/client").Role> {
+    return await this.prisma.role.update({
+      where: { id: data.id },
+      data: {
+        name: data.name,
+      },
+    });
+  }
+
+  async delete(data: { id: string }): Promise<void> {
+    await this.prisma.role.delete({
+      where: { id: data.id },
+    });
+  }
+
+  async hasUsers(data: { id: string }): Promise<boolean> {
+    const count = await this.prisma.userRole.count({
+      where: { roleId: data.id },
+    });
+    return count > 0;
+  }
+}

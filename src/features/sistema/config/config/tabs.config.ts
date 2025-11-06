@@ -23,7 +23,7 @@ export const configTabs: ConfigTab[] = [
   },
   {
     id: "permisos",
-    label: "Permisos",
+    label: "Roles y Permisos",
     href: "/config/permisos",
     icon: Shield,
   },
