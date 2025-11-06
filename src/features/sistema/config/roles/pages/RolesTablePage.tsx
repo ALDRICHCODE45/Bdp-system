@@ -18,7 +18,7 @@ const CreateRoleSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 interface RolesTablePageProps {
@@ -40,7 +40,7 @@ export const RolesTablePage = ({ tableData }: RolesTablePageProps) => {
     <>
       <TablePresentation
         subtitle="Administra y gestiona los roles del sistema"
-        title="Gestión de Roles"
+        title="Gestión de Roles y Permisos"
       />
 
       <DataTable
