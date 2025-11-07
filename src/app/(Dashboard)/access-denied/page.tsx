@@ -1,7 +1,14 @@
 "use client";
 
 import { Button } from "@/core/shared/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/core/shared/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/core/shared/ui/card";
 import Link from "next/link";
 import { ShieldX } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -31,8 +38,8 @@ export default function AccessDeniedPage() {
           <Button asChild className="w-full">
             <Link href="/">Volver al Dashboard</Link>
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full"
             onClick={() => router.back()}
           >
@@ -43,4 +50,3 @@ export default function AccessDeniedPage() {
     </div>
   );
 }
-

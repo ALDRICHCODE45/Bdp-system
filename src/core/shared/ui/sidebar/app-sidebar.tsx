@@ -10,9 +10,12 @@ import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { sidebarLinks } from "./data/SidebarLinks";
 import { useAuth } from "@/core/shared/hooks/use-auth";
+import { usePermissions } from "@/core/shared/hooks/use-permissions";
+import { filterSidebarLinks } from "./helpers/filterSidebarByPermissions";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
+  const { permissions } = usePermissions();
 
   // TODO: Manejar el caso cuando user es null/undefined
   const userData = user
@@ -27,13 +30,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         avatar: "/placeholder-avatar.jpg",
       };
 
+  // Filtrar los links del sidebar basándose en los permisos del usuario
+  const filteredLinks = React.useMemo(() => {
+    return filterSidebarLinks(sidebarLinks.navMain, permissions);
+  }, [permissions]);
+
   return (
     <Sidebar collapsible="icon" {...props} variant="floating">
       <SidebarHeader>
         <NavUser user={userData} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarLinks.navMain} />
+        <NavMain items={filteredLinks} />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

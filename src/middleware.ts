@@ -37,7 +37,7 @@ export default auth((req) => {
   if (isLoggedIn) {
     const accessCheck = RoutePermissionGuard.canAccessRoute(
       req.auth,
-      nextUrl.pathname
+      nextUrl.pathname,
     );
 
     if (!accessCheck.hasAccess) {

@@ -38,7 +38,7 @@ export class RoutePermissionGuard {
    */
   static canAccessRoute(
     auth: AuthRequest,
-    pathname: string
+    pathname: string,
   ): AccessCheckResult {
     // Si no hay autenticación, no tiene acceso
     if (!auth) {
@@ -85,14 +85,14 @@ export class RoutePermissionGuard {
     // Verificar si el usuario tiene el permiso requerido
     const hasPermission = MiddlewarePermissionsService.hasRequiredPermission(
       userPermissions,
-      requiredPermission
+      requiredPermission,
     );
 
     // Logging en desarrollo
     MiddlewarePermissionsService.logPermissionCheck(
       auth,
       pathname,
-      hasPermission
+      hasPermission,
     );
 
     return {
