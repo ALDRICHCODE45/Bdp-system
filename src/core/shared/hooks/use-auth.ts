@@ -38,10 +38,16 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    await signOut({ redirect: false });
+    // Resetear tema antes del redirect (para que se aplique)
     setTheme("light");
 
-    router.push("/sign-in");
+    // Forzar hard refresh para limpiar JWT y caché completamente
+    // callbackUrl: redirige después del logout
+    // redirect: true hace un hard refresh limpiando todas las cookies
+    await signOut({
+      redirect: true,
+      callbackUrl: "/sign-in",
+    });
   };
 
   const isAuthenticated = status === "authenticated";

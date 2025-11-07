@@ -41,7 +41,6 @@ export const updateRoleAction = async (input: FormData) => {
     }
 
     revalidatePath("/config/permisos");
-    revalidatePath("/usuarios");
     return { ok: true };
   } catch (error) {
     return {
@@ -50,4 +49,3 @@ export const updateRoleAction = async (input: FormData) => {
     };
   }
 };
-

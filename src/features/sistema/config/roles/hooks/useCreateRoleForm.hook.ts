@@ -1,11 +1,14 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { createRoleSchemaUI } from "../schemas/createRoleSchema";
 import { showToast } from "@/core/shared/helpers/CustomToast";
 import { createRoleAction } from "../server/actions/createRoleAction";
 
 export const useCreateRoleForm = () => {
+  const queryClient = useQueryClient();
+
   const form = useForm({
     defaultValues: {
       name: "",
@@ -27,6 +30,16 @@ export const useCreateRoleForm = () => {
         });
         throw new Error(result.error || "Error al crear rol");
       }
+
+      // Invalidar y refetchear queries de lista de roles para asegurar datos actualizados
+      await queryClient.invalidateQueries({
+        queryKey: ["roles"],
+      });
+
+      // Forzar refetch inmediato de la query de roles para actualizar componentes activos
+      await queryClient.refetchQueries({
+        queryKey: ["roles"],
+      });
 
       showToast({
         type: "success",
