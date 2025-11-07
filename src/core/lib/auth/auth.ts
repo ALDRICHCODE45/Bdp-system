@@ -78,7 +78,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Obtener los roles del usuario
         const roles = user.roles.map((userRole) => userRole.role.name);
-        console.log("Roles del usuario en authorize", { roles });
+        // console.log("Roles del usuario en authorize", { roles });
         const primaryRole = roles[0] || "user";
 
         // Obtener todos los permisos de todos los roles del usuario
@@ -91,7 +91,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             where: { roleId },
             include: { permission: true },
           });
-          console.log("Role permissions en authorize aun", { rolePermissions });
+          // console.log("Role permissions en authorize aun", { rolePermissions });
 
           rolePermissions.forEach((rp) => {
             if (!allPermissions.includes(rp.permission.name)) {
