@@ -1,6 +1,8 @@
 import { auth } from "@/core/lib/auth/auth";
 import { NextResponse } from "next/server";
 import { RoutePermissionGuard } from "@/core/lib/permissions/route-permission-guard";
+import { MiddlewarePermissionsService } from "@/core/lib/permissions/middleware-permissions.service";
+import { getDefaultRoute } from "@/core/lib/permissions/get-default-route";
 
 export default auth((req) => {
   const { nextUrl } = req;
@@ -19,17 +21,31 @@ export default auth((req) => {
   const isPublicRoute =
     nextUrl.pathname.startsWith("/sign-in") ||
     nextUrl.pathname.startsWith("/api/auth") ||
-    nextUrl.pathname === "/" ||
     nextUrl.pathname === "/access-denied";
 
+  // Si el usuario está logueado y accede a la ruta raíz, redirigir basado en permisos
+  if (isLoggedIn && nextUrl.pathname === "/") {
+    const userPermissions = MiddlewarePermissionsService.extractPermissions(req.auth);
+    const defaultRoute = getDefaultRoute(userPermissions);
+    return NextResponse.redirect(new URL(defaultRoute, nextUrl));
+  }
+
   // Si el usuario no está logueado y trata de acceder a una ruta protegida
-  if (!isLoggedIn && !isPublicRoute) {
+  if (!isLoggedIn && !isPublicRoute && nextUrl.pathname !== "/") {
+    return NextResponse.redirect(new URL("/sign-in", nextUrl));
+  }
+
+  // Si el usuario no está logueado y accede a la ruta raíz, redirigir a login
+  if (!isLoggedIn && nextUrl.pathname === "/") {
     return NextResponse.redirect(new URL("/sign-in", nextUrl));
   }
 
   // Si el usuario está logueado y trata de acceder a la página de login
   if (isLoggedIn && nextUrl.pathname.startsWith("/sign-in")) {
-    return NextResponse.redirect(new URL("/facturas", nextUrl));
+    // Obtener permisos del usuario y redirigir a la ruta por defecto basada en permisos
+    const userPermissions = MiddlewarePermissionsService.extractPermissions(req.auth);
+    const defaultRoute = getDefaultRoute(userPermissions);
+    return NextResponse.redirect(new URL(defaultRoute, nextUrl));
   }
 
   // Verificar permisos usando el guard centralizado
