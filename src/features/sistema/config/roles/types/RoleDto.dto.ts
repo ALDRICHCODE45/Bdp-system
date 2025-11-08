@@ -7,4 +7,3 @@ export type RoleDto = {
   createdAt: Date;
   updatedAt: Date;
 };
-

@@ -6,13 +6,13 @@ export default function NotFound() {
     <section className="w-screen h-screen flex items-center justify-center">
       <div className="flex flex-col items-center justify-center text-center">
         <h1 className="mb-4 text-7xl tracking-tight font-extrabold lg:text-9xl text-primary-600 dark:text-primary-500">
-          404
+          401
         </h1>
         <p className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl">
-          Algo salió mal.
+          No tienes los privilegios para acceder a esta ruta
         </p>
         <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-gray-400">
-          Lo sentimos, no pudimos encontrar esa página. Hay mucho por explorar
+          Lo sentimos, no puedes acceder a esta página. Hay mucho por explorar
           en la página principal.
         </p>
         <Button

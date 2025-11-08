@@ -53,7 +53,7 @@ export default function RootLayout({
           }}
         />
         <QueryProvider>
-        <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>{children}</SessionProvider>
         </QueryProvider>
       </body>
     </html>
