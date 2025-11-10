@@ -69,7 +69,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Verificar contraseña
         const isPasswordValid = await passwordHasher.verify(
           password,
-          user.password
+          user.password,
         );
 
         if (!isPasswordValid) {
@@ -158,7 +158,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // });
         }
         // TODO: [DEBUG] REMOVER EN PRODUCCIÓN
-        console.log("No existen los roles ni permisos en session");
+        //console.log("No existen los roles ni permisos en session");
 
         // TODO: [DEBUG] Log para verificar sesión creada - REMOVER EN PRODUCCIÓN
         // console.log("[Session Callback] Sesión creada:", {

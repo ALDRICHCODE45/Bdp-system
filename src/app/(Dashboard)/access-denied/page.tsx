@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/core/shared/ui/button";
 import {
   Card,
@@ -9,8 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/core/shared/ui/card";
-import Link from "next/link";
-import { ShieldX } from "lucide-react";
+import { ArrowLeft, ShieldX } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function AccessDeniedPage() {
@@ -35,14 +33,12 @@ export default function AccessDeniedPage() {
           </p>
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
-          <Button asChild className="w-full">
-            <Link href="/">Volver al Dashboard</Link>
-          </Button>
           <Button
             variant="outline"
             className="w-full"
             onClick={() => router.back()}
           >
+            <ArrowLeft />
             Volver Atrás
           </Button>
         </CardFooter>
