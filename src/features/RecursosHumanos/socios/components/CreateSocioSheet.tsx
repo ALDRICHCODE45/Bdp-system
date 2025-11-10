@@ -16,10 +16,7 @@ interface CreateSocioSheetProps {
   onClose: () => void;
 }
 
-export function CreateSocioSheet({
-  isOpen,
-  onClose,
-}: CreateSocioSheetProps) {
+export function CreateSocioSheet({ isOpen, onClose }: CreateSocioSheetProps) {
   const isMobile = useIsMobile();
   const sheetSide = isMobile ? "bottom" : "right";
 
@@ -28,9 +25,13 @@ export function CreateSocioSheet({
       <SheetContent side={sheetSide}>
         <SheetHeader>
           <SheetTitle>Agregar Socio</SheetTitle>
-          <SheetDescription>Ingresa la información del socio responsable:</SheetDescription>
+          <SheetDescription>
+            Ingresa la información del socio responsable:
+          </SheetDescription>
         </SheetHeader>
-        <CreateSocioForm onSuccess={onClose} />
+        <div className="h-[80vh] overflow-y-auto">
+          <CreateSocioForm onSuccess={onClose} />
+        </div>
         <SheetFooter>
           <SheetClose asChild>
             <Button variant="outline">Cerrar</Button>
@@ -40,4 +41,3 @@ export function CreateSocioSheet({
     </Sheet>
   );
 }
-

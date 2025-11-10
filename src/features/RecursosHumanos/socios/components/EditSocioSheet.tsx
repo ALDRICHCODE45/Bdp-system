@@ -31,9 +31,13 @@ export function EditSocioSheet({
       <SheetContent side={sheetSide}>
         <SheetHeader>
           <SheetTitle>Editar Socio</SheetTitle>
-          <SheetDescription>Modifica la información del socio:</SheetDescription>
+          <SheetDescription>
+            Modifica la información del socio:
+          </SheetDescription>
         </SheetHeader>
-        <EditSocioForm socio={socio} onSuccess={onClose} />
+        <div className="h-[80vh] overflow-y-auto">
+          <EditSocioForm socio={socio} onSuccess={onClose} />
+        </div>
         <SheetFooter>
           <SheetClose asChild>
             <Button variant="outline">Cerrar</Button>
@@ -43,4 +47,3 @@ export function EditSocioSheet({
     </Sheet>
   );
 }
-
