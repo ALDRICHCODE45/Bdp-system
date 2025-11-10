@@ -210,6 +210,12 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     action: "eliminar",
     description: "Eliminar colaboradores",
   },
+  {
+    name: "colaboradores:ver-historial",
+    resource: "colaboradores",
+    action: "ver-historial",
+    description: "Ver historial de cambios de colaboradores",
+  },
   // Colaboradores - Modular
   {
     name: "colaboradores:gestionar",
@@ -217,6 +223,46 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     action: "gestionar",
     description:
       "Gestionar completamente el módulo de colaboradores (incluye todas las acciones)",
+  },
+
+  // Socios - Granulares
+  {
+    name: "socios:acceder",
+    resource: "socios",
+    action: "acceder",
+    description: "Acceder al módulo de socios",
+  },
+  {
+    name: "socios:ver",
+    resource: "socios",
+    action: "ver",
+    description: "Ver listado de socios",
+  },
+  {
+    name: "socios:crear",
+    resource: "socios",
+    action: "crear",
+    description: "Crear nuevos socios",
+  },
+  {
+    name: "socios:editar",
+    resource: "socios",
+    action: "editar",
+    description: "Editar socios existentes",
+  },
+  {
+    name: "socios:eliminar",
+    resource: "socios",
+    action: "eliminar",
+    description: "Eliminar socios",
+  },
+  // Socios - Modular
+  {
+    name: "socios:gestionar",
+    resource: "socios",
+    action: "gestionar",
+    description:
+      "Gestionar completamente el módulo de socios (incluye todas las acciones)",
   },
 ];
 

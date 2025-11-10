@@ -1,11 +1,11 @@
 /**
  * Mapeo de rutas a permisos requeridos
- * 
+ *
  * Este archivo centraliza la configuración de qué permisos se requieren
  * para acceder a cada ruta del sistema.
- * 
+ *
  * Formato: ruta -> permiso requerido
- * 
+ *
  * Notas:
  * - Las rutas deben comenzar con "/"
  * - Los permisos deben seguir el formato "recurso:acción"
@@ -21,6 +21,7 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
 
   // Módulo de Recursos Humanos
   "/colaboradores": "colaboradores:acceder",
+  "/socios": "socios:acceder",
 
   // Módulo de Recepción
   "/entradas-salidas": "recepcion:acceder",
@@ -36,7 +37,7 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
 
 /**
  * Obtiene el permiso requerido para una ruta específica
- * 
+ *
  * @param pathname - La ruta a verificar (ej: "/facturas")
  * @returns El permiso requerido o null si la ruta no requiere permisos específicos
  */
@@ -62,11 +63,10 @@ export function getRequiredPermission(pathname: string): string | null {
 
 /**
  * Verifica si una ruta requiere protección por permisos
- * 
+ *
  * @param pathname - La ruta a verificar
  * @returns true si la ruta requiere verificación de permisos
  */
 export function requiresPermission(pathname: string): boolean {
   return getRequiredPermission(pathname) !== null;
 }
-

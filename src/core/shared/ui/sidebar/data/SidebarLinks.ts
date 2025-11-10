@@ -65,6 +65,10 @@ export const sidebarLinks = {
           title: "Colaboradores",
           url: "/colaboradores",
         },
+        {
+          title: "Socios",
+          url: "/socios",
+        },
       ],
     },
     {

@@ -13,6 +13,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ColaboradorEstado {
+  CONTRATADO
+  DESPEDIDO
+}
+
+model Socio {
+  id              String        @id @default(uuid())
+  nombre          String
+  email           String        @unique
+  telefono        String?
+  activo          Boolean       @default(true)
+  fechaIngreso    DateTime      @default(now())
+  departamento    String?
+  numeroEmpleados Int           @default(0)
+  notas           String?
+  colaboradores   Colaborador[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([email])
+  @@index([activo])
+}
+
+model Colaborador {
+  id        String                 @id @default(uuid())
+  name      String
+  correo    String
+  puesto    String
+  status    ColaboradorEstado      @default(CONTRATADO)
+  imss      Boolean                @default(true)
+  socioId   String?
+  socio     Socio?                 @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  banco     String
+  clabe     String
+  sueldo    Decimal                @db.Decimal(15, 3)
+  activos   String[]
+  historial ColaboradorHistorial[]
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@index([socioId])
+  @@index([status])
+}
+
+model ColaboradorHistorial {
+  id            String      @id @default(uuid())
+  colaboradorId String
+  colaborador   Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  campo         String
+  valorAnterior String?
+  valorNuevo    String
+  usuarioId     String?
+  motivo        String?
+  fechaCambio   DateTime    @default(now())
+
+  @@index([colaboradorId])
+  @@index([fechaCambio])
+}
+
 model User {
   id        String     @id @default(uuid())
   email     String     @unique

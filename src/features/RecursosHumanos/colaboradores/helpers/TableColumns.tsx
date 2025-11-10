@@ -1,85 +1,86 @@
 "use client";
-import { EllipsisIcon } from "lucide-react";
-import { Button } from "@/core/shared/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/core/shared/ui/dropdown-menu";
 import { Badge } from "@/core/shared/ui/badge";
 import { cn } from "@/core/lib/utils";
+import { ColumnDef } from "@tanstack/react-table";
+import { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
+import { RhRowActions } from "../components/forms/RhFormRowActions";
+import { ActivosRowPopOver } from "../components/ActivosRowPopOver";
 
-import { ColumnDef, Row } from "@tanstack/react-table";
-import { User } from "../types/ColaboradoresTableTypes.type";
-
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<ColaboradorDto>[] = [
   {
     header: "Nombre",
-    accessorKey: "nombre",
+    accessorKey: "name",
     cell: ({ row }) => (
-      <div className="font-medium  truncate">{row.getValue("nombre")}</div>
+      <div className="font-medium truncate">{row.getValue("name")}</div>
     ),
     size: 20,
   },
   {
-    header: "Email",
-    accessorKey: "email",
+    header: "Correo",
+    accessorKey: "correo",
     cell: ({ row }) => (
-      <div className="text-sm  truncate">{row.getValue("email")}</div>
+      <div className="text-sm truncate">{row.getValue("correo")}</div>
     ),
     size: 25,
   },
   {
-    header: "Posición",
-    accessorKey: "posicion",
+    header: "Puesto",
+    accessorKey: "puesto",
     cell: ({ row }) => (
-      <div className="text-sm truncate">{row.getValue("posicion")}</div>
+      <div className="text-sm truncate">{row.getValue("puesto")}</div>
     ),
     size: 15,
   },
   {
     header: "Estado",
-    accessorKey: "activo",
-    cell: ({ row }) => (
-      <Badge
-        variant={row.getValue("activo") ? "default" : "secondary"}
-        className={cn(
-          "text-xs",
-          row.getValue("activo")
-            ? "bg-green-100 text-green-800"
-            : "bg-gray-100 text-gray-800"
-        )}
-      >
-        {row.getValue("activo") ? "Activo" : "Inactivo"}
-      </Badge>
-    ),
+    accessorKey: "status",
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return (
+        <Badge
+          variant={status === "CONTRATADO" ? "default" : "secondary"}
+          className={cn(
+            "text-xs",
+            status === "CONTRATADO"
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
+          )}
+        >
+          {status === "CONTRATADO" ? "Contratado" : "Despedido"}
+        </Badge>
+      );
+    },
     size: 8,
   },
   {
     header: "IMSS",
-    accessorKey: "activo_Imss",
+    accessorKey: "imss",
     cell: ({ row }) => (
       <Badge
-        variant={row.getValue("activo_Imss") ? "default" : "secondary"}
+        variant={row.getValue("imss") ? "default" : "secondary"}
         className={cn(
           "text-xs",
-          row.getValue("activo_Imss")
+          row.getValue("imss")
             ? "bg-blue-100 text-blue-800"
             : "bg-gray-100 text-gray-800"
         )}
       >
-        {row.getValue("activo_Imss") ? "Sí" : "No"}
+        {row.getValue("imss") ? "Sí" : "No"}
       </Badge>
     ),
     size: 6,
   },
   {
-    header: "Jefe Inmediato",
-    accessorKey: "jefe_inmediato",
-    cell: ({ row }) => (
-      <div className="text-sm truncate">{row.getValue("jefe_inmediato")}</div>
-    ),
+    header: "Socio Responsable",
+    accessorKey: "socio",
+    cell: ({ row }) => {
+      const socio = row.getValue("socio") as { nombre: string } | null;
+      return (
+        <div className="text-sm truncate">
+          {socio ? socio.nombre : "Sin asignar"}
+        </div>
+      );
+    },
     size: 12,
   },
   {
@@ -92,11 +93,9 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     header: "CLABE",
-    accessorKey: "clave_Interbancaria",
+    accessorKey: "clabe",
     cell: ({ row }) => (
-      <div className="text-sm font-mono  truncate">
-        {row.getValue("clave_Interbancaria")}
-      </div>
+      <div className="text-sm font-mono truncate">{row.getValue("clabe")}</div>
     ),
     size: 10,
   },
@@ -110,32 +109,24 @@ export const columns: ColumnDef<User>[] = [
         currency: "MXN",
       }).format(amount);
 
-      return <div className="font-medium  truncate">{formatted}</div>;
+      return <div className="font-medium truncate">{formatted}</div>;
+    },
+    size: 10,
+  },
+
+  {
+    header: "Activos",
+    accessorKey: "activos",
+    cell: ({ row }) => {
+      return <ActivosRowPopOver row={row} />;
     },
     size: 10,
   },
   {
     id: "actions",
     header: () => <span className="sr-only">Acciones</span>,
-    cell: ({ row }) => <RowActions row={row} />,
+    cell: ({ row }) => <RhRowActions row={row} />,
     size: 5,
     enableHiding: false,
   },
 ];
-
-function RowActions({}: { row: Row<User> }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-          <EllipsisIcon className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>Editar</DropdownMenuItem>
-        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-        <DropdownMenuItem className="text-red-600">Eliminar</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}

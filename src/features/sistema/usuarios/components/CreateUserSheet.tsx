@@ -17,11 +17,7 @@ interface CreateUserSheetProps {
   mode: "add";
 }
 
-export function CreateUserSheet({
-  isOpen,
-  mode,
-  onClose,
-}: CreateUserSheetProps) {
+export function CreateUserSheet({ isOpen, onClose }: CreateUserSheetProps) {
   const isMobile = useIsMobile();
 
   const sheetSide = isMobile ? "bottom" : "right";

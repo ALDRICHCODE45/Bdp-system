@@ -10,6 +10,7 @@ const ROUTE_PRIORITY = [
   "/ingresos",
   "/egresos",
   "/colaboradores",
+  "/socios",
   "/entradas-salidas",
   "/usuarios",
   "/config",
@@ -28,20 +29,20 @@ const FALLBACK_ROUTE = "/access-denied";
 
 /**
  * Obtiene la ruta por defecto basada en los permisos del usuario
- * 
+ *
  * @param userPermissions - Array de permisos del usuario
  * @returns La ruta por defecto a la que debe ser redirigido el usuario
- * 
+ *
  * @example
  * // Usuario admin
  * getDefaultRoute(["admin:all"]) // "/facturas"
- * 
+ *
  * // Usuario con permiso de facturas
  * getDefaultRoute(["facturas:acceder"]) // "/facturas"
- * 
+ *
  * // Usuario con permiso de RH
  * getDefaultRoute(["colaboradores:acceder"]) // "/colaboradores"
- * 
+ *
  * // Usuario sin permisos
  * getDefaultRoute([]) // "/access-denied"
  */
@@ -83,4 +84,3 @@ export function getDefaultRoute(userPermissions: string[]): string {
   // Si no tiene acceso a ninguna ruta, redirigir a acceso denegado
   return FALLBACK_ROUTE;
 }
-
