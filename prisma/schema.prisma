@@ -72,6 +72,21 @@ model ColaboradorHistorial {
   @@index([fechaCambio])
 }
 
+model EntradasSalidas {
+  id              String   @id @default(uuid())
+  visitante       String
+  destinatario    String
+  motivo          String
+  telefono        String?
+  correspondencia String?
+  fecha           DateTime
+  hora_entrada    DateTime
+  hora_salida     DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model User {
   id        String     @id @default(uuid())
   email     String     @unique
