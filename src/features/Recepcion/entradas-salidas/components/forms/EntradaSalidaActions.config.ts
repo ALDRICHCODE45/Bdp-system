@@ -1,4 +1,4 @@
-import { LucideIcon, LogOut } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 export interface EntradaSalidaAction {
   id: string;
@@ -21,7 +21,6 @@ export const CreateEntradaSalidaActions = (
     actions.push({
       id: "registrar-salida",
       label: "Registrar Salida",
-      icon: LogOut,
       onClick: onRegistrarSalida,
     });
   }
@@ -42,4 +41,3 @@ export const CreateEntradaSalidaActions = (
 
   return actions;
 };
-

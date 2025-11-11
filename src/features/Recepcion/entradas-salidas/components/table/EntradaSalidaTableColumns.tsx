@@ -80,7 +80,7 @@ export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
           </div>
         );
       }
-      
+
       const horaFormateada = format(new Date(horaSalida), "HH:mm", {
         locale: es,
       });
