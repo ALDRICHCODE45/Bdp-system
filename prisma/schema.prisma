@@ -73,7 +73,7 @@ model ColaboradorHistorial {
 }
 
 model EntradasSalidas {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   visitante       String
   destinatario    String
   motivo          String
@@ -81,7 +81,7 @@ model EntradasSalidas {
   correspondencia String?
   fecha           DateTime
   hora_entrada    DateTime
-  hora_salida     DateTime
+  hora_salida     DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

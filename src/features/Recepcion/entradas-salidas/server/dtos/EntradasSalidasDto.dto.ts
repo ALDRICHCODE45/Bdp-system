@@ -7,7 +7,7 @@ export type EntradasSalidasDTO = {
   correspondencia?: string | null;
   fecha: Date;
   hora_entrada: Date;
-  hora_salida: Date;
+  hora_salida?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };

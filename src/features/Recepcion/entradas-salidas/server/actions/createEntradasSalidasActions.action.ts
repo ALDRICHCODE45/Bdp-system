@@ -25,7 +25,7 @@ export const createEntradasSalidasAction = async (formData: FormData) => {
       correspondencia: correspondencia === "" ? null : correspondencia,
       fecha,
       hora_entrada,
-      hora_salida,
+      hora_salida: hora_salida === "" || hora_salida === null ? null : hora_salida,
     });
 
     const entradasSalidasService = makeEntradasSalidasService({ prisma });

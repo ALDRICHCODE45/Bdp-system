@@ -12,9 +12,12 @@ export const createEntradasSalidasSchema = z.object({
   hora_entrada: z.coerce.date({
     message: "La hora de entrada debe ser una fecha válida",
   }),
-  hora_salida: z.coerce.date({
-    message: "La hora de salida debe ser una fecha válida",
-  }),
+  hora_salida: z.coerce
+    .date({
+      message: "La hora de salida debe ser una fecha válida",
+    })
+    .nullable()
+    .optional(),
 });
 
 export type CreateEntradasSalidasSchema = z.infer<

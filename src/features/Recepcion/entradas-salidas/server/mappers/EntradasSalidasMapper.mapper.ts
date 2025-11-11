@@ -18,7 +18,7 @@ export const toEntradaSalidaDTO = (
     telefono: EntradaSalidaPrisma.telefono || undefined,
     fecha: EntradaSalidaPrisma.fecha,
     hora_entrada: EntradaSalidaPrisma.hora_entrada,
-    hora_salida: EntradaSalidaPrisma.hora_salida,
+    hora_salida: EntradaSalidaPrisma.hora_salida ?? undefined,
     updatedAt: EntradaSalidaPrisma.updatedAt,
     createdAt: EntradaSalidaPrisma.createdAt,
   };

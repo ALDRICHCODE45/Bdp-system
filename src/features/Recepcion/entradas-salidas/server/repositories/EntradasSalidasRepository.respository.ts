@@ -11,4 +11,5 @@ export interface EntradasSalidasRepository {
     correo: string;
   }): Promise<EntradasSalidasDTO | null>;
   getAll(): Promise<EntradasSalidasDTO[]>;
+  registrarSalida(data: { id: string; hora_salida: Date }): Promise<EntradasSalidasDTO>;
 }
