@@ -1,44 +1,31 @@
 "use client";
 import * as React from "react";
-import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { Button } from "@/core/shared/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/core/shared/ui/dropdown-menu";
+import { ThemeSwitcher } from "@/core/shared/ui/theme-switcher";
+
+type ThemeValue = "light" | "dark" | "system";
 
 export function ThemeToogle() {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+
+  const isValidTheme = (value: string | undefined): value is ThemeValue => {
+    return value === "light" || value === "dark" || value === "system";
+  };
+
+  const safeTheme: ThemeValue | undefined = isValidTheme(theme)
+    ? theme
+    : undefined;
+
+  const handleThemeChange = (newTheme: ThemeValue) => {
+    setTheme(newTheme);
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          buttonTooltip
-          buttonTooltipText="cambiar tema"
-          variant="outline"
-          size="icon"
-        >
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Claro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Oscuro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          Sistema
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <ThemeSwitcher
+      defaultValue="system"
+      onChange={handleThemeChange}
+      value={safeTheme}
+    />
   );
 }
