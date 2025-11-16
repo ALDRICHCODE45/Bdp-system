@@ -1,5 +1,5 @@
 import { TableConfig } from "@/core/shared/components/DataTable/types";
-import { CircleUser, PlusCircle } from "lucide-react";
+import { PlusCircle, UserPlus } from "lucide-react";
 import { UserDto } from "../server/dtos/UserDto.dto";
 import { UsersTableFilters } from "./UsersTableFilters";
 
@@ -8,7 +8,7 @@ export const UsersTableConfig: TableConfig<UserDto> = {
     customFilter: {
       component: UsersTableFilters,
       props: {
-        addButtonIcon: CircleUser,
+        addButtonIcon: UserPlus,
         addButtonText: "Agregar Usuario",
         showAddButton: true,
       },

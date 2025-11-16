@@ -1,5 +1,5 @@
 import { TableConfig } from "@/core/shared/components/DataTable/types";
-import { CircleUser, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { EntradasSalidasDTO } from "../server/dtos/EntradasSalidasDto.dto";
 import { EntradasSalidasTableFilters } from "./EntradasSalidasTableFilters";
 
@@ -8,7 +8,7 @@ export const EntradasSalidasTableConfig: TableConfig<EntradasSalidasDTO> = {
     customFilter: {
       component: EntradasSalidasTableFilters,
       props: {
-        addButtonIcon: CircleUser,
+        addButtonIcon: PlusCircle,
         addButtonText: "Agregar Entrada/Salida",
         showAddButton: true,
       },

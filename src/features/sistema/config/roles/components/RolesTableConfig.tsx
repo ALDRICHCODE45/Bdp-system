@@ -1,5 +1,5 @@
 import { TableConfig } from "@/core/shared/components/DataTable/types";
-import { PlusCircle } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { RoleDto } from "../types/RoleDto.dto";
 
 export const RolesTableConfig: TableConfig<RoleDto> = {
@@ -11,7 +11,7 @@ export const RolesTableConfig: TableConfig<RoleDto> = {
   actions: {
     showExportButton: false,
     showAddButton: true,
-    addButtonIcon: <PlusCircle />,
+    addButtonIcon: <UserPlus />,
     addButtonText: "Agregar Rol",
     onAdd: () => {
       console.log("Agregando Rol");
@@ -28,4 +28,3 @@ export const RolesTableConfig: TableConfig<RoleDto> = {
   enableRowSelection: false,
   enableSorting: true,
 };
-

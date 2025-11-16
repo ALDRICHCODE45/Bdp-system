@@ -1,5 +1,5 @@
 import { TableConfig } from "@/core/shared/components/DataTable/types";
-import { CircleUser, PlusCircle } from "lucide-react";
+import { PlusCircle, UserPlus } from "lucide-react";
 import { SociosTableFilters } from "./SociosTableFilters";
 import { SocioDto } from "../server/dtos/SocioDto.dto";
 
@@ -8,7 +8,7 @@ export const SociosTableConfig: TableConfig<SocioDto> = {
     customFilter: {
       component: SociosTableFilters,
       props: {
-        addButtonIcon: CircleUser,
+        addButtonIcon: UserPlus,
         addButtonText: "Agregar Socio",
         showAddButton: true,
       },

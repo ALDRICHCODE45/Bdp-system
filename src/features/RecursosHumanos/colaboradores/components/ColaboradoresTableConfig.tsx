@@ -1,5 +1,5 @@
 import { TableConfig } from "@/core/shared/components/DataTable/types";
-import { CircleUser, PlusCircle } from "lucide-react";
+import { PlusCircle, UserPlus } from "lucide-react";
 import { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import { ColaboradoresTableFilters } from "./ColaboradoresTableFilters";
 
@@ -8,7 +8,7 @@ export const ColaboradoresTableConfig: TableConfig<ColaboradorDto> = {
     customFilter: {
       component: ColaboradoresTableFilters,
       props: {
-        addButtonIcon: CircleUser,
+        addButtonIcon: UserPlus,
         addButtonText: "Agregar Colaborador",
         showAddButton: true,
       },
