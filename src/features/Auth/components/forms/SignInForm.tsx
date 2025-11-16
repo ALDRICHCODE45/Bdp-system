@@ -17,6 +17,11 @@ import {
 import { Input } from "@/core/shared/ui/input";
 import { Button } from "@/core/shared/ui/button";
 import { useSignInForm } from "@/features/Auth/hooks/useSignInForm";
+import {
+  PasswordInput,
+  PasswordInputAdornmentToggle,
+  PasswordInputInput,
+} from "@/core/shared/ui/password-input";
 
 export function SignInForm() {
   const form = useSignInForm();
@@ -71,16 +76,19 @@ export function SignInForm() {
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Contraseña</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder="*****"
-                      autoComplete="off"
-                    />
+                    <PasswordInput>
+                      <PasswordInputInput
+                        placeholder="Password"
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        autoComplete="off"
+                      />
+                      <PasswordInputAdornmentToggle />
+                    </PasswordInput>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}

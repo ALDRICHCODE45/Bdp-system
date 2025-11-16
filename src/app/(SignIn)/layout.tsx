@@ -14,12 +14,10 @@ export default function SignInLayout({
       </div>
       <div className="relative hidden lg:block md:border md:border-l">
         <Image
-          src="/signIn/login-bg.png"
+          src="/signIn/logo.webp"
           alt="Login Background"
-          fill
           className="object-contain"
-          sizes="(max-width: 768px) 0vw, 50vw"
-          quality={90}
+          fill
           priority
         />
       </div>
