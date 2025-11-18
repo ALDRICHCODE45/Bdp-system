@@ -21,7 +21,6 @@ interface ClienteProveedorSheetProps {
 
 export function ClienteProovedorSheet({
   isOpen,
-  mode,
   onClose,
 }: ClienteProveedorSheetProps) {
   const isMobile = useIsMobile();

@@ -18,19 +18,25 @@ enum ColaboradorEstado {
   DESPEDIDO
 }
 
+enum ClienteProveedorTipo {
+  CLIENTE
+  PROVEEDOR
+}
+
 model Socio {
-  id              String        @id @default(uuid())
-  nombre          String
-  email           String        @unique
-  telefono        String?
-  activo          Boolean       @default(true)
-  fechaIngreso    DateTime      @default(now())
-  departamento    String?
-  numeroEmpleados Int           @default(0)
-  notas           String?
-  colaboradores   Colaborador[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                  String             @id @default(uuid())
+  nombre              String
+  email               String             @unique
+  telefono            String?
+  activo              Boolean            @default(true)
+  fechaIngreso        DateTime           @default(now())
+  departamento        String?
+  numeroEmpleados     Int                @default(0)
+  notas               String?
+  colaboradores       Colaborador[]
+  clientesProveedores ClienteProveedor[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@index([email])
   @@index([activo])
@@ -145,4 +151,29 @@ model UserRole {
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
+}
+
+model ClienteProveedor {
+  id            String               @id @default(uuid())
+  nombre        String
+  rfc           String
+  tipo          ClienteProveedorTipo
+  direccion     String
+  telefono      String
+  email         String
+  contacto      String
+  numeroCuenta  String?
+  clabe         String?
+  banco         String?
+  activo        Boolean              @default(true)
+  fechaRegistro DateTime             @default(now())
+  notas         String?
+  socioId       String?
+  socio         Socio?               @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@unique([rfc, tipo])
+  @@index([activo])
+  @@index([socioId])
 }

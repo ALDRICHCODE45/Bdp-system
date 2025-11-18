@@ -25,7 +25,9 @@ export default auth((req) => {
 
   // Si el usuario está logueado y accede a la ruta raíz, redirigir basado en permisos
   if (isLoggedIn && nextUrl.pathname === "/") {
-    const userPermissions = MiddlewarePermissionsService.extractPermissions(req.auth);
+    const userPermissions = MiddlewarePermissionsService.extractPermissions(
+      req.auth
+    );
     const defaultRoute = getDefaultRoute(userPermissions);
     return NextResponse.redirect(new URL(defaultRoute, nextUrl));
   }
@@ -43,7 +45,9 @@ export default auth((req) => {
   // Si el usuario está logueado y trata de acceder a la página de login
   if (isLoggedIn && nextUrl.pathname.startsWith("/sign-in")) {
     // Obtener permisos del usuario y redirigir a la ruta por defecto basada en permisos
-    const userPermissions = MiddlewarePermissionsService.extractPermissions(req.auth);
+    const userPermissions = MiddlewarePermissionsService.extractPermissions(
+      req.auth
+    );
     const defaultRoute = getDefaultRoute(userPermissions);
     return NextResponse.redirect(new URL(defaultRoute, nextUrl));
   }

@@ -1,30 +1,18 @@
 "use client";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
-import { ClientesProveedoresColumns } from "../components/ClientesProveedoresColumns";
-import { clientesProveedoresMockData } from "../types/data/ClientesProveedoresMockData.data";
+import { columns } from "../components/ClientesProveedoresTableColumns";
 import { ClientesProovedoresTableConfig } from "../components/ClientesProovedoresTableConfig";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
+import { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
 
-// Lazy loading del modal
-// const ClienteProveedorModal = dynamic(
-//   () =>
-//     import("../components/ClienteProveedorModal").then((mod) => ({
-//       default: mod.ClienteProveedorModal,
-//     })),
-//   {
-//     ssr: false,
-//     loading: () => <LoadingModalState />,
-//   }
-// );
-
-const ClienteProveedorSheet = dynamic(
+const CreateClienteProveedorSheet = dynamic(
   () =>
-    import("../components/ClienteProovedorSheet").then((mod) => ({
-      default: mod.ClienteProovedorSheet,
+    import("../components/CreateClienteProveedorSheet").then((mod) => ({
+      default: mod.CreateClienteProveedorSheet,
     })),
   {
     ssr: false,
@@ -32,7 +20,13 @@ const ClienteProveedorSheet = dynamic(
   }
 );
 
-export const ClientesProovedoresTablePage = () => {
+interface ClientesProovedoresTablePageProps {
+  tableData: ClienteProveedorDto[];
+}
+
+export const ClientesProovedoresTablePage = ({
+  tableData,
+}: ClientesProovedoresTablePageProps) => {
   const { isOpen, openModal, closeModal } = useModalState();
 
   const handleAdd = () => {
@@ -47,18 +41,14 @@ export const ClientesProovedoresTablePage = () => {
   return (
     <div className="container mx-auto py-6">
       <TablePresentation
-        subtitle="Administra los clientes y los proovedores"
-        title="Clientes y Proovedores"
+        subtitle="Administra los clientes y los proveedores"
+        title="Clientes y Proveedores"
       />
-      <DataTable
-        columns={ClientesProveedoresColumns}
-        data={clientesProveedoresMockData}
-        config={tableConfig}
-      />
+      <DataTable columns={columns} data={tableData} config={tableConfig} />
 
       {/* Modal con lazy loading */}
       {isOpen && (
-        <ClienteProveedorSheet isOpen={true} onClose={closeModal} mode="add" />
+        <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
       )}
     </div>
   );
