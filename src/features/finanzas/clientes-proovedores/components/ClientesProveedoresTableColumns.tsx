@@ -4,10 +4,10 @@ import { cn } from "@/core/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
 import { ClienteProveedorRowActions } from "./forms/ClienteProveedorRowActions";
-import { ViewNotesColumn } from "./ViewNotesColumn";
-import { ViewAddressColumn } from "./ViewAddressColumn";
-import { ViewClabeInterbancariaPopOver } from "./ViewClabeInterbancariaPopOver";
-import { ViewFechaRegistroColumn } from "./ViewFechaRegistroColumns";
+import { ViewNotesColumn } from "./tableColumnsComponents/ViewNotesColumn";
+import { ViewAddressColumn } from "./tableColumnsComponents/ViewAddressColumn";
+import { ViewClabeInterbancariaPopOver } from "./tableColumnsComponents/ViewClabeInterbancariaPopOver";
+import { ViewFechaRegistroColumn } from "./tableColumnsComponents/ViewFechaRegistroColumns";
 
 export const columns: ColumnDef<ClienteProveedorDto>[] = [
   {

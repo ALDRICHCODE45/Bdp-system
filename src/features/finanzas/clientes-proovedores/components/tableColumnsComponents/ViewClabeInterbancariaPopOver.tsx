@@ -1,5 +1,5 @@
 import { Row } from "@tanstack/react-table";
-import { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
+import { ClienteProveedorDto } from "../../server/dtos/ClienteProveedorDto.dto";
 import {
   Popover,
   PopoverTrigger,

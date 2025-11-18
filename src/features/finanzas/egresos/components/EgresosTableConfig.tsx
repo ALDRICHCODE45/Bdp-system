@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, PlusCircle } from "lucide-react";
 import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { Egreso } from "../types/Egreso.type";
 import { EgresosFilters } from "./EgresosTableFilters";
@@ -12,14 +12,24 @@ export const EgresosTableConfig: TableConfig<Egreso> = {
         showAddButton: true,
         addButtonText: "Nuevo Egreso",
         addButtonIcon: Plus,
-        // Aquí puedes pasar props adicionales específicas para el componente de filtros
       },
     },
   },
-  actions: {},
+  actions: {
+    showExportButton: true,
+    onExport: () => {
+      console.log("Exportando clientes y proovedores");
+    },
+    showAddButton: true,
+    addButtonIcon: <PlusCircle />,
+    addButtonText: "Agregar Cliente/Proovedor",
+    onAdd: () => {
+      console.log("Agregando Cliente/Proovedor");
+    },
+  },
   pagination: {
     defaultPageSize: 5,
-    pageSizeOptions: [5, 10, 15, 25, 50],
+    pageSizeOptions: [5, 10, 15, 20],
     showPageSizeSelector: true,
     showPaginationInfo: true,
   },

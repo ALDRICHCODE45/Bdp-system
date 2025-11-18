@@ -1,0 +1,32 @@
+export type CreateEgresoDto = {
+  concepto: string;
+  clasificacion:
+    | "GASTO_OP"
+    | "HONORARIOS"
+    | "SERVICIOS"
+    | "ARRENDAMIENTO"
+    | "COMISIONES"
+    | "DISPOSICION";
+  categoria: "FACTURACION" | "COMISIONES" | "DISPOSICION" | "BANCARIZACIONES";
+  proveedor: string;
+  proveedorId: string;
+  solicitante: "RJS" | "RGZ" | "CALFC";
+  autorizador: "RJS" | "RGZ" | "CALFC";
+  numeroFactura: string;
+  folioFiscal: string;
+  periodo: string;
+  formaPago: "TRANSFERENCIA" | "EFECTIVO" | "CHEQUE";
+  origen: string;
+  numeroCuenta: string;
+  clabe: string;
+  cargoAbono: "BDP" | "CALFC" | "GLOBAL" | "RJZ" | "APP";
+  cantidad: number;
+  estado: "PAGADO" | "PENDIENTE" | "CANCELADO";
+  fechaPago?: Date | null;
+  fechaRegistro: Date;
+  facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
+  clienteProyecto: string;
+  clienteProyectoId: string;
+  notas?: string | null;
+};
+

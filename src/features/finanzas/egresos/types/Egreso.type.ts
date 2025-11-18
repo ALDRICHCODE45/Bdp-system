@@ -38,12 +38,12 @@ export interface Egreso {
   /**
    * Solicitante del egreso (RJS, RGZ, CALFC)
    */
-  solicitante: string;
+  solicitante: "RJS" | "RGZ" | "CALFC";
 
   /**
    * Autorizador del egreso (RJS, RGZ, CALFC)
    */
-  autorizador: string;
+  autorizador: "RJS" | "RGZ" | "CALFC";
 
   /**
    * Número de factura o documento
@@ -83,7 +83,7 @@ export interface Egreso {
   /**
    * Empresa a la cual se hará el cargo (BDP, CALFC, etc.)
    */
-  cargoAbono: string;
+  cargoAbono: "BDP" | "CALFC" | "GLOBAL" | "RJZ" | "APP";
 
   /**
    * Cantidad del egreso en pesos mexicanos
@@ -108,17 +108,12 @@ export interface Egreso {
   /**
    * Quién facturó (BDP, CALFC, GLOBAL, RGZ, RJS, APP)
    */
-  facturadoPor: string;
+  facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RJZ" | "APP";
 
   /**
    * Cliente o proyecto relacionado
    */
   clienteProyecto: string;
-
-  /**
-   * Fecha de participación (si aplica)
-   */
-  fechaParticipacion?: string;
 
   /**
    * Notas adicionales

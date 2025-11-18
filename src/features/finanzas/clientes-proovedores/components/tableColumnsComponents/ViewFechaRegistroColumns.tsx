@@ -1,5 +1,5 @@
 import { Row } from "@tanstack/react-table";
-import { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
+import { ClienteProveedorDto } from "../../server/dtos/ClienteProveedorDto.dto";
 import { Button } from "@/core/shared/ui/button";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";

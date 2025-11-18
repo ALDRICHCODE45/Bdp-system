@@ -34,6 +34,7 @@ import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHe
 interface EgresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
+  onAdd?: () => void;
 }
 
 export function EgresosFilters({
@@ -42,6 +43,7 @@ export function EgresosFilters({
   showAddButton = false,
   addButtonIcon: AddButtonIcon,
   addButtonText = "Agregar Egreso",
+  onAdd,
 }: EgresosFiltersProps) {
   const {
     clearFilters,
@@ -67,6 +69,7 @@ export function EgresosFilters({
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
           <FilterHeaderActions
+            onAdd={onAdd}
             showAddButton={showAddButton}
             AddButtonIcon={AddButtonIcon}
             addButtonText={addButtonText}

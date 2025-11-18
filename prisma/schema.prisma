@@ -23,6 +23,57 @@ enum ClienteProveedorTipo {
   PROVEEDOR
 }
 
+enum EgresoClasificacion {
+  GASTO_OP
+  HONORARIOS
+  SERVICIOS
+  ARRENDAMIENTO
+  COMISIONES
+  DISPOSICION
+}
+
+enum EgresoCategoria {
+  FACTURACION
+  COMISIONES
+  DISPOSICION
+  BANCARIZACIONES
+}
+
+enum EgresoSolicitanteAutorizador {
+  RJS
+  RGZ
+  CALFC
+}
+
+enum EgresoFormaPago {
+  TRANSFERENCIA
+  EFECTIVO
+  CHEQUE
+}
+
+enum EgresoCargoAbono {
+  BDP
+  CALFC
+  GLOBAL
+  RJZ
+  APP
+}
+
+enum EgresoEstado {
+  PAGADO
+  PENDIENTE
+  CANCELADO
+}
+
+enum EgresoFacturadoPor {
+  BDP
+  CALFC
+  GLOBAL
+  RGZ
+  RJS
+  APP
+}
+
 model Socio {
   id                  String             @id @default(uuid())
   nombre              String
@@ -154,26 +205,66 @@ model UserRole {
 }
 
 model ClienteProveedor {
-  id            String               @id @default(uuid())
-  nombre        String
-  rfc           String
-  tipo          ClienteProveedorTipo
-  direccion     String
-  telefono      String
-  email         String
-  contacto      String
-  numeroCuenta  String?
-  clabe         String?
-  banco         String?
-  activo        Boolean              @default(true)
-  fechaRegistro DateTime             @default(now())
-  notas         String?
-  socioId       String?
-  socio         Socio?               @relation(fields: [socioId], references: [id], onDelete: SetNull)
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  id                      String               @id @default(uuid())
+  nombre                  String
+  rfc                     String
+  tipo                    ClienteProveedorTipo
+  direccion               String
+  telefono                String
+  email                   String
+  contacto                String
+  numeroCuenta            String?
+  clabe                   String?
+  banco                   String?
+  activo                  Boolean              @default(true)
+  fechaRegistro           DateTime             @default(now())
+  notas                   String?
+  socioId                 String?
+  socio                   Socio?               @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  egresosComoProveedor    Egreso[]             @relation("EgresoProveedor")
+  egresosComoClienteProye Egreso[]             @relation("EgresoClienteProyecto")
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
 
   @@unique([rfc, tipo])
   @@index([activo])
   @@index([socioId])
+}
+
+model Egreso {
+  id               String                       @id @default(uuid())
+  concepto         String
+  clasificacion    EgresoClasificacion
+  categoria        EgresoCategoria
+  proveedor        String
+  proveedorId      String
+  proveedorRef     ClienteProveedor             @relation("EgresoProveedor", fields: [proveedorId], references: [id], onDelete: Restrict)
+  solicitante      EgresoSolicitanteAutorizador
+  autorizador      EgresoSolicitanteAutorizador
+  numeroFactura    String
+  folioFiscal      String
+  periodo          String
+  formaPago        EgresoFormaPago
+  origen           String
+  numeroCuenta     String
+  clabe            String
+  cargoAbono       EgresoCargoAbono
+  cantidad         Decimal                      @db.Decimal(15, 2)
+  estado           EgresoEstado
+  fechaPago        DateTime?
+  fechaRegistro    DateTime                     @default(now())
+  facturadoPor     EgresoFacturadoPor
+  clienteProyecto  String
+  clienteProyectoId String
+  clienteProyectoRef ClienteProveedor           @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
+  notas            String?
+  createdAt        DateTime                     @default(now())
+  updatedAt        DateTime                     @updatedAt
+
+  @@index([estado])
+  @@index([periodo])
+  @@index([proveedorId])
+  @@index([clienteProyectoId])
+  @@index([fechaPago])
+  @@index([createdAt])
 }
