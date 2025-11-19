@@ -223,6 +223,7 @@ model ClienteProveedor {
   socio                   Socio?               @relation(fields: [socioId], references: [id], onDelete: SetNull)
   egresosComoProveedor    Egreso[]             @relation("EgresoProveedor")
   egresosComoClienteProye Egreso[]             @relation("EgresoClienteProyecto")
+  ingresosComoCliente     Ingreso[]            @relation("IngresoCliente")
   createdAt               DateTime             @default(now())
   updatedAt               DateTime             @updatedAt
 
@@ -265,6 +266,72 @@ model Egreso {
   @@index([periodo])
   @@index([proveedorId])
   @@index([clienteProyectoId])
+  @@index([fechaPago])
+  @@index([createdAt])
+}
+
+enum IngresoFormaPago {
+  TRANSFERENCIA
+  EFECTIVO
+  CHEQUE
+}
+
+enum IngresoEstado {
+  PAGADO
+  PENDIENTE
+  CANCELADO
+}
+
+enum IngresoSolicitanteAutorizador {
+  RJS
+  RGZ
+  CALFC
+}
+
+enum IngresoCargoAbono {
+  BDP
+  CALFC
+}
+
+enum IngresoFacturadoPor {
+  BDP
+  CALFC
+  GLOBAL
+  RGZ
+  RJS
+  APP
+}
+
+model Ingreso {
+  id                   String                          @id @default(uuid())
+  concepto             String
+  cliente              String
+  clienteId            String
+  clienteRef           ClienteProveedor                @relation("IngresoCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  solicitante          IngresoSolicitanteAutorizador
+  autorizador          IngresoSolicitanteAutorizador
+  numeroFactura        String
+  folioFiscal          String                          @unique
+  periodo              String
+  formaPago            IngresoFormaPago
+  origen               String
+  numeroCuenta         String
+  clabe                String
+  cargoAbono           IngresoCargoAbono
+  cantidad             Decimal                         @db.Decimal(15, 2)
+  estado               IngresoEstado
+  fechaPago            DateTime?
+  fechaRegistro        DateTime                        @default(now())
+  facturadoPor         IngresoFacturadoPor
+  clienteProyecto      String
+  fechaParticipacion   DateTime?
+  notas                String?
+  createdAt            DateTime                        @default(now())
+  updatedAt            DateTime                        @updatedAt
+
+  @@index([estado])
+  @@index([periodo])
+  @@index([clienteId])
   @@index([fechaPago])
   @@index([createdAt])
 }

@@ -206,9 +206,7 @@ export const columns: ColumnDef<EgresoDto>[] = [
     accessorKey: "solicitante",
     cell: ({ row }) => {
       const solicitante = row.getValue("solicitante") as string;
-      return (
-        <div className="text-sm truncate uppercase">{solicitante}</div>
-      );
+      return <div className="text-sm truncate uppercase">{solicitante}</div>;
     },
     size: 10,
   },
@@ -217,9 +215,7 @@ export const columns: ColumnDef<EgresoDto>[] = [
     accessorKey: "autorizador",
     cell: ({ row }) => {
       const autorizador = row.getValue("autorizador") as string;
-      return (
-        <div className="text-sm truncate uppercase">{autorizador}</div>
-      );
+      return <div className="text-sm truncate uppercase">{autorizador}</div>;
     },
     size: 10,
   },
@@ -228,9 +224,7 @@ export const columns: ColumnDef<EgresoDto>[] = [
     accessorKey: "facturadoPor",
     cell: ({ row }) => {
       const facturadoPor = row.getValue("facturadoPor") as string;
-      return (
-        <div className="text-sm truncate uppercase">{facturadoPor}</div>
-      );
+      return <div className="text-sm truncate uppercase">{facturadoPor}</div>;
     },
     size: 12,
   },

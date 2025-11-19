@@ -17,16 +17,38 @@ import { es } from "date-fns/locale";
 import { cn } from "@/core/lib/utils";
 import { useIngresosTableFilters } from "../hooks/useIngresosTableFilters";
 import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
-import {
-  estadosIngresoOptions,
-  formaPagoOptions,
-} from "../types/filterOptions.type";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
+
+// Opciones de filtro
+const estadosIngresoOptions = [
+  { label: "Todos", value: "todos" },
+  { label: "Pagado", value: "pagado" },
+  { label: "Pendiente", value: "pendiente" },
+  { label: "Cancelado", value: "cancelado" },
+];
+
+const formaPagoOptions = [
+  { label: "Todos", value: "todos" },
+  { label: "Transferencia", value: "transferencia" },
+  { label: "Efectivo", value: "efectivo" },
+  { label: "Cheque", value: "cheque" },
+];
+
+const facturadoPorOptions = [
+  { label: "Todos", value: "todos" },
+  { label: "BDP", value: "bdp" },
+  { label: "CALFC", value: "calfc" },
+  { label: "GLOBAL", value: "global" },
+  { label: "RGZ", value: "rgz" },
+  { label: "RJS", value: "rjs" },
+  { label: "APP", value: "app" },
+];
 
 interface IngresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
+  onAdd?: () => void;
 }
 
 export function IngresosFilters({
@@ -35,15 +57,21 @@ export function IngresosFilters({
   addButtonIcon,
   addButtonText = "Agregar",
   showAddButton,
+  onAdd,
 }: IngresosFiltersProps) {
   const {
     clearFilters,
     handleDateRangeChange,
     handleEstadoChange,
     handleFormaPagoChange,
+    handleFacturadoPorChange,
+    handleMontoFilter,
     selectedDateRange,
     selectedEstado,
-    selectedTipo,
+    selectedFormaPago,
+    selectedFacturadoPor,
+    selectedMontoRange,
+    setMontoRange,
   } = useIngresosTableFilters(table);
 
   return (
@@ -61,6 +89,7 @@ export function IngresosFilters({
             AddButtonIcon={addButtonIcon}
             addButtonText={addButtonText}
             buttonTooltipText="Agregar Ingreso"
+            onAdd={onAdd}
             onClearFilters={() => {
               clearFilters();
               onGlobalFilterChange?.("");
@@ -94,19 +123,28 @@ export function IngresosFilters({
             </div>
           </div>
 
-          {/* Filtro de tipo */}
-          <FilterSelect
-            value={selectedTipo}
-            label="Forma de Pago"
-            onValueChange={handleFormaPagoChange}
-            options={formaPagoOptions}
-          />
-
+          {/* Filtro de Estado */}
           <FilterSelect
             value={selectedEstado}
             label="Estado"
             onValueChange={handleEstadoChange}
             options={estadosIngresoOptions}
+          />
+
+          {/* Filtro de Forma de Pago */}
+          <FilterSelect
+            value={selectedFormaPago}
+            label="Forma de Pago"
+            onValueChange={handleFormaPagoChange}
+            options={formaPagoOptions}
+          />
+
+          {/* Filtro de Facturado Por */}
+          <FilterSelect
+            value={selectedFacturadoPor}
+            label="Facturado Por"
+            onValueChange={handleFacturadoPorChange}
+            options={facturadoPorOptions}
           />
 
           {/* Filtro de rango de fechas */}
@@ -152,8 +190,38 @@ export function IngresosFilters({
               </PopoverContent>
             </Popover>
           </div>
+
+          {/* Filtro de rango de montos */}
+          <div className="space-y-2 md:col-span-2">
+            <Label className="text-xs font-medium">Rango de Monto</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                type="number"
+                placeholder="Mín"
+                value={selectedMontoRange.min}
+                onChange={(e) =>
+                  setMontoRange({ ...selectedMontoRange, min: e.target.value })
+                }
+                className="w-full"
+              />
+              <span className="text-muted-foreground">-</span>
+              <Input
+                type="number"
+                placeholder="Máx"
+                value={selectedMontoRange.max}
+                onChange={(e) =>
+                  setMontoRange({ ...selectedMontoRange, max: e.target.value })
+                }
+                className="w-full"
+              />
+              <Button onClick={handleMontoFilter} variant="secondary" size="sm">
+                Aplicar
+              </Button>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 }
+
