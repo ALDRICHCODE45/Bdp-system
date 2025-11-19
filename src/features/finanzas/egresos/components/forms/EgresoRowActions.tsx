@@ -67,4 +67,3 @@ export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
     </>
   );
 }
-
