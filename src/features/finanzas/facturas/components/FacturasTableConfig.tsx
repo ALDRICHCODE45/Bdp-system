@@ -1,47 +1,40 @@
+import { Plus, PlusCircle } from "lucide-react";
 import { TableConfig } from "@/core/shared/components/DataTable/types";
-import { Factura } from "../types/Factura.type";
-import { FilePlus } from "lucide-react";
-import { FacturasTableFilters } from "./FacturasTableFilters";
+import { FacturaDto } from "../server/dtos/FacturaDto.dto";
+import { FacturasFilters } from "./FacturasTableFilters";
 
-// Configuración simple usanbo filtros por defecto
-export const FacturasTableConfig: TableConfig<Factura> = {
+// Configuración personalizada para el DataTable
+export const FacturasTableConfig: TableConfig<FacturaDto> = {
   filters: {
     customFilter: {
-      component: FacturasTableFilters,
+      component: FacturasFilters,
       props: {
-        addButtonIcon: FilePlus,
-        addButtonText: "Nueva Factura",
         showAddButton: true,
+        addButtonText: "Nueva Factura",
+        addButtonIcon: Plus,
       },
     },
-    searchColumn: "clienteProveedor", // Columna por la que buscar
-    searchPlaceholder: "Buscar cliente/proovedor...",
-    showSearch: true,
   },
   actions: {
-    showAddButton: true,
-    addButtonText: "Nueva Factura",
-    addButtonIcon: <FilePlus className="h4 w-4" />,
-    onAdd: () => {
-      console.log("Crear nueva factura");
-    },
     showExportButton: true,
     onExport: () => {
-      console.log("Exportar facturas");
+      console.log("Exportando facturas");
     },
-    showRefreshButton: true,
-    onRefresh: () => {
-      console.log("Actualizar facturas");
+    showAddButton: true,
+    addButtonIcon: <PlusCircle />,
+    addButtonText: "Agregar Factura",
+    onAdd: () => {
+      console.log("Agregando Factura");
     },
   },
   pagination: {
-    defaultPageSize: 5,
-    pageSizeOptions: [5, 10, 20, 100],
+    defaultPageSize: 10,
+    pageSizeOptions: [10, 20, 30, 50],
     showPageSizeSelector: true,
     showPaginationInfo: true,
   },
   emptyStateMessage: "No se encontraron facturas.",
   enableSorting: true,
-  enableColumnVisibility: false,
-  enableRowSelection: false,
+  enableColumnVisibility: true,
+  enableRowSelection: true,
 };

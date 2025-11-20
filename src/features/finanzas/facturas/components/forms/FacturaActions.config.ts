@@ -1,7 +1,6 @@
-export const createIngresoActions = (
+export const FacturaActionsConfig = (
   onEdit: () => void,
-  onDelete: () => void,
-  onCopyUuId: () => void
+  onDelete: () => void
 ) => [
   {
     id: "edit",
@@ -13,10 +12,5 @@ export const createIngresoActions = (
     label: "Eliminar",
     onClick: onDelete,
     variant: "destructive" as const,
-  },
-  {
-    id: "copyId",
-    label: "Copiar UUID",
-    onClick: onCopyUuId,
   },
 ];

@@ -1,6 +1,7 @@
 export const createEgresoActions = (
   onEdit: () => void,
-  onDelete: () => void
+  onDelete: () => void,
+  onCopyUUID: () => void
 ) => [
   {
     id: "edit",
@@ -12,5 +13,11 @@ export const createEgresoActions = (
     label: "Eliminar",
     onClick: onDelete,
     variant: "destructive" as const,
+  },
+
+  {
+    id: "copyUUID",
+    label: "Copiar UUID",
+    onClick: onCopyUUID,
   },
 ];

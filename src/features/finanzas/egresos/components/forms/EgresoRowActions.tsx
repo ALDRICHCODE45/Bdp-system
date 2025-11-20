@@ -7,6 +7,8 @@ import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { EgresoDto } from "../../server/dtos/EgresoDto.dto";
 import { useDeleteEgreso } from "../../hooks/useDeleteEgreso.hook";
 import { createEgresoActions } from "./EgresoActions.config";
+import { useCopyToClipboard } from "@/core/shared/hooks/use-copy-to-clipboard";
+import { showToast } from "@/core/shared/helpers/CustomToast";
 
 const EditEgresoSheet = dynamic(
   () =>
@@ -33,6 +35,7 @@ const DeleteEgresoAlertDialog = dynamic(
 export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
   const egreso = row.original;
   const { isOpen, openModal, closeModal } = useModalState();
+  const { copyToClipboard, copied } = useCopyToClipboard();
   const {
     isOpen: isDeleteOpen,
     openModal: openDeleteModal,
@@ -44,8 +47,20 @@ export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
   const handleDelete = async () => {
     await deleteEgresoMutation.mutateAsync(egreso.id);
   };
+  const handleCopyUUID = () => {
+    copyToClipboard(egreso.id);
+    showToast({
+      description: "UUID copiado correctamente",
+      title: "Operacion Exitosa",
+      type: "info",
+    });
+  };
 
-  const actions = createEgresoActions(openModal, openDeleteModal);
+  const actions = createEgresoActions(
+    openModal,
+    openDeleteModal,
+    handleCopyUUID
+  );
 
   return (
     <>

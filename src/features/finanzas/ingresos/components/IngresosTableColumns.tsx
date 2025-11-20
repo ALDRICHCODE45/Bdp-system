@@ -288,7 +288,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
   },
   {
     accessorKey: "clienteProyecto",
-    header: "Cliente/Proyecto",
+    header: "Proyecto",
     cell: ({ row }) => {
       const clienteProyecto = row.getValue("clienteProyecto") as string;
       return (
@@ -347,13 +347,14 @@ export const columns: ColumnDef<IngresoDto>[] = [
         </Popover>
       );
     },
-    size: 17,
+    size: 8,
   },
   {
     id: "actions",
-    header: "Acciones",
     cell: ({ row }) => <IngresoRowActions row={row} />,
     enableHiding: false,
-    size: 8,
+    size: 4,
+    minSize: 4,
+    maxSize: 4,
   },
 ];

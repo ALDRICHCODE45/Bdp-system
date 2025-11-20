@@ -7,6 +7,8 @@ import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { IngresoDto } from "../../server/dtos/IngresoDto.dto";
 import { useDeleteIngreso } from "../../hooks/useDeleteIngreso.hook";
 import { createIngresoActions } from "./IngresoActions.config";
+import { useCopyToClipboard } from "@/core/shared/hooks/use-copy-to-clipboard";
+import { showToast } from "@/core/shared/helpers/CustomToast";
 
 const EditIngresoSheet = dynamic(
   () =>
@@ -32,6 +34,7 @@ const DeleteIngresoAlertDialog = dynamic(
 
 export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
   const ingreso = row.original;
+  const { copyToClipboard, copied } = useCopyToClipboard();
   const { isOpen, openModal, closeModal } = useModalState();
   const {
     isOpen: isDeleteOpen,
@@ -46,7 +49,20 @@ export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
     closeDeleteModal();
   };
 
-  const actions = createIngresoActions(openModal, openDeleteModal);
+  const handleCopyUUID = () => {
+    copyToClipboard(ingreso.id);
+    showToast({
+      description: "UUID copiado correctamente",
+      title: "Operacion Exitosa",
+      type: "info",
+    });
+  };
+
+  const actions = createIngresoActions(
+    openModal,
+    openDeleteModal,
+    handleCopyUUID
+  );
 
   return (
     <>
@@ -63,9 +79,12 @@ export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
       )}
 
       {isOpen && (
-        <EditIngresoSheet ingreso={ingreso} isOpen={true} onClose={closeModal} />
+        <EditIngresoSheet
+          ingreso={ingreso}
+          isOpen={true}
+          onClose={closeModal}
+        />
       )}
     </>
   );
 }
-
