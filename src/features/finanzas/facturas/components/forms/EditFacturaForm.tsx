@@ -42,7 +42,9 @@ export const EditFacturaForm = ({
   onSuccess,
 }: EditFacturaFormProps) => {
   const form = useUpdateFacturaForm(factura, onSuccess);
-  const [canEdit] = useState<boolean>(factura.estado === "borrador");
+  const [canEdit, setCanEdit] = useState<boolean>(
+    factura.estado === "borrador"
+  );
 
   if (!canEdit) {
     return (
@@ -51,11 +53,20 @@ export const EditFacturaForm = ({
           <EmptyMedia variant="icon">
             <TriangleAlert />
           </EmptyMedia>
-          <EmptyTitle>Factura No Editable</EmptyTitle>
+          <EmptyTitle>Advertencia.</EmptyTitle>
           <EmptyDescription>
-            Solos las facturas con estado BORRADOR pueden ser editadas.
+            Factura No Editable. Solos las facturas con estado
+            <span className="font-bold">BORRADOR</span>
+            pueden ser editadas.
           </EmptyDescription>
         </EmptyHeader>
+        <EmptyContent>
+          <div className="">
+            <Button onClick={() => setCanEdit(true)}>
+              Editar de todos modos.
+            </Button>
+          </div>
+        </EmptyContent>
       </Empty>
     );
   }

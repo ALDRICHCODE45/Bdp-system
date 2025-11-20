@@ -67,9 +67,7 @@ export class FacturaService {
       return Ok(factura);
     } catch (error) {
       return Err(
-        error instanceof Error
-          ? error
-          : new Error("Error al crear la factura")
+        error instanceof Error ? error : new Error("Error al crear la factura")
       );
     }
   }
@@ -89,11 +87,11 @@ export class FacturaService {
     }
 
     // Solo permitir editar si está en BORRADOR
-    if (existing.estado !== "BORRADOR") {
-      return Err(
-        new Error("Solo se pueden editar facturas en estado BORRADOR")
-      );
-    }
+    // if (existing.estado !== "BORRADOR") {
+    //   return Err(
+    //     new Error("Solo se pueden editar facturas en estado BORRADOR")
+    //   );
+    // }
 
     // Validar folio fiscal si cambió
     if (input.folioFiscal !== existing.folioFiscal) {
@@ -186,4 +184,3 @@ export class FacturaService {
     }
   }
 }
-
