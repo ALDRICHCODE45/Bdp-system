@@ -234,35 +234,35 @@ model ClienteProveedor {
 }
 
 model Egreso {
-  id               String                       @id @default(uuid())
-  concepto         String
-  clasificacion    EgresoClasificacion
-  categoria        EgresoCategoria
-  proveedor        String
-  proveedorId      String
-  proveedorRef     ClienteProveedor             @relation("EgresoProveedor", fields: [proveedorId], references: [id], onDelete: Restrict)
-  solicitante      EgresoSolicitanteAutorizador
-  autorizador      EgresoSolicitanteAutorizador
-  numeroFactura    String
-  folioFiscal      String
-  periodo          String
-  formaPago        EgresoFormaPago
-  origen           String
-  numeroCuenta     String
-  clabe            String
-  cargoAbono       EgresoCargoAbono
-  cantidad         Decimal                      @db.Decimal(15, 2)
-  estado           EgresoEstado
-  fechaPago        DateTime?
-  fechaRegistro    DateTime                     @default(now())
-  facturadoPor     EgresoFacturadoPor
-  clienteProyecto  String
-  clienteProyectoId String
-  clienteProyectoRef ClienteProveedor           @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
-  facturaId        String?
-  notas            String?
-  createdAt        DateTime                     @default(now())
-  updatedAt        DateTime                     @updatedAt
+  id                 String                       @id @default(uuid())
+  concepto           String
+  clasificacion      EgresoClasificacion
+  categoria          EgresoCategoria
+  proveedor          String
+  proveedorId        String
+  proveedorRef       ClienteProveedor             @relation("EgresoProveedor", fields: [proveedorId], references: [id], onDelete: Restrict)
+  solicitante        EgresoSolicitanteAutorizador
+  autorizador        EgresoSolicitanteAutorizador
+  numeroFactura      String
+  folioFiscal        String
+  periodo            String
+  formaPago          EgresoFormaPago
+  origen             String
+  numeroCuenta       String
+  clabe              String
+  cargoAbono         EgresoCargoAbono
+  cantidad           Decimal                      @db.Decimal(15, 2)
+  estado             EgresoEstado
+  fechaPago          DateTime?
+  fechaRegistro      DateTime                     @default(now())
+  facturadoPor       EgresoFacturadoPor
+  clienteProyecto    String
+  clienteProyectoId  String
+  clienteProyectoRef ClienteProveedor             @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
+  facturaId          String?
+  notas              String?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
 
   @@index([estado])
   @@index([periodo])
@@ -323,32 +323,32 @@ enum FacturaFormaPago {
 }
 
 model Ingreso {
-  id                   String                          @id @default(uuid())
-  concepto             String
-  cliente              String
-  clienteId            String
-  clienteRef           ClienteProveedor                @relation("IngresoCliente", fields: [clienteId], references: [id], onDelete: Restrict)
-  solicitante          IngresoSolicitanteAutorizador
-  autorizador          IngresoSolicitanteAutorizador
-  numeroFactura        String
-  folioFiscal          String                          @unique
-  periodo              String
-  formaPago            IngresoFormaPago
-  origen               String
-  numeroCuenta         String
-  clabe                String
-  cargoAbono           IngresoCargoAbono
-  cantidad             Decimal                         @db.Decimal(15, 2)
-  estado               IngresoEstado
-  fechaPago            DateTime?
-  fechaRegistro        DateTime                        @default(now())
-  facturadoPor         IngresoFacturadoPor
-  clienteProyecto      String
-  fechaParticipacion   DateTime?
-  facturaId            String?
-  notas                String?
-  createdAt            DateTime                        @default(now())
-  updatedAt            DateTime                        @updatedAt
+  id                 String                        @id @default(uuid())
+  concepto           String
+  cliente            String
+  clienteId          String
+  clienteRef         ClienteProveedor              @relation("IngresoCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  solicitante        IngresoSolicitanteAutorizador
+  autorizador        IngresoSolicitanteAutorizador
+  numeroFactura      String
+  folioFiscal        String                        @unique
+  periodo            String
+  formaPago          IngresoFormaPago
+  origen             String
+  numeroCuenta       String
+  clabe              String
+  cargoAbono         IngresoCargoAbono
+  cantidad           Decimal                       @db.Decimal(15, 2)
+  estado             IngresoEstado
+  fechaPago          DateTime?
+  fechaRegistro      DateTime                      @default(now())
+  facturadoPor       IngresoFacturadoPor
+  clienteProyecto    String
+  fechaParticipacion DateTime?
+  facturaId          String?
+  notas              String?
+  createdAt          DateTime                      @default(now())
+  updatedAt          DateTime                      @updatedAt
 
   @@index([estado])
   @@index([periodo])
@@ -358,34 +358,34 @@ model Ingreso {
 }
 
 model Factura {
-  id                    String              @id @default(uuid())
-  tipoOrigen            FacturaTipoOrigen
-  origenId              String
-  clienteProveedorId    String
-  clienteProveedorRef   ClienteProveedor    @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
-  clienteProveedor      String
-  concepto              String
-  monto                 Decimal             @db.Decimal(15, 2)
-  periodo               String
-  numeroFactura         String
-  folioFiscal           String              @unique
-  fechaEmision          DateTime
-  fechaVencimiento      DateTime
-  estado                FacturaEstado       @default(BORRADOR)
-  formaPago             FacturaFormaPago
-  rfcEmisor             String
-  rfcReceptor           String
-  direccionEmisor       String
-  direccionReceptor     String
-  fechaPago             DateTime?
-  fechaRegistro         DateTime            @default(now())
-  creadoPor             String
-  autorizadoPor         String
-  notas                 String?
-  archivoPdf            String?
-  archivoXml            String?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  id                  String            @id @default(uuid())
+  tipoOrigen          FacturaTipoOrigen
+  origenId            String
+  clienteProveedorId  String
+  clienteProveedorRef ClienteProveedor  @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
+  clienteProveedor    String
+  concepto            String
+  monto               Decimal           @db.Decimal(15, 2)
+  periodo             String
+  numeroFactura       String
+  folioFiscal         String            @unique
+  fechaEmision        DateTime
+  fechaVencimiento    DateTime
+  estado              FacturaEstado     @default(BORRADOR)
+  formaPago           FacturaFormaPago
+  rfcEmisor           String
+  rfcReceptor         String
+  direccionEmisor     String
+  direccionReceptor   String
+  fechaPago           DateTime?
+  fechaRegistro       DateTime          @default(now())
+  creadoPor           String
+  autorizadoPor       String
+  notas               String?
+  archivoPdf          String?
+  archivoXml          String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
   @@index([tipoOrigen])
   @@index([origenId])
