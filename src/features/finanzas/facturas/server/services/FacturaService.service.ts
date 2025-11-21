@@ -12,15 +12,25 @@ import {
   UpdateFacturaInput,
   updateFacturaSchema,
 } from "../validators/updateFacturaSchema";
+import { FacturaHistorialService } from "./FacturaHistorialService.service";
+
+type CreateFacturaInputWithUsuario = CreateFacturaInput & {
+  usuarioId?: string | null;
+};
+
+type UpdateFacturaInputWithUsuario = UpdateFacturaInput & {
+  usuarioId?: string | null;
+};
 
 export class FacturaService {
   constructor(
     private facturaRepository: FacturaRepository,
+    private historialService: FacturaHistorialService,
     private prisma: PrismaClient
   ) {}
 
   async create(
-    input: CreateFacturaInput
+    input: CreateFacturaInputWithUsuario
   ): Promise<Result<FacturaEntity, Error>> {
     // Validar entrada
     const validationResult = createFacturaSchema.safeParse(input);
@@ -61,9 +71,34 @@ export class FacturaService {
       return Err(new Error("El cliente/proveedor no existe"));
     }
 
-    // 4. Crear factura
+    // 4. Crear factura con historial usando transacción
     try {
-      const factura = await this.facturaRepository.create(input);
+      const factura = await this.prisma.$transaction(async (tx) => {
+        const { PrismaFacturaRepository } = await import(
+          "../repositories/PrismaFacturaRepository.repository"
+        );
+        const { PrismaFacturaHistorialRepository } = await import(
+          "../repositories/PrismaFacturaHistorialRepository.repository"
+        );
+        const { FacturaHistorialService } = await import(
+          "./FacturaHistorialService.service"
+        );
+
+        const tempFacturaRepository = new PrismaFacturaRepository(tx);
+        const tempHistorialRepository = new PrismaFacturaHistorialRepository(tx);
+        const tempHistorialService = new FacturaHistorialService(
+          tempHistorialRepository
+        );
+
+        const newFactura = await tempFacturaRepository.create(input);
+
+        await tempHistorialService.createHistorialForNewFactura(
+          newFactura,
+          input.usuarioId
+        );
+        return newFactura;
+      });
+
       return Ok(factura);
     } catch (error) {
       return Err(
@@ -73,7 +108,7 @@ export class FacturaService {
   }
 
   async update(
-    input: UpdateFacturaInput
+    input: UpdateFacturaInputWithUsuario
   ): Promise<Result<FacturaEntity, Error>> {
     // Validar entrada
     const validationResult = updateFacturaSchema.safeParse(input);
@@ -104,8 +139,35 @@ export class FacturaService {
     }
 
     try {
-      const factura = await this.facturaRepository.update(input);
-      return Ok(factura);
+      // Usar transacción para actualizar factura y crear historial de forma atómica
+      const result = await this.prisma.$transaction(async (tx) => {
+        const { PrismaFacturaRepository } = await import(
+          "../repositories/PrismaFacturaRepository.repository"
+        );
+        const { PrismaFacturaHistorialRepository } = await import(
+          "../repositories/PrismaFacturaHistorialRepository.repository"
+        );
+        const { FacturaHistorialService } = await import(
+          "./FacturaHistorialService.service"
+        );
+
+        const tempFacturaRepository = new PrismaFacturaRepository(tx);
+        const tempHistorialRepository = new PrismaFacturaHistorialRepository(tx);
+        const tempHistorialService = new FacturaHistorialService(
+          tempHistorialRepository
+        );
+
+        const updatedFactura = await tempFacturaRepository.update(input);
+
+        await tempHistorialService.createHistorialForUpdate(
+          existing,
+          updatedFactura,
+          input.usuarioId
+        );
+        return updatedFactura;
+      });
+
+      return Ok(result);
     } catch (error) {
       return Err(
         error instanceof Error

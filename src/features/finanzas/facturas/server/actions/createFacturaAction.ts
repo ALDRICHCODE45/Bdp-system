@@ -3,8 +3,12 @@ import { revalidatePath } from "next/cache";
 import { makeFacturaService } from "../services/makeFacturaService";
 import { toFacturaDto } from "../mappers/facturaMapper";
 import prisma from "@/core/lib/prisma";
+import { auth } from "@/core/lib/auth/auth";
 
 export const createFacturaAction = async (input: FormData) => {
+  const session = await auth();
+  const usuarioId = session?.user?.id || null;
+
   const tipoOrigen = input.get("tipoOrigen") as "INGRESO" | "EGRESO";
   const origenId = input.get("origenId") as string;
   const clienteProveedorId = input.get("clienteProveedorId") as string;
@@ -74,6 +78,7 @@ export const createFacturaAction = async (input: FormData) => {
     notas: notas as string | null,
     archivoPdf: archivoPdf as string | null,
     archivoXml: archivoXml as string | null,
+    usuarioId,
   });
 
   if (!result.ok) {

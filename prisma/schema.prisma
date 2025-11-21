@@ -406,38 +406,54 @@ model IngresoHistorial {
 }
 
 model Factura {
-  id                  String            @id @default(uuid())
+  id                  String             @id @default(uuid())
   tipoOrigen          FacturaTipoOrigen
   origenId            String
   clienteProveedorId  String
-  clienteProveedorRef ClienteProveedor  @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
+  clienteProveedorRef ClienteProveedor   @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
   clienteProveedor    String
   concepto            String
-  monto               Decimal           @db.Decimal(15, 2)
+  monto               Decimal            @db.Decimal(15, 2)
   periodo             String
   numeroFactura       String
-  folioFiscal         String            @unique
+  folioFiscal         String             @unique
   fechaEmision        DateTime
   fechaVencimiento    DateTime
-  estado              FacturaEstado     @default(BORRADOR)
+  estado              FacturaEstado      @default(BORRADOR)
   formaPago           FacturaFormaPago
   rfcEmisor           String
   rfcReceptor         String
   direccionEmisor     String
   direccionReceptor   String
   fechaPago           DateTime?
-  fechaRegistro       DateTime          @default(now())
+  fechaRegistro       DateTime           @default(now())
   creadoPor           String
   autorizadoPor       String
   notas               String?
   archivoPdf          String?
   archivoXml          String?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  historial           FacturaHistorial[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@index([tipoOrigen])
   @@index([origenId])
   @@index([estado])
   @@index([clienteProveedorId])
   @@index([fechaEmision])
+}
+
+model FacturaHistorial {
+  id            String   @id @default(uuid())
+  facturaId     String
+  factura       Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  campo         String
+  valorAnterior String?
+  valorNuevo    String
+  usuarioId     String?
+  motivo        String?
+  fechaCambio   DateTime @default(now())
+
+  @@index([facturaId])
+  @@index([fechaCambio])
 }

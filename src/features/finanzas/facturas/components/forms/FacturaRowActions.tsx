@@ -37,6 +37,17 @@ const DeleteFacturaAlertDialog = dynamic(
     loading: () => <LoadingModalState />,
   }
 );
+
+const FacturaHistorySheet = dynamic(
+  () =>
+    import("../FacturaHistorySheet").then((mod) => ({
+      default: mod.FacturaHistorySheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
 interface FacturaRowActionsProps {
   row: Row<FacturaDto>;
 }
@@ -48,9 +59,14 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
     openModal: openDeleteModal,
     closeModal: closeDeleteModal,
   } = useModalState();
+  const {
+    isOpen: isHistoryOpen,
+    openModal: openHistory,
+    closeModal: closeHistory,
+  } = useModalState();
   const factura = row.original;
 
-  const actions = FacturaActionsConfig(openModal, openDeleteModal);
+  const actions = FacturaActionsConfig(openModal, openDeleteModal, openHistory);
 
   return (
     <>
@@ -93,6 +109,15 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
           isOpen={isDeleteOpen}
           onClose={closeDeleteModal}
           factura={factura}
+        />
+      )}
+
+      {isHistoryOpen && (
+        <FacturaHistorySheet
+          isOpen={true}
+          onClose={closeHistory}
+          facturaConcepto={factura.concepto}
+          facturaId={factura.id}
         />
       )}
     </>

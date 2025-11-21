@@ -7,8 +7,15 @@ import {
 } from "./FacturaRepository.repository";
 import { Decimal } from "@prisma/client/runtime/library";
 
+type PrismaTransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export class PrismaFacturaRepository implements FacturaRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(
+    private prisma: PrismaClient | PrismaTransactionClient
+  ) {}
 
   async create(data: CreateFacturaArgs): Promise<FacturaEntity> {
     const factura = await this.prisma.factura.create({
