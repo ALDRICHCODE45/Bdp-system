@@ -7,7 +7,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/core/shared/ui/dropdown-menu";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
@@ -15,6 +19,7 @@ import { FacturaActionsConfig } from "./FacturaActions.config";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { useModalState } from "@/core/shared/hooks/useModalState";
+import { exportFacturaToPDF } from "../../helpers/exportFacturaToPDF";
 
 const EditFacturaSheet = dynamic(
   () =>
@@ -48,6 +53,7 @@ const FacturaHistorySheet = dynamic(
     loading: () => <LoadingModalState />,
   }
 );
+
 interface FacturaRowActionsProps {
   row: Row<FacturaDto>;
 }
@@ -66,7 +72,12 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
   } = useModalState();
   const factura = row.original;
 
-  const actions = FacturaActionsConfig(openModal, openDeleteModal, openHistory);
+  const actions = FacturaActionsConfig(
+    openModal,
+    openDeleteModal,
+    openHistory,
+    () => exportFacturaToPDF(factura)
+  );
 
   return (
     <>
@@ -80,8 +91,25 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {actions.map((action) => {
-            return (
+          {actions.map((action) =>
+            action.subItems ? (
+              <DropdownMenuSub key={action.id}>
+                <DropdownMenuSubTrigger>{action.label}</DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    {action.subItems.map((subItem) => (
+                      <DropdownMenuItem
+                        key={subItem.id}
+                        onClick={subItem.onClick}
+                      >
+                        {subItem.icon && <subItem.icon />}
+                        {subItem.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            ) : (
               <DropdownMenuItem
                 key={action.id}
                 onClick={action.onClick}
@@ -91,8 +119,8 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
               >
                 {action.label}
               </DropdownMenuItem>
-            );
-          })}
+            )
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

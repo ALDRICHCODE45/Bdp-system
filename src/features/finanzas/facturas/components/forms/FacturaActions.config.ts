@@ -1,7 +1,10 @@
+import { FileText } from "lucide-react";
+
 export const FacturaActionsConfig = (
   onEdit: () => void,
   onDelete: () => void,
-  onShowHistory: () => void
+  onShowHistory: () => void,
+  onExportPdf: () => void
 ) => [
   {
     id: "edit",
@@ -18,5 +21,12 @@ export const FacturaActionsConfig = (
     id: "history",
     label: "Historial",
     onClick: onShowHistory,
+  },
+  {
+    id: "export",
+    label: "Exportar",
+    subItems: [
+      { id: "export_pdf", icon: FileText, onClick: onExportPdf, label: "PDF" },
+    ],
   },
 ];
