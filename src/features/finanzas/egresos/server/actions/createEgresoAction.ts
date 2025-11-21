@@ -4,8 +4,12 @@ import { makeEgresoService } from "../services/makeEgresoService";
 import { createEgresoSchema } from "../validators/createEgresoSchema";
 import { toEgresoDto } from "../mappers/egresoMapper";
 import prisma from "@/core/lib/prisma";
+import { auth } from "@/core/lib/auth/auth";
 
 export const createEgresoAction = async (input: FormData) => {
+  // Obtener usuario autenticado
+  const session = await auth();
+  const usuarioId = session?.user?.id || null;
   const concepto = input.get("concepto");
   const clasificacion = input.get("clasificacion");
   const categoria = input.get("categoria");
@@ -66,7 +70,10 @@ export const createEgresoAction = async (input: FormData) => {
   });
 
   const egresoService = makeEgresoService({ prisma });
-  const result = await egresoService.create(parsed);
+  const result = await egresoService.create({
+    ...parsed,
+    usuarioId,
+  });
 
   if (!result.ok) {
     return { ok: false, error: result.error.message };

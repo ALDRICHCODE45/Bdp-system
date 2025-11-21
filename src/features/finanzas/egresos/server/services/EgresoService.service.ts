@@ -4,6 +4,7 @@ import {
 } from "../repositories/EgresoRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { PrismaClient } from "@prisma/client";
+import { EgresoHistorialService } from "./EgresoHistorialService.service";
 
 type CreateEgresoInput = {
   concepto: string;
@@ -35,6 +36,7 @@ type CreateEgresoInput = {
   clienteProyecto: string;
   clienteProyectoId: string;
   notas?: string | null;
+  usuarioId?: string | null;
 };
 
 type UpdateEgresoInput = {
@@ -68,11 +70,13 @@ type UpdateEgresoInput = {
   clienteProyecto: string;
   clienteProyectoId: string;
   notas?: string | null;
+  usuarioId?: string | null;
 };
 
 export class EgresoService {
   constructor(
     private egresoRepository: EgresoRepository,
+    private historialService: EgresoHistorialService,
     private prisma: PrismaClient
   ) {}
 
@@ -114,6 +118,22 @@ export class EgresoService {
       }
 
       const egreso = await this.egresoRepository.create(input);
+
+      // Crear historial para el nuevo egreso
+      const historialResult =
+        await this.historialService.createHistorialForNewEgreso(
+          egreso,
+          input.usuarioId
+        );
+
+      if (!historialResult.ok) {
+        // Si falla la creación del historial, no fallar la creación del egreso
+        // pero registrar el error
+        console.error(
+          "Error al crear historial para nuevo egreso:",
+          historialResult.error
+        );
+      }
 
       return Ok(egreso);
     } catch (error) {
@@ -171,9 +191,47 @@ export class EgresoService {
         }
       }
 
-      const egreso = await this.egresoRepository.update(input);
+      // Usar transacción para actualizar egreso y crear historial de forma atómica
+      const result = await this.prisma.$transaction(async (tx) => {
+        // Crear repositorio temporal con el cliente de transacción
+        const { PrismaEgresoRepository } = await import(
+          "../repositories/PrismaEgresoRepository.repository"
+        );
+        const { PrismaEgresoHistorialRepository } = await import(
+          "../repositories/PrismaEgresoHistorialRepository.repository"
+        );
+        const { EgresoHistorialService } = await import(
+          "./EgresoHistorialService.service"
+        );
 
-      return Ok(egreso);
+        const tempEgresoRepository = new PrismaEgresoRepository(tx);
+        const tempHistorialRepository =
+          new PrismaEgresoHistorialRepository(tx);
+        const tempHistorialService = new EgresoHistorialService(
+          tempHistorialRepository
+        );
+
+        // Actualizar egreso
+        const updatedEgreso = await tempEgresoRepository.update(input);
+
+        // Crear historial para los cambios
+        const historialResult =
+          await tempHistorialService.createHistorialForUpdate(
+            existing,
+            updatedEgreso,
+            input.usuarioId
+          );
+
+        if (!historialResult.ok) {
+          throw new Error(
+            `Error al crear historial: ${historialResult.error.message}`
+          );
+        }
+
+        return updatedEgreso;
+      });
+
+      return Ok(result);
     } catch (error) {
       return Err(
         error instanceof Error ? error : new Error("Error al actualizar egreso")

@@ -32,6 +32,17 @@ const DeleteEgresoAlertDialog = dynamic(
   }
 );
 
+const EgresoHistorySheet = dynamic(
+  () =>
+    import("../EgresoHistorySheet").then((mod) => ({
+      default: mod.EgresoHistorySheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
+
 export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
   const egreso = row.original;
   const { isOpen, openModal, closeModal } = useModalState();
@@ -40,6 +51,11 @@ export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
     isOpen: isDeleteOpen,
     openModal: openDeleteModal,
     closeModal: closeDeleteModal,
+  } = useModalState();
+  const {
+    isOpen: isHistoryOpen,
+    openModal: openHistory,
+    closeModal: closeHistory,
   } = useModalState();
 
   const deleteEgresoMutation = useDeleteEgreso();
@@ -59,7 +75,8 @@ export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
   const actions = createEgresoActions(
     openModal,
     openDeleteModal,
-    handleCopyUUID
+    handleCopyUUID,
+    openHistory
   );
 
   return (
@@ -78,6 +95,15 @@ export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
 
       {isOpen && (
         <EditEgresoSheet egreso={egreso} isOpen={true} onClose={closeModal} />
+      )}
+
+      {isHistoryOpen && (
+        <EgresoHistorySheet
+          isOpen={true}
+          onClose={closeHistory}
+          egresoConcepto={egreso.concepto}
+          egresoId={egreso.id}
+        />
       )}
     </>
   );

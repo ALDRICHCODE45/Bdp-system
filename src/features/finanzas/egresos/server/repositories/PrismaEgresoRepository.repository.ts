@@ -7,8 +7,15 @@ import {
   UpdateEgresoArgs,
 } from "./EgresoRepository.repository";
 
+type PrismaTransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export class PrismaEgresoRepository implements EgresoRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(
+    private prisma: PrismaClient | PrismaTransactionClient
+  ) {}
 
   async create(data: CreateEgresoArgs): Promise<EgresoEntity> {
     return await this.prisma.egreso.create({

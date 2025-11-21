@@ -130,7 +130,7 @@ model ColaboradorHistorial {
 }
 
 model ClienteProveedorHistorial {
-  id                String           @id @default(uuid())
+  id                 String           @id @default(uuid())
   clienteProveedorId String
   clienteProveedor   ClienteProveedor @relation(fields: [clienteProveedorId], references: [id], onDelete: Cascade)
   campo              String
@@ -220,7 +220,7 @@ model UserRole {
 }
 
 model ClienteProveedor {
-  id                      String                       @id @default(uuid())
+  id                      String                      @id @default(uuid())
   nombre                  String
   rfc                     String
   tipo                    ClienteProveedorTipo
@@ -231,18 +231,18 @@ model ClienteProveedor {
   numeroCuenta            String?
   clabe                   String?
   banco                   String?
-  activo                  Boolean                      @default(true)
-  fechaRegistro           DateTime                     @default(now())
+  activo                  Boolean                     @default(true)
+  fechaRegistro           DateTime                    @default(now())
   notas                   String?
   socioId                 String?
-  socio                   Socio?                       @relation(fields: [socioId], references: [id], onDelete: SetNull)
-  egresosComoProveedor    Egreso[]                     @relation("EgresoProveedor")
-  egresosComoClienteProye Egreso[]                     @relation("EgresoClienteProyecto")
-  ingresosComoCliente     Ingreso[]                    @relation("IngresoCliente")
+  socio                   Socio?                      @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  egresosComoProveedor    Egreso[]                    @relation("EgresoProveedor")
+  egresosComoClienteProye Egreso[]                    @relation("EgresoClienteProyecto")
+  ingresosComoCliente     Ingreso[]                   @relation("IngresoCliente")
   facturas                Factura[]
   historial               ClienteProveedorHistorial[]
-  createdAt               DateTime                     @default(now())
-  updatedAt               DateTime                     @updatedAt
+  createdAt               DateTime                    @default(now())
+  updatedAt               DateTime                    @updatedAt
 
   @@unique([rfc, tipo])
   @@index([activo])
@@ -277,6 +277,7 @@ model Egreso {
   clienteProyectoRef ClienteProveedor             @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
   facturaId          String?
   notas              String?
+  historial          EgresoHistorial[]
   createdAt          DateTime                     @default(now())
   updatedAt          DateTime                     @updatedAt
 
@@ -286,6 +287,21 @@ model Egreso {
   @@index([clienteProyectoId])
   @@index([fechaPago])
   @@index([createdAt])
+}
+
+model EgresoHistorial {
+  id            String   @id @default(uuid())
+  egresoId      String
+  egreso        Egreso   @relation(fields: [egresoId], references: [id], onDelete: Cascade)
+  campo         String
+  valorAnterior String?
+  valorNuevo    String
+  usuarioId     String?
+  motivo        String?
+  fechaCambio   DateTime @default(now())
+
+  @@index([egresoId])
+  @@index([fechaCambio])
 }
 
 enum IngresoFormaPago {
