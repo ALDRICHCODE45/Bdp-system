@@ -2,6 +2,8 @@ import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { ClienteProveedor } from "../types/ClienteProveedor.type";
 import { CircleUser, PlusCircle } from "lucide-react";
 import { ClientesProovedoresTableFilters } from "./ClientesProovedoresTableFilters";
+import { Table } from "@tanstack/react-table";
+import { exportToExcel } from "@/core/shared/helpers/exportToExcel";
 
 export const ClientesProovedoresTableConfig: TableConfig<ClienteProveedor> = {
   filters: {
@@ -19,8 +21,8 @@ export const ClientesProovedoresTableConfig: TableConfig<ClienteProveedor> = {
   },
   actions: {
     showExportButton: true,
-    onExport: () => {
-      console.log("Exportando clientes y proovedores");
+    onExport: (table: Table<unknown>) => {
+      exportToExcel(table as Table<ClienteProveedor>, "clientes-proveedores");
     },
     showAddButton: true,
     addButtonIcon: <PlusCircle />,

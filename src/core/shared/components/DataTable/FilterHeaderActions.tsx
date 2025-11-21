@@ -1,5 +1,7 @@
 import { Button } from "@/core/shared/ui/button";
-import { Download, LucideIcon, RefreshCw } from "lucide-react";
+import { LucideIcon, RefreshCw } from "lucide-react";
+import { Table } from "@tanstack/react-table";
+import { ExportButton } from "./ExportButton";
 
 interface FilterHeaderActions {
   showAddButton?: boolean;
@@ -8,6 +10,9 @@ interface FilterHeaderActions {
   onClearFilters: () => void;
   buttonTooltipText: string;
   onAdd?: () => void;
+  onExport?: (table: Table<unknown>) => void;
+  table?: Table<unknown>;
+  exportFileName?: string;
 }
 
 export const FilterHeaderActions = ({
@@ -17,6 +22,9 @@ export const FilterHeaderActions = ({
   showAddButton = false,
   buttonTooltipText,
   onAdd,
+  onExport,
+  table,
+  exportFileName,
 }: FilterHeaderActions) => {
   return (
     <>
@@ -41,10 +49,13 @@ export const FilterHeaderActions = ({
         <RefreshCw />
         <span>Limpiar</span>
       </Button>
-      <Button variant="outline" size="sm" className="h-8 px-3">
-        <Download className="h-4 w-4 mr-2" />
-        Exportar
-      </Button>
+      {table && (
+        <ExportButton
+          table={table}
+          onExport={onExport}
+          fileName={exportFileName}
+        />
+      )}
     </>
   );
 };

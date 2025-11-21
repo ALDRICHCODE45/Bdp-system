@@ -15,8 +15,6 @@ import {
   Filter,
   Search,
   Calendar as CalendarIcon,
-  RefreshCw,
-  Download,
   DollarSign,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -35,6 +33,7 @@ interface EgresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
+  onExport?: (table: Table<unknown>) => void;
 }
 
 export function EgresosFilters({
@@ -44,6 +43,7 @@ export function EgresosFilters({
   addButtonIcon: AddButtonIcon,
   addButtonText = "Agregar Egreso",
   onAdd,
+  onExport,
 }: EgresosFiltersProps) {
   const {
     clearFilters,
@@ -78,6 +78,9 @@ export function EgresosFilters({
               clearFilters();
               onGlobalFilterChange?.("");
             }}
+            onExport={onExport}
+            table={table}
+            exportFileName="egresos"
           />
         </div>
       </CardHeader>

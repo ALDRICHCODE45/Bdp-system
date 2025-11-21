@@ -35,6 +35,7 @@ export function DataTableFilters<TData>({
         <CustomFilterComponent
           table={table as TanstackTable<unknown>}
           onGlobalFilterChange={setGlobalFilter}
+          onExport={config.actions?.onExport}
           {...customFilterProps}
         />
       ) : (
@@ -93,11 +94,13 @@ export function DataTableFilters<TData>({
               )}
 
               {/* Botón de exportar */}
-              {config.actions?.showExportButton && (
+              {config.actions?.showExportButton && config.actions?.onExport && (
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto min-w-0"
-                  onClick={config.actions.onExport}
+                  onClick={() =>
+                    config.actions?.onExport?.(table as Table<unknown>)
+                  }
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Exportar

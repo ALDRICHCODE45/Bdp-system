@@ -17,6 +17,7 @@ interface ClientesProovedoresTableFilters extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
+  onExport?: (table: Table<unknown>) => void;
 }
 
 export const ClientesProovedoresTableFilters = ({
@@ -26,6 +27,7 @@ export const ClientesProovedoresTableFilters = ({
   showAddButton,
   addButtonText = "Agregar",
   onAdd,
+  onExport,
 }: ClientesProovedoresTableFilters) => {
   const {
     clearFilters,
@@ -56,6 +58,9 @@ export const ClientesProovedoresTableFilters = ({
                 onGlobalFilterChange?.("");
               }}
               onAdd={onAdd}
+              onExport={onExport}
+              table={table}
+              exportFileName="clientes-proveedores"
             />
           </div>
         </CardHeader>

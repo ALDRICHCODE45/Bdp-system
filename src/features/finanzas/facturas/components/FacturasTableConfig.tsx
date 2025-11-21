@@ -2,6 +2,8 @@ import { Plus, PlusCircle } from "lucide-react";
 import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { FacturasFilters } from "./FacturasTableFilters";
+import { Table } from "@tanstack/react-table";
+import { exportToExcel } from "@/core/shared/helpers/exportToExcel";
 
 // Configuración personalizada para el DataTable
 export const FacturasTableConfig: TableConfig<FacturaDto> = {
@@ -17,8 +19,8 @@ export const FacturasTableConfig: TableConfig<FacturaDto> = {
   },
   actions: {
     showExportButton: true,
-    onExport: () => {
-      console.log("Exportando facturas");
+    onExport: (table: Table<unknown>) => {
+      exportToExcel(table as Table<FacturaDto>, "facturas");
     },
     showAddButton: true,
     addButtonIcon: <PlusCircle />,

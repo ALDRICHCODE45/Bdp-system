@@ -2,6 +2,8 @@ import { Plus, PlusCircle } from "lucide-react";
 import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { Egreso } from "../types/Egreso.type";
 import { EgresosFilters } from "./EgresosTableFilters";
+import { Table } from "@tanstack/react-table";
+import { exportToExcel } from "@/core/shared/helpers/exportToExcel";
 
 // Configuración personalizada para el DataTable
 export const EgresosTableConfig: TableConfig<Egreso> = {
@@ -17,8 +19,8 @@ export const EgresosTableConfig: TableConfig<Egreso> = {
   },
   actions: {
     showExportButton: true,
-    onExport: () => {
-      console.log("Exportando clientes y proovedores");
+    onExport: (table: Table<unknown>) => {
+      exportToExcel(table as Table<Egreso>, "egresos");
     },
     showAddButton: true,
     addButtonIcon: <PlusCircle />,

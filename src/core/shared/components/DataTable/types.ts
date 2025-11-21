@@ -6,13 +6,14 @@ import { LucideIcon } from "lucide-react";
 export interface FilterComponentProps<TData = unknown> {
   table: Table<TData>;
   onGlobalFilterChange?: (value: string) => void;
+  onExport?: (table: Table<TData>) => void;
 }
 
 // Interfaz para acciones de la tabla
 export interface TableActionProps<TData = unknown> {
   table: Table<TData>;
   onAdd?: () => void;
-  onExport?: () => void;
+  onExport?: (table: Table<TData>) => void;
   onRefresh?: () => void;
   customActions?: ReactNode;
 }
@@ -55,7 +56,7 @@ export interface ActionConfig<TData = unknown> {
   addButtonIcon?: ReactNode;
   onAdd?: () => void;
   showExportButton?: boolean;
-  onExport?: () => void;
+  onExport?: (table: Table<TData>) => void;
   showRefreshButton?: boolean;
   onRefresh?: () => void;
   customActions?: ReactNode;

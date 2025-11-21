@@ -36,6 +36,7 @@ interface FacturasFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
+  onExport?: (table: Table<unknown>) => void;
 }
 
 export function FacturasFilters({
@@ -45,6 +46,7 @@ export function FacturasFilters({
   addButtonText = "Agregar",
   showAddButton,
   onAdd,
+  onExport,
 }: FacturasFiltersProps) {
   const {
     clearFilters,
@@ -79,6 +81,9 @@ export function FacturasFilters({
               clearFilters();
               onGlobalFilterChange?.("");
             }}
+            onExport={onExport}
+            table={table}
+            exportFileName="facturas"
           />
         </div>
       </CardHeader>

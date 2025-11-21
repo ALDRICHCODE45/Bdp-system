@@ -2,6 +2,8 @@ import { Plus, PlusCircle } from "lucide-react";
 import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { Ingreso } from "../types/Ingreso.type";
 import { IngresosFilters } from "./IngresosTableFilters";
+import { Table } from "@tanstack/react-table";
+import { exportToExcel } from "@/core/shared/helpers/exportToExcel";
 
 // Configuración personalizada para el DataTable
 export const IngresosTableConfig: TableConfig<Ingreso> = {
@@ -17,8 +19,8 @@ export const IngresosTableConfig: TableConfig<Ingreso> = {
   },
   actions: {
     showExportButton: true,
-    onExport: () => {
-      console.log("Exportando ingresos");
+    onExport: (table: Table<unknown>) => {
+      exportToExcel(table as Table<Ingreso>, "ingresos");
     },
     showAddButton: true,
     addButtonIcon: <PlusCircle />,

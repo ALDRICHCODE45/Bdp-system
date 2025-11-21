@@ -49,6 +49,7 @@ interface IngresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
+  onExport?: (table: Table<unknown>) => void;
 }
 
 export function IngresosFilters({
@@ -58,6 +59,7 @@ export function IngresosFilters({
   addButtonText = "Agregar",
   showAddButton,
   onAdd,
+  onExport,
 }: IngresosFiltersProps) {
   const {
     clearFilters,
@@ -94,6 +96,9 @@ export function IngresosFilters({
               clearFilters();
               onGlobalFilterChange?.("");
             }}
+            onExport={onExport}
+            table={table}
+            exportFileName="ingresos"
           />
         </div>
       </CardHeader>
