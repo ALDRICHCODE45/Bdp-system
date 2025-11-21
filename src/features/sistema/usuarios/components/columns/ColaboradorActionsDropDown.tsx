@@ -4,6 +4,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/core/shared/ui/dropdown-menu";
 import { Button } from "@/core/shared/ui/button";
 import { EllipsisIcon } from "lucide-react";
@@ -24,6 +26,8 @@ export function ColaboradorActionsDropdown({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+        <DropdownMenuSeparator />
         {actions.map((action) => (
           <DropdownMenuItem
             key={action.id}
