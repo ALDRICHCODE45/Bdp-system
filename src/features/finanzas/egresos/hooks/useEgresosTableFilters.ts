@@ -61,7 +61,7 @@ export const useEgresosTableFilters = (table: Table<unknown>) => {
       table.getColumn("cantidad")?.setFilterValue(undefined);
     }
     table.setPageIndex(0);
-  }, [table]);
+  }, [table, selectedMontoRange]);
 
   const clearFilters = useCallback(() => {
     setDateRange(undefined);

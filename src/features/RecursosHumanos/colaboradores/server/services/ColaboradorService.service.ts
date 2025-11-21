@@ -1,9 +1,10 @@
-import { ColaboradorEstado, Prisma } from "@prisma/client";
+import { ColaboradorEstado, Prisma, PrismaClient } from "@prisma/client";
 import {
   ColaboradorRepository,
   ColaboradorWithSocio,
 } from "../repositories/ColaboradorRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
+import { ColaboradorHistorialService } from "./ColaboradorHistorialService.service";
 
 type CreateColaboradorInput = {
   name: string;
@@ -16,6 +17,7 @@ type CreateColaboradorInput = {
   clabe: string;
   sueldo: number;
   activos: string[];
+  usuarioId?: string | null;
 };
 
 type UpdateColaboradorInput = {
@@ -30,10 +32,15 @@ type UpdateColaboradorInput = {
   clabe: string;
   sueldo: number;
   activos: string[];
+  usuarioId?: string | null;
 };
 
 export class ColaboradorService {
-  constructor(private colaboradorRepository: ColaboradorRepository) {}
+  constructor(
+    private colaboradorRepository: ColaboradorRepository,
+    private historialService: ColaboradorHistorialService,
+    private prisma: PrismaClient
+  ) {}
 
   async create(
     input: CreateColaboradorInput
@@ -63,6 +70,22 @@ export class ColaboradorService {
         activos: input.activos,
       });
 
+      // Crear historial para el nuevo colaborador
+      const historialResult =
+        await this.historialService.createHistorialForNewColaborador(
+          colaborador,
+          input.usuarioId
+        );
+
+      if (!historialResult.ok) {
+        // Si falla la creación del historial, no fallar la creación del colaborador
+        // pero registrar el error
+        console.error(
+          "Error al crear historial para nuevo colaborador:",
+          historialResult.error
+        );
+      }
+
       return Ok(colaborador);
     } catch (error) {
       return Err(
@@ -84,21 +107,59 @@ export class ColaboradorService {
         return Err(new Error("Colaborador no encontrado"));
       }
 
-      const colaborador = await this.colaboradorRepository.update({
-        id: input.id,
-        name: input.name,
-        correo: input.correo,
-        puesto: input.puesto,
-        status: input.status,
-        imss: input.imss,
-        socioId: input.socioId,
-        banco: input.banco,
-        clabe: input.clabe,
-        sueldo: new Prisma.Decimal(input.sueldo),
-        activos: input.activos,
+      // Usar transacción para actualizar colaborador y crear historial de forma atómica
+      const result = await this.prisma.$transaction(async (tx) => {
+        // Crear repositorio temporal con el cliente de transacción
+        const { PrismaColaboradorRepository } = await import(
+          "../repositories/PrismaColaboradorRepository.repository"
+        );
+        const { PrismaColaboradorHistorialRepository } = await import(
+          "../repositories/PrismaColaboradorHistorialRepository.repository"
+        );
+        const { ColaboradorHistorialService } = await import(
+          "./ColaboradorHistorialService.service"
+        );
+
+        const tempColaboradorRepository = new PrismaColaboradorRepository(tx);
+        const tempHistorialRepository =
+          new PrismaColaboradorHistorialRepository(tx);
+        const tempHistorialService = new ColaboradorHistorialService(
+          tempHistorialRepository
+        );
+
+        // Actualizar colaborador
+        const updatedColaborador = await tempColaboradorRepository.update({
+          id: input.id,
+          name: input.name,
+          correo: input.correo,
+          puesto: input.puesto,
+          status: input.status,
+          imss: input.imss,
+          socioId: input.socioId,
+          banco: input.banco,
+          clabe: input.clabe,
+          sueldo: new Prisma.Decimal(input.sueldo),
+          activos: input.activos,
+        });
+
+        // Crear historial para los cambios
+        const historialResult =
+          await tempHistorialService.createHistorialForUpdate(
+            existingColaborador,
+            updatedColaborador,
+            input.usuarioId
+          );
+
+        if (!historialResult.ok) {
+          throw new Error(
+            `Error al crear historial: ${historialResult.error.message}`
+          );
+        }
+
+        return updatedColaborador;
       });
 
-      return Ok(colaborador);
+      return Ok(result);
     } catch (error) {
       return Err(
         error instanceof Error

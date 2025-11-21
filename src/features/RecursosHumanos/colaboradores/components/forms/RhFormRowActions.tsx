@@ -30,6 +30,17 @@ const DeleteColaboradorAlertDialog = dynamic(
   }
 );
 
+const ColaboradorHistorySheet = dynamic(
+  () =>
+    import("../ColaboradorHistorySheet").then((mod) => ({
+      default: mod.ColaboradorHistorySheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
+
 export function RhRowActions({ row }: { row: Row<ColaboradorDto> }) {
   const colaborador = row.original;
   const { isOpen, openModal, closeModal } = useModalState();
@@ -39,13 +50,23 @@ export function RhRowActions({ row }: { row: Row<ColaboradorDto> }) {
     closeModal: closeDeleteModal,
   } = useModalState();
 
+  const {
+    isOpen: isHistoryOpen,
+    openModal: OpenHistory,
+    closeModal: closeHistory,
+  } = useModalState();
+
   const deleteColaboradorMutation = useDeleteColaborador();
 
   const handleDelete = async () => {
     await deleteColaboradorMutation.mutateAsync(colaborador.id);
   };
 
-  const actions = CreateColaboradorActions(openModal, openDeleteModal);
+  const actions = CreateColaboradorActions(
+    openModal,
+    openDeleteModal,
+    OpenHistory
+  );
 
   return (
     <>
@@ -66,6 +87,15 @@ export function RhRowActions({ row }: { row: Row<ColaboradorDto> }) {
           colaborador={colaborador}
           isOpen={true}
           onClose={closeModal}
+        />
+      )}
+
+      {isHistoryOpen && (
+        <ColaboradorHistorySheet
+          isOpen={true}
+          onClose={closeHistory}
+          colaboradorName={colaborador.name}
+          colaboradorId={colaborador.id}
         />
       )}
     </>

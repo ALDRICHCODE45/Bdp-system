@@ -75,7 +75,7 @@ export const useFacturasTableFilters = (table: Table<unknown>) => {
       table.getColumn("monto")?.setFilterValue(undefined);
     }
     table.setPageIndex(0);
-  }, [table, selectedMontoRange.min, selectedMontoRange.max]);
+  }, [table, selectedMontoRange]);
 
   const clearFilters = useCallback(() => {
     setDateRange(undefined);
@@ -107,4 +107,3 @@ export const useFacturasTableFilters = (table: Table<unknown>) => {
     clearFilters,
   };
 };
-

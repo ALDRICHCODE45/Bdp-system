@@ -76,7 +76,7 @@ export const useIngresosTableFilters = (table: Table<unknown>) => {
       table.getColumn("cantidad")?.setFilterValue(undefined);
     }
     table.setPageIndex(0);
-  }, [table, selectedMontoRange.min, selectedMontoRange.max]);
+  }, [table, selectedMontoRange]);
 
   const clearFilters = useCallback(() => {
     setDateRange(undefined);

@@ -55,9 +55,9 @@ export const EditFacturaForm = ({
           </EmptyMedia>
           <EmptyTitle>Advertencia.</EmptyTitle>
           <EmptyDescription>
-            Factura No Editable. Solos las facturas con estado
-            <span className="font-bold">BORRADOR</span>
-            pueden ser editadas.
+            Es recomendable<span className="font-bold"> NO </span>Editar esta
+            factura. Solo se recomienda editar las facturas con estado{" "}
+            <span className="font-bold"> BORRADOR </span>
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>

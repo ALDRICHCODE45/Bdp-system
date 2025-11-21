@@ -4,8 +4,12 @@ import { makeColaboradorService } from "../services/makeColaboradorService";
 import { createColaboradorSchema } from "../validators/createColaboradorSchema";
 import { toColaboradorDto } from "../mappers/colaboradorMapper";
 import prisma from "@/core/lib/prisma";
+import { auth } from "@/core/lib/auth/auth";
 
 export const createColaboradorAction = async (input: FormData) => {
+  // Obtener usuario autenticado
+  const session = await auth();
+  const usuarioId = session?.user?.id || null;
   const name = input.get("name");
   const correo = input.get("correo");
   const puesto = input.get("puesto");
@@ -47,7 +51,10 @@ export const createColaboradorAction = async (input: FormData) => {
   });
 
   const colaboradorService = makeColaboradorService({ prisma });
-  const result = await colaboradorService.create(parsed);
+  const result = await colaboradorService.create({
+    ...parsed,
+    usuarioId,
+  });
 
   if (!result.ok) {
     return { ok: false, error: result.error.message };

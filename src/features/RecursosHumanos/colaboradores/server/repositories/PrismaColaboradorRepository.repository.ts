@@ -6,8 +6,13 @@ import {
   UpdateColaboradorArgs,
 } from "./ColaboradorRepository.repository";
 
+type PrismaTransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export class PrismaColaboradorRepository implements ColaboradorRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient | PrismaTransactionClient) {}
 
   async create(data: CreateColaboradorArgs): Promise<ColaboradorWithSocio> {
     return await this.prisma.colaborador.create({
