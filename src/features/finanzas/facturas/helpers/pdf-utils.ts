@@ -53,7 +53,7 @@ export const drawHeader = (
 
   // Nombre del sistema a la izquierda
   doc.setFontSize(fonts.title);
-  doc.setTextColor(colors.primary);
+  doc.setTextColor(colors.text);
   doc.setFont("helvetica", "bold");
   doc.text(systemName, margins.left, margins.top + 5);
 
@@ -138,15 +138,18 @@ export const drawField = (
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(colors.secondary);
-  
+
   // Truncar el valor si es muy largo
   const displayValue = value || "N/A";
   const textWidth = doc.getTextWidth(displayValue);
-  
+
   if (textWidth > maxWidth) {
     // Truncar y añadir elipsis
     let truncated = displayValue;
-    while (doc.getTextWidth(truncated + "...") > maxWidth && truncated.length > 0) {
+    while (
+      doc.getTextWidth(truncated + "...") > maxWidth &&
+      truncated.length > 0
+    ) {
       truncated = truncated.slice(0, -1);
     }
     doc.text(truncated + "...", x + 45, y);
@@ -154,4 +157,3 @@ export const drawField = (
     doc.text(displayValue, x + 45, y);
   }
 };
-

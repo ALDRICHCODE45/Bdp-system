@@ -35,4 +35,3 @@ export const PDF_CONFIG = {
     small: 7,
   },
 };
-
