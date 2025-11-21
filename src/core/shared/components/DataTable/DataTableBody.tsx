@@ -11,7 +11,6 @@ import {
   TableRow,
 } from "@/core/shared/ui/table";
 import {
-  ArrowUpRightIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   PackageOpen,
@@ -19,13 +18,11 @@ import {
 import { getColumnMinWidth } from "@/core/shared/helpers/getColumnMinWidth.helper";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/core/shared/ui/empty";
-import { Button } from "@/core/shared/ui/button";
 
 interface TableBodyProps<TData, TValue> {
   table: Table<TData>;
@@ -41,8 +38,13 @@ export const TableBodyDataTable = <TData, TValue>({
   return (
     <>
       <div className="rounded-lg border shadow-sm w-full min-w-0 overflow-hidden">
-        <div className="overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 table-scroll-container">
-          <TableComponent className="w-full min-w-fit">
+        <div
+          className="overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 table-scroll-container"
+          role="region"
+          aria-label="Tabla con scroll horizontal"
+          tabIndex={0}
+        >
+          <TableComponent className="w-full min-w-fit" role="table">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="border-b">
@@ -60,8 +62,12 @@ export const TableBodyDataTable = <TData, TValue>({
                         {header.isPlaceholder ? null : config.enableSorting &&
                           header.column.getCanSort() ? (
                           <button
-                            className="flex items-center gap-2 hover:text-gray-400"
+                            className="flex items-center gap-2 hover:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                             onClick={header.column.getToggleSortingHandler()}
+                            aria-label={`Ordenar por ${flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}`}
                           >
                             {flexRender(
                               header.column.columnDef.header,
@@ -89,8 +95,14 @@ export const TableBodyDataTable = <TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    className="border-b"
+                    className={`border-b transition-colors ${
+                      row.getIsSelected()
+                        ? "bg-muted/50 hover:bg-muted/70 focus-within:bg-muted/70"
+                        : "hover:bg-muted/30 focus-within:bg-muted/30"
+                    }`}
                     data-state={row.getIsSelected() && "selected"}
+                    aria-selected={row.getIsSelected()}
+                    role="row"
                   >
                     {row.getVisibleCells().map((cell) => {
                       const size = cell.column.getSize();

@@ -20,17 +20,20 @@ import { TableConfig } from "./types";
 import { TableBodyDataTable } from "./DataTableBody";
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableFilters } from "./DataTableFilters";
+import { TableSkeleton } from "./TableSkeleton";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   config?: TableConfig<TData>;
+  isLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   config = {},
+  isLoading: isLoadingProp,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -61,6 +64,8 @@ export function DataTable<TData, TValue>({
     enableSorting: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
+    isLoading: false,
+    skeletonRows: 5,
   };
 
   // Combinar configuración por defecto con la proporcionada
@@ -75,6 +80,8 @@ export function DataTable<TData, TValue>({
       config.enableColumnVisibility ?? defaultConfig.enableColumnVisibility,
     enableRowSelection:
       config.enableRowSelection ?? defaultConfig.enableRowSelection,
+    isLoading: isLoadingProp ?? config.isLoading ?? false,
+    skeletonRows: config.skeletonRows ?? 5,
   };
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -111,9 +118,17 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-4 w-full max-w-full min-w-0 overflow-hidden">
+    <div
+      className="space-y-4 w-full max-w-full min-w-0 overflow-hidden"
+      role="region"
+      aria-label="Tabla de datos"
+    >
       {/* Filtros personalizados o por defecto */}
-      <div className="w-full min-w-0">
+      <div
+        className="w-full min-w-0"
+        role="search"
+        aria-label="Filtros de búsqueda"
+      >
         <DataTableFilters
           config={finalConfig}
           setGlobalFilter={setGlobalFilter}
@@ -123,20 +138,24 @@ export function DataTable<TData, TValue>({
 
       {/* Cuerpo de la tabla*/}
       <div className="w-full min-w-0">
-        <TableBodyDataTable<TData, TValue>
-          columns={columns}
-          config={finalConfig}
-          table={table}
-        />
+        {finalConfig.isLoading ? (
+          <TableSkeleton
+            columns={columns.length}
+            rows={finalConfig.skeletonRows}
+          />
+        ) : (
+          <TableBodyDataTable<TData, TValue>
+            columns={columns}
+            config={finalConfig}
+            table={table}
+          />
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="w-full min-w-0">
-        <DataTablePagination<TData, TValue>
-          config={finalConfig}
-          table={table}
-        />
-      </div>
+      <nav className="w-full min-w-0" aria-label="Navegación de paginación">
+        <DataTablePagination<TData> config={finalConfig} table={table} />
+      </nav>
     </div>
   );
 }

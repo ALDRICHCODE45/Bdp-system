@@ -56,11 +56,20 @@ export interface ActionConfig<TData = unknown> {
   addButtonIcon?: ReactNode;
   onAdd?: () => void;
   showExportButton?: boolean;
-  onExport?: (table: Table<TData>) => void;
+  onExport?: (
+    table: Table<TData>,
+    options?: { selectedOnly?: boolean; filteredOnly?: boolean }
+  ) => void;
+  exportFileName?: string;
   showRefreshButton?: boolean;
   onRefresh?: () => void;
   customActions?: ReactNode;
   customActionComponent?: CustomActionComponent<TData>;
+  // Acciones bulk para filas seleccionadas
+  showBulkActions?: boolean;
+  onBulkDelete?: (selectedRows: TData[]) => void;
+  onBulkExport?: (selectedRows: TData[]) => void;
+  bulkActionsLabel?: string;
 }
 
 // Configuración de paginación
@@ -80,4 +89,6 @@ export interface TableConfig<TData> {
   enableSorting?: boolean;
   enableColumnVisibility?: boolean;
   enableRowSelection?: boolean;
+  isLoading?: boolean;
+  skeletonRows?: number;
 }

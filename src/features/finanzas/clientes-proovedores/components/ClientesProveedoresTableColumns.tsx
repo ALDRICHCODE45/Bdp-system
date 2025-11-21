@@ -8,8 +8,34 @@ import { ViewNotesColumn } from "./tableColumnsComponents/ViewNotesColumn";
 import { ViewAddressColumn } from "./tableColumnsComponents/ViewAddressColumn";
 import { ViewClabeInterbancariaPopOver } from "./tableColumnsComponents/ViewClabeInterbancariaPopOver";
 import { ViewFechaRegistroColumn } from "./tableColumnsComponents/ViewFechaRegistroColumns";
+import { Checkbox } from "@/core/shared/ui/checkbox";
 
 export const columns: ColumnDef<ClienteProveedorDto>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+    size: 4,
+    minSize: 4,
+    maxSize: 4,
+  },
   {
     header: "Tipo",
     accessorKey: "tipo",

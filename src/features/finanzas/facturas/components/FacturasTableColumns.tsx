@@ -49,7 +49,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild className="flex justify-center">
-              <div className="max-w-[100px] truncate font-mono text-xs">
+              <div className="max-w-[100px] truncate font-mono text-sm">
                 {numeroFactura}
               </div>
             </TooltipTrigger>
@@ -60,7 +60,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
         </TooltipProvider>
       );
     },
-    size: 8,
+    size: 10,
   },
   {
     accessorKey: "folioFiscal",
@@ -71,7 +71,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="max-w-[120px] truncate font-mono text-xs">
+              <div className="max-w-[120px] truncate font-mono text-sm">
                 {folioFiscal}
               </div>
             </TooltipTrigger>

@@ -4,8 +4,34 @@ import { cn } from "@/core/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { EgresoDto } from "../server/dtos/EgresoDto.dto";
 import { EgresoRowActions } from "./forms/EgresoRowActions";
+import { Checkbox } from "@/core/shared/ui/checkbox";
 
 export const columns: ColumnDef<EgresoDto>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+    size: 4,
+    minSize: 4,
+    maxSize: 4,
+  },
   {
     header: "ID",
     accessorKey: "id",
