@@ -457,3 +457,40 @@ model FacturaHistorial {
   @@index([facturaId])
   @@index([fechaCambio])
 }
+
+model Empresa {
+  id              String  @id @default(uuid())
+  // Datos básicos
+  razonSocial     String?
+  nombreComercial String?
+  rfc             String? @unique
+  curp            String?
+  // Dirección fiscal
+  direccionFiscal String?
+  colonia         String?
+  ciudad          String?
+  estado          String?
+  codigoPostal    String?
+  pais            String  @default("México")
+
+  // Datos bancarios principales (targeta de credito o debito)
+  bancoPrincipal           String?
+  nombreEnTarjetaPrincipal String?
+  numeroCuentaPrincipal    String?
+  clabePrincipal           String?
+  fechaExpiracionPrincipal DateTime?
+  cvvPrincipal             Int?
+
+  // Datos bancarios secundarios (opcional, targeta de credito o debito)
+  bancoSecundario           String?
+  nombreEnTarjetaSecundario String?
+  numeroCuentaSecundario    String?
+  clabeSecundaria           String?
+  fechaExpiracionSecundaria DateTime?
+  cvvSecundario             Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([rfc])
+}

@@ -1,4 +1,4 @@
-import { Settings, Users, Shield, Bell } from "lucide-react";
+import { Settings, Shield, Bell, Building2 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 
 export interface ConfigTab {
@@ -16,16 +16,16 @@ export const configTabs: ConfigTab[] = [
     icon: Shield,
   },
   {
+    id: "empresa",
+    label: "Empresa",
+    href: "/config/empresa",
+    icon: Building2,
+  },
+  {
     id: "general",
     label: "General",
     href: "/config/general",
     icon: Settings,
-  },
-  {
-    id: "usuarios",
-    label: "Usuarios",
-    href: "/config/usuarios",
-    icon: Users,
   },
   {
     id: "notificaciones",
