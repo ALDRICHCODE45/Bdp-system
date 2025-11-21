@@ -379,6 +379,7 @@ model Ingreso {
   fechaParticipacion DateTime?
   facturaId          String?
   notas              String?
+  historial          IngresoHistorial[]
   createdAt          DateTime                      @default(now())
   updatedAt          DateTime                      @updatedAt
 
@@ -387,6 +388,21 @@ model Ingreso {
   @@index([clienteId])
   @@index([fechaPago])
   @@index([createdAt])
+}
+
+model IngresoHistorial {
+  id            String   @id @default(uuid())
+  ingresoId     String
+  ingreso       Ingreso  @relation(fields: [ingresoId], references: [id], onDelete: Cascade)
+  campo         String
+  valorAnterior String?
+  valorNuevo    String
+  usuarioId     String?
+  motivo        String?
+  fechaCambio   DateTime @default(now())
+
+  @@index([ingresoId])
+  @@index([fechaCambio])
 }
 
 model Factura {

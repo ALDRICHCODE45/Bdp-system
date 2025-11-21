@@ -4,6 +4,7 @@ import {
 } from "../repositories/IngresoRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { PrismaClient } from "@prisma/client";
+import { IngresoHistorialService } from "./IngresoHistorialService.service";
 
 type CreateIngresoInput = {
   concepto: string;
@@ -27,6 +28,7 @@ type CreateIngresoInput = {
   clienteProyecto: string;
   fechaParticipacion?: Date | null;
   notas?: string | null;
+  usuarioId?: string | null;
 };
 
 type UpdateIngresoInput = {
@@ -51,12 +53,15 @@ type UpdateIngresoInput = {
   facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
   clienteProyecto: string;
   fechaParticipacion?: Date | null;
+  facturaId?: string | null;
   notas?: string | null;
+  usuarioId?: string | null;
 };
 
 export class IngresoService {
   constructor(
     private ingresoRepository: IngresoRepository,
+    private historialService: IngresoHistorialService,
     private prisma: PrismaClient
   ) {}
 
@@ -89,6 +94,22 @@ export class IngresoService {
       }
 
       const ingreso = await this.ingresoRepository.create(input);
+
+      // Crear historial para el nuevo ingreso
+      const historialResult =
+        await this.historialService.createHistorialForNewIngreso(
+          ingreso,
+          input.usuarioId
+        );
+
+      if (!historialResult.ok) {
+        // Si falla la creación del historial, no fallar la creación del ingreso
+        // pero registrar el error
+        console.error(
+          "Error al crear historial para nuevo ingreso:",
+          historialResult.error
+        );
+      }
 
       return Ok(ingreso);
     } catch (error) {
@@ -137,9 +158,46 @@ export class IngresoService {
         }
       }
 
-      const ingreso = await this.ingresoRepository.update(input);
+      // Usar transacción para actualizar ingreso y crear historial de forma atómica
+      const result = await this.prisma.$transaction(async (tx) => {
+        // Crear repositorio temporal con el cliente de transacción
+        const { PrismaIngresoRepository } = await import(
+          "../repositories/PrismaIngresoRepository.repository"
+        );
+        const { PrismaIngresoHistorialRepository } = await import(
+          "../repositories/PrismaIngresoHistorialRepository.repository"
+        );
+        const { IngresoHistorialService } = await import(
+          "./IngresoHistorialService.service"
+        );
 
-      return Ok(ingreso);
+        const tempIngresoRepository = new PrismaIngresoRepository(tx);
+        const tempHistorialRepository =
+          new PrismaIngresoHistorialRepository(tx);
+        const tempHistorialService = new IngresoHistorialService(
+          tempHistorialRepository
+        );
+
+        // Actualizar ingreso
+        const updatedIngreso = await tempIngresoRepository.update(input);
+
+        // Crear historial para los cambios
+        const historialResult =
+          await tempHistorialService.createHistorialForUpdate(
+            existing,
+            updatedIngreso,
+            input.usuarioId
+          );
+
+        if (!historialResult.ok) {
+          // Si falla la creación del historial, hacer rollback de la transacción
+          throw historialResult.error;
+        }
+
+        return updatedIngreso;
+      });
+
+      return Ok(result);
     } catch (error) {
       return Err(
         error instanceof Error ? error : new Error("Error al actualizar ingreso")

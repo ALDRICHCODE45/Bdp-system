@@ -32,6 +32,17 @@ const DeleteIngresoAlertDialog = dynamic(
   }
 );
 
+const IngresoHistorySheet = dynamic(
+  () =>
+    import("../IngresoHistorySheet").then((mod) => ({
+      default: mod.IngresoHistorySheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
+
 export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
   const ingreso = row.original;
   const { copyToClipboard, copied } = useCopyToClipboard();
@@ -40,6 +51,11 @@ export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
     isOpen: isDeleteOpen,
     openModal: openDeleteModal,
     closeModal: closeDeleteModal,
+  } = useModalState();
+  const {
+    isOpen: isHistoryOpen,
+    openModal: openHistory,
+    closeModal: closeHistory,
   } = useModalState();
 
   const deleteIngresoMutation = useDeleteIngreso();
@@ -61,7 +77,8 @@ export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
   const actions = createIngresoActions(
     openModal,
     openDeleteModal,
-    handleCopyUUID
+    handleCopyUUID,
+    openHistory
   );
 
   return (
@@ -83,6 +100,15 @@ export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
           ingreso={ingreso}
           isOpen={true}
           onClose={closeModal}
+        />
+      )}
+
+      {isHistoryOpen && (
+        <IngresoHistorySheet
+          isOpen={true}
+          onClose={closeHistory}
+          ingresoConcepto={ingreso.concepto}
+          ingresoId={ingreso.id}
         />
       )}
     </>

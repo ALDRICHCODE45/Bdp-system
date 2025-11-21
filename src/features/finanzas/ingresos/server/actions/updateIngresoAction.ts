@@ -4,8 +4,12 @@ import { makeIngresoService } from "../services/makeIngresoService";
 import { updateIngresoSchema } from "../validators/updateIngresoSchema";
 import { toIngresoDto } from "../mappers/ingresoMapper";
 import prisma from "@/core/lib/prisma";
+import { auth } from "@/core/lib/auth/auth";
 
 export const updateIngresoAction = async (input: FormData) => {
+  // Obtener usuario autenticado
+  const session = await auth();
+  const usuarioId = session?.user?.id || null;
   const id = input.get("id");
   const concepto = input.get("concepto");
   const cliente = input.get("cliente");
@@ -66,7 +70,11 @@ export const updateIngresoAction = async (input: FormData) => {
   });
 
   const ingresoService = makeIngresoService({ prisma });
-  const result = await ingresoService.update({ id: id as string, ...parsed });
+  const result = await ingresoService.update({
+    id: id as string,
+    ...parsed,
+    usuarioId,
+  });
 
   if (!result.ok) {
     return { ok: false, error: result.error.message };

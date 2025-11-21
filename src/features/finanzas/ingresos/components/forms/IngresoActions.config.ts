@@ -1,7 +1,8 @@
 export const createIngresoActions = (
   onEdit: () => void,
   onDelete: () => void,
-  onCopyUuId: () => void
+  onCopyUuId: () => void,
+  onShowHistory: () => void
 ) => [
   {
     id: "edit",
@@ -18,5 +19,10 @@ export const createIngresoActions = (
     id: "copyId",
     label: "Copiar UUID",
     onClick: onCopyUuId,
+  },
+  {
+    id: "history",
+    label: "Historial",
+    onClick: onShowHistory,
   },
 ];

@@ -7,8 +7,15 @@ import {
   UpdateIngresoArgs,
 } from "./IngresoRepository.repository";
 
+type PrismaTransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export class PrismaIngresoRepository implements IngresoRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(
+    private prisma: PrismaClient | PrismaTransactionClient
+  ) {}
 
   async create(data: CreateIngresoArgs): Promise<IngresoEntity> {
     return await this.prisma.ingreso.create({
@@ -33,6 +40,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
         facturadoPor: data.facturadoPor,
         clienteProyecto: data.clienteProyecto,
         fechaParticipacion: data.fechaParticipacion,
+        facturaId: data.facturaId,
         notas: data.notas,
       },
       include: {
@@ -65,6 +73,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
         facturadoPor: data.facturadoPor,
         clienteProyecto: data.clienteProyecto,
         fechaParticipacion: data.fechaParticipacion,
+        facturaId: data.facturaId,
         notas: data.notas,
       },
       include: {

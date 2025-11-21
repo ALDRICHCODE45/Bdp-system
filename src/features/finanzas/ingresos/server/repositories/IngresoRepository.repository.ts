@@ -25,6 +25,7 @@ export type CreateIngresoArgs = {
   facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
   clienteProyecto: string;
   fechaParticipacion?: Date | null;
+  facturaId?: string | null;
   notas?: string | null;
 };
 
@@ -50,6 +51,7 @@ export type UpdateIngresoArgs = {
   facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
   clienteProyecto: string;
   fechaParticipacion?: Date | null;
+  facturaId?: string | null;
   notas?: string | null;
 };
 
