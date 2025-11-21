@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaClienteProveedorRepository } from "../repositories/PrismaClienteProveedorRepository.repository";
 import { ClienteProveedorService } from "./ClienteProveedorService.service";
+import { makeClienteProveedorHistorialService } from "./makeClienteProveedorHistorialService";
 
 export function makeClienteProveedorService({
   prisma,
@@ -10,5 +11,10 @@ export function makeClienteProveedorService({
   const clienteProveedorRepository = new PrismaClienteProveedorRepository(
     prisma
   );
-  return new ClienteProveedorService(clienteProveedorRepository, prisma);
+  const historialService = makeClienteProveedorHistorialService({ prisma });
+  return new ClienteProveedorService(
+    clienteProveedorRepository,
+    historialService,
+    prisma
+  );
 }

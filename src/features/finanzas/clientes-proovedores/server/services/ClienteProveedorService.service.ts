@@ -4,6 +4,7 @@ import {
 } from "../repositories/ClienteProveedorRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { PrismaClient } from "@prisma/client";
+import { ClienteProveedorHistorialService } from "./ClienteProveedorHistorialService.service";
 
 type CreateClienteProveedorInput = {
   nombre: string;
@@ -20,6 +21,7 @@ type CreateClienteProveedorInput = {
   fechaRegistro: Date;
   notas?: string | null;
   socioId?: string | null;
+  usuarioId?: string | null;
 };
 
 type UpdateClienteProveedorInput = {
@@ -38,11 +40,13 @@ type UpdateClienteProveedorInput = {
   fechaRegistro: Date;
   notas?: string | null;
   socioId?: string | null;
+  usuarioId?: string | null;
 };
 
 export class ClienteProveedorService {
   constructor(
     private clienteProveedorRepository: ClienteProveedorRepository,
+    private historialService: ClienteProveedorHistorialService,
     private prisma: PrismaClient
   ) {}
 
@@ -76,6 +80,22 @@ export class ClienteProveedorService {
       const clienteProveedor = await this.clienteProveedorRepository.create(
         input
       );
+
+      // Crear historial para el nuevo cliente/proveedor
+      const historialResult =
+        await this.historialService.createHistorialForNewClienteProveedor(
+          clienteProveedor,
+          input.usuarioId
+        );
+
+      if (!historialResult.ok) {
+        // Si falla la creación del historial, no fallar la creación del cliente/proveedor
+        // pero registrar el error
+        console.error(
+          "Error al crear historial para nuevo cliente/proveedor:",
+          historialResult.error
+        );
+      }
 
       return Ok(clienteProveedor);
     } catch (error) {
@@ -126,11 +146,51 @@ export class ClienteProveedorService {
         }
       }
 
-      const clienteProveedor = await this.clienteProveedorRepository.update(
-        input
-      );
+      // Usar transacción para actualizar cliente/proveedor y crear historial de forma atómica
+      const result = await this.prisma.$transaction(async (tx) => {
+        // Crear repositorio temporal con el cliente de transacción
+        const { PrismaClienteProveedorRepository } = await import(
+          "../repositories/PrismaClienteProveedorRepository.repository"
+        );
+        const { PrismaClienteProveedorHistorialRepository } = await import(
+          "../repositories/PrismaClienteProveedorHistorialRepository.repository"
+        );
+        const { ClienteProveedorHistorialService } = await import(
+          "./ClienteProveedorHistorialService.service"
+        );
 
-      return Ok(clienteProveedor);
+        const tempClienteProveedorRepository = new PrismaClienteProveedorRepository(
+          tx
+        );
+        const tempHistorialRepository =
+          new PrismaClienteProveedorHistorialRepository(tx);
+        const tempHistorialService = new ClienteProveedorHistorialService(
+          tempHistorialRepository
+        );
+
+        // Actualizar cliente/proveedor
+        const updatedClienteProveedor = await tempClienteProveedorRepository.update(
+          input
+        );
+
+        // Crear historial para los cambios
+        const historialResult =
+          await tempHistorialService.createHistorialForUpdate(
+            existing,
+            updatedClienteProveedor,
+            input.usuarioId
+          );
+
+        if (!historialResult.ok) {
+          throw new Error(
+            `Error al crear historial: ${historialResult.error.message}`
+          );
+        }
+
+        return updatedClienteProveedor;
+      });
+
+      return Ok(result);
     } catch (error) {
       return Err(
         error instanceof Error

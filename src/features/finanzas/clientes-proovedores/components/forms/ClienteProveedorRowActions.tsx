@@ -30,6 +30,17 @@ const DeleteClienteProveedorAlertDialog = dynamic(
   }
 );
 
+const ClienteProveedorHistorySheet = dynamic(
+  () =>
+    import("../ClienteProveedorHistorySheet").then((mod) => ({
+      default: mod.ClienteProveedorHistorySheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
+
 export function ClienteProveedorRowActions({
   row,
 }: {
@@ -43,13 +54,23 @@ export function ClienteProveedorRowActions({
     closeModal: closeDeleteModal,
   } = useModalState();
 
+  const {
+    isOpen: isHistoryOpen,
+    openModal: openHistory,
+    closeModal: closeHistory,
+  } = useModalState();
+
   const deleteClienteProveedorMutation = useDeleteClienteProveedor();
 
   const handleDelete = async () => {
     await deleteClienteProveedorMutation.mutateAsync(clienteProveedor.id);
   };
 
-  const actions = createClienteProveedorActions(openModal, openDeleteModal);
+  const actions = createClienteProveedorActions(
+    openModal,
+    openDeleteModal,
+    openHistory
+  );
 
   return (
     <>
@@ -70,6 +91,15 @@ export function ClienteProveedorRowActions({
           clienteProveedor={clienteProveedor}
           isOpen={true}
           onClose={closeModal}
+        />
+      )}
+
+      {isHistoryOpen && (
+        <ClienteProveedorHistorySheet
+          isOpen={true}
+          onClose={closeHistory}
+          clienteProveedorName={clienteProveedor.nombre}
+          clienteProveedorId={clienteProveedor.id}
         />
       )}
     </>

@@ -6,10 +6,17 @@ import {
   UpdateClienteProveedorArgs,
 } from "./ClienteProveedorRepository.repository";
 
+type PrismaTransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export class PrismaClienteProveedorRepository
   implements ClienteProveedorRepository
 {
-  constructor(private prisma: PrismaClient) {}
+  constructor(
+    private prisma: PrismaClient | PrismaTransactionClient
+  ) {}
 
   async create(
     data: CreateClienteProveedorArgs

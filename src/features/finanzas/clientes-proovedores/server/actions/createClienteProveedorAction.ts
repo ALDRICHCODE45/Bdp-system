@@ -4,8 +4,12 @@ import { makeClienteProveedorService } from "../services/makeClienteProveedorSer
 import { createClienteProveedorSchema } from "../validators/createClienteProveedorSchema";
 import { toClienteProveedorDto } from "../mappers/clienteProveedorMapper";
 import prisma from "@/core/lib/prisma";
+import { auth } from "@/core/lib/auth/auth";
 
 export const createClienteProveedorAction = async (input: FormData) => {
+  // Obtener usuario autenticado
+  const session = await auth();
+  const usuarioId = session?.user?.id || null;
   const nombre = input.get("nombre");
   const rfc = input.get("rfc");
   const tipo = input.get("tipo");
@@ -44,7 +48,10 @@ export const createClienteProveedorAction = async (input: FormData) => {
   });
 
   const clienteProveedorService = makeClienteProveedorService({ prisma });
-  const result = await clienteProveedorService.create(parsed);
+  const result = await clienteProveedorService.create({
+    ...parsed,
+    usuarioId,
+  });
 
   if (!result.ok) {
     return { ok: false, error: result.error.message };

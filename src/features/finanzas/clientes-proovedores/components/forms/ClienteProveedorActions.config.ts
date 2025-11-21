@@ -1,6 +1,7 @@
 export const createClienteProveedorActions = (
   onEdit: () => void,
-  onDelete: () => void
+  onDelete: () => void,
+  onShowHistory: () => void
 ) => [
   {
     id: "edit",
@@ -12,5 +13,10 @@ export const createClienteProveedorActions = (
     label: "Eliminar",
     onClick: onDelete,
     variant: "destructive" as const,
+  },
+  {
+    id: "history",
+    label: "Historial",
+    onClick: onShowHistory,
   },
 ];
