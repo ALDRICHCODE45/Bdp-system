@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { EgresoDto } from "../server/dtos/EgresoDto.dto";
 import { EgresoRowActions } from "./forms/EgresoRowActions";
 import { Checkbox } from "@/core/shared/ui/checkbox";
+import { UploadEgresoColumn } from "./columns/UploadEgresoColumn";
 
 export const columns: ColumnDef<EgresoDto>[] = [
   {
@@ -253,6 +254,15 @@ export const columns: ColumnDef<EgresoDto>[] = [
       return <div className="text-sm truncate uppercase">{facturadoPor}</div>;
     },
     size: 12,
+  },
+  {
+    id: "archivos",
+    header: "Archivos",
+    cell: ({ row }) => {
+      const egreso = row.original;
+      return <UploadEgresoColumn egresoId={egreso.id} />;
+    },
+    size: 9,
   },
   {
     id: "actions",

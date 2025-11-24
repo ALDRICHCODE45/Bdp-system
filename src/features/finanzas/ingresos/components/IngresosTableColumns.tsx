@@ -17,6 +17,7 @@ import {
 } from "@/core/shared/ui/popover";
 import { FileText } from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
+import { UploadIngresoColumn } from "./columns/UploadIngresoColumn";
 
 export const columns: ColumnDef<IngresoDto>[] = [
   {
@@ -348,6 +349,15 @@ export const columns: ColumnDef<IngresoDto>[] = [
       );
     },
     size: 8,
+  },
+  {
+    id: "archivos",
+    header: "Archivos",
+    cell: ({ row }) => {
+      const ingreso = row.original;
+      return <UploadIngresoColumn ingresoId={ingreso.id} />;
+    },
+    size: 9,
   },
   {
     id: "actions",

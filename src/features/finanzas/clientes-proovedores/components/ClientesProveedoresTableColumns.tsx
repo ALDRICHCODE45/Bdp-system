@@ -9,6 +9,7 @@ import { ViewAddressColumn } from "./tableColumnsComponents/ViewAddressColumn";
 import { ViewClabeInterbancariaPopOver } from "./tableColumnsComponents/ViewClabeInterbancariaPopOver";
 import { ViewFechaRegistroColumn } from "./tableColumnsComponents/ViewFechaRegistroColumns";
 import { Checkbox } from "@/core/shared/ui/checkbox";
+import { UploadClienteProveedorColumn } from "./columns/UploadClienteProveedorColumn";
 
 export const columns: ColumnDef<ClienteProveedorDto>[] = [
   {
@@ -184,6 +185,17 @@ export const columns: ColumnDef<ClienteProveedorDto>[] = [
       </Badge>
     ),
     size: 10,
+  },
+  {
+    id: "archivos",
+    header: "Archivos",
+    cell: ({ row }) => {
+      const clienteProveedor = row.original;
+      return (
+        <UploadClienteProveedorColumn clienteProveedorId={clienteProveedor.id} />
+      );
+    },
+    size: 9,
   },
   {
     id: "actions",
