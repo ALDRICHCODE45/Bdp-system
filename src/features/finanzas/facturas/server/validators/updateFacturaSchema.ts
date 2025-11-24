@@ -34,8 +34,6 @@ export const updateFacturaSchema = z.object({
   creadoPor: z.string().min(1, "El creador es requerido"),
   autorizadoPor: z.string().min(1, "El autorizador es requerido"),
   notas: z.string().optional().nullable(),
-  archivoPdf: z.string().optional().nullable(),
-  archivoXml: z.string().optional().nullable(),
 });
 
 export type UpdateFacturaInput = z.infer<typeof updateFacturaSchema>;

@@ -26,8 +26,6 @@ type FacturaData = {
   creadoPor: string;
   autorizadoPor: string;
   notas: string | null;
-  archivoPdf: string | null;
-  archivoXml: string | null;
 };
 
 export class FacturaHistorialService {
@@ -112,8 +110,6 @@ export class FacturaHistorialService {
       "creadoPor",
       "autorizadoPor",
       "notas",
-      "archivoPdf",
-      "archivoXml",
     ];
 
     for (const field of fields) {
@@ -167,8 +163,6 @@ export class FacturaHistorialService {
         creadoPor: factura.creadoPor,
         autorizadoPor: factura.autorizadoPor,
         notas: factura.notas,
-        archivoPdf: factura.archivoPdf,
-        archivoXml: factura.archivoXml,
       };
 
       // Crear registros de historial para todos los campos iniciales
@@ -229,8 +223,6 @@ export class FacturaHistorialService {
         creadoPor: oldFactura.creadoPor,
         autorizadoPor: oldFactura.autorizadoPor,
         notas: oldFactura.notas,
-        archivoPdf: oldFactura.archivoPdf,
-        archivoXml: oldFactura.archivoXml,
       };
 
       const newData: FacturaData = {
@@ -256,8 +248,6 @@ export class FacturaHistorialService {
         creadoPor: newFactura.creadoPor,
         autorizadoPor: newFactura.autorizadoPor,
         notas: newFactura.notas,
-        archivoPdf: newFactura.archivoPdf,
-        archivoXml: newFactura.archivoXml,
       };
 
       const changes = this.detectChanges(oldData, newData);

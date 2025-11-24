@@ -12,6 +12,13 @@ const envSchema = z.object({
   //TODO: descomentar cuando se agregue la variable de entorno
   //DATABASE_URL: z.string().url("DATABASE_URL debe ser una URL válida").optional(),
 
+  // Digital Ocean Spaces
+  DO_SPACES_ENDPOINT: z.string().url("DO_SPACES_ENDPOINT debe ser una URL válida"),
+  DO_ACCESS_KEY: z.string().min(1, "DO_ACCESS_KEY es requerido"),
+  DO_SECRET_KEY: z.string().min(1, "DO_SECRET_KEY es requerido"),
+  DO_SPACES_BUCKET: z.string().min(1, "DO_SPACES_BUCKET es requerido"),
+  DO_SPACES_REGION: z.string().min(1, "DO_SPACES_REGION es requerido"),
+
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),

@@ -1,9 +1,12 @@
 export interface FileEntity {
   id: string;
   fileName: string;
-  contentType: string;
+  fileUrl: string;
   fileSize: number;
-  content: Buffer;
+  mimeType: string;
+  entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR";
+  entityId: string;
+  uploadedBy: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

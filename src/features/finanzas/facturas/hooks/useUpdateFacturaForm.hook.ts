@@ -35,8 +35,6 @@ export const useUpdateFacturaForm = (
       creadoPor: factura.creadoPor,
       autorizadoPor: factura.autorizadoPor,
       notas: factura.notas || "",
-      archivoPdf: factura.archivoPdf || "",
-      archivoXml: factura.archivoXml || "",
     },
     validators: {
       // @ts-expect-error - Zod schema validation types are complex
@@ -67,8 +65,6 @@ export const useUpdateFacturaForm = (
       formData.append("creadoPor", value.creadoPor);
       formData.append("autorizadoPor", value.autorizadoPor);
       formData.append("notas", value.notas || "");
-      formData.append("archivoPdf", value.archivoPdf || "");
-      formData.append("archivoXml", value.archivoXml || "");
 
       await updateFacturaMutation.mutateAsync(formData);
       onSuccess?.();

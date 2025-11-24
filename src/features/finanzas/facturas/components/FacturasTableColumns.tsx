@@ -13,6 +13,7 @@ import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { FacturaRowActions } from "./forms/FacturaRowActions";
 import { ViewNotesColumn } from "./columns/ViewNotesColumn";
 import { ViewAddressColumn } from "./columns/ViewAddressColumn";
+import { UploadFacturaColumn } from "./columns/UploadFacturaColumn";
 
 export const columns: ColumnDef<FacturaDto>[] = [
   {
@@ -408,13 +409,29 @@ export const columns: ColumnDef<FacturaDto>[] = [
   },
   {
     accessorKey: "notas",
-    header: "Notas",
+    header: () => (
+      <div className="flex justify-end items-center w-full h-full">Notas</div>
+    ),
     cell: ({ row }) => {
       const notas = row.getValue("notas") as string | undefined;
-      if (!notas) return <div className="text-xs text-muted-foreground">-</div>;
-      return <ViewNotesColumn column={row} />;
+      if (!notas)
+        return <div className="text-xs text-muted-foreground">N/A</div>;
+      return (
+        <div className="w-full flex justify-start">
+          <ViewNotesColumn column={row} />
+        </div>
+      );
     },
-    size: 12,
+    size: 9,
+  },
+  {
+    id: "archivos",
+    header: "Archivos",
+    cell: ({ row }) => {
+      const factura = row.original;
+      return <UploadFacturaColumn facturaId={factura.id} />;
+    },
+    size: 9,
   },
   {
     id: "actions",

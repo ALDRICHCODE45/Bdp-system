@@ -50,8 +50,6 @@ export function toFacturaDto(entity: FacturaEntity): FacturaDto {
     creadoPor: entity.creadoPor,
     autorizadoPor: entity.autorizadoPor,
     notas: entity.notas,
-    archivoPdf: entity.archivoPdf,
-    archivoXml: entity.archivoXml,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
   };

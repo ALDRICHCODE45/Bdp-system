@@ -43,7 +43,6 @@ export default function RootLayout({
           position="top-center"
           closeButton
           expand
-          richColors
           icons={{
             success: <CircleCheckIcon className="size-4" />,
             info: <InfoIcon className="size-4" />,

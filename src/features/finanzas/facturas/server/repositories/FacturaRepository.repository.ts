@@ -27,8 +27,6 @@ export type CreateFacturaArgs = {
   creadoPor: string;
   autorizadoPor: string;
   notas?: string | null;
-  archivoPdf?: string | null;
-  archivoXml?: string | null;
 };
 
 export type UpdateFacturaArgs = {
@@ -55,8 +53,6 @@ export type UpdateFacturaArgs = {
   creadoPor: string;
   autorizadoPor: string;
   notas?: string | null;
-  archivoPdf?: string | null;
-  archivoXml?: string | null;
 };
 
 export interface FacturaRepository {

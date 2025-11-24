@@ -9,4 +9,8 @@ export interface FileRepository {
   update(data: UpdateFileDto): Promise<FileEntity>;
   delete(data: DeleteFileDto): Promise<void>;
   findById(data: FindFileByIdDto): Promise<FileEntity | null>;
+  findByEntity(
+    entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
+    entityId: string
+  ): Promise<FileEntity[]>;
 }

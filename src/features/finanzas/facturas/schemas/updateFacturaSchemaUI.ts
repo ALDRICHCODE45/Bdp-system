@@ -40,8 +40,6 @@ export const updateFacturaSchemaUI = z.object({
   creadoPor: z.string().min(1, "El creador es requerido"),
   autorizadoPor: z.string().min(1, "El autorizador es requerido"),
   notas: z.string().optional(),
-  archivoPdf: z.string().optional(),
-  archivoXml: z.string().optional(),
 });
 
 export type UpdateFacturaFormValues = z.infer<typeof updateFacturaSchemaUI>;

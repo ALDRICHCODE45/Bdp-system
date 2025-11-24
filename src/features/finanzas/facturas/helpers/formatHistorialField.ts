@@ -25,8 +25,6 @@ export function formatFieldName(campo: string): string {
     creadoPor: "Creado Por",
     autorizadoPor: "Autorizado Por",
     notas: "Notas",
-    archivoPdf: "Archivo PDF",
-    archivoXml: "Archivo XML",
   };
 
   return fieldNames[campo] || campo;

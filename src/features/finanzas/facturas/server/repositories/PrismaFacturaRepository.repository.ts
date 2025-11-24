@@ -42,8 +42,6 @@ export class PrismaFacturaRepository implements FacturaRepository {
         creadoPor: data.creadoPor,
         autorizadoPor: data.autorizadoPor,
         notas: data.notas,
-        archivoPdf: data.archivoPdf,
-        archivoXml: data.archivoXml,
       },
       include: {
         clienteProveedorRef: true,
@@ -79,8 +77,6 @@ export class PrismaFacturaRepository implements FacturaRepository {
         creadoPor: data.creadoPor,
         autorizadoPor: data.autorizadoPor,
         notas: data.notas,
-        archivoPdf: data.archivoPdf,
-        archivoXml: data.archivoXml,
       },
       include: {
         clienteProveedorRef: true,

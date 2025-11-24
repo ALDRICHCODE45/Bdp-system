@@ -113,14 +113,4 @@ export interface Factura {
    * Notas adicionales
    */
   notas?: string;
-
-  /**
-   * Archivo PDF de la factura (ruta o URL)
-   */
-  archivoPdf?: string;
-
-  /**
-   * XML de la factura (para facturación electrónica)
-   */
-  archivoXml?: string;
 }

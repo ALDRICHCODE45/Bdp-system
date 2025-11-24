@@ -26,8 +26,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "CALFC",
     autorizadoPor: "CALFC",
     notas: "Timbrada 18ago25 - Juicio Contencioso Administrativo Federal",
-    archivoPdf: "/facturas/FAC-001.pdf",
-    archivoXml: "/facturas/FAC-001.xml",
   },
   {
     id: "FAC-002",
@@ -54,8 +52,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "CALFC",
     autorizadoPor: "CALFC",
     notas: "Timbrada 14ago25 - Primer cuatrimestre 2025",
-    archivoPdf: "/facturas/FAC-002.pdf",
-    archivoXml: "/facturas/FAC-002.xml",
   },
   {
     id: "FAC-003",
@@ -81,8 +77,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "CALFC",
     autorizadoPor: "CALFC",
     notas: "Asesoría Legal - Parte 1 de 2",
-    archivoPdf: "/facturas/FAC-003.pdf",
-    archivoXml: "/facturas/FAC-003.xml",
   },
   {
     id: "FAC-004",
@@ -109,8 +103,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "RJS",
     autorizadoPor: "CALFC",
     notas: "Administración de Personal Jurídico - Parte 1 de 2",
-    archivoPdf: "/facturas/FAC-004.pdf",
-    archivoXml: "/facturas/FAC-004.xml",
   },
   {
     id: "FAC-005",
@@ -137,8 +129,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "RJS",
     autorizadoPor: "CALFC",
     notas: "Servicios de Consultoría - Parte 1 de 2",
-    archivoPdf: "/facturas/FAC-005.pdf",
-    archivoXml: "/facturas/FAC-005.xml",
   },
   {
     id: "FAC-006",
@@ -165,8 +155,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "RJS",
     autorizadoPor: "CALFC",
     notas: "Asesoría en Procedimientos DICA",
-    archivoPdf: "/facturas/FAC-006.pdf",
-    archivoXml: "/facturas/FAC-006.xml",
   },
   {
     id: "FAC-007",
@@ -192,8 +180,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "CALFC",
     autorizadoPor: "CALFC",
     notas: "Asesoría Legal - Parte 2 de 2",
-    archivoPdf: "/facturas/FAC-007.pdf",
-    archivoXml: "/facturas/FAC-007.xml",
   },
   {
     id: "FAC-008",
@@ -220,8 +206,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "RJS",
     autorizadoPor: "CALFC",
     notas: "Servicios de Compliance - Parte 1 de 2",
-    archivoPdf: "/facturas/FAC-008.pdf",
-    archivoXml: "/facturas/FAC-008.xml",
   },
   {
     id: "FAC-009",
@@ -247,8 +231,6 @@ export const facturasMockData: Factura[] = [
     creadoPor: "CALFC",
     autorizadoPor: "CALFC",
     notas: "Honorarios Profesionales - Timbrada 22ago25",
-    archivoPdf: "/facturas/FAC-009.pdf",
-    archivoXml: "/facturas/FAC-009.xml",
   },
   {
     id: "FAC-010",
@@ -274,7 +256,5 @@ export const facturasMockData: Factura[] = [
     creadoPor: "CALFC",
     autorizadoPor: "CALFC",
     notas: "Timbrada 18ago25 - Segundo cuatrimestre 2025",
-    archivoPdf: "/facturas/FAC-010.pdf",
-    archivoXml: "/facturas/FAC-010.xml",
   },
 ];

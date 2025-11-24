@@ -35,8 +35,6 @@ export const createFacturaAction = async (input: FormData) => {
   const creadoPor = input.get("creadoPor") as string;
   const autorizadoPor = input.get("autorizadoPor") as string;
   const notas = input.get("notas") || null;
-  const archivoPdf = input.get("archivoPdf") || null;
-  const archivoXml = input.get("archivoXml") || null;
 
   const monto = montoString ? parseFloat(montoString as string) : 0;
   const fechaEmision = fechaEmisionString
@@ -76,8 +74,6 @@ export const createFacturaAction = async (input: FormData) => {
     creadoPor,
     autorizadoPor,
     notas: notas as string | null,
-    archivoPdf: archivoPdf as string | null,
-    archivoXml: archivoXml as string | null,
     usuarioId,
   });
 

@@ -354,6 +354,13 @@ enum FacturaFormaPago {
   CHEQUE
 }
 
+enum FileAttachmentEntityType {
+  FACTURA
+  EGRESO
+  INGRESO
+  CLIENTE_PROVEEDOR
+}
+
 model Ingreso {
   id                 String                        @id @default(uuid())
   concepto           String
@@ -430,8 +437,6 @@ model Factura {
   creadoPor           String
   autorizadoPor       String
   notas               String?
-  archivoPdf          String?
-  archivoXml          String?
   historial           FacturaHistorial[]
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
@@ -493,4 +498,20 @@ model Empresa {
   updatedAt DateTime @updatedAt
 
   @@index([rfc])
+}
+
+model FileAttachment {
+  id         String                   @id @default(uuid())
+  fileName   String
+  fileUrl    String
+  fileSize   Int
+  mimeType   String
+  entityType FileAttachmentEntityType
+  entityId   String
+  uploadedBy String?
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([entityId])
 }

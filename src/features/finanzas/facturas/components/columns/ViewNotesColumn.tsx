@@ -13,7 +13,12 @@ export const ViewNotesColumn = ({ column }: { column: Row<FacturaDto> }) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button
+          variant="outline"
+          size={"icon"}
+          buttonTooltip
+          buttonTooltipText="Visualiza tus notas"
+        >
           <NotebookPen className="text-gray-700 dark:text-white" />
         </Button>
       </PopoverTrigger>
