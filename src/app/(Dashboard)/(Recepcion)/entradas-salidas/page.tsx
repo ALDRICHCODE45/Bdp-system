@@ -3,7 +3,9 @@ import { makeEntradasSalidasService } from "@/features/Recepcion/entradas-salida
 import prisma from "@/core/lib/prisma";
 import { EntradasSalidasDTO } from "@/features/Recepcion/entradas-salidas/server/dtos/EntradasSalidasDto.dto";
 
-const fetchEntradasSalidasInitialData = async (): Promise<EntradasSalidasDTO[]> => {
+const fetchEntradasSalidasInitialData = async (): Promise<
+  EntradasSalidasDTO[]
+> => {
   const entradasSalidasService = makeEntradasSalidasService({ prisma });
   const result = await entradasSalidasService.getAll();
   if (!result.ok) {

@@ -32,8 +32,8 @@ export type CreateEgresoArgs = {
   fechaPago?: Date | null;
   fechaRegistro: Date;
   facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
-  clienteProyecto: string;
-  clienteProyectoId: string;
+  clienteProyecto: string | null;
+  clienteProyectoId: string | null;
   notas?: string | null;
 };
 
@@ -65,8 +65,8 @@ export type UpdateEgresoArgs = {
   fechaPago?: Date | null;
   fechaRegistro: Date;
   facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
-  clienteProyecto: string;
-  clienteProyectoId: string;
+  clienteProyecto: string | null;
+  clienteProyectoId: string | null;
   notas?: string | null;
 };
 

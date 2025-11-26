@@ -33,8 +33,8 @@ type CreateEgresoInput = {
   fechaPago?: Date | null;
   fechaRegistro: Date;
   facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
-  clienteProyecto: string;
-  clienteProyectoId: string;
+  clienteProyecto: string | null;
+  clienteProyectoId: string | null;
   notas?: string | null;
   usuarioId?: string | null;
 };
@@ -67,8 +67,8 @@ type UpdateEgresoInput = {
   fechaPago?: Date | null;
   fechaRegistro: Date;
   facturadoPor: "BDP" | "CALFC" | "GLOBAL" | "RGZ" | "RJS" | "APP";
-  clienteProyecto: string;
-  clienteProyectoId: string;
+  clienteProyecto: string | null;
+  clienteProyectoId: string | null;
   notas?: string | null;
   usuarioId?: string | null;
 };
@@ -108,16 +108,22 @@ export class EgresoService {
         );
       }
 
-      // Verificar que el cliente/proyecto existe
-      const clienteProyecto = await this.prisma.clienteProveedor.findUnique({
-        where: { id: input.clienteProyectoId },
-      });
+      // Verificar que el cliente/proyecto existe cuando se proporcione
+      if (input.clienteProyectoId) {
+        const clienteProyecto = await this.prisma.clienteProveedor.findUnique({
+          where: { id: input.clienteProyectoId },
+        });
 
-      if (!clienteProyecto) {
-        return Err(new Error("El cliente/proyecto no existe"));
+        if (!clienteProyecto) {
+          return Err(new Error("El cliente/proyecto no existe"));
+        }
       }
 
-      const egreso = await this.egresoRepository.create(input);
+      const egreso = await this.egresoRepository.create({
+        ...input,
+        clienteProyecto: input.clienteProyecto ?? null,
+        clienteProyectoId: input.clienteProyectoId ?? null,
+      });
 
       // Crear historial para el nuevo egreso
       const historialResult =
@@ -171,13 +177,15 @@ export class EgresoService {
         );
       }
 
-      // Verificar que el cliente/proyecto existe
-      const clienteProyecto = await this.prisma.clienteProveedor.findUnique({
-        where: { id: input.clienteProyectoId },
-      });
+      // Verificar que el cliente/proyecto existe cuando se proporcione
+      if (input.clienteProyectoId) {
+        const clienteProyecto = await this.prisma.clienteProveedor.findUnique({
+          where: { id: input.clienteProyectoId },
+        });
 
-      if (!clienteProyecto) {
-        return Err(new Error("El cliente/proyecto no existe"));
+        if (!clienteProyecto) {
+          return Err(new Error("El cliente/proyecto no existe"));
+        }
       }
 
       // Si cambió el folio fiscal, validar que no exista
@@ -212,7 +220,11 @@ export class EgresoService {
         );
 
         // Actualizar egreso
-        const updatedEgreso = await tempEgresoRepository.update(input);
+        const updatedEgreso = await tempEgresoRepository.update({
+          ...input,
+          clienteProyecto: input.clienteProyecto ?? null,
+          clienteProyectoId: input.clienteProyectoId ?? null,
+        });
 
         // Crear historial para los cambios
         const historialResult =

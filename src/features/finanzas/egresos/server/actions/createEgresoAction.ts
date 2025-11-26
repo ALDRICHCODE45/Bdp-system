@@ -30,8 +30,8 @@ export const createEgresoAction = async (input: FormData) => {
   const fechaPagoString = input.get("fechaPago");
   const fechaRegistroString = input.get("fechaRegistro");
   const facturadoPor = input.get("facturadoPor");
-  const clienteProyecto = input.get("clienteProyecto");
-  const clienteProyectoId = input.get("clienteProyectoId");
+  const rawClienteProyecto = input.get("clienteProyecto");
+  const rawClienteProyectoId = input.get("clienteProyectoId");
   const notas = input.get("notas") || null;
 
   const cantidad = cantidadString ? parseFloat(cantidadString as string) : 0;
@@ -64,14 +64,24 @@ export const createEgresoAction = async (input: FormData) => {
     fechaPago,
     fechaRegistro,
     facturadoPor,
-    clienteProyecto,
-    clienteProyectoId,
+    clienteProyecto:
+      typeof rawClienteProyecto === "string" &&
+      rawClienteProyecto.trim().length > 0
+        ? rawClienteProyecto
+        : null,
+    clienteProyectoId:
+      typeof rawClienteProyectoId === "string" &&
+      rawClienteProyectoId.trim().length > 0
+        ? rawClienteProyectoId
+        : null,
     notas,
   });
 
   const egresoService = makeEgresoService({ prisma });
   const result = await egresoService.create({
     ...parsed,
+    clienteProyecto: parsed.clienteProyecto ?? null,
+    clienteProyectoId: parsed.clienteProyectoId ?? null,
     usuarioId,
   });
 

@@ -32,7 +32,8 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
   const form = useUpdateEgresoForm(egreso, onSuccess);
   const { data: clientesProveedores } = useClientesProveedores();
 
-  const proveedores = clientesProveedores?.filter((cp) => cp.tipo === "proveedor") || [];
+  const proveedores =
+    clientesProveedores?.filter((cp) => cp.tipo === "proveedor") || [];
   const clientes = clientesProveedores || [];
 
   return (
@@ -78,14 +79,20 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="clasificacion">Clasificación</FieldLabel>
+                    <FieldLabel htmlFor="clasificacion">
+                      Clasificación
+                    </FieldLabel>
                     <FieldDescription>Tipo de gasto</FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="clasificacion" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
@@ -94,7 +101,9 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                       <SelectItem value="gasto op">Gasto Op</SelectItem>
                       <SelectItem value="honorarios">Honorarios</SelectItem>
                       <SelectItem value="servicios">Servicios</SelectItem>
-                      <SelectItem value="arrendamiento">Arrendamiento</SelectItem>
+                      <SelectItem value="arrendamiento">
+                        Arrendamiento
+                      </SelectItem>
                       <SelectItem value="comisiones">Comisiones</SelectItem>
                       <SelectItem value="disposición">Disposición</SelectItem>
                     </SelectContent>
@@ -114,12 +123,16 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                   <FieldContent>
                     <FieldLabel htmlFor="categoria">Categoría</FieldLabel>
                     <FieldDescription>Categoría del egreso</FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="categoria" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
@@ -128,7 +141,9 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                       <SelectItem value="facturación">Facturación</SelectItem>
                       <SelectItem value="comisiones">Comisiones</SelectItem>
                       <SelectItem value="disposición">Disposición</SelectItem>
-                      <SelectItem value="bancarizaciones">Bancarizaciones</SelectItem>
+                      <SelectItem value="bancarizaciones">
+                        Bancarizaciones
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -146,7 +161,9 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                   <FieldContent>
                     <FieldLabel htmlFor="proveedorId">Proveedor</FieldLabel>
                     <FieldDescription>Selecciona el proveedor</FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
@@ -187,12 +204,19 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                       Cliente/Proyecto
                     </FieldLabel>
                     <FieldDescription>Cliente relacionado</FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
-                    value={field.state.value}
+                    value={field.state.value || undefined}
                     onValueChange={(value) => {
+                      if (value === "__none__") {
+                        field.handleChange("");
+                        form.setFieldValue("clienteProyecto", "");
+                        return;
+                      }
                       field.handleChange(value);
                       const cliente = clientes.find((c) => c.id === value);
                       if (cliente) {
@@ -200,10 +224,16 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                       }
                     }}
                   >
-                    <SelectTrigger id="clienteProyectoId" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar cliente" />
+                    <SelectTrigger
+                      id="clienteProyectoId"
+                      aria-invalid={isInvalid}
+                    >
+                      <SelectValue placeholder="Seleccionar cliente (opcional)" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
+                      <SelectItem value="__none__">
+                        Sin cliente/proyecto
+                      </SelectItem>
                       {clientes.map((cliente) => (
                         <SelectItem key={cliente.id} value={cliente.id}>
                           {cliente.nombre}
@@ -225,12 +255,16 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
                     <FieldLabel htmlFor="solicitante">Solicitante</FieldLabel>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="solicitante" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
@@ -255,12 +289,16 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
                     <FieldLabel htmlFor="autorizador">Autorizador</FieldLabel>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="autorizador" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
@@ -283,7 +321,9 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Número de Factura</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    Número de Factura
+                  </FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -331,7 +371,9 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Periodo (YYYY-MM)</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    Periodo (YYYY-MM)
+                  </FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -357,18 +399,24 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
                     <FieldLabel htmlFor="formaPago">Forma de Pago</FieldLabel>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="formaPago" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
-                      <SelectItem value="transferencia">Transferencia</SelectItem>
+                      <SelectItem value="transferencia">
+                        Transferencia
+                      </SelectItem>
                       <SelectItem value="efectivo">Efectivo</SelectItem>
                       <SelectItem value="cheque">Cheque</SelectItem>
                     </SelectContent>
@@ -461,12 +509,16 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                   <FieldContent>
                     <FieldLabel htmlFor="cargoAbono">Cargo/Abono</FieldLabel>
                     <FieldDescription>Empresa del cargo</FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="cargoAbono" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
@@ -499,7 +551,9 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                     step="0.01"
                     value={field.state.value}
                     onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      field.handleChange(parseFloat(e.target.value) || 0)
+                    }
                     aria-invalid={isInvalid}
                     placeholder="0.00"
                     autoComplete="off"
@@ -519,12 +573,16 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
                     <FieldLabel htmlFor="estado">Estado</FieldLabel>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="estado" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
@@ -580,7 +638,9 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
                 : new Date();
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Fecha de Registro</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    Fecha de Registro
+                  </FieldLabel>
                   <DatePicker
                     date={selectedDate}
                     onDateChange={(date) => {
@@ -606,13 +666,19 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="facturadoPor">Facturado Por</FieldLabel>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    <FieldLabel htmlFor="facturadoPor">
+                      Facturado Por
+                    </FieldLabel>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldContent>
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as typeof field.state.value)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as typeof field.state.value)
+                    }
                   >
                     <SelectTrigger id="facturadoPor" aria-invalid={isInvalid}>
                       <SelectValue placeholder="Seleccionar" />
@@ -664,4 +730,3 @@ export const EditEgresoForm = ({ egreso, onSuccess }: EditEgresoFormProps) => {
     </div>
   );
 };
-

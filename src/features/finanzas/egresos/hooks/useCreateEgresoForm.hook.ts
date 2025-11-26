@@ -68,8 +68,8 @@ export const useCreateEgresoForm = (onSuccess?: () => void) => {
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("fechaRegistro", value.fechaRegistro);
       formData.append("facturadoPor", value.facturadoPor.toUpperCase());
-      formData.append("clienteProyecto", value.clienteProyecto);
-      formData.append("clienteProyectoId", value.clienteProyectoId);
+      formData.append("clienteProyecto", value.clienteProyecto ?? "");
+      formData.append("clienteProyectoId", value.clienteProyectoId ?? "");
       formData.append("notas", value.notas || "");
 
       await createEgresoMutation.mutateAsync(formData);

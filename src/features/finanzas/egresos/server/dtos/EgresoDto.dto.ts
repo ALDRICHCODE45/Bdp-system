@@ -31,8 +31,8 @@ export type EgresoDto = {
   fechaPago: string | null;
   fechaRegistro: string;
   facturadoPor: "bdp" | "calfc" | "global" | "rgz" | "rjs" | "app";
-  clienteProyecto: string;
-  clienteProyectoId: string;
+  clienteProyecto: string | null;
+  clienteProyectoId: string | null;
   clienteProyectoInfo: {
     id: string;
     nombre: string;

@@ -99,8 +99,8 @@ export function toEgresoDto(entity: EgresoEntity): EgresoDto {
       | "rgz"
       | "rjs"
       | "app",
-    clienteProyecto: entity.clienteProyecto,
-    clienteProyectoId: entity.clienteProyectoId,
+    clienteProyecto: entity.clienteProyecto ?? null,
+    clienteProyectoId: entity.clienteProyectoId ?? null,
     clienteProyectoInfo: entity.clienteProyectoRef
       ? {
           id: entity.clienteProyectoRef.id,

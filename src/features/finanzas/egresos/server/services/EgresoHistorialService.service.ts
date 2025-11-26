@@ -24,16 +24,14 @@ type EgresoData = {
   fechaPago: Date | null;
   fechaRegistro: Date;
   facturadoPor: string;
-  clienteProyecto: string;
-  clienteProyectoId: string;
+  clienteProyecto: string | null;
+  clienteProyectoId: string | null;
   facturaId: string | null;
   notas: string | null;
 };
 
 export class EgresoHistorialService {
-  constructor(
-    private historialRepository: EgresoHistorialRepository
-  ) {}
+  constructor(private historialRepository: EgresoHistorialRepository) {}
 
   /**
    * Formatea un valor a string para almacenamiento en el historial
@@ -165,8 +163,8 @@ export class EgresoHistorialService {
         fechaPago: egreso.fechaPago,
         fechaRegistro: egreso.fechaRegistro,
         facturadoPor: egreso.facturadoPor,
-        clienteProyecto: egreso.clienteProyecto,
-        clienteProyectoId: egreso.clienteProyectoId,
+        clienteProyecto: egreso.clienteProyecto ?? null,
+        clienteProyectoId: egreso.clienteProyectoId ?? null,
         facturaId: egreso.facturaId,
         notas: egreso.notas,
       };
@@ -176,9 +174,7 @@ export class EgresoHistorialService {
         egresoId: egreso.id,
         campo: field,
         valorAnterior: null,
-        valorNuevo: this.formatValue(
-          egresoData[field as keyof EgresoData]
-        ),
+        valorNuevo: this.formatValue(egresoData[field as keyof EgresoData]),
         usuarioId: usuarioId || null,
         motivo: null,
       }));
@@ -227,8 +223,8 @@ export class EgresoHistorialService {
         fechaPago: oldEgreso.fechaPago,
         fechaRegistro: oldEgreso.fechaRegistro,
         facturadoPor: oldEgreso.facturadoPor,
-        clienteProyecto: oldEgreso.clienteProyecto,
-        clienteProyectoId: oldEgreso.clienteProyectoId,
+        clienteProyecto: oldEgreso.clienteProyecto ?? null,
+        clienteProyectoId: oldEgreso.clienteProyectoId ?? null,
         facturaId: oldEgreso.facturaId,
         notas: oldEgreso.notas,
       };
@@ -254,8 +250,8 @@ export class EgresoHistorialService {
         fechaPago: newEgreso.fechaPago,
         fechaRegistro: newEgreso.fechaRegistro,
         facturadoPor: newEgreso.facturadoPor,
-        clienteProyecto: newEgreso.clienteProyecto,
-        clienteProyectoId: newEgreso.clienteProyectoId,
+        clienteProyecto: newEgreso.clienteProyecto ?? null,
+        clienteProyectoId: newEgreso.clienteProyectoId ?? null,
         facturaId: newEgreso.facturaId,
         notas: newEgreso.notas,
       };
@@ -310,4 +306,3 @@ export class EgresoHistorialService {
     }
   }
 }
-

@@ -113,7 +113,7 @@ export interface Egreso {
   /**
    * Cliente o proyecto relacionado
    */
-  clienteProyecto: string;
+  clienteProyecto: string | null;
 
   /**
    * Notas adicionales

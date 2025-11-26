@@ -35,8 +35,8 @@ export const useUpdateEgresoForm = (
         : "",
       fechaRegistro: egreso.fechaRegistro.split("T")[0],
       facturadoPor: egreso.facturadoPor,
-      clienteProyecto: egreso.clienteProyecto,
-      clienteProyectoId: egreso.clienteProyectoId,
+      clienteProyecto: egreso.clienteProyecto ?? "",
+      clienteProyectoId: egreso.clienteProyectoId ?? "",
       notas: egreso.notas || "",
     },
     validators: {
@@ -66,8 +66,8 @@ export const useUpdateEgresoForm = (
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("fechaRegistro", value.fechaRegistro);
       formData.append("facturadoPor", value.facturadoPor.toUpperCase());
-      formData.append("clienteProyecto", value.clienteProyecto);
-      formData.append("clienteProyectoId", value.clienteProyectoId);
+      formData.append("clienteProyecto", value.clienteProyecto ?? "");
+      formData.append("clienteProyectoId", value.clienteProyectoId ?? "");
       formData.append("notas", value.notas || "");
 
       await updateEgresoMutation.mutateAsync(formData);

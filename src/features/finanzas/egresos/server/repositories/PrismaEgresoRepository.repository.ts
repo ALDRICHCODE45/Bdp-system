@@ -40,8 +40,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         fechaPago: data.fechaPago,
         fechaRegistro: data.fechaRegistro,
         facturadoPor: data.facturadoPor,
-        clienteProyecto: data.clienteProyecto,
-        clienteProyectoId: data.clienteProyectoId,
+        clienteProyecto: data.clienteProyecto ?? null,
+        clienteProyectoId: data.clienteProyectoId ?? null,
         notas: data.notas,
       },
       include: {
@@ -75,8 +75,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         fechaPago: data.fechaPago,
         fechaRegistro: data.fechaRegistro,
         facturadoPor: data.facturadoPor,
-        clienteProyecto: data.clienteProyecto,
-        clienteProyectoId: data.clienteProyectoId,
+        clienteProyecto: data.clienteProyecto ?? null,
+        clienteProyectoId: data.clienteProyectoId ?? null,
         notas: data.notas,
       },
       include: {

@@ -18,7 +18,7 @@ const CreateEntradaSalidaSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 interface EntradasSalidasProps {

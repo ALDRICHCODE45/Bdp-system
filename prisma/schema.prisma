@@ -272,9 +272,9 @@ model Egreso {
   fechaPago          DateTime?
   fechaRegistro      DateTime                     @default(now())
   facturadoPor       EgresoFacturadoPor
-  clienteProyecto    String
-  clienteProyectoId  String
-  clienteProyectoRef ClienteProveedor             @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
+  clienteProyecto    String?
+  clienteProyectoId  String?
+  clienteProyectoRef ClienteProveedor?            @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
   facturaId          String?
   notas              String?
   historial          EgresoHistorial[]
