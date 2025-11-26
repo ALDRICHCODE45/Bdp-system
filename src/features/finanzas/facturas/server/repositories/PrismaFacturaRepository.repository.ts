@@ -42,14 +42,16 @@ export class PrismaFacturaRepository implements FacturaRepository {
         banco: data.banco,
         fechaPago: data.fechaPago,
         fechaRegistro: data.fechaRegistro,
-        creadoPor: data.creadoPor,
-        autorizadoPor: data.autorizadoPor,
+        creadoPorId: data.creadoPorId,
+        autorizadoPorId: data.autorizadoPorId,
         notas: data.notas,
         ingresadoPor: data.ingresadoPor,
       },
       include: {
         clienteProveedorRef: true,
         ingresadoPorRef: true,
+        creadoPorRef: true,
+        autorizadoPorRef: true,
       },
     });
 
@@ -82,13 +84,15 @@ export class PrismaFacturaRepository implements FacturaRepository {
         banco: data.banco,
         fechaPago: data.fechaPago,
         fechaRegistro: data.fechaRegistro,
-        creadoPor: data.creadoPor,
-        autorizadoPor: data.autorizadoPor,
+        creadoPorId: data.creadoPorId,
+        autorizadoPorId: data.autorizadoPorId,
         notas: data.notas,
       },
       include: {
         clienteProveedorRef: true,
         ingresadoPorRef: true,
+        creadoPorRef: true,
+        autorizadoPorRef: true,
       },
     });
 
@@ -107,6 +111,8 @@ export class PrismaFacturaRepository implements FacturaRepository {
       include: {
         clienteProveedorRef: true,
         ingresadoPorRef: true,
+        creadoPorRef: true,
+        autorizadoPorRef: true,
       },
     });
 
@@ -127,6 +133,8 @@ export class PrismaFacturaRepository implements FacturaRepository {
       include: {
         clienteProveedorRef: true,
         ingresadoPorRef: true,
+        creadoPorRef: true,
+        autorizadoPorRef: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -141,6 +149,8 @@ export class PrismaFacturaRepository implements FacturaRepository {
       include: {
         clienteProveedorRef: true,
         ingresadoPorRef: true,
+        creadoPorRef: true,
+        autorizadoPorRef: true,
       },
       orderBy: {
         createdAt: "desc",

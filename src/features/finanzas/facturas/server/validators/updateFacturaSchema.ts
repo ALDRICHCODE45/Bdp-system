@@ -37,8 +37,10 @@ export const updateFacturaSchema = z.object({
   banco: z.string().min(1, "El banco es requerido"),
   fechaPago: z.date().optional().nullable(),
   fechaRegistro: z.date(),
-  creadoPor: z.string().min(1, "El creador es requerido"),
-  autorizadoPor: z.string().min(1, "El autorizador es requerido"),
+  creadoPor: z.string().min(1, "El nombre del creador es requerido"),
+  creadoPorId: z.string().uuid("ID de creador inválido"),
+  autorizadoPor: z.string().min(1, "El nombre del autorizador es requerido"),
+  autorizadoPorId: z.string().uuid("ID de autorizador inválido"),
   notas: z.string().optional().nullable(),
 });
 

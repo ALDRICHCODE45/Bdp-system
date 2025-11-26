@@ -17,10 +17,15 @@ export type UpdateFacturaDto = {
   rfcReceptor: string;
   direccionEmisor: string;
   direccionReceptor: string;
+  numeroCuenta: string;
+  clabe: string;
+  banco: string;
   fechaPago?: Date | null;
   fechaRegistro: Date;
   creadoPor: string;
+  creadoPorId: string;
   autorizadoPor: string;
+  autorizadoPorId: string;
   notas?: string | null;
 };
 

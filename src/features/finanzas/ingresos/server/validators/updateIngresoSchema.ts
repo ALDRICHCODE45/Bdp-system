@@ -4,12 +4,10 @@ export const updateIngresoSchema = z.object({
   concepto: z.string().min(1, "El concepto es requerido"),
   cliente: z.string().min(1, "El cliente es requerido"),
   clienteId: z.string().uuid("ID de cliente inválido"),
-  solicitante: z.enum(["RJS", "RGZ", "CALFC"], {
-    message: "Solicitante inválido",
-  }),
-  autorizador: z.enum(["RJS", "RGZ", "CALFC"], {
-    message: "Autorizador inválido",
-  }),
+  solicitante: z.string().min(1, "El nombre del solicitante es requerido"),
+  solicitanteId: z.string().uuid("ID de solicitante inválido"),
+  autorizador: z.string().min(1, "El nombre del autorizador es requerido"),
+  autorizadorId: z.string().uuid("ID de autorizador inválido"),
   numeroFactura: z.string().min(1, "El número de factura es requerido"),
   folioFiscal: z.string().min(1, "El folio fiscal es requerido"),
   periodo: z

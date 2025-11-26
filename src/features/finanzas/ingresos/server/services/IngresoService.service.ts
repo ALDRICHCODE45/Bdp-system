@@ -10,8 +10,10 @@ type CreateIngresoInput = {
   concepto: string;
   cliente: string;
   clienteId: string;
-  solicitante: "RJS" | "RGZ" | "CALFC";
-  autorizador: "RJS" | "RGZ" | "CALFC";
+  solicitante: string;
+  solicitanteId: string;
+  autorizador: string;
+  autorizadorId: string;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;
@@ -37,8 +39,10 @@ type UpdateIngresoInput = {
   concepto: string;
   cliente: string;
   clienteId: string;
-  solicitante: "RJS" | "RGZ" | "CALFC";
-  autorizador: "RJS" | "RGZ" | "CALFC";
+  solicitante: string;
+  solicitanteId: string;
+  autorizador: string;
+  autorizadorId: string;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;
@@ -92,6 +96,22 @@ export class IngresoService {
             "El cliente/proveedor seleccionado no es de tipo CLIENTE"
           )
         );
+      }
+
+      // Validar solicitante
+      const solicitante = await this.prisma.socio.findUnique({
+        where: { id: input.solicitanteId },
+      });
+      if (!solicitante) {
+        return Err(new Error("El solicitante no existe"));
+      }
+
+      // Validar autorizador
+      const autorizador = await this.prisma.socio.findUnique({
+        where: { id: input.autorizadorId },
+      });
+      if (!autorizador) {
+        return Err(new Error("El autorizador no existe"));
       }
 
       const ingreso = await this.ingresoRepository.create({
@@ -149,6 +169,22 @@ export class IngresoService {
             "El cliente/proveedor seleccionado no es de tipo CLIENTE"
           )
         );
+      }
+
+      // Validar solicitante
+      const solicitante = await this.prisma.socio.findUnique({
+        where: { id: input.solicitanteId },
+      });
+      if (!solicitante) {
+        return Err(new Error("El solicitante no existe"));
+      }
+
+      // Validar autorizador
+      const autorizador = await this.prisma.socio.findUnique({
+        where: { id: input.autorizadorId },
+      });
+      if (!autorizador) {
+        return Err(new Error("El autorizador no existe"));
       }
 
       // Si cambió el folio fiscal, validar que no exista

@@ -25,8 +25,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         categoria: data.categoria,
         proveedor: data.proveedor,
         proveedorId: data.proveedorId,
-        solicitante: data.solicitante,
-        autorizador: data.autorizador,
+        solicitanteId: data.solicitanteId,
+        autorizadorId: data.autorizadorId,
         numeroFactura: data.numeroFactura,
         folioFiscal: data.folioFiscal,
         periodo: data.periodo,
@@ -49,6 +49,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         proveedorRef: true,
         clienteProyectoRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }
@@ -62,8 +64,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         categoria: data.categoria,
         proveedor: data.proveedor,
         proveedorId: data.proveedorId,
-        solicitante: data.solicitante,
-        autorizador: data.autorizador,
+        solicitanteId: data.solicitanteId,
+        autorizadorId: data.autorizadorId,
         numeroFactura: data.numeroFactura,
         folioFiscal: data.folioFiscal,
         periodo: data.periodo,
@@ -85,6 +87,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         proveedorRef: true,
         clienteProyectoRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }
@@ -102,6 +106,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         proveedorRef: true,
         clienteProyectoRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }
@@ -124,6 +130,8 @@ export class PrismaEgresoRepository implements EgresoRepository {
         proveedorRef: true,
         clienteProyectoRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }

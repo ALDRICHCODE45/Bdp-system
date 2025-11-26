@@ -71,6 +71,22 @@ export class FacturaService {
       return Err(new Error("El cliente/proveedor no existe"));
     }
 
+    // 3.5. Validar creador
+    const creador = await this.prisma.socio.findUnique({
+      where: { id: input.creadoPorId },
+    });
+    if (!creador) {
+      return Err(new Error("El creador no existe"));
+    }
+
+    // 3.6. Validar autorizador
+    const autorizador = await this.prisma.socio.findUnique({
+      where: { id: input.autorizadoPorId },
+    });
+    if (!autorizador) {
+      return Err(new Error("El autorizador no existe"));
+    }
+
     // 4. Crear factura con historial usando transacción
     try {
       const factura = await this.prisma.$transaction(async (tx) => {
@@ -139,6 +155,22 @@ export class FacturaService {
       if (folioExists) {
         return Err(new Error("Ya existe una factura con ese folio fiscal"));
       }
+    }
+
+    // Validar creador
+    const creador = await this.prisma.socio.findUnique({
+      where: { id: input.creadoPorId },
+    });
+    if (!creador) {
+      return Err(new Error("El creador no existe"));
+    }
+
+    // Validar autorizador
+    const autorizador = await this.prisma.socio.findUnique({
+      where: { id: input.autorizadoPorId },
+    });
+    if (!autorizador) {
+      return Err(new Error("El autorizador no existe"));
     }
 
     try {

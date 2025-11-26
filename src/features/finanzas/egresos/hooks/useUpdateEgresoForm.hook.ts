@@ -18,8 +18,10 @@ export const useUpdateEgresoForm = (
       categoria: egreso.categoria,
       proveedor: egreso.proveedor,
       proveedorId: egreso.proveedorId,
-      solicitante: egreso.solicitante,
-      autorizador: egreso.autorizador,
+      solicitante: egreso.solicitanteNombre || "",
+      solicitanteId: egreso.solicitanteId || "",
+      autorizador: egreso.autorizadorNombre || "",
+      autorizadorId: egreso.autorizadorId || "",
       numeroFactura: egreso.numeroFactura,
       folioFiscal: egreso.folioFiscal,
       periodo: egreso.periodo,
@@ -51,8 +53,10 @@ export const useUpdateEgresoForm = (
       formData.append("categoria", value.categoria.toUpperCase().replace("Ó", "O"));
       formData.append("proveedor", value.proveedor);
       formData.append("proveedorId", value.proveedorId);
-      formData.append("solicitante", value.solicitante.toUpperCase());
-      formData.append("autorizador", value.autorizador.toUpperCase());
+      formData.append("solicitante", value.solicitante);
+      formData.append("solicitanteId", value.solicitanteId);
+      formData.append("autorizador", value.autorizador);
+      formData.append("autorizadorId", value.autorizadorId);
       formData.append("numeroFactura", value.numeroFactura);
       formData.append("folioFiscal", value.folioFiscal);
       formData.append("periodo", value.periodo);

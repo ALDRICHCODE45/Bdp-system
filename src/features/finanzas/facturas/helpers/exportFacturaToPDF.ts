@@ -256,11 +256,11 @@ export const exportFacturaToPDF = async (
         65
       );
       yPosition += 6;
-      drawField(doc, "Creado Por", factura.creadoPor, margins.left, yPosition, 65);
+      drawField(doc, "Creado Por", factura.creadoPorNombre || "N/A", margins.left, yPosition, 65);
       drawField(
         doc,
         "Autorizado Por",
-        factura.autorizadoPor,
+        factura.autorizadoPorNombre || "N/A",
         pageWidth / 2,
         yPosition,
         65

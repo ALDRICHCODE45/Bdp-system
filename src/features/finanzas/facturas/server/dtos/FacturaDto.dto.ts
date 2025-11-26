@@ -28,8 +28,10 @@ export type FacturaDto = {
   banco: string;
   fechaPago: string | null;
   fechaRegistro: string;
-  creadoPor: string;
-  autorizadoPor: string;
+  creadoPorId: string | null;
+  creadoPorNombre: string | null;
+  autorizadoPorId: string | null;
+  autorizadoPorNombre: string | null;
   notas: string | null;
   ingresadoPor: string | null;
   ingresadoPorNombre: string | null;

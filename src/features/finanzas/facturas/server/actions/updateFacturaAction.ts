@@ -40,7 +40,9 @@ export const updateFacturaAction = async (input: FormData) => {
   const fechaPagoString = input.get("fechaPago");
   const fechaRegistroString = input.get("fechaRegistro");
   const creadoPor = input.get("creadoPor") as string;
+  const creadoPorId = input.get("creadoPorId") as string;
   const autorizadoPor = input.get("autorizadoPor") as string;
+  const autorizadoPorId = input.get("autorizadoPorId") as string;
   const notas = input.get("notas") || null;
 
   const monto = montoString ? parseFloat(montoString as string) : 0;
@@ -83,7 +85,9 @@ export const updateFacturaAction = async (input: FormData) => {
     fechaPago,
     fechaRegistro,
     creadoPor,
+    creadoPorId,
     autorizadoPor,
+    autorizadoPorId,
     notas: notas as string | null,
     usuarioId,
   });

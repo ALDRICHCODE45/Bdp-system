@@ -1,9 +1,11 @@
-import { Egreso, ClienteProveedor, User } from "@prisma/client";
+import { Egreso, ClienteProveedor, User, Socio } from "@prisma/client";
 
 export type EgresoEntity = Egreso & {
   proveedorRef?: ClienteProveedor | null;
   clienteProyectoRef?: ClienteProveedor | null;
   ingresadoPorRef?: User | null;
+  solicitanteRef?: Socio | null;
+  autorizadorRef?: Socio | null;
 };
 
 export type CreateEgresoArgs = {
@@ -18,8 +20,10 @@ export type CreateEgresoArgs = {
   categoria: "FACTURACION" | "COMISIONES" | "DISPOSICION" | "BANCARIZACIONES";
   proveedor: string;
   proveedorId: string;
-  solicitante: "RJS" | "RGZ" | "CALFC";
-  autorizador: "RJS" | "RGZ" | "CALFC";
+  solicitante: string;
+  solicitanteId: string;
+  autorizador: string;
+  autorizadorId: string;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;
@@ -52,8 +56,10 @@ export type UpdateEgresoArgs = {
   categoria: "FACTURACION" | "COMISIONES" | "DISPOSICION" | "BANCARIZACIONES";
   proveedor: string;
   proveedorId: string;
-  solicitante: "RJS" | "RGZ" | "CALFC";
-  autorizador: "RJS" | "RGZ" | "CALFC";
+  solicitante: string;
+  solicitanteId: string;
+  autorizador: string;
+  autorizadorId: string;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;

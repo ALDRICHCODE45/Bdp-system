@@ -23,8 +23,8 @@ type FacturaData = {
   direccionReceptor: string;
   fechaPago: Date | null;
   fechaRegistro: Date;
-  creadoPor: string;
-  autorizadoPor: string;
+  creadoPor: string | null;
+  autorizadoPor: string | null;
   notas: string | null;
 };
 
@@ -160,8 +160,8 @@ export class FacturaHistorialService {
         direccionReceptor: factura.direccionReceptor,
         fechaPago: factura.fechaPago,
         fechaRegistro: factura.fechaRegistro,
-        creadoPor: factura.creadoPor,
-        autorizadoPor: factura.autorizadoPor,
+        creadoPor: factura.creadoPorRef?.nombre ?? null,
+        autorizadoPor: factura.autorizadoPorRef?.nombre ?? null,
         notas: factura.notas,
       };
 
@@ -220,8 +220,8 @@ export class FacturaHistorialService {
         direccionReceptor: oldFactura.direccionReceptor,
         fechaPago: oldFactura.fechaPago,
         fechaRegistro: oldFactura.fechaRegistro,
-        creadoPor: oldFactura.creadoPor,
-        autorizadoPor: oldFactura.autorizadoPor,
+        creadoPor: oldFactura.creadoPorRef?.nombre ?? null,
+        autorizadoPor: oldFactura.autorizadoPorRef?.nombre ?? null,
         notas: oldFactura.notas,
       };
 
@@ -245,8 +245,8 @@ export class FacturaHistorialService {
         direccionReceptor: newFactura.direccionReceptor,
         fechaPago: newFactura.fechaPago,
         fechaRegistro: newFactura.fechaRegistro,
-        creadoPor: newFactura.creadoPor,
-        autorizadoPor: newFactura.autorizadoPor,
+        creadoPor: newFactura.creadoPorRef?.nombre ?? null,
+        autorizadoPor: newFactura.autorizadoPorRef?.nombre ?? null,
         notas: newFactura.notas,
       };
 

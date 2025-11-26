@@ -70,8 +70,10 @@ export function toEgresoDto(entity: EgresoEntity): EgresoDto {
           rfc: entity.proveedorRef.rfc,
         }
       : null,
-    solicitante: entity.solicitante.toLowerCase() as "rjs" | "rgz" | "calfc",
-    autorizador: entity.autorizador.toLowerCase() as "rjs" | "rgz" | "calfc",
+    solicitanteId: entity.solicitanteId,
+    solicitanteNombre: entity.solicitanteRef?.nombre ?? null,
+    autorizadorId: entity.autorizadorId,
+    autorizadorNombre: entity.autorizadorRef?.nombre ?? null,
     numeroFactura: entity.numeroFactura,
     folioFiscal: entity.folioFiscal,
     periodo: entity.periodo,

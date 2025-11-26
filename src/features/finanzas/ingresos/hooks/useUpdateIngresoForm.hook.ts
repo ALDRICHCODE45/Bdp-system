@@ -15,8 +15,10 @@ export const useUpdateIngresoForm = (
       concepto: ingreso.concepto,
       cliente: ingreso.cliente,
       clienteId: ingreso.clienteId,
-      solicitante: ingreso.solicitante as "rjs" | "rgz" | "calfc",
-      autorizador: ingreso.autorizador as "rjs" | "rgz" | "calfc",
+      solicitante: ingreso.solicitanteNombre || "",
+      solicitanteId: ingreso.solicitanteId || "",
+      autorizador: ingreso.autorizadorNombre || "",
+      autorizadorId: ingreso.autorizadorId || "",
       numeroFactura: ingreso.numeroFactura,
       folioFiscal: ingreso.folioFiscal,
       periodo: ingreso.periodo,
@@ -56,8 +58,10 @@ export const useUpdateIngresoForm = (
       formData.append("concepto", value.concepto);
       formData.append("cliente", value.cliente);
       formData.append("clienteId", value.clienteId);
-      formData.append("solicitante", value.solicitante.toUpperCase());
-      formData.append("autorizador", value.autorizador.toUpperCase());
+      formData.append("solicitante", value.solicitante);
+      formData.append("solicitanteId", value.solicitanteId);
+      formData.append("autorizador", value.autorizador);
+      formData.append("autorizadorId", value.autorizadorId);
       formData.append("numeroFactura", value.numeroFactura);
       formData.append("folioFiscal", value.folioFiscal);
       formData.append("periodo", value.periodo);

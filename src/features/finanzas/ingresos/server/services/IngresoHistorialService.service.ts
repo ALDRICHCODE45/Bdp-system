@@ -7,8 +7,8 @@ type IngresoData = {
   concepto: string;
   cliente: string;
   clienteId: string;
-  solicitante: string;
-  autorizador: string;
+  solicitante: string | null;
+  autorizador: string | null;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;
@@ -144,8 +144,8 @@ export class IngresoHistorialService {
         concepto: ingreso.concepto,
         cliente: ingreso.cliente,
         clienteId: ingreso.clienteId,
-        solicitante: ingreso.solicitante,
-        autorizador: ingreso.autorizador,
+        solicitante: ingreso.solicitanteRef?.nombre ?? null,
+        autorizador: ingreso.autorizadorRef?.nombre ?? null,
         numeroFactura: ingreso.numeroFactura,
         folioFiscal: ingreso.folioFiscal,
         periodo: ingreso.periodo,
@@ -204,8 +204,8 @@ export class IngresoHistorialService {
         concepto: oldIngreso.concepto,
         cliente: oldIngreso.cliente,
         clienteId: oldIngreso.clienteId,
-        solicitante: oldIngreso.solicitante,
-        autorizador: oldIngreso.autorizador,
+        solicitante: oldIngreso.solicitanteRef?.nombre ?? null,
+        autorizador: oldIngreso.autorizadorRef?.nombre ?? null,
         numeroFactura: oldIngreso.numeroFactura,
         folioFiscal: oldIngreso.folioFiscal,
         periodo: oldIngreso.periodo,
@@ -229,8 +229,8 @@ export class IngresoHistorialService {
         concepto: newIngreso.concepto,
         cliente: newIngreso.cliente,
         clienteId: newIngreso.clienteId,
-        solicitante: newIngreso.solicitante,
-        autorizador: newIngreso.autorizador,
+        solicitante: newIngreso.solicitanteRef?.nombre ?? null,
+        autorizador: newIngreso.autorizadorRef?.nombre ?? null,
         numeroFactura: newIngreso.numeroFactura,
         folioFiscal: newIngreso.folioFiscal,
         periodo: newIngreso.periodo,

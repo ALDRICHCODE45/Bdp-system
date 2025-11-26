@@ -15,7 +15,9 @@ export const updateIngresoAction = async (input: FormData) => {
   const cliente = input.get("cliente");
   const clienteId = input.get("clienteId");
   const solicitante = input.get("solicitante");
+  const solicitanteId = input.get("solicitanteId");
   const autorizador = input.get("autorizador");
+  const autorizadorId = input.get("autorizadorId");
   const numeroFactura = input.get("numeroFactura");
   const folioFiscal = input.get("folioFiscal");
   const periodo = input.get("periodo");
@@ -50,7 +52,9 @@ export const updateIngresoAction = async (input: FormData) => {
     cliente,
     clienteId,
     solicitante,
+    solicitanteId,
     autorizador,
+    autorizadorId,
     numeroFactura,
     folioFiscal,
     periodo,

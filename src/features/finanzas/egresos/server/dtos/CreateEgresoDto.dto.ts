@@ -10,8 +10,10 @@ export type CreateEgresoDto = {
   categoria: "FACTURACION" | "COMISIONES" | "DISPOSICION" | "BANCARIZACIONES";
   proveedor: string;
   proveedorId: string;
-  solicitante: "RJS" | "RGZ" | "CALFC";
-  autorizador: "RJS" | "RGZ" | "CALFC";
+  solicitante: string;
+  solicitanteId: string;
+  autorizador: string;
+  autorizadorId: string;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;

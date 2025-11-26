@@ -11,8 +11,10 @@ export const useCreateIngresoForm = (onSuccess?: () => void) => {
       concepto: "",
       cliente: "",
       clienteId: "",
-      solicitante: "rjs" as "rjs" | "rgz" | "calfc",
-      autorizador: "rjs" as "rjs" | "rgz" | "calfc",
+      solicitante: "",
+      solicitanteId: "",
+      autorizador: "",
+      autorizadorId: "",
       numeroFactura: "",
       folioFiscal: "",
       periodo: new Date().toISOString().slice(0, 7), // YYYY-MM
@@ -39,8 +41,10 @@ export const useCreateIngresoForm = (onSuccess?: () => void) => {
       formData.append("concepto", value.concepto);
       formData.append("cliente", value.cliente);
       formData.append("clienteId", value.clienteId);
-      formData.append("solicitante", value.solicitante.toUpperCase());
-      formData.append("autorizador", value.autorizador.toUpperCase());
+      formData.append("solicitante", value.solicitante);
+      formData.append("solicitanteId", value.solicitanteId);
+      formData.append("autorizador", value.autorizador);
+      formData.append("autorizadorId", value.autorizadorId);
       formData.append("numeroFactura", value.numeroFactura);
       formData.append("folioFiscal", value.folioFiscal);
       formData.append("periodo", value.periodo);

@@ -20,6 +20,7 @@ import {
 } from "@/core/shared/ui/select";
 import { useCreateEgresoForm } from "../../hooks/useCreateEgresoForm.hook";
 import { useClientesProveedores } from "@/features/finanzas/clientes-proovedores/hooks/useClientesProveedores.hook";
+import { useSocios } from "@/features/RecursosHumanos/socios/hooks/useSocios.hook";
 import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
 
 interface CreateEgresoFormProps {
@@ -29,10 +30,12 @@ interface CreateEgresoFormProps {
 export const CreateEgresoForm = ({ onSuccess }: CreateEgresoFormProps) => {
   const form = useCreateEgresoForm(onSuccess);
   const { data: clientesProveedores } = useClientesProveedores();
+  const { data: socios } = useSocios();
 
   const proveedores =
     clientesProveedores?.filter((cp) => cp.tipo === "proveedor") || [];
   const clientes = clientesProveedores || [];
+  const sociosActivos = socios?.filter((s) => s.activo) || [];
 
   return (
     <div className="p-4">
@@ -245,14 +248,15 @@ export const CreateEgresoForm = ({ onSuccess }: CreateEgresoFormProps) => {
           </form.Field>
 
           {/* Solicitante */}
-          <form.Field name="solicitante">
+          <form.Field name="solicitanteId">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="solicitante">Solicitante</FieldLabel>
+                    <FieldLabel htmlFor="solicitanteId">Solicitante</FieldLabel>
+                    <FieldDescription>Selecciona el socio solicitante</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
@@ -260,17 +264,23 @@ export const CreateEgresoForm = ({ onSuccess }: CreateEgresoFormProps) => {
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) =>
-                      field.handleChange(value as typeof field.state.value)
-                    }
+                    onValueChange={(value) => {
+                      field.handleChange(value);
+                      const socio = sociosActivos.find((s) => s.id === value);
+                      if (socio) {
+                        form.setFieldValue("solicitante", socio.nombre);
+                      }
+                    }}
                   >
-                    <SelectTrigger id="solicitante" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar" />
+                    <SelectTrigger id="solicitanteId" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar socio" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
-                      <SelectItem value="rjs">RJS</SelectItem>
-                      <SelectItem value="rgz">RGZ</SelectItem>
-                      <SelectItem value="calfc">CALFC</SelectItem>
+                      {sociosActivos.map((socio) => (
+                        <SelectItem key={socio.id} value={socio.id}>
+                          {socio.nombre}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>
@@ -279,14 +289,15 @@ export const CreateEgresoForm = ({ onSuccess }: CreateEgresoFormProps) => {
           </form.Field>
 
           {/* Autorizador */}
-          <form.Field name="autorizador">
+          <form.Field name="autorizadorId">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="autorizador">Autorizador</FieldLabel>
+                    <FieldLabel htmlFor="autorizadorId">Autorizador</FieldLabel>
+                    <FieldDescription>Selecciona el socio autorizador</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
@@ -294,17 +305,23 @@ export const CreateEgresoForm = ({ onSuccess }: CreateEgresoFormProps) => {
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) =>
-                      field.handleChange(value as typeof field.state.value)
-                    }
+                    onValueChange={(value) => {
+                      field.handleChange(value);
+                      const socio = sociosActivos.find((s) => s.id === value);
+                      if (socio) {
+                        form.setFieldValue("autorizador", socio.nombre);
+                      }
+                    }}
                   >
-                    <SelectTrigger id="autorizador" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar" />
+                    <SelectTrigger id="autorizadorId" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar socio" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
-                      <SelectItem value="rjs">RJS</SelectItem>
-                      <SelectItem value="rgz">RGZ</SelectItem>
-                      <SelectItem value="calfc">CALFC</SelectItem>
+                      {sociosActivos.map((socio) => (
+                        <SelectItem key={socio.id} value={socio.id}>
+                          {socio.nombre}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>

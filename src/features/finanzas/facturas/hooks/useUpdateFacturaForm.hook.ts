@@ -35,8 +35,10 @@ export const useUpdateFacturaForm = (
       banco: factura.banco,
       fechaPago: factura.fechaPago ? factura.fechaPago.split("T")[0] : "",
       fechaRegistro: factura.fechaRegistro.split("T")[0],
-      creadoPor: factura.creadoPor,
-      autorizadoPor: factura.autorizadoPor,
+      creadoPor: factura.creadoPorNombre || "",
+      creadoPorId: factura.creadoPorId || "",
+      autorizadoPor: factura.autorizadoPorNombre || "",
+      autorizadoPorId: factura.autorizadoPorId || "",
       notas: factura.notas || "",
     },
     validators: {
@@ -69,7 +71,9 @@ export const useUpdateFacturaForm = (
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("fechaRegistro", value.fechaRegistro);
       formData.append("creadoPor", value.creadoPor);
+      formData.append("creadoPorId", value.creadoPorId);
       formData.append("autorizadoPor", value.autorizadoPor);
+      formData.append("autorizadoPorId", value.autorizadoPorId);
       formData.append("notas", value.notas || "");
 
       await updateFacturaMutation.mutateAsync(formData);

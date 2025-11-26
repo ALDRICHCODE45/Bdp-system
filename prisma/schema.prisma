@@ -39,12 +39,6 @@ enum EgresoCategoria {
   BANCARIZACIONES
 }
 
-enum EgresoSolicitanteAutorizador {
-  RJS
-  RGZ
-  CALFC
-}
-
 enum EgresoFormaPago {
   TRANSFERENCIA
   EFECTIVO
@@ -75,19 +69,25 @@ enum EgresoFacturadoPor {
 }
 
 model Socio {
-  id                  String             @id @default(uuid())
-  nombre              String
-  email               String             @unique
-  telefono            String?
-  activo              Boolean            @default(true)
-  fechaIngreso        DateTime           @default(now())
-  departamento        String?
-  numeroEmpleados     Int                @default(0)
-  notas               String?
-  colaboradores       Colaborador[]
-  clientesProveedores ClienteProveedor[]
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  id                      String             @id @default(uuid())
+  nombre                  String
+  email                   String             @unique
+  telefono                String?
+  activo                  Boolean            @default(true)
+  fechaIngreso            DateTime           @default(now())
+  departamento            String?
+  numeroEmpleados         Int                @default(0)
+  notas                   String?
+  colaboradores           Colaborador[]
+  clientesProveedores     ClienteProveedor[]
+  egresosComSolicitante   Egreso[]           @relation("EgresoSolicitante")
+  egresosComoAutorizador  Egreso[]           @relation("EgresoAutorizador")
+  ingresosComSolicitante  Ingreso[]          @relation("IngresoSolicitante")
+  ingresosComoAutorizador Ingreso[]          @relation("IngresoAutorizador")
+  facturasComoCreador     Factura[]          @relation("FacturaCreador")
+  facturasComoAutorizador Factura[]          @relation("FacturaAutorizador")
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
 
   @@index([email])
   @@index([activo])
@@ -257,15 +257,17 @@ model ClienteProveedor {
 }
 
 model Egreso {
-  id                 String                       @id @default(uuid())
+  id                 String              @id @default(uuid())
   concepto           String
   clasificacion      EgresoClasificacion
   categoria          EgresoCategoria
   proveedor          String
   proveedorId        String
-  proveedorRef       ClienteProveedor             @relation("EgresoProveedor", fields: [proveedorId], references: [id], onDelete: Restrict)
-  solicitante        EgresoSolicitanteAutorizador
-  autorizador        EgresoSolicitanteAutorizador
+  proveedorRef       ClienteProveedor    @relation("EgresoProveedor", fields: [proveedorId], references: [id], onDelete: Restrict)
+  solicitanteId      String?
+  solicitanteRef     Socio?              @relation("EgresoSolicitante", fields: [solicitanteId], references: [id], onDelete: Restrict)
+  autorizadorId      String?
+  autorizadorRef     Socio?              @relation("EgresoAutorizador", fields: [autorizadorId], references: [id], onDelete: Restrict)
   numeroFactura      String
   folioFiscal        String
   periodo            String
@@ -274,21 +276,21 @@ model Egreso {
   numeroCuenta       String
   clabe              String
   cargoAbono         EgresoCargoAbono
-  cantidad           Decimal                      @db.Decimal(15, 2)
+  cantidad           Decimal             @db.Decimal(15, 2)
   estado             EgresoEstado
   fechaPago          DateTime?
-  fechaRegistro      DateTime                     @default(now())
+  fechaRegistro      DateTime            @default(now())
   facturadoPor       EgresoFacturadoPor
   clienteProyecto    String?
   clienteProyectoId  String?
-  clienteProyectoRef ClienteProveedor?            @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
+  clienteProyectoRef ClienteProveedor?   @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
   facturaId          String?
   notas              String?
   ingresadoPor       String?
-  ingresadoPorRef    User?                        @relation("EgresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
+  ingresadoPorRef    User?               @relation("EgresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
   historial          EgresoHistorial[]
-  createdAt          DateTime                     @default(now())
-  updatedAt          DateTime                     @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   @@index([estado])
   @@index([periodo])
@@ -297,6 +299,8 @@ model Egreso {
   @@index([fechaPago])
   @@index([createdAt])
   @@index([ingresadoPor])
+  @@index([solicitanteId])
+  @@index([autorizadorId])
 }
 
 model EgresoHistorial {
@@ -324,12 +328,6 @@ enum IngresoEstado {
   PAGADO
   PENDIENTE
   CANCELADO
-}
-
-enum IngresoSolicitanteAutorizador {
-  RJS
-  RGZ
-  CALFC
 }
 
 enum IngresoCargoAbono {
@@ -372,35 +370,37 @@ enum FileAttachmentEntityType {
 }
 
 model Ingreso {
-  id                 String                        @id @default(uuid())
+  id                 String              @id @default(uuid())
   concepto           String
   cliente            String
   clienteId          String
-  clienteRef         ClienteProveedor              @relation("IngresoCliente", fields: [clienteId], references: [id], onDelete: Restrict)
-  solicitante        IngresoSolicitanteAutorizador
-  autorizador        IngresoSolicitanteAutorizador
+  clienteRef         ClienteProveedor    @relation("IngresoCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  solicitanteId      String?
+  solicitanteRef     Socio?              @relation("IngresoSolicitante", fields: [solicitanteId], references: [id], onDelete: Restrict)
+  autorizadorId      String?
+  autorizadorRef     Socio?              @relation("IngresoAutorizador", fields: [autorizadorId], references: [id], onDelete: Restrict)
   numeroFactura      String
-  folioFiscal        String                        @unique
+  folioFiscal        String              @unique
   periodo            String
   formaPago          IngresoFormaPago
   origen             String
   numeroCuenta       String
   clabe              String
   cargoAbono         IngresoCargoAbono
-  cantidad           Decimal                       @db.Decimal(15, 2)
+  cantidad           Decimal             @db.Decimal(15, 2)
   estado             IngresoEstado
   fechaPago          DateTime?
-  fechaRegistro      DateTime                      @default(now())
+  fechaRegistro      DateTime            @default(now())
   facturadoPor       IngresoFacturadoPor
   clienteProyecto    String
   fechaParticipacion DateTime?
   facturaId          String?
   notas              String?
   ingresadoPor       String?
-  ingresadoPorRef    User?                         @relation("IngresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
+  ingresadoPorRef    User?               @relation("IngresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
   historial          IngresoHistorial[]
-  createdAt          DateTime                      @default(now())
-  updatedAt          DateTime                      @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   @@index([estado])
   @@index([periodo])
@@ -408,6 +408,8 @@ model Ingreso {
   @@index([fechaPago])
   @@index([createdAt])
   @@index([ingresadoPor])
+  @@index([solicitanteId])
+  @@index([autorizadorId])
 }
 
 model IngresoHistorial {
@@ -450,8 +452,10 @@ model Factura {
   banco               String
   fechaPago           DateTime?
   fechaRegistro       DateTime           @default(now())
-  creadoPor           String
-  autorizadoPor       String
+  creadoPorId         String?
+  creadoPorRef        Socio?             @relation("FacturaCreador", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  autorizadoPorId     String?
+  autorizadoPorRef    Socio?             @relation("FacturaAutorizador", fields: [autorizadoPorId], references: [id], onDelete: Restrict)
   notas               String?
   ingresadoPor        String?
   ingresadoPorRef     User?              @relation("FacturaIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
@@ -465,6 +469,8 @@ model Factura {
   @@index([clienteProveedorId])
   @@index([fechaEmision])
   @@index([ingresadoPor])
+  @@index([creadoPorId])
+  @@index([autorizadoPorId])
 }
 
 model FacturaHistorial {

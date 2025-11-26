@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 import { useUpdateFacturaForm } from "../../hooks/useUpdateFacturaForm.hook";
+import { useSocios } from "@/features/RecursosHumanos/socios/hooks/useSocios.hook";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
 import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
 import { useState } from "react";
@@ -42,6 +43,8 @@ export const EditFacturaForm = ({
   onSuccess,
 }: EditFacturaFormProps) => {
   const form = useUpdateFacturaForm(factura, onSuccess);
+  const { data: socios } = useSocios();
+  const sociosActivos = socios?.filter((s) => s.activo) || [];
   const [canEdit, setCanEdit] = useState<boolean>(
     factura.estado === "borrador"
   );
@@ -721,54 +724,84 @@ export const EditFacturaForm = ({
           </div>
 
           {/* Creado Por */}
-          <form.Field name="creadoPor">
+          <form.Field name="creadoPorId">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="creadoPor">Creado Por</FieldLabel>
-                    <FieldDescription>Nombre del creador</FieldDescription>
+                    <FieldLabel htmlFor="creadoPorId">Creado Por</FieldLabel>
+                    <FieldDescription>Selecciona el socio creador</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
                   </FieldContent>
-                  <Input
-                    id="creadoPor"
+                  <Select
                     name={field.name}
                     value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
+                    onValueChange={(value) => {
+                      field.handleChange(value);
+                      const socio = sociosActivos.find((s) => s.id === value);
+                      if (socio) {
+                        form.setFieldValue("creadoPor", socio.nombre);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="creadoPorId" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar socio" />
+                    </SelectTrigger>
+                    <SelectContent position="item-aligned">
+                      {sociosActivos.map((socio) => (
+                        <SelectItem key={socio.id} value={socio.id}>
+                          {socio.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               );
             }}
           </form.Field>
 
           {/* Autorizado Por */}
-          <form.Field name="autorizadoPor">
+          <form.Field name="autorizadoPorId">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="autorizadoPor">
+                    <FieldLabel htmlFor="autorizadoPorId">
                       Autorizado Por
                     </FieldLabel>
-                    <FieldDescription>Nombre del autorizador</FieldDescription>
+                    <FieldDescription>Selecciona el socio autorizador</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
                   </FieldContent>
-                  <Input
-                    id="autorizadoPor"
+                  <Select
                     name={field.name}
                     value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
+                    onValueChange={(value) => {
+                      field.handleChange(value);
+                      const socio = sociosActivos.find((s) => s.id === value);
+                      if (socio) {
+                        form.setFieldValue("autorizadoPor", socio.nombre);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="autorizadoPorId" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar socio" />
+                    </SelectTrigger>
+                    <SelectContent position="item-aligned">
+                      {sociosActivos.map((socio) => (
+                        <SelectItem key={socio.id} value={socio.id}>
+                          {socio.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               );
             }}

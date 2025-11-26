@@ -23,15 +23,13 @@ export const updateEgresoSchemaUI = z
         message: "Categoría inválida",
       }
     ),
-    proveedor: z.string().min(1, "El proveedor es requerido"),
-    proveedorId: z.string().uuid("ID de proveedor inválido"),
-    solicitante: z.enum(["rjs", "rgz", "calfc"], {
-      message: "Solicitante inválido",
-    }),
-    autorizador: z.enum(["rjs", "rgz", "calfc"], {
-      message: "Autorizador inválido",
-    }),
-    numeroFactura: z.string().min(1, "El número de factura es requerido"),
+  proveedor: z.string().min(1, "El proveedor es requerido"),
+  proveedorId: z.string().uuid("ID de proveedor inválido"),
+  solicitante: z.string().min(1, "El nombre del solicitante es requerido"),
+  solicitanteId: z.string().min(1, "El ID del solicitante es requerido"),
+  autorizador: z.string().min(1, "El nombre del autorizador es requerido"),
+  autorizadorId: z.string().min(1, "El ID del autorizador es requerido"),
+  numeroFactura: z.string().min(1, "El número de factura es requerido"),
     folioFiscal: z.string().min(1, "El folio fiscal es requerido"),
     periodo: z
       .string()

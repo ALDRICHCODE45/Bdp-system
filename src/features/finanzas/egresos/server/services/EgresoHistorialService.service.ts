@@ -9,8 +9,8 @@ type EgresoData = {
   categoria: string;
   proveedor: string;
   proveedorId: string;
-  solicitante: string;
-  autorizador: string;
+  solicitante: string | null;
+  autorizador: string | null;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;
@@ -148,8 +148,8 @@ export class EgresoHistorialService {
         categoria: egreso.categoria,
         proveedor: egreso.proveedor,
         proveedorId: egreso.proveedorId,
-        solicitante: egreso.solicitante,
-        autorizador: egreso.autorizador,
+        solicitante: egreso.solicitanteRef?.nombre ?? null,
+        autorizador: egreso.autorizadorRef?.nombre ?? null,
         numeroFactura: egreso.numeroFactura,
         folioFiscal: egreso.folioFiscal,
         periodo: egreso.periodo,
@@ -208,8 +208,8 @@ export class EgresoHistorialService {
         categoria: oldEgreso.categoria,
         proveedor: oldEgreso.proveedor,
         proveedorId: oldEgreso.proveedorId,
-        solicitante: oldEgreso.solicitante,
-        autorizador: oldEgreso.autorizador,
+        solicitante: oldEgreso.solicitanteRef?.nombre ?? null,
+        autorizador: oldEgreso.autorizadorRef?.nombre ?? null,
         numeroFactura: oldEgreso.numeroFactura,
         folioFiscal: oldEgreso.folioFiscal,
         periodo: oldEgreso.periodo,
@@ -235,8 +235,8 @@ export class EgresoHistorialService {
         categoria: newEgreso.categoria,
         proveedor: newEgreso.proveedor,
         proveedorId: newEgreso.proveedorId,
-        solicitante: newEgreso.solicitante,
-        autorizador: newEgreso.autorizador,
+        solicitante: newEgreso.solicitanteRef?.nombre ?? null,
+        autorizador: newEgreso.autorizadorRef?.nombre ?? null,
         numeroFactura: newEgreso.numeroFactura,
         folioFiscal: newEgreso.folioFiscal,
         periodo: newEgreso.periodo,

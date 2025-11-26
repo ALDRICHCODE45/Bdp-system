@@ -42,8 +42,10 @@ export const createFacturaSchemaUI = z.object({
   banco: z.string().min(1, "El banco es requerido"),
   fechaPago: z.string().optional(),
   fechaRegistro: z.string().min(1, "La fecha de registro es requerida"),
-  creadoPor: z.string().min(1, "El creador es requerido"),
-  autorizadoPor: z.string().min(1, "El autorizador es requerido"),
+  creadoPor: z.string().min(1, "El nombre del creador es requerido"),
+  creadoPorId: z.string().min(1, "El ID del creador es requerido"),
+  autorizadoPor: z.string().min(1, "El nombre del autorizador es requerido"),
+  autorizadoPorId: z.string().min(1, "El ID del autorizador es requerido"),
   notas: z.string().optional(),
 });
 

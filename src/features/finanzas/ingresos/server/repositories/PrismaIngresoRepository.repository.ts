@@ -23,8 +23,8 @@ export class PrismaIngresoRepository implements IngresoRepository {
         concepto: data.concepto,
         cliente: data.cliente,
         clienteId: data.clienteId,
-        solicitante: data.solicitante,
-        autorizador: data.autorizador,
+        solicitanteId: data.solicitanteId,
+        autorizadorId: data.autorizadorId,
         numeroFactura: data.numeroFactura,
         folioFiscal: data.folioFiscal,
         periodo: data.periodo,
@@ -47,6 +47,8 @@ export class PrismaIngresoRepository implements IngresoRepository {
       include: {
         clienteRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }
@@ -58,8 +60,8 @@ export class PrismaIngresoRepository implements IngresoRepository {
         concepto: data.concepto,
         cliente: data.cliente,
         clienteId: data.clienteId,
-        solicitante: data.solicitante,
-        autorizador: data.autorizador,
+        solicitanteId: data.solicitanteId,
+        autorizadorId: data.autorizadorId,
         numeroFactura: data.numeroFactura,
         folioFiscal: data.folioFiscal,
         periodo: data.periodo,
@@ -81,6 +83,8 @@ export class PrismaIngresoRepository implements IngresoRepository {
       include: {
         clienteRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }
@@ -97,6 +101,8 @@ export class PrismaIngresoRepository implements IngresoRepository {
       include: {
         clienteRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }
@@ -118,6 +124,8 @@ export class PrismaIngresoRepository implements IngresoRepository {
       include: {
         clienteRef: true,
         ingresadoPorRef: true,
+        solicitanteRef: true,
+        autorizadorRef: true,
       },
     });
   }

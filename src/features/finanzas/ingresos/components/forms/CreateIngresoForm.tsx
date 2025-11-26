@@ -20,6 +20,7 @@ import {
 } from "@/core/shared/ui/select";
 import { useCreateIngresoForm } from "../../hooks/useCreateIngresoForm.hook";
 import { useClientesProveedores } from "@/features/finanzas/clientes-proovedores/hooks/useClientesProveedores.hook";
+import { useSocios } from "@/features/RecursosHumanos/socios/hooks/useSocios.hook";
 import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
 
 interface CreateIngresoFormProps {
@@ -29,9 +30,11 @@ interface CreateIngresoFormProps {
 export const CreateIngresoForm = ({ onSuccess }: CreateIngresoFormProps) => {
   const form = useCreateIngresoForm(onSuccess);
   const { data: clientesProveedores, isLoading } = useClientesProveedores();
+  const { data: socios } = useSocios();
 
   const clientes =
     clientesProveedores?.filter((cp) => cp.tipo === "cliente") || [];
+  const sociosActivos = socios?.filter((s) => s.activo) || [];
 
   console.log("Clientes disponibles:", clientes.length, clientes);
 
@@ -128,14 +131,15 @@ export const CreateIngresoForm = ({ onSuccess }: CreateIngresoFormProps) => {
           </form.Field>
 
           {/* Solicitante */}
-          <form.Field name="solicitante">
+          <form.Field name="solicitanteId">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="solicitante">Solicitante</FieldLabel>
+                    <FieldLabel htmlFor="solicitanteId">Solicitante</FieldLabel>
+                    <FieldDescription>Selecciona el socio solicitante</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
@@ -143,17 +147,23 @@ export const CreateIngresoForm = ({ onSuccess }: CreateIngresoFormProps) => {
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) =>
-                      field.handleChange(value as typeof field.state.value)
-                    }
+                    onValueChange={(value) => {
+                      field.handleChange(value);
+                      const socio = sociosActivos.find((s) => s.id === value);
+                      if (socio) {
+                        form.setFieldValue("solicitante", socio.nombre);
+                      }
+                    }}
                   >
-                    <SelectTrigger id="solicitante" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar" />
+                    <SelectTrigger id="solicitanteId" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar socio" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
-                      <SelectItem value="rjs">RJS</SelectItem>
-                      <SelectItem value="rgz">RGZ</SelectItem>
-                      <SelectItem value="calfc">CALFC</SelectItem>
+                      {sociosActivos.map((socio) => (
+                        <SelectItem key={socio.id} value={socio.id}>
+                          {socio.nombre}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>
@@ -162,14 +172,15 @@ export const CreateIngresoForm = ({ onSuccess }: CreateIngresoFormProps) => {
           </form.Field>
 
           {/* Autorizador */}
-          <form.Field name="autorizador">
+          <form.Field name="autorizadorId">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="autorizador">Autorizador</FieldLabel>
+                    <FieldLabel htmlFor="autorizadorId">Autorizador</FieldLabel>
+                    <FieldDescription>Selecciona el socio autorizador</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
@@ -177,17 +188,23 @@ export const CreateIngresoForm = ({ onSuccess }: CreateIngresoFormProps) => {
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) =>
-                      field.handleChange(value as typeof field.state.value)
-                    }
+                    onValueChange={(value) => {
+                      field.handleChange(value);
+                      const socio = sociosActivos.find((s) => s.id === value);
+                      if (socio) {
+                        form.setFieldValue("autorizador", socio.nombre);
+                      }
+                    }}
                   >
-                    <SelectTrigger id="autorizador" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar" />
+                    <SelectTrigger id="autorizadorId" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar socio" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
-                      <SelectItem value="rjs">RJS</SelectItem>
-                      <SelectItem value="rgz">RGZ</SelectItem>
-                      <SelectItem value="calfc">CALFC</SelectItem>
+                      {sociosActivos.map((socio) => (
+                        <SelectItem key={socio.id} value={socio.id}>
+                          {socio.nombre}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>

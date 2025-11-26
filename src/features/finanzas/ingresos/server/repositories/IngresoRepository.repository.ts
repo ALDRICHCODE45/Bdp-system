@@ -1,16 +1,20 @@
-import { Ingreso, ClienteProveedor, User } from "@prisma/client";
+import { Ingreso, ClienteProveedor, User, Socio } from "@prisma/client";
 
 export type IngresoEntity = Ingreso & {
   clienteRef?: ClienteProveedor | null;
   ingresadoPorRef?: User | null;
+  solicitanteRef?: Socio | null;
+  autorizadorRef?: Socio | null;
 };
 
 export type CreateIngresoArgs = {
   concepto: string;
   cliente: string;
   clienteId: string;
-  solicitante: "RJS" | "RGZ" | "CALFC";
-  autorizador: "RJS" | "RGZ" | "CALFC";
+  solicitante: string;
+  solicitanteId: string;
+  autorizador: string;
+  autorizadorId: string;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;
@@ -36,8 +40,10 @@ export type UpdateIngresoArgs = {
   concepto: string;
   cliente: string;
   clienteId: string;
-  solicitante: "RJS" | "RGZ" | "CALFC";
-  autorizador: "RJS" | "RGZ" | "CALFC";
+  solicitante: string;
+  solicitanteId: string;
+  autorizador: string;
+  autorizadorId: string;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;

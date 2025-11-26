@@ -31,7 +31,9 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       fechaPago: "",
       fechaRegistro: new Date().toISOString().split("T")[0],
       creadoPor: "",
+      creadoPorId: "",
       autorizadoPor: "",
+      autorizadoPorId: "",
       notas: "",
     },
     validators: {
@@ -63,7 +65,9 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("fechaRegistro", value.fechaRegistro);
       formData.append("creadoPor", value.creadoPor);
+      formData.append("creadoPorId", value.creadoPorId);
       formData.append("autorizadoPor", value.autorizadoPor);
+      formData.append("autorizadoPorId", value.autorizadoPorId);
       formData.append("notas", value.notas || "");
 
       await createFacturaMutation.mutateAsync(formData);

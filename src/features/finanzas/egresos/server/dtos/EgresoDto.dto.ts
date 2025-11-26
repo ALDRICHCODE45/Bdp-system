@@ -16,8 +16,10 @@ export type EgresoDto = {
     nombre: string;
     rfc: string;
   } | null;
-  solicitante: "rjs" | "rgz" | "calfc";
-  autorizador: "rjs" | "rgz" | "calfc";
+  solicitanteId: string | null;
+  solicitanteNombre: string | null;
+  autorizadorId: string | null;
+  autorizadorNombre: string | null;
   numeroFactura: string;
   folioFiscal: string;
   periodo: string;

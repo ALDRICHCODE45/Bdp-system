@@ -22,7 +22,9 @@ export type CreateFacturaDto = {
   fechaPago?: Date | null;
   fechaRegistro: Date;
   creadoPor: string;
+  creadoPorId: string;
   autorizadoPor: string;
+  autorizadoPorId: string;
   notas?: string | null;
   ingresadoPor?: string | null;
 };
