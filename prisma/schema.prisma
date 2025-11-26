@@ -445,6 +445,9 @@ model Factura {
   rfcReceptor         String
   direccionEmisor     String
   direccionReceptor   String
+  numeroCuenta        String
+  clabe               String
+  banco               String
   fechaPago           DateTime?
   fechaRegistro       DateTime           @default(now())
   creadoPor           String

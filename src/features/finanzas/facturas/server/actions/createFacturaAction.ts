@@ -30,6 +30,9 @@ export const createFacturaAction = async (input: FormData) => {
   const rfcReceptor = input.get("rfcReceptor") as string;
   const direccionEmisor = input.get("direccionEmisor") as string;
   const direccionReceptor = input.get("direccionReceptor") as string;
+  const numeroCuenta = input.get("numeroCuenta") as string;
+  const clabe = input.get("clabe") as string;
+  const banco = input.get("banco") as string;
   const fechaPagoString = input.get("fechaPago");
   const fechaRegistroString = input.get("fechaRegistro");
   const creadoPor = input.get("creadoPor") as string;
@@ -69,6 +72,9 @@ export const createFacturaAction = async (input: FormData) => {
     rfcReceptor,
     direccionEmisor,
     direccionReceptor,
+    numeroCuenta,
+    clabe,
+    banco,
     fechaPago,
     fechaRegistro,
     creadoPor,

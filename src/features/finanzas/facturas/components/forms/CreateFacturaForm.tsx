@@ -68,6 +68,9 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
     );
     form.setFieldValue("rfcReceptor", origenData.rfcReceptor);
     form.setFieldValue("direccionReceptor", origenData.direccionReceptor);
+    form.setFieldValue("numeroCuenta", origenData.numeroCuenta);
+    form.setFieldValue("clabe", origenData.clabe);
+    form.setFieldValue("banco", origenData.banco);
     if (origenData.notas) {
       form.setFieldValue("notas", origenData.notas);
     }
@@ -373,6 +376,91 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     aria-invalid={isInvalid}
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+
+          {/* Número de Cuenta (autocompletado) */}
+          <form.Field name="numeroCuenta">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field orientation="responsive" data-invalid={isInvalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="numeroCuenta">Número de Cuenta</FieldLabel>
+                    <FieldDescription>Autocompletado desde origen</FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldContent>
+                  <Input
+                    id="numeroCuenta"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                    readOnly
+                    className="bg-muted"
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+
+          {/* CLABE (autocompletado) */}
+          <form.Field name="clabe">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field orientation="responsive" data-invalid={isInvalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="clabe">CLABE</FieldLabel>
+                    <FieldDescription>Autocompletado desde origen</FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldContent>
+                  <Input
+                    id="clabe"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                    maxLength={18}
+                    readOnly
+                    className="bg-muted"
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+
+          {/* Banco (autocompletado) */}
+          <form.Field name="banco">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field orientation="responsive" data-invalid={isInvalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="banco">Banco</FieldLabel>
+                    <FieldDescription>Autocompletado desde origen</FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldContent>
+                  <Input
+                    id="banco"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                    readOnly
+                    className="bg-muted"
                   />
                 </Field>
               );

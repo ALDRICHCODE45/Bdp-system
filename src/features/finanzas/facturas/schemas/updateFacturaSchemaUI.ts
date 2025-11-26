@@ -35,6 +35,12 @@ export const updateFacturaSchemaUI = z.object({
   direccionReceptor: z
     .string()
     .min(1, "La dirección del receptor es requerida"),
+  numeroCuenta: z.string().min(1, "El número de cuenta es requerido"),
+  clabe: z
+    .string()
+    .min(18, "La CLABE debe tener 18 dígitos")
+    .max(18, "La CLABE debe tener 18 dígitos"),
+  banco: z.string().min(1, "El banco es requerido"),
   fechaPago: z.string().optional(),
   fechaRegistro: z.string().min(1, "La fecha de registro es requerida"),
   creadoPor: z.string().min(1, "El creador es requerido"),

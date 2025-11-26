@@ -16,6 +16,9 @@ export type CreateFacturaDto = {
   rfcReceptor: string;
   direccionEmisor: string;
   direccionReceptor: string;
+  numeroCuenta: string;
+  clabe: string;
+  banco: string;
   fechaPago?: Date | null;
   fechaRegistro: Date;
   creadoPor: string;

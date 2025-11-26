@@ -634,6 +634,85 @@ export const EditFacturaForm = ({
             }}
           </form.Field>
 
+          {/* Número de Cuenta */}
+          <form.Field name="numeroCuenta">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field orientation="responsive" data-invalid={isInvalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="numeroCuenta">Número de Cuenta</FieldLabel>
+                    <FieldDescription>Cuenta bancaria</FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldContent>
+                  <Input
+                    id="numeroCuenta"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+
+          {/* CLABE */}
+          <form.Field name="clabe">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field orientation="responsive" data-invalid={isInvalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="clabe">CLABE</FieldLabel>
+                    <FieldDescription>18 dígitos</FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldContent>
+                  <Input
+                    id="clabe"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                    maxLength={18}
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+
+          {/* Banco */}
+          <form.Field name="banco">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field orientation="responsive" data-invalid={isInvalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="banco">Banco</FieldLabel>
+                    <FieldDescription>Institución bancaria</FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldContent>
+                  <Input
+                    id="banco"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+
           {/* SECCIÓN: Metadatos */}
           <div className="col-span-full mt-4">
             <h3 className="text-sm font-semibold text-muted-foreground mb-2">

@@ -23,6 +23,9 @@ export type FacturaDto = {
   rfcReceptor: string;
   direccionEmisor: string;
   direccionReceptor: string;
+  numeroCuenta: string;
+  clabe: string;
+  banco: string;
   fechaPago: string | null;
   fechaRegistro: string;
   creadoPor: string;

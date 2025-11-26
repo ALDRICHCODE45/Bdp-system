@@ -425,6 +425,33 @@ export const columns: ColumnDef<FacturaDto>[] = [
     size: 9,
   },
   {
+    header: "Número de Cuenta",
+    accessorKey: "numeroCuenta",
+    cell: ({ row }) => {
+      const numeroCuenta = row.getValue("numeroCuenta") as string;
+      return <div className="text-sm font-mono truncate">{numeroCuenta}</div>;
+    },
+    size: 15,
+  },
+  {
+    header: "CLABE",
+    accessorKey: "clabe",
+    cell: ({ row }) => {
+      const clabe = row.getValue("clabe") as string;
+      return <div className="text-sm font-mono truncate">{clabe}</div>;
+    },
+    size: 15,
+  },
+  {
+    header: "Banco",
+    accessorKey: "banco",
+    cell: ({ row }) => {
+      const banco = row.getValue("banco") as string;
+      return <div className="text-sm truncate">{banco}</div>;
+    },
+    size: 12,
+  },
+  {
     header: "Ingresado Por",
     accessorKey: "ingresadoPorNombre",
     cell: ({ row }) => {

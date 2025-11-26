@@ -30,6 +30,9 @@ export const useUpdateFacturaForm = (
       rfcReceptor: factura.rfcReceptor,
       direccionEmisor: factura.direccionEmisor,
       direccionReceptor: factura.direccionReceptor,
+      numeroCuenta: factura.numeroCuenta,
+      clabe: factura.clabe,
+      banco: factura.banco,
       fechaPago: factura.fechaPago ? factura.fechaPago.split("T")[0] : "",
       fechaRegistro: factura.fechaRegistro.split("T")[0],
       creadoPor: factura.creadoPor,
@@ -60,6 +63,9 @@ export const useUpdateFacturaForm = (
       formData.append("rfcReceptor", value.rfcReceptor);
       formData.append("direccionEmisor", value.direccionEmisor);
       formData.append("direccionReceptor", value.direccionReceptor);
+      formData.append("numeroCuenta", value.numeroCuenta);
+      formData.append("clabe", value.clabe);
+      formData.append("banco", value.banco);
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("fechaRegistro", value.fechaRegistro);
       formData.append("creadoPor", value.creadoPor);

@@ -25,6 +25,9 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       rfcReceptor: "",
       direccionEmisor: "",
       direccionReceptor: "",
+      numeroCuenta: "",
+      clabe: "",
+      banco: "",
       fechaPago: "",
       fechaRegistro: new Date().toISOString().split("T")[0],
       creadoPor: "",
@@ -54,6 +57,9 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       formData.append("rfcReceptor", value.rfcReceptor);
       formData.append("direccionEmisor", value.direccionEmisor);
       formData.append("direccionReceptor", value.direccionReceptor);
+      formData.append("numeroCuenta", value.numeroCuenta);
+      formData.append("clabe", value.clabe);
+      formData.append("banco", value.banco);
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("fechaRegistro", value.fechaRegistro);
       formData.append("creadoPor", value.creadoPor);

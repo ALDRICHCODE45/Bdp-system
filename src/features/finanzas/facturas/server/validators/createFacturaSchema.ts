@@ -28,6 +28,12 @@ export const createFacturaSchema = z.object({
   direccionReceptor: z
     .string()
     .min(1, "La dirección del receptor es requerida"),
+  numeroCuenta: z.string().min(1, "El número de cuenta es requerido"),
+  clabe: z
+    .string()
+    .min(18, "La CLABE debe tener 18 dígitos")
+    .max(18, "La CLABE debe tener 18 dígitos"),
+  banco: z.string().min(1, "El banco es requerido"),
   fechaPago: z.date().optional().nullable(),
   fechaRegistro: z.date(),
   creadoPor: z.string().min(1, "El creador es requerido"),

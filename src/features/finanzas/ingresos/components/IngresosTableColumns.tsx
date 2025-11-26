@@ -351,6 +351,33 @@ export const columns: ColumnDef<IngresoDto>[] = [
     size: 8,
   },
   {
+    header: "Número de Cuenta",
+    accessorKey: "numeroCuenta",
+    cell: ({ row }) => {
+      const numeroCuenta = row.getValue("numeroCuenta") as string;
+      return <div className="text-sm font-mono truncate">{numeroCuenta}</div>;
+    },
+    size: 15,
+  },
+  {
+    header: "CLABE",
+    accessorKey: "clabe",
+    cell: ({ row }) => {
+      const clabe = row.getValue("clabe") as string;
+      return <div className="text-sm font-mono truncate">{clabe}</div>;
+    },
+    size: 15,
+  },
+  {
+    header: "Banco",
+    accessorKey: "origen",
+    cell: ({ row }) => {
+      const origen = row.getValue("origen") as string;
+      return <div className="text-sm truncate">{origen}</div>;
+    },
+    size: 12,
+  },
+  {
     header: "Ingresado Por",
     accessorKey: "ingresadoPorNombre",
     cell: ({ row }) => {

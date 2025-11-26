@@ -31,6 +31,9 @@ export const getOrigenDataAction = async (
           notas: ingreso.notas,
           rfcReceptor: ingreso.clienteRef?.rfc || "",
           direccionReceptor: ingreso.clienteRef?.direccion || "",
+          numeroCuenta: ingreso.numeroCuenta,
+          clabe: ingreso.clabe,
+          banco: ingreso.origen,
         },
       };
     } else {
@@ -58,6 +61,9 @@ export const getOrigenDataAction = async (
           notas: egreso.notas,
           rfcReceptor: egreso.proveedorRef?.rfc || "",
           direccionReceptor: egreso.proveedorRef?.direccion || "",
+          numeroCuenta: egreso.numeroCuenta,
+          clabe: egreso.clabe,
+          banco: egreso.origen,
         },
       };
     }
