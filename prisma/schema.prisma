@@ -160,14 +160,18 @@ model EntradasSalidas {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  name      String
-  password  String
-  roles     UserRole[]
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id                         String             @id @default(uuid())
+  email                      String             @unique
+  name                       String
+  password                   String
+  roles                      UserRole[]
+  isActive                   Boolean            @default(true)
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+  clientesProveedoresCreados ClienteProveedor[] @relation("ClienteProveedorIngresadoPor")
+  egresosCreados             Egreso[]           @relation("EgresoIngresadoPor")
+  ingresosCreados            Ingreso[]          @relation("IngresoIngresadoPor")
+  facturasCreadas            Factura[]          @relation("FacturaIngresadoPor")
 }
 
 model Role {
@@ -236,6 +240,8 @@ model ClienteProveedor {
   notas                   String?
   socioId                 String?
   socio                   Socio?                      @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  ingresadoPor            String?
+  ingresadoPorRef         User?                       @relation("ClienteProveedorIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
   egresosComoProveedor    Egreso[]                    @relation("EgresoProveedor")
   egresosComoClienteProye Egreso[]                    @relation("EgresoClienteProyecto")
   ingresosComoCliente     Ingreso[]                   @relation("IngresoCliente")
@@ -247,6 +253,7 @@ model ClienteProveedor {
   @@unique([rfc, tipo])
   @@index([activo])
   @@index([socioId])
+  @@index([ingresadoPor])
 }
 
 model Egreso {
@@ -277,6 +284,8 @@ model Egreso {
   clienteProyectoRef ClienteProveedor?            @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
   facturaId          String?
   notas              String?
+  ingresadoPor       String?
+  ingresadoPorRef    User?                        @relation("EgresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
   historial          EgresoHistorial[]
   createdAt          DateTime                     @default(now())
   updatedAt          DateTime                     @updatedAt
@@ -287,6 +296,7 @@ model Egreso {
   @@index([clienteProyectoId])
   @@index([fechaPago])
   @@index([createdAt])
+  @@index([ingresadoPor])
 }
 
 model EgresoHistorial {
@@ -386,6 +396,8 @@ model Ingreso {
   fechaParticipacion DateTime?
   facturaId          String?
   notas              String?
+  ingresadoPor       String?
+  ingresadoPorRef    User?                         @relation("IngresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
   historial          IngresoHistorial[]
   createdAt          DateTime                      @default(now())
   updatedAt          DateTime                      @updatedAt
@@ -395,6 +407,7 @@ model Ingreso {
   @@index([clienteId])
   @@index([fechaPago])
   @@index([createdAt])
+  @@index([ingresadoPor])
 }
 
 model IngresoHistorial {
@@ -437,6 +450,8 @@ model Factura {
   creadoPor           String
   autorizadoPor       String
   notas               String?
+  ingresadoPor        String?
+  ingresadoPorRef     User?              @relation("FacturaIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
   historial           FacturaHistorial[]
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
@@ -446,6 +461,7 @@ model Factura {
   @@index([estado])
   @@index([clienteProveedorId])
   @@index([fechaEmision])
+  @@index([ingresadoPor])
 }
 
 model FacturaHistorial {

@@ -50,6 +50,8 @@ export function toFacturaDto(entity: FacturaEntity): FacturaDto {
     creadoPor: entity.creadoPor,
     autorizadoPor: entity.autorizadoPor,
     notas: entity.notas,
+    ingresadoPor: entity.ingresadoPor ?? null,
+    ingresadoPorNombre: entity.ingresadoPorRef?.name ?? null,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
   };

@@ -36,6 +36,7 @@ type CreateEgresoInput = {
   clienteProyecto: string | null;
   clienteProyectoId: string | null;
   notas?: string | null;
+  ingresadoPor?: string | null;
   usuarioId?: string | null;
 };
 
@@ -123,6 +124,7 @@ export class EgresoService {
         ...input,
         clienteProyecto: input.clienteProyecto ?? null,
         clienteProyectoId: input.clienteProyectoId ?? null,
+        ingresadoPor: input.usuarioId || null,
       });
 
       // Crear historial para el nuevo egreso

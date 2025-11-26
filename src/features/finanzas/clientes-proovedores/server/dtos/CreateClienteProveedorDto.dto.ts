@@ -13,5 +13,6 @@ export type CreateClienteProveedorDto = {
   fechaRegistro: Date;
   notas?: string | null;
   socioId?: string | null;
+  ingresadoPor?: string | null;
 };
 

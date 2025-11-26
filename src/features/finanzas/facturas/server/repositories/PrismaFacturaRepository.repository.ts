@@ -42,9 +42,11 @@ export class PrismaFacturaRepository implements FacturaRepository {
         creadoPor: data.creadoPor,
         autorizadoPor: data.autorizadoPor,
         notas: data.notas,
+        ingresadoPor: data.ingresadoPor,
       },
       include: {
         clienteProveedorRef: true,
+        ingresadoPorRef: true,
       },
     });
 
@@ -80,6 +82,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
       },
       include: {
         clienteProveedorRef: true,
+        ingresadoPorRef: true,
       },
     });
 
@@ -97,6 +100,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
       where: { id: data.id },
       include: {
         clienteProveedorRef: true,
+        ingresadoPorRef: true,
       },
     });
 
@@ -116,6 +120,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
       where: { origenId },
       include: {
         clienteProveedorRef: true,
+        ingresadoPorRef: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -129,6 +134,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
     const facturas = await this.prisma.factura.findMany({
       include: {
         clienteProveedorRef: true,
+        ingresadoPorRef: true,
       },
       orderBy: {
         createdAt: "desc",

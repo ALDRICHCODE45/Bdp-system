@@ -28,6 +28,7 @@ type CreateIngresoInput = {
   clienteProyecto: string;
   fechaParticipacion?: Date | null;
   notas?: string | null;
+  ingresadoPor?: string | null;
   usuarioId?: string | null;
 };
 
@@ -93,7 +94,10 @@ export class IngresoService {
         );
       }
 
-      const ingreso = await this.ingresoRepository.create(input);
+      const ingreso = await this.ingresoRepository.create({
+        ...input,
+        ingresadoPor: input.usuarioId || null,
+      });
 
       // Crear historial para el nuevo ingreso
       const historialResult =

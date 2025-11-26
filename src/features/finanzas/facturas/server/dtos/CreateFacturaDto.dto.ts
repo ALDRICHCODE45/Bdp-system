@@ -21,5 +21,6 @@ export type CreateFacturaDto = {
   creadoPor: string;
   autorizadoPor: string;
   notas?: string | null;
+  ingresadoPor?: string | null;
 };
 

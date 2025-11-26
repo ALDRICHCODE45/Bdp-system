@@ -43,10 +43,12 @@ export class PrismaEgresoRepository implements EgresoRepository {
         clienteProyecto: data.clienteProyecto ?? null,
         clienteProyectoId: data.clienteProyectoId ?? null,
         notas: data.notas,
+        ingresadoPor: data.ingresadoPor,
       },
       include: {
         proveedorRef: true,
         clienteProyectoRef: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -82,6 +84,7 @@ export class PrismaEgresoRepository implements EgresoRepository {
       include: {
         proveedorRef: true,
         clienteProyectoRef: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -98,6 +101,7 @@ export class PrismaEgresoRepository implements EgresoRepository {
       include: {
         proveedorRef: true,
         clienteProyectoRef: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -119,6 +123,7 @@ export class PrismaEgresoRepository implements EgresoRepository {
       include: {
         proveedorRef: true,
         clienteProyectoRef: true,
+        ingresadoPorRef: true,
       },
     });
   }

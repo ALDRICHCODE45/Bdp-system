@@ -20,5 +20,6 @@ export type CreateIngresoDto = {
   clienteProyecto: string;
   fechaParticipacion?: Date | null;
   notas?: string | null;
+  ingresadoPor?: string | null;
 };
 

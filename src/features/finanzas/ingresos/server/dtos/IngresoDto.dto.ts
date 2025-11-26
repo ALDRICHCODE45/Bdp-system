@@ -26,6 +26,8 @@ export type IngresoDto = {
   clienteProyecto: string;
   fechaParticipacion: string | null;
   notas: string | null;
+  ingresadoPor: string | null;
+  ingresadoPorNombre: string | null;
   createdAt: string;
   updatedAt: string;
 };

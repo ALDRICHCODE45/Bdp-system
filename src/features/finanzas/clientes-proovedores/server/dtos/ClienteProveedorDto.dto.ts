@@ -17,6 +17,8 @@ export type ClienteProveedorDto = {
     id: string;
     nombre: string;
   } | null;
+  ingresadoPor: string | null;
+  ingresadoPorNombre: string | null;
   createdAt: string;
   updatedAt: string;
 };

@@ -90,7 +90,10 @@ export class FacturaService {
           tempHistorialRepository
         );
 
-        const newFactura = await tempFacturaRepository.create(input);
+        const newFactura = await tempFacturaRepository.create({
+          ...input,
+          ingresadoPor: input.usuarioId || null,
+        });
 
         await tempHistorialService.createHistorialForNewFactura(
           newFactura,

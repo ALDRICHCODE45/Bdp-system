@@ -42,9 +42,11 @@ export class PrismaIngresoRepository implements IngresoRepository {
         fechaParticipacion: data.fechaParticipacion,
         facturaId: data.facturaId,
         notas: data.notas,
+        ingresadoPor: data.ingresadoPor,
       },
       include: {
         clienteRef: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -78,6 +80,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
       },
       include: {
         clienteRef: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -93,6 +96,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
       where: { id: data.id },
       include: {
         clienteRef: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -113,6 +117,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
       },
       include: {
         clienteRef: true,
+        ingresadoPorRef: true,
       },
     });
   }

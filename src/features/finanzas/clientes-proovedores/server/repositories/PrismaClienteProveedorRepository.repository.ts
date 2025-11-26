@@ -37,9 +37,11 @@ export class PrismaClienteProveedorRepository
         fechaRegistro: data.fechaRegistro,
         notas: data.notas,
         socioId: data.socioId,
+        ingresadoPor: data.ingresadoPor,
       },
       include: {
         socio: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -82,6 +84,7 @@ export class PrismaClienteProveedorRepository
       where: { id: data.id },
       include: {
         socio: true,
+        ingresadoPorRef: true,
       },
     });
   }
@@ -108,6 +111,7 @@ export class PrismaClienteProveedorRepository
       },
       include: {
         socio: true,
+        ingresadoPorRef: true,
       },
     });
   }

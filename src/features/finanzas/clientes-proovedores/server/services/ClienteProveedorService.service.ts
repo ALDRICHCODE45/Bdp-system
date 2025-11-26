@@ -21,6 +21,7 @@ type CreateClienteProveedorInput = {
   fechaRegistro: Date;
   notas?: string | null;
   socioId?: string | null;
+  ingresadoPor?: string | null;
   usuarioId?: string | null;
 };
 
@@ -77,9 +78,10 @@ export class ClienteProveedorService {
         }
       }
 
-      const clienteProveedor = await this.clienteProveedorRepository.create(
-        input
-      );
+      const clienteProveedor = await this.clienteProveedorRepository.create({
+        ...input,
+        ingresadoPor: input.usuarioId || null,
+      });
 
       // Crear historial para el nuevo cliente/proveedor
       const historialResult =

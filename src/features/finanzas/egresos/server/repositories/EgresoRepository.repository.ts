@@ -1,8 +1,9 @@
-import { Egreso, ClienteProveedor } from "@prisma/client";
+import { Egreso, ClienteProveedor, User } from "@prisma/client";
 
 export type EgresoEntity = Egreso & {
   proveedorRef?: ClienteProveedor | null;
   clienteProyectoRef?: ClienteProveedor | null;
+  ingresadoPorRef?: User | null;
 };
 
 export type CreateEgresoArgs = {
@@ -35,6 +36,7 @@ export type CreateEgresoArgs = {
   clienteProyecto: string | null;
   clienteProyectoId: string | null;
   notas?: string | null;
+  ingresadoPor?: string | null;
 };
 
 export type UpdateEgresoArgs = {

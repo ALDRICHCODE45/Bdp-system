@@ -109,6 +109,8 @@ export function toEgresoDto(entity: EgresoEntity): EgresoDto {
         }
       : null,
     notas: entity.notas,
+    ingresadoPor: entity.ingresadoPor ?? null,
+    ingresadoPorNombre: entity.ingresadoPorRef?.name ?? null,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
   };

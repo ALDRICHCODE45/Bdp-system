@@ -1,7 +1,8 @@
-import { ClienteProveedor, Socio } from "@prisma/client";
+import { ClienteProveedor, Socio, User } from "@prisma/client";
 
 export type ClienteProveedorEntity = ClienteProveedor & {
   socio?: Socio | null;
+  ingresadoPorRef?: User | null;
 };
 
 export type CreateClienteProveedorArgs = {
@@ -19,6 +20,7 @@ export type CreateClienteProveedorArgs = {
   fechaRegistro: Date;
   notas?: string | null;
   socioId?: string | null;
+  ingresadoPor?: string | null;
 };
 
 export type UpdateClienteProveedorArgs = {

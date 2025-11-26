@@ -28,6 +28,8 @@ export type FacturaDto = {
   creadoPor: string;
   autorizadoPor: string;
   notas: string | null;
+  ingresadoPor: string | null;
+  ingresadoPorNombre: string | null;
   createdAt: string;
   updatedAt: string;
 };

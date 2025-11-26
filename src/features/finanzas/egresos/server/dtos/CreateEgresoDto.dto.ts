@@ -28,5 +28,6 @@ export type CreateEgresoDto = {
   clienteProyecto: string | null;
   clienteProyectoId: string | null;
   notas?: string | null;
+  ingresadoPor?: string | null;
 };
 

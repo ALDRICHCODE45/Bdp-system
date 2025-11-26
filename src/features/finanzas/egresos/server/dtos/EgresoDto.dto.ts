@@ -39,6 +39,8 @@ export type EgresoDto = {
     rfc: string;
   } | null;
   notas: string | null;
+  ingresadoPor: string | null;
+  ingresadoPorNombre: string | null;
   createdAt: string;
   updatedAt: string;
 };

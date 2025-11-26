@@ -1,7 +1,8 @@
-import { Factura, ClienteProveedor } from "@prisma/client";
+import { Factura, ClienteProveedor, User } from "@prisma/client";
 
 export type FacturaEntity = Factura & {
   clienteProveedorRef?: ClienteProveedor | null;
+  ingresadoPorRef?: User | null;
 };
 
 export type CreateFacturaArgs = {
@@ -27,6 +28,7 @@ export type CreateFacturaArgs = {
   creadoPor: string;
   autorizadoPor: string;
   notas?: string | null;
+  ingresadoPor?: string | null;
 };
 
 export type UpdateFacturaArgs = {

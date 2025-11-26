@@ -425,6 +425,21 @@ export const columns: ColumnDef<FacturaDto>[] = [
     size: 9,
   },
   {
+    header: "Ingresado Por",
+    accessorKey: "ingresadoPorNombre",
+    cell: ({ row }) => {
+      const ingresadoPorNombre = row.getValue("ingresadoPorNombre") as
+        | string
+        | null;
+      return (
+        <div className="text-sm truncate">
+          {ingresadoPorNombre || <span className="text-gray-400">N/A</span>}
+        </div>
+      );
+    },
+    size: 15,
+  },
+  {
     id: "archivos",
     header: "Archivos",
     cell: ({ row }) => {

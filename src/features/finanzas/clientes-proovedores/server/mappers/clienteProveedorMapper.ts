@@ -30,6 +30,8 @@ export function toClienteProveedorDto(
           nombre: entity.socio.nombre,
         }
       : null,
+    ingresadoPor: entity.ingresadoPor ?? null,
+    ingresadoPorNombre: entity.ingresadoPorRef?.name ?? null,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
   };

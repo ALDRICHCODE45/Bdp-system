@@ -48,6 +48,8 @@ export function toIngresoDto(entity: IngresoEntity): IngresoDto {
       ? entity.fechaParticipacion.toISOString()
       : null,
     notas: entity.notas,
+    ingresadoPor: entity.ingresadoPor ?? null,
+    ingresadoPorNombre: entity.ingresadoPorRef?.name ?? null,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
   };
