@@ -1,15 +1,14 @@
 import { FileRepository } from "../repositories/FileRespository.repository";
 import { DigitalOceanSpacesService } from "./DigitalOceanSpacesService";
 import { CreateFileDto } from "../dtos/CreateFileDto";
-import { DeleteFileDto } from "../dtos/DeleteFileDto";
 import { FileEntity } from "../entities/File.entity";
 import { Result, Ok, Err } from "@/core/shared/result/result";
 
 export class FileService {
   constructor(
     private fileRepository: FileRepository,
-    private spacesService: DigitalOceanSpacesService
-  ) {}
+    private spacesService: DigitalOceanSpacesService,
+  ) { }
 
   /**
    * Sube un archivo a Digital Ocean Spaces y guarda la referencia en la base de datos
@@ -18,7 +17,7 @@ export class FileService {
     file: File,
     entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
     entityId: string,
-    uploadedBy?: string | null
+    uploadedBy?: string | null,
   ): Promise<Result<FileEntity, Error>> {
     try {
       // Determinar la carpeta según el tipo de entidad
@@ -43,9 +42,7 @@ export class FileService {
       return Ok(fileEntity);
     } catch (error) {
       return Err(
-        error instanceof Error
-          ? error
-          : new Error("Error al subir el archivo")
+        error instanceof Error ? error : new Error("Error al subir el archivo"),
       );
     }
   }
@@ -73,7 +70,7 @@ export class FileService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al eliminar el archivo")
+          : new Error("Error al eliminar el archivo"),
       );
     }
   }
@@ -83,18 +80,20 @@ export class FileService {
    */
   async getFilesByEntity(
     entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
-    entityId: string
+    entityId: string,
   ): Promise<Result<FileEntity[], Error>> {
     try {
-      const files = await this.fileRepository.findByEntity(entityType, entityId);
+      const files = await this.fileRepository.findByEntity(
+        entityType,
+        entityId,
+      );
       return Ok(files);
     } catch (error) {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener los archivos")
+          : new Error("Error al obtener los archivos"),
       );
     }
   }
 }
-
