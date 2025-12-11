@@ -96,7 +96,7 @@ model Socio {
 model Colaborador {
   id        String                 @id @default(uuid())
   name      String
-  correo    String
+  correo    String                 @unique
   puesto    String
   status    ColaboradorEstado      @default(CONTRATADO)
   imss      Boolean                @default(true)
@@ -109,6 +109,7 @@ model Colaborador {
   historial ColaboradorHistorial[]
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
+  asistencias Asistencia[]
 
   @@index([socioId])
   @@index([status])
@@ -539,4 +540,21 @@ model FileAttachment {
 
   @@index([entityType, entityId])
   @@index([entityId])
+}
+
+
+
+enum AsistenciaTipo {
+  Entrada
+  Salida
+}
+
+model Asistencia {
+  id            String        @id @default(uuid())
+  tipo          AsistenciaTipo
+  fecha         DateTime
+  correo        String
+  colaborador   Colaborador   @relation(fields: [correo], references: [correo], onDelete: Cascade)
+
+  @@index([correo])
 }

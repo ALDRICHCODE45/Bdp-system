@@ -80,6 +80,10 @@ export const sidebarLinks = {
           title: "Entradas y Salidas",
           url: "/entradas-salidas",
         },
+        {
+          title: "Registrar Entrada",
+          url: "/qr-entry",
+        },
       ],
     },
     {

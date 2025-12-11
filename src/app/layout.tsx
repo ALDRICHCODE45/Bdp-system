@@ -42,6 +42,7 @@ export default function RootLayout({
         <Toaster
           position="top-center"
           closeButton
+          richColors
           expand
           icons={{
             success: <CircleCheckIcon className="size-4" />,

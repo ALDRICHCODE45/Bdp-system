@@ -8,8 +8,8 @@ import { toUserDto, toUserDtoArray } from "../mappers/userMapper";
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly passwordHasher: PasswordHasher
-  ) {}
+    private readonly passwordHasher: PasswordHasher,
+  ) { }
 
   async create(createUserDto: CreateUserDto) {
     const exists = await this.userRepository.findByEmail({
@@ -20,8 +20,8 @@ export class UserService {
       return Err(
         new ConflictError(
           "EMAIL Existente",
-          "El email ya esta siendo usado por un usuario"
-        )
+          "El email ya esta siendo usado por un usuario",
+        ),
       );
     }
 
@@ -44,8 +44,8 @@ export class UserService {
       return Err(
         new ConflictError(
           "EMAIL Existente",
-          "El email ya esta siendo usado por un usuario"
-        )
+          "El email ya esta siendo usado por un usuario",
+        ),
       );
     }
 

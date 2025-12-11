@@ -20,13 +20,14 @@ export default auth((req) => {
   // Rutas públicas que no requieren autenticación
   const isPublicRoute =
     nextUrl.pathname.startsWith("/sign-in") ||
+    nextUrl.pathname.startsWith("/register-qr-entry") ||
     nextUrl.pathname.startsWith("/api/auth") ||
     nextUrl.pathname === "/access-denied";
 
   // Si el usuario está logueado y accede a la ruta raíz, redirigir basado en permisos
   if (isLoggedIn && nextUrl.pathname === "/") {
     const userPermissions = MiddlewarePermissionsService.extractPermissions(
-      req.auth
+      req.auth,
     );
     const defaultRoute = getDefaultRoute(userPermissions);
     return NextResponse.redirect(new URL(defaultRoute, nextUrl));
@@ -46,7 +47,7 @@ export default auth((req) => {
   if (isLoggedIn && nextUrl.pathname.startsWith("/sign-in")) {
     // Obtener permisos del usuario y redirigir a la ruta por defecto basada en permisos
     const userPermissions = MiddlewarePermissionsService.extractPermissions(
-      req.auth
+      req.auth,
     );
     const defaultRoute = getDefaultRoute(userPermissions);
     return NextResponse.redirect(new URL(defaultRoute, nextUrl));
@@ -57,7 +58,7 @@ export default auth((req) => {
   if (isLoggedIn) {
     const accessCheck = RoutePermissionGuard.canAccessRoute(
       req.auth,
-      nextUrl.pathname
+      nextUrl.pathname,
     );
 
     if (!accessCheck.hasAccess) {

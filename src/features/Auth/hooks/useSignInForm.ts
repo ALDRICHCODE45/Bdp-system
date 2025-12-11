@@ -25,11 +25,6 @@ export function useSignInForm() {
         console.error("Error en login:", result.error);
         throw new Error("Error al iniciar sesión");
       }
-
-      // Redirigir a la página raíz usando window.location para forzar recarga completa
-      // Esto asegura que la sesión se actualice y la página raíz pueda obtener los permisos
-      // La página raíz manejará la redirección basada en permisos del usuario
-      //window.location.href = "/";
       router.push("/");
     },
   });

@@ -16,11 +16,6 @@ export const useCreateUserForm = () => {
       onSubmit: createUserSchemaUI,
     },
     onSubmit: async ({ value }) => {
-      showToast({
-        type: "success",
-        description: "El usuario ahora puede ingresar al sistema",
-        title: "Usuario creado correctamente",
-      });
       const formData = new FormData();
       formData.append("name", value.nombre);
       formData.append("email", value.email);
@@ -29,11 +24,10 @@ export const useCreateUserForm = () => {
 
       await createUserAction(formData);
 
-      console.log("Usuario creado", {
-        email: value.email,
-        password: value.password,
-        nombre: value.nombre,
-        roles: value.roles,
+      showToast({
+        type: "success",
+        description: "El usuario ahora puede ingresar al sistema",
+        title: "Usuario creado correctamente",
       });
     },
   });
