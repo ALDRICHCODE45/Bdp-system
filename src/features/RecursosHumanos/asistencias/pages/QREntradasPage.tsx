@@ -3,13 +3,15 @@ import Image from "next/image";
 import { QRCode } from "@/components/ui/shadcn-io/qr-code";
 import { Button } from "@/core/shared/ui/button";
 import { useRouter } from "next/navigation";
+import { Separator } from "@/core/shared/ui/separator";
+import { Card, CardContent, CardFooter } from "@/core/shared/ui/card";
 
 const QREntradasPage = () => {
   const router = useRouter();
 
   return (
-    <div className=" flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-lg space-y-8">
+    <div className="flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-3xl space-y-8">
         {/* Logo */}
         <div className="flex justify-center">
           <Image
@@ -23,7 +25,7 @@ const QREntradasPage = () => {
         </div>
 
         {/* Título */}
-        <div className="text-center space-y-2">
+        <div className="text-center ">
           <h1 className="text-4xl font-semibold tracking-tight">
             Registro de Asistencia
           </h1>
@@ -33,10 +35,26 @@ const QREntradasPage = () => {
         </div>
 
         {/* QR Code */}
-        <div className="flex justify-center ">
-          <div className="p-4 bg-white rounded-xl shadow-sm w-sm">
-            <QRCode data="http://192.168.100.14:3000/register-qr-entry" />
-          </div>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-10 w-full">
+          <Card className="w-md ">
+            <CardContent>
+              <QRCode data="http://192.168.100.11:3000/register-qr-entry?tipo=Entrada" />
+            </CardContent>
+            <Separator />
+            <CardFooter className="flex justify-center font-semibold">
+              Entrada
+            </CardFooter>
+          </Card>
+
+          <Card className="w-md ">
+            <CardContent>
+              <QRCode data="http://192.168.100.11:3000/register-qr-entry?tipo=Salida" />
+            </CardContent>
+            <Separator />
+            <CardFooter className="font-semibold flex justify-center ">
+              Salida
+            </CardFooter>
+          </Card>
         </div>
 
         {/* Botón */}

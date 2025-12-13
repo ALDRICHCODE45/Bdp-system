@@ -1,10 +1,10 @@
-import { RegisterEntryForm } from "@/features/RecursosHumanos/asistencias/components/forms/registerEntry.form";
+import { RegisterManuallyEntradaSalidaPage } from "@/features/RecursosHumanos/asistencias/pages/RegisterManuallyEntradaSalida.page";
 
 const RegisterQrEntryPage = () => {
   return (
     <>
       <div className="w-full h-[100vh] mx-auto flex justify-center items-center tex-center">
-        <RegisterEntryForm />;
+        <RegisterManuallyEntradaSalidaPage />
       </div>
     </>
   );

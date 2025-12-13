@@ -8,18 +8,23 @@ import {
   getLocalStorageItem,
   setLocalStorageItem,
 } from "@/core/shared/helpers/localStorage.helper";
+import { useSearchParams } from "next/navigation";
 
 export const useRegisterEntryForm = () => {
+  const queryParameters = useSearchParams();
+  const tipo = queryParameters.get("tipo") ?? undefined;
+
+  const userEmail = getLocalStorageItem("correo", "");
   const form = useForm({
     defaultValues: {
-      email: getLocalStorageItem("correo", undefined) ?? "",
-      tipo: "Entrada",
+      email: userEmail,
+      tipo: tipo,
     },
     validators: {
       onSubmit: createAsistenciaSchema,
     },
     onSubmit: async ({ value }) => {
-      //obtener el correo si es que ya esta en el localStorage
+      //setear el correo en localStorage
       setLocalStorageItem("correo", value.email);
 
       const args = {
