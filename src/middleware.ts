@@ -21,6 +21,7 @@ export default auth((req) => {
   const isPublicRoute =
     nextUrl.pathname.startsWith("/sign-in") ||
     nextUrl.pathname.startsWith("/register-qr-entry") ||
+    nextUrl.pathname.startsWith("/registro-automatico") ||
     nextUrl.pathname.startsWith("/api/auth") ||
     nextUrl.pathname === "/access-denied";
 
