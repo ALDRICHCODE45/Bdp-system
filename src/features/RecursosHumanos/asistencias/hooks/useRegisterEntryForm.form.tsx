@@ -36,7 +36,8 @@ export const useRegisterEntryForm = () => {
       if (result && !result.ok) {
         showToast({
           title: `La ${value.tipo} no se pudo registrar`,
-          description: "Intenta de nuevo mas tarde!",
+          description:
+            "Intenta de nuevo mas tarde! o contacta al equipo de Desarrollo",
           type: "error",
         });
         value.email = "";
