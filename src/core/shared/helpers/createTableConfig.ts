@@ -4,6 +4,8 @@ export const createTableConfig = <T>(
   baseConfig: TableConfig<T>,
   handlers: {
     onAdd?: () => void;
+    onImport?: () => void;
+    [key: string]: (() => void) | undefined;
   }
 ): TableConfig<T> => {
   return {

@@ -5,7 +5,7 @@ import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
 import { Badge } from "@/core/shared/ui/badge";
 import { Card, CardContent, CardHeader } from "@/core/shared/ui/card";
-import { Filter } from "lucide-react";
+import { Filter, FileSpreadsheet } from "lucide-react";
 import { useFacturasTableFilters } from "../hooks/useFacturasTableFilters";
 import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
@@ -37,6 +37,7 @@ interface FacturasFiltersProps extends BaseFilterProps {
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
   onExport?: (table: Table<unknown>) => void;
+  onImport?: () => void;
 }
 
 export function FacturasFilters({
@@ -47,6 +48,7 @@ export function FacturasFilters({
   showAddButton,
   onAdd,
   onExport,
+  onImport,
 }: FacturasFiltersProps) {
   const {
     clearFilters,
@@ -71,6 +73,17 @@ export function FacturasFilters({
           </Badge>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
+          {onImport && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onImport}
+              className="h-8 px-3 flex items-center gap-1"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Importar Excel</span>
+            </Button>
+          )}
           <FilterHeaderActions
             showAddButton={showAddButton}
             AddButtonIcon={addButtonIcon}

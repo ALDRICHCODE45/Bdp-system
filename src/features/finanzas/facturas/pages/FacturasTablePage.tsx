@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { columns } from "../components/FacturasTableColumns";
 import { FacturasTableConfig } from "../components/FacturasTableConfig";
@@ -9,6 +10,7 @@ import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
+import { ImportFacturasDialog } from "../components/import";
 
 const CreateFacturaSheet = dynamic(
   () =>
@@ -27,26 +29,38 @@ interface FacturasTablePageProps {
 
 export function FacturasTablePage({ tableData }: FacturasTablePageProps) {
   const { isOpen, openModal, closeModal } = useModalState();
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const handleAdd = () => {
     openModal();
   };
 
+  const handleImport = () => {
+    setImportDialogOpen(true);
+  };
+
   // Crear configuración con handlers
   const tableConfig = createTableConfig(FacturasTableConfig, {
     onAdd: handleAdd,
+    onImport: handleImport,
   });
 
   return (
     <div className="container mx-auto py-6">
       <TablePresentation
         subtitle="Administra y gestiona las facturas de tu empresa"
-        title="Gestión de Facturas"
+        title="Gestion de Facturas"
       />
       <DataTable columns={columns} data={tableData} config={tableConfig} />
 
       {/* Modal con lazy loading */}
       {isOpen && <CreateFacturaSheet isOpen={true} onClose={closeModal} />}
+
+      {/* Dialog de importación */}
+      <ImportFacturasDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+      />
     </div>
   );
 }
