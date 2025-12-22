@@ -11,6 +11,8 @@ import {
   ClienteNuevoDto,
   ErrorValidacionDto,
   ImportOptionsDto,
+  SinVinculacionDto,
+  AccionSinVinculacion,
 } from "../dtos/ImportExcelPreviewDto.dto";
 import {
   ImportFacturaResultDto,
@@ -316,9 +318,9 @@ export class FacturaExcelImportService {
     ]);
 
     // 5. Buscar vinculación con I/E para cada fila
+    // Separar en dos arrays: con vinculación y sin vinculación
     const validatedNuevas: ValidatedExcelRowDto[] = [];
-    let totalConVinculacion = 0;
-    let totalSinVinculacion = 0;
+    const sinVinculacion: SinVinculacionDto[] = [];
 
     for (const row of nuevas) {
       const vinculacion = await this.findOrigenByFolioFiscal(row.folioFiscal!);
@@ -341,12 +343,15 @@ export class FacturaExcelImportService {
         },
       };
 
-      validatedNuevas.push(validated);
-
       if (vinculacion) {
-        totalConVinculacion++;
+        // Factura con vinculación existente - va a nuevas
+        validatedNuevas.push(validated);
       } else {
-        totalSinVinculacion++;
+        // Factura sin vinculación - el usuario decidirá qué hacer
+        sinVinculacion.push({
+          row: validated,
+          accionSeleccionada: null,
+        });
       }
     }
 
@@ -376,19 +381,89 @@ export class FacturaExcelImportService {
       totalRows: rawRows.length,
       nuevas: validatedNuevas,
       duplicadas,
+      sinVinculacion,
       clientesNuevos,
       errores: errors,
       resumen: {
         totalNuevas: validatedNuevas.length,
         totalDuplicadas: duplicadas.length,
+        totalSinVinculacion: sinVinculacion.length,
         totalClientesNuevos: clientesNuevos.length,
         totalErrores: errors.length,
-        totalConVinculacion,
-        totalSinVinculacion,
+        totalConVinculacion: validatedNuevas.length,
       },
     };
 
     return Ok(preview);
+  }
+
+  /**
+   * Crea un Ingreso a partir de los datos de una factura del Excel
+   * Usa valores por defecto para campos no disponibles
+   */
+  private async createIngresoFromFactura(
+    tx: Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0],
+    row: ValidatedExcelRowDto,
+    clienteId: string,
+    usuarioId: string | null
+  ): Promise<{ id: string; folioFiscal: string }> {
+    const ingreso = await tx.ingreso.create({
+      data: {
+        concepto: row.concepto,
+        cliente: row.clienteProveedor,
+        clienteId: clienteId,
+        numeroFactura: row.numeroFactura,
+        folioFiscal: row.folioFiscal,
+        periodo: row.periodo,
+        formaPago: row.formaPago,
+        origen: "IMPORTACION_EXCEL",
+        numeroCuenta: row.numeroCuenta || "",
+        clabe: row.clabe || "",
+        cargoAbono: "BDP",
+        cantidad: row.monto,
+        estado: "PENDIENTE",
+        facturadoPor: "BDP",
+        clienteProyecto: row.clienteProveedor,
+        ingresadoPor: usuarioId,
+        notas: `Creado automáticamente desde importación de factura`,
+      },
+    });
+    return { id: ingreso.id, folioFiscal: ingreso.folioFiscal };
+  }
+
+  /**
+   * Crea un Egreso a partir de los datos de una factura del Excel
+   * Usa valores por defecto para campos no disponibles
+   */
+  private async createEgresoFromFactura(
+    tx: Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0],
+    row: ValidatedExcelRowDto,
+    proveedorId: string,
+    usuarioId: string | null
+  ): Promise<{ id: string; folioFiscal: string }> {
+    const egreso = await tx.egreso.create({
+      data: {
+        concepto: row.concepto,
+        clasificacion: "SERVICIOS",
+        categoria: "FACTURACION",
+        proveedor: row.clienteProveedor,
+        proveedorId: proveedorId,
+        numeroFactura: row.numeroFactura,
+        folioFiscal: row.folioFiscal,
+        periodo: row.periodo,
+        formaPago: row.formaPago,
+        origen: "IMPORTACION_EXCEL",
+        numeroCuenta: row.numeroCuenta || "",
+        clabe: row.clabe || "",
+        cargoAbono: "BDP",
+        cantidad: row.monto,
+        estado: "PENDIENTE",
+        facturadoPor: "BDP",
+        ingresadoPor: usuarioId,
+        notas: `Creado automáticamente desde importación de factura`,
+      },
+    });
+    return { id: egreso.id, folioFiscal: egreso.folioFiscal };
   }
 
   /**
@@ -405,6 +480,8 @@ export class FacturaExcelImportService {
     let omitidas = 0;
     let errores = 0;
     let clientesCreados = 0;
+    let ingresosCreados = 0;
+    let egresosCreados = 0;
 
     try {
       await this.prisma.$transaction(async (tx) => {
@@ -455,7 +532,7 @@ export class FacturaExcelImportService {
           throw new Error("No se encontró un socio activo para asignar como creador");
         }
 
-        // 3. Procesar facturas nuevas
+        // 3. Procesar facturas nuevas (con vinculación existente)
         for (const row of preview.nuevas) {
           try {
             // Obtener cliente ID
@@ -484,26 +561,9 @@ export class FacturaExcelImportService {
               continue;
             }
 
-            // Determinar origen
-            let tipoOrigen: "INGRESO" | "EGRESO" = "INGRESO";
-            let origenId: string | null = null;
-
-            if (row.vinculacion?.encontrado) {
-              tipoOrigen = row.vinculacion.tipoOrigen;
-              origenId = row.vinculacion.origenId;
-            } else {
-              // Si no hay vinculación, buscar un ingreso/egreso existente para vincular
-              // o crear la factura sin vinculación (origenId vacío temporal)
-              // Por ahora usamos un placeholder - esto se puede ajustar según requerimientos
-              resultados.push({
-                rowNumber: row.rowNumber,
-                folioFiscal: row.folioFiscal,
-                status: "skipped",
-                message: "No se encontró Ingreso/Egreso para vincular con folioFiscal",
-              });
-              omitidas++;
-              continue;
-            }
+            // Estas facturas siempre tienen vinculación (las sin vinculación están en otro array)
+            const tipoOrigen = row.vinculacion!.tipoOrigen;
+            const origenId = row.vinculacion!.origenId;
 
             const newFactura = await tempFacturaRepository.create({
               tipoOrigen,
@@ -684,6 +744,154 @@ export class FacturaExcelImportService {
           });
           omitidas++;
         }
+
+        // 5. Procesar facturas sin vinculación según la decisión del usuario
+        for (const sinVinc of preview.sinVinculacion) {
+          const accion = options.accionesSinVinculacion?.[sinVinc.row.rowNumber];
+          
+          // Si no hay acción seleccionada, omitir
+          if (!accion) {
+            resultados.push({
+              rowNumber: sinVinc.row.rowNumber,
+              folioFiscal: sinVinc.row.folioFiscal,
+              status: "skipped",
+              message: "Sin acción seleccionada - factura omitida",
+            });
+            omitidas++;
+            continue;
+          }
+
+          try {
+            // Obtener cliente ID
+            let clienteProveedorId = sinVinc.row.clienteInfo.id;
+            if (!clienteProveedorId) {
+              clienteProveedorId = clientesCreatedMap.get(sinVinc.row.rfcClienteProveedor) || null;
+            }
+            if (!clienteProveedorId) {
+              const cliente = await tx.clienteProveedor.findFirst({
+                where: { rfc: sinVinc.row.rfcClienteProveedor },
+                select: { id: true },
+              });
+              clienteProveedorId = cliente?.id || null;
+            }
+
+            if (!clienteProveedorId) {
+              resultados.push({
+                rowNumber: sinVinc.row.rowNumber,
+                folioFiscal: sinVinc.row.folioFiscal,
+                status: "error",
+                message: `No se encontró el cliente con RFC: ${sinVinc.row.rfcClienteProveedor}`,
+              });
+              errores++;
+              continue;
+            }
+
+            let tipoOrigen: "INGRESO" | "EGRESO" | null = null;
+            let origenId: string | null = null;
+            let ingresoCreado: { id: string; folioFiscal: string } | undefined;
+            let egresoCreado: { id: string; folioFiscal: string } | undefined;
+
+            if (accion === "crear_ingreso") {
+              // Crear un nuevo Ingreso con los datos de la factura
+              const nuevoIngreso = await this.createIngresoFromFactura(
+                tx,
+                sinVinc.row,
+                clienteProveedorId,
+                usuarioId
+              );
+              tipoOrigen = "INGRESO";
+              origenId = nuevoIngreso.id;
+              ingresoCreado = nuevoIngreso;
+              ingresosCreados++;
+            } else if (accion === "crear_egreso") {
+              // Crear un nuevo Egreso con los datos de la factura
+              const nuevoEgreso = await this.createEgresoFromFactura(
+                tx,
+                sinVinc.row,
+                clienteProveedorId,
+                usuarioId
+              );
+              tipoOrigen = "EGRESO";
+              origenId = nuevoEgreso.id;
+              egresoCreado = nuevoEgreso;
+              egresosCreados++;
+            }
+            // Si accion === "sin_vincular", tipoOrigen y origenId quedan null
+
+            const newFactura = await tempFacturaRepository.create({
+              tipoOrigen,
+              origenId,
+              clienteProveedorId,
+              clienteProveedor: sinVinc.row.clienteProveedor,
+              concepto: sinVinc.row.concepto,
+              monto: sinVinc.row.monto,
+              periodo: sinVinc.row.periodo,
+              numeroFactura: sinVinc.row.numeroFactura,
+              folioFiscal: sinVinc.row.folioFiscal,
+              fechaEmision: sinVinc.row.fechaEmision,
+              fechaVencimiento: sinVinc.row.fechaVencimiento,
+              estado: "BORRADOR",
+              formaPago: sinVinc.row.formaPago,
+              rfcEmisor: sinVinc.row.rfcEmisor,
+              rfcReceptor: sinVinc.row.rfcReceptor,
+              direccionEmisor: sinVinc.row.direccionEmisor || "",
+              direccionReceptor: sinVinc.row.direccionReceptor || "",
+              numeroCuenta: sinVinc.row.numeroCuenta || "",
+              clabe: sinVinc.row.clabe || "",
+              banco: sinVinc.row.banco || "",
+              fechaPago: null,
+              fechaRegistro: new Date(),
+              creadoPor: defaultSocio.nombre,
+              creadoPorId: defaultSocio.id,
+              autorizadoPor: defaultSocio.nombre,
+              autorizadoPorId: defaultSocio.id,
+              notas: sinVinc.row.notas || `Importado desde Excel: ${preview.fileName}`,
+              ingresadoPor: usuarioId,
+            });
+
+            // Crear historial
+            await tempHistorialService.createHistorialForNewFactura(
+              newFactura,
+              usuarioId
+            );
+
+            // Mensaje según la acción
+            let message = "Factura creada exitosamente";
+            if (accion === "crear_ingreso") {
+              message = "Factura creada con nuevo Ingreso";
+            } else if (accion === "crear_egreso") {
+              message = "Factura creada con nuevo Egreso";
+            } else if (accion === "sin_vincular") {
+              message = "Factura creada sin vinculación a I/E";
+            }
+
+            resultados.push({
+              rowNumber: sinVinc.row.rowNumber,
+              folioFiscal: sinVinc.row.folioFiscal,
+              status: "created",
+              message,
+              facturaId: newFactura.id,
+              clienteCreado: clientesCreatedMap.has(sinVinc.row.rfcClienteProveedor)
+                ? {
+                    id: clientesCreatedMap.get(sinVinc.row.rfcClienteProveedor)!,
+                    nombre: sinVinc.row.clienteProveedor,
+                    rfc: sinVinc.row.rfcClienteProveedor,
+                  }
+                : undefined,
+              ingresoCreado,
+              egresoCreado,
+            });
+            creadas++;
+          } catch (error) {
+            resultados.push({
+              rowNumber: sinVinc.row.rowNumber,
+              folioFiscal: sinVinc.row.folioFiscal,
+              status: "error",
+              message: error instanceof Error ? error.message : "Error desconocido",
+            });
+            errores++;
+          }
+        }
       });
 
       return Ok({
@@ -694,6 +902,8 @@ export class FacturaExcelImportService {
         omitidas,
         errores,
         clientesCreados,
+        ingresosCreados,
+        egresosCreados,
         resultados,
       });
     } catch (error) {

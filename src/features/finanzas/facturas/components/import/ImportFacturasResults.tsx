@@ -7,6 +7,8 @@ import {
   UserPlus,
   RefreshCw,
   SkipForward,
+  ArrowDownCircle,
+  ArrowUpCircle,
 } from "lucide-react";
 import { Badge } from "@/core/shared/ui/badge";
 import { Button } from "@/core/shared/ui/button";
@@ -30,7 +32,7 @@ export function ImportFacturasResults({
   onClose,
   onNewImport,
 }: ImportFacturasResultsProps) {
-  const { creadas, actualizadas, omitidas, errores, clientesCreados, resultados } =
+  const { creadas, actualizadas, omitidas, errores, clientesCreados, ingresosCreados, egresosCreados, resultados } =
     results;
 
   const hasErrors = errores > 0;
@@ -85,7 +87,7 @@ export function ImportFacturasResults({
       </div>
 
       {/* Resumen de resultados */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <ResultCard
           icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
           label="Creadas"
@@ -110,13 +112,31 @@ export function ImportFacturasResults({
           value={errores}
           variant="error"
         />
-        <ResultCard
-          icon={<UserPlus className="h-5 w-5 text-purple-600" />}
-          label="Clientes creados"
-          value={clientesCreados}
-          variant="purple"
-        />
       </div>
+
+      {/* Entidades creadas automaticamente */}
+      {(clientesCreados > 0 || ingresosCreados > 0 || egresosCreados > 0) && (
+        <div className="grid grid-cols-3 gap-3">
+          <ResultCard
+            icon={<UserPlus className="h-5 w-5 text-purple-600" />}
+            label="Clientes creados"
+            value={clientesCreados}
+            variant="purple"
+          />
+          <ResultCard
+            icon={<ArrowDownCircle className="h-5 w-5 text-orange-600" />}
+            label="Ingresos creados"
+            value={ingresosCreados}
+            variant="orange"
+          />
+          <ResultCard
+            icon={<ArrowUpCircle className="h-5 w-5 text-pink-600" />}
+            label="Egresos creados"
+            value={egresosCreados}
+            variant="pink"
+          />
+        </div>
+      )}
 
       {/* Detalles por categoria */}
       <ScrollArea className="h-[300px] pr-4">
@@ -217,7 +237,7 @@ function ResultCard({
   icon: React.ReactNode;
   label: string;
   value: number;
-  variant: "success" | "info" | "neutral" | "error" | "purple";
+  variant: "success" | "info" | "neutral" | "error" | "purple" | "orange" | "pink";
 }) {
   const bgColors = {
     success: "bg-green-50 dark:bg-green-950/30",
@@ -225,6 +245,8 @@ function ResultCard({
     neutral: "bg-gray-50 dark:bg-gray-950/30",
     error: "bg-red-50 dark:bg-red-950/30",
     purple: "bg-purple-50 dark:bg-purple-950/30",
+    orange: "bg-orange-50 dark:bg-orange-950/30",
+    pink: "bg-pink-50 dark:bg-pink-950/30",
   };
 
   return (
@@ -248,6 +270,8 @@ function ResultRow({
     message: string;
     facturaId?: string;
     clienteCreado?: { nombre: string; rfc: string };
+    ingresoCreado?: { id: string; folioFiscal: string };
+    egresoCreado?: { id: string; folioFiscal: string };
   };
 }) {
   const statusConfig = {
@@ -269,6 +293,16 @@ function ResultRow({
       {result.clienteCreado && (
         <p className="text-xs text-muted-foreground mt-1">
           Cliente creado: {result.clienteCreado.nombre} ({result.clienteCreado.rfc})
+        </p>
+      )}
+      {result.ingresoCreado && (
+        <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+          Ingreso creado automaticamente
+        </p>
+      )}
+      {result.egresoCreado && (
+        <p className="text-xs text-pink-600 dark:text-pink-400 mt-1">
+          Egreso creado automaticamente
         </p>
       )}
     </div>

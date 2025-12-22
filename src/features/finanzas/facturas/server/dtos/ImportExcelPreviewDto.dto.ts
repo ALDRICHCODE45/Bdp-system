@@ -32,6 +32,19 @@ export type ErrorValidacionDto = {
 };
 
 /**
+ * Acción que el usuario puede elegir para facturas sin vinculación
+ */
+export type AccionSinVinculacion = "crear_ingreso" | "crear_egreso" | "sin_vincular" | null;
+
+/**
+ * DTO para factura sin vinculación a I/E
+ */
+export type SinVinculacionDto = {
+  row: ValidatedExcelRowDto;
+  accionSeleccionada: AccionSinVinculacion;
+};
+
+/**
  * DTO que representa el preview completo de la importación
  * Contiene toda la información necesaria para que el usuario revise
  * antes de confirmar la importación.
@@ -41,11 +54,14 @@ export type ImportExcelPreviewDto = {
   fileName: string;
   totalRows: number;
 
-  // Facturas nuevas a crear
+  // Facturas nuevas a crear (con vinculación a I/E existente)
   nuevas: ValidatedExcelRowDto[];
 
   // Facturas duplicadas (ya existen en BD)
   duplicadas: DuplicadaDto[];
+
+  // Facturas sin vinculación a I/E (usuario debe elegir acción)
+  sinVinculacion: SinVinculacionDto[];
 
   // Clientes que se crearán automáticamente
   clientesNuevos: ClienteNuevoDto[];
@@ -57,10 +73,10 @@ export type ImportExcelPreviewDto = {
   resumen: {
     totalNuevas: number;
     totalDuplicadas: number;
+    totalSinVinculacion: number;
     totalClientesNuevos: number;
     totalErrores: number;
     totalConVinculacion: number;
-    totalSinVinculacion: number;
   };
 };
 
@@ -72,4 +88,6 @@ export type ImportOptionsDto = {
   duplicadasAActualizar: string[];
   // Si es true, actualiza todas las duplicadas
   actualizarTodasDuplicadas: boolean;
+  // Decisiones para facturas sin vinculación: rowNumber -> acción
+  accionesSinVinculacion: Record<number, AccionSinVinculacion>;
 };

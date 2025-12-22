@@ -6,6 +6,7 @@ import {
   XCircle,
   UserPlus,
   Link2,
+  Unlink,
 } from "lucide-react";
 import { Badge } from "@/core/shared/ui/badge";
 import {
@@ -16,30 +17,36 @@ import {
 } from "@/core/shared/ui/accordion";
 import { Checkbox } from "@/core/shared/ui/checkbox";
 import { ScrollArea } from "@/core/shared/ui/scroll-area";
-import { ImportExcelPreviewDto, DuplicadaDto } from "../../server/dtos/ImportExcelPreviewDto.dto";
+import { RadioGroup, RadioGroupItem } from "@/core/shared/ui/radio-group";
+import { Label } from "@/core/shared/ui/label";
+import { ImportExcelPreviewDto, DuplicadaDto, SinVinculacionDto, AccionSinVinculacion } from "../../server/dtos/ImportExcelPreviewDto.dto";
 import { ValidatedExcelRowDto } from "../../server/dtos/ImportFacturaExcelRowDto.dto";
 
 interface ImportFacturasPreviewProps {
   preview: ImportExcelPreviewDto;
   duplicadasAActualizar: string[];
   actualizarTodasDuplicadas: boolean;
+  accionesSinVinculacion: Record<number, AccionSinVinculacion>;
   onToggleDuplicada: (id: string) => void;
   onToggleActualizarTodas: () => void;
+  onSetAccionSinVinculacion: (rowNumber: number, accion: AccionSinVinculacion) => void;
 }
 
 export function ImportFacturasPreview({
   preview,
   duplicadasAActualizar,
   actualizarTodasDuplicadas,
+  accionesSinVinculacion,
   onToggleDuplicada,
   onToggleActualizarTodas,
+  onSetAccionSinVinculacion,
 }: ImportFacturasPreviewProps) {
-  const { resumen, nuevas, duplicadas, clientesNuevos, errores } = preview;
+  const { resumen, nuevas, duplicadas, sinVinculacion, clientesNuevos, errores } = preview;
 
   return (
     <div className="space-y-4">
       {/* Resumen */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <SummaryCard
           icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
           label="Nuevas"
@@ -51,6 +58,12 @@ export function ImportFacturasPreview({
           label="Duplicadas"
           value={resumen.totalDuplicadas}
           variant="warning"
+        />
+        <SummaryCard
+          icon={<Unlink className="h-5 w-5 text-orange-600" />}
+          label="Sin vinculacion"
+          value={resumen.totalSinVinculacion}
+          variant="orange"
         />
         <SummaryCard
           icon={<UserPlus className="h-5 w-5 text-blue-600" />}
@@ -71,7 +84,7 @@ export function ImportFacturasPreview({
         <Link2 className="h-4 w-4" />
         <span>
           {resumen.totalConVinculacion} facturas con vinculacion I/E encontrada,{" "}
-          {resumen.totalSinVinculacion} sin vinculacion (seran omitidas)
+          {resumen.totalSinVinculacion} sin vinculacion (elige que hacer con cada una)
         </span>
       </div>
 
@@ -132,6 +145,34 @@ export function ImportFacturasPreview({
                       }
                       onToggle={() => onToggleDuplicada(dup.existing.id)}
                       disabled={actualizarTodasDuplicadas}
+                    />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
+          {/* Facturas sin vinculacion */}
+          {sinVinculacion.length > 0 && (
+            <AccordionItem value="sinVinculacion" className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <Unlink className="h-4 w-4 text-orange-600" />
+                  <span>Facturas sin vinculacion ({sinVinculacion.length})</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Estas facturas no tienen un Ingreso/Egreso con el mismo folio fiscal.
+                  Selecciona que hacer con cada una:
+                </p>
+                <div className="space-y-3 pt-2">
+                  {sinVinculacion.map((item) => (
+                    <SinVinculacionRow
+                      key={item.row.rowNumber}
+                      item={item}
+                      accionSeleccionada={accionesSinVinculacion[item.row.rowNumber]}
+                      onAccionChange={(accion) => onSetAccionSinVinculacion(item.row.rowNumber, accion)}
                     />
                   ))}
                 </div>
@@ -220,13 +261,14 @@ function SummaryCard({
   icon: React.ReactNode;
   label: string;
   value: number;
-  variant: "success" | "warning" | "info" | "error";
+  variant: "success" | "warning" | "info" | "error" | "orange";
 }) {
   const bgColors = {
     success: "bg-green-50 dark:bg-green-950/30",
     warning: "bg-yellow-50 dark:bg-yellow-950/30",
     info: "bg-blue-50 dark:bg-blue-950/30",
     error: "bg-red-50 dark:bg-red-950/30",
+    orange: "bg-orange-50 dark:bg-orange-950/30",
   };
 
   return (
@@ -305,6 +347,52 @@ function DuplicadaFacturaRow({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SinVinculacionRow({
+  item,
+  accionSeleccionada,
+  onAccionChange,
+}: {
+  item: SinVinculacionDto;
+  accionSeleccionada: AccionSinVinculacion;
+  onAccionChange: (accion: AccionSinVinculacion) => void;
+}) {
+  return (
+    <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg text-sm">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-medium">{item.row.folioFiscal}</span>
+        <Badge variant="secondary">Fila {item.row.rowNumber}</Badge>
+      </div>
+      <p className="text-muted-foreground mb-3">
+        {item.row.clienteProveedor} - ${item.row.monto?.toLocaleString()}
+      </p>
+      <RadioGroup
+        value={accionSeleccionada || ""}
+        onValueChange={(value) => onAccionChange(value as AccionSinVinculacion)}
+        className="space-y-2"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="crear_ingreso" id={`ingreso-${item.row.rowNumber}`} />
+          <Label htmlFor={`ingreso-${item.row.rowNumber}`} className="cursor-pointer">
+            Crear Ingreso automaticamente
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="crear_egreso" id={`egreso-${item.row.rowNumber}`} />
+          <Label htmlFor={`egreso-${item.row.rowNumber}`} className="cursor-pointer">
+            Crear Egreso automaticamente
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="sin_vincular" id={`sin-${item.row.rowNumber}`} />
+          <Label htmlFor={`sin-${item.row.rowNumber}`} className="cursor-pointer">
+            Solo factura (sin vincular a I/E)
+          </Label>
+        </div>
+      </RadioGroup>
     </div>
   );
 }

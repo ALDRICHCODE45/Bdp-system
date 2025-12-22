@@ -1,7 +1,8 @@
 import { FacturaEntity } from "../repositories/FacturaRepository.repository";
 import { FacturaDto } from "../dtos/FacturaDto.dto";
 
-function mapTipoOrigen(value: string): "ingreso" | "egreso" {
+function mapTipoOrigen(value: string | null): "ingreso" | "egreso" | null {
+  if (!value) return null;
   return value.toLowerCase() as "ingreso" | "egreso";
 }
 

@@ -45,6 +45,29 @@ export const columns: ColumnDef<IngresoDto>[] = [
     minSize: 4,
     maxSize: 4,
   },
+
+  {
+    accessorKey: "folioFiscal",
+    header: "Folio Fiscal",
+    cell: ({ row }) => {
+      const folioFiscal = row.getValue("folioFiscal") as string;
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="max-w-[120px] truncate font-mono text-xs">
+                {folioFiscal}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-mono text-xs">{folioFiscal}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+    size: 17,
+  },
   {
     accessorKey: "concepto",
     header: "Concepto",
@@ -99,7 +122,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
     accessorKey: "solicitante",
     header: "Solicitante",
     cell: ({ row }) => {
-      const solicitante = row.getValue("solicitante") as string;
+      const solicitante = row.original.solicitanteNombre;
       return (
         <Badge variant="outline" className="uppercase">
           {solicitante}
@@ -112,7 +135,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
     accessorKey: "autorizador",
     header: "Autorizador",
     cell: ({ row }) => {
-      const autorizador = row.getValue("autorizador") as string;
+      const autorizador = row.original.autorizadorNombre;
       return (
         <Badge variant="outline" className="uppercase">
           {autorizador}
@@ -127,28 +150,6 @@ export const columns: ColumnDef<IngresoDto>[] = [
     cell: ({ row }) => {
       const numeroFactura = row.getValue("numeroFactura") as string;
       return <div className="font-mono text-sm">{numeroFactura}</div>;
-    },
-    size: 17,
-  },
-  {
-    accessorKey: "folioFiscal",
-    header: "Folio Fiscal",
-    cell: ({ row }) => {
-      const folioFiscal = row.getValue("folioFiscal") as string;
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="max-w-[120px] truncate font-mono text-xs">
-                {folioFiscal}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="font-mono text-xs">{folioFiscal}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
     },
     size: 17,
   },
@@ -381,7 +382,9 @@ export const columns: ColumnDef<IngresoDto>[] = [
     header: "Ingresado Por",
     accessorKey: "ingresadoPorNombre",
     cell: ({ row }) => {
-      const ingresadoPorNombre = row.getValue("ingresadoPorNombre") as string | null;
+      const ingresadoPorNombre = row.getValue("ingresadoPorNombre") as
+        | string
+        | null;
       return (
         <div className="text-sm truncate">
           {ingresadoPorNombre || <span className="text-gray-400">N/A</span>}

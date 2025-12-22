@@ -193,7 +193,16 @@ export const columns: ColumnDef<FacturaDto>[] = [
     accessorKey: "tipoOrigen",
     header: "Tipo Origen",
     cell: ({ row }) => {
-      const tipoOrigen = row.getValue("tipoOrigen") as "ingreso" | "egreso";
+      const tipoOrigen = row.getValue("tipoOrigen") as "ingreso" | "egreso" | null;
+      
+      if (!tipoOrigen) {
+        return (
+          <Badge variant="secondary">
+            Sin vincular
+          </Badge>
+        );
+      }
+      
       const variant = tipoOrigen === "ingreso" ? "outline" : "destructive";
       return (
         <Badge variant={variant}>
@@ -203,7 +212,11 @@ export const columns: ColumnDef<FacturaDto>[] = [
     },
     size: 8,
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+      const tipoOrigen = row.getValue(id);
+      if (tipoOrigen === null && value.includes("sin_vincular")) {
+        return true;
+      }
+      return value.includes(tipoOrigen);
     },
   },
   {
@@ -366,10 +379,13 @@ export const columns: ColumnDef<FacturaDto>[] = [
     size: 9,
   },
   {
-    accessorKey: "creadoPor",
+    accessorKey: "creadoPorNombre",
     header: "Creado Por",
     cell: ({ row }) => {
-      const creador = row.getValue("creadoPor") as string;
+      const creador = row.getValue("creadoPorNombre") as string | null;
+      if (!creador) {
+        return <div className="text-xs text-muted-foreground">-</div>;
+      }
       return (
         <TooltipProvider>
           <Tooltip>
@@ -386,10 +402,13 @@ export const columns: ColumnDef<FacturaDto>[] = [
     size: 9,
   },
   {
-    accessorKey: "autorizadoPor",
+    accessorKey: "autorizadoPorNombre",
     header: "Autorizado Por",
     cell: ({ row }) => {
-      const autorizador = row.getValue("autorizadoPor") as string;
+      const autorizador = row.getValue("autorizadoPorNombre") as string | null;
+      if (!autorizador) {
+        return <div className="text-xs text-muted-foreground">-</div>;
+      }
       return (
         <TooltipProvider>
           <Tooltip>

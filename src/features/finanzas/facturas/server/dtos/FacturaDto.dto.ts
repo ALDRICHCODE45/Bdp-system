@@ -1,7 +1,7 @@
 export type FacturaDto = {
   id: string;
-  tipoOrigen: "ingreso" | "egreso";
-  origenId: string;
+  tipoOrigen: "ingreso" | "egreso" | null;
+  origenId: string | null;
   clienteProveedorId: string;
   clienteProveedorInfo: {
     id: string;

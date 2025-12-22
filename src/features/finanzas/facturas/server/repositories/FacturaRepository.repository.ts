@@ -8,8 +8,8 @@ export type FacturaEntity = Factura & {
 };
 
 export type CreateFacturaArgs = {
-  tipoOrigen: "INGRESO" | "EGRESO";
-  origenId: string;
+  tipoOrigen: "INGRESO" | "EGRESO" | null;
+  origenId: string | null;
   clienteProveedorId: string;
   clienteProveedor: string;
   concepto: string;
@@ -40,8 +40,8 @@ export type CreateFacturaArgs = {
 
 export type UpdateFacturaArgs = {
   id: string;
-  tipoOrigen: "INGRESO" | "EGRESO";
-  origenId: string;
+  tipoOrigen: "INGRESO" | "EGRESO" | null;
+  origenId: string | null;
   clienteProveedorId: string;
   clienteProveedor: string;
   concepto: string;

@@ -27,7 +27,7 @@ const FileUploadDropZone = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 interface EditIngresoSheetProps {
@@ -78,11 +78,13 @@ export function EditIngresoSheet({
         </SheetHeader>
         <div className="h-[80vh] overflow-y-auto space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-4">Datos del Ingreso</h3>
+            <h3 className="text-lg font-semibold mb-4 pl-5">
+              Datos del Ingreso
+            </h3>
             <EditIngresoForm ingreso={ingreso} onSuccess={onClose} />
           </div>
           <Separator />
-          <div>
+          <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Archivos Adjuntos</h3>
             <FileUploadDropZone
               entityType="INGRESO"
@@ -92,7 +94,7 @@ export function EditIngresoSheet({
             {loadingFiles ? (
               <LoadingModalState />
             ) : (
-              <div className="mt-4">
+              <div className="p-[10px]">
                 <FileList
                   files={files}
                   entityType="INGRESO"
@@ -111,4 +113,3 @@ export function EditIngresoSheet({
     </Sheet>
   );
 }
-

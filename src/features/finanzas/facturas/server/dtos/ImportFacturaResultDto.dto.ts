@@ -12,6 +12,15 @@ export type ImportFacturaResultDto = {
     nombre: string;
     rfc: string;
   };
+  // Para facturas que crearon un I/E automáticamente
+  ingresoCreado?: {
+    id: string;
+    folioFiscal: string;
+  };
+  egresoCreado?: {
+    id: string;
+    folioFiscal: string;
+  };
 };
 
 /**
@@ -25,5 +34,7 @@ export type ImportExecutionResultDto = {
   omitidas: number;
   errores: number;
   clientesCreados: number;
+  ingresosCreados: number;
+  egresosCreados: number;
   resultados: ImportFacturaResultDto[];
 };

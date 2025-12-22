@@ -122,7 +122,7 @@ export const EditFacturaForm = ({
                 <Input
                   id="origenId"
                   name={field.name}
-                  value={field.state.value}
+                  value={field.state.value ?? "Sin vinculación"}
                   readOnly
                   className="bg-muted font-mono text-xs"
                 />

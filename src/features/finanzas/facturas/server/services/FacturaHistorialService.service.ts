@@ -4,8 +4,8 @@ import { Result, Err, Ok } from "@/core/shared/result/result";
 import { Prisma, FacturaHistorial } from "@prisma/client";
 
 type FacturaData = {
-  tipoOrigen: string;
-  origenId: string;
+  tipoOrigen: string | null;
+  origenId: string | null;
   clienteProveedorId: string;
   clienteProveedor: string;
   concepto: string;

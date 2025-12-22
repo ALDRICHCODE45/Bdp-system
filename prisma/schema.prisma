@@ -430,8 +430,8 @@ model IngresoHistorial {
 
 model Factura {
   id                  String             @id @default(uuid())
-  tipoOrigen          FacturaTipoOrigen
-  origenId            String
+  tipoOrigen          FacturaTipoOrigen?
+  origenId            String?
   clienteProveedorId  String
   clienteProveedorRef ClienteProveedor   @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
   clienteProveedor    String

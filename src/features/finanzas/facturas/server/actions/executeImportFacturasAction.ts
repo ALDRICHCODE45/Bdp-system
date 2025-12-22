@@ -29,7 +29,15 @@ export async function executeImportFacturasAction(
     const usuarioId = session.user.id || null;
 
     // Validar que hay datos para importar
-    if (preview.nuevas.length === 0 && preview.duplicadas.length === 0) {
+    const hasSinVinculacionConAccion = preview.sinVinculacion?.some(
+      (item) => options.accionesSinVinculacion?.[item.row.rowNumber]
+    );
+    
+    if (
+      preview.nuevas.length === 0 &&
+      preview.duplicadas.length === 0 &&
+      !hasSinVinculacionConAccion
+    ) {
       return { ok: false, error: "No hay facturas para importar" };
     }
 

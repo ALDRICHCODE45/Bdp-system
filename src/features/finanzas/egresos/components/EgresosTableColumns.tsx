@@ -34,14 +34,14 @@ export const columns: ColumnDef<EgresoDto>[] = [
     maxSize: 4,
   },
   {
-    header: "ID",
-    accessorKey: "id",
+    header: "Folio Fiscal",
+    accessorKey: "folioFiscal",
     cell: ({ row }) => (
-      <div className="font-mono text-sm font-medium truncate">
-        {row.getValue("id")}
+      <div className="text-sm font-mono truncate">
+        {row.getValue("folioFiscal")}
       </div>
     ),
-    size: 8,
+    size: 10,
   },
   {
     header: "Concepto",
@@ -68,14 +68,14 @@ export const columns: ColumnDef<EgresoDto>[] = [
             clasificacion === "gasto op"
               ? "bg-blue-100 text-blue-800"
               : clasificacion === "honorarios"
-              ? "bg-green-100 text-green-800"
-              : clasificacion === "servicios"
-              ? "bg-purple-100 text-purple-800"
-              : clasificacion === "arrendamiento"
-              ? "bg-orange-100 text-orange-800"
-              : clasificacion === "comisiones"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-gray-100 text-gray-800"
+                ? "bg-green-100 text-green-800"
+                : clasificacion === "servicios"
+                  ? "bg-purple-100 text-purple-800"
+                  : clasificacion === "arrendamiento"
+                    ? "bg-orange-100 text-orange-800"
+                    : clasificacion === "comisiones"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-gray-100 text-gray-800",
           )}
         >
           {clasificacionCapitalized}
@@ -99,10 +99,10 @@ export const columns: ColumnDef<EgresoDto>[] = [
             categoria === "facturación"
               ? "bg-green-100 text-green-800"
               : categoria === "comisiones"
-              ? "bg-yellow-100 text-yellow-800"
-              : categoria === "disposición"
-              ? "bg-red-100 text-red-800"
-              : "bg-blue-100 text-blue-800"
+                ? "bg-yellow-100 text-yellow-800"
+                : categoria === "disposición"
+                  ? "bg-red-100 text-red-800"
+                  : "bg-blue-100 text-blue-800",
           )}
         >
           {categoriaCapitalized}
@@ -162,8 +162,8 @@ export const columns: ColumnDef<EgresoDto>[] = [
             formaPago === "transferencia"
               ? "bg-blue-100 text-blue-800"
               : formaPago === "efectivo"
-              ? "bg-green-100 text-green-800"
-              : "bg-orange-100 text-orange-800"
+                ? "bg-green-100 text-green-800"
+                : "bg-orange-100 text-orange-800",
           )}
         >
           {formaPagoCapitalized}
@@ -203,8 +203,8 @@ export const columns: ColumnDef<EgresoDto>[] = [
             estado === "pagado"
               ? "bg-green-100 text-green-800"
               : estado === "pendiente"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-red-100 text-red-800"
+                ? "bg-yellow-100 text-yellow-800"
+                : "bg-red-100 text-red-800",
           )}
         >
           {estadoCapitalized}
@@ -232,7 +232,7 @@ export const columns: ColumnDef<EgresoDto>[] = [
     header: "Solicitante",
     accessorKey: "solicitante",
     cell: ({ row }) => {
-      const solicitante = row.getValue("solicitante") as string;
+      const solicitante = row.original.solicitanteNombre;
       return <div className="text-sm truncate uppercase">{solicitante}</div>;
     },
     size: 10,
@@ -241,7 +241,8 @@ export const columns: ColumnDef<EgresoDto>[] = [
     header: "Autorizador",
     accessorKey: "autorizador",
     cell: ({ row }) => {
-      const autorizador = row.getValue("autorizador") as string;
+      const autorizador = row.original.autorizadorNombre;
+
       return <div className="text-sm truncate uppercase">{autorizador}</div>;
     },
     size: 10,
@@ -286,7 +287,9 @@ export const columns: ColumnDef<EgresoDto>[] = [
     header: "Ingresado Por",
     accessorKey: "ingresadoPorNombre",
     cell: ({ row }) => {
-      const ingresadoPorNombre = row.getValue("ingresadoPorNombre") as string | null;
+      const ingresadoPorNombre = row.getValue("ingresadoPorNombre") as
+        | string
+        | null;
       return (
         <div className="text-sm truncate">
           {ingresadoPorNombre || <span className="text-gray-400">N/A</span>}

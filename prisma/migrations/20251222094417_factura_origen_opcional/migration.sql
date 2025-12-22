@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Factura" ALTER COLUMN "tipoOrigen" DROP NOT NULL,
+ALTER COLUMN "origenId" DROP NOT NULL;

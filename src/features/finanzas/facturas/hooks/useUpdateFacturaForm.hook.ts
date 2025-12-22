@@ -48,8 +48,12 @@ export const useUpdateFacturaForm = (
     onSubmit: async ({ value }) => {
       const formData = new FormData();
       formData.append("id", value.id);
-      formData.append("tipoOrigen", value.tipoOrigen.toUpperCase());
-      formData.append("origenId", value.origenId);
+      if (value.tipoOrigen) {
+        formData.append("tipoOrigen", value.tipoOrigen.toUpperCase());
+      }
+      if (value.origenId) {
+        formData.append("origenId", value.origenId);
+      }
       formData.append("clienteProveedorId", value.clienteProveedorId);
       formData.append("clienteProveedor", value.clienteProveedor);
       formData.append("concepto", value.concepto);
