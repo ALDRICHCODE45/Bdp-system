@@ -26,14 +26,17 @@ export function CreateColaboradorSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side={sheetSide}>
+      <SheetContent
+        side={sheetSide}
+        className="w-full sm:min-w-[800px] lg:min-w-[800px] "
+      >
         <SheetHeader>
           <SheetTitle>Agregar Colaborador</SheetTitle>
           <SheetDescription>
             Ingresa la información del colaborador:
           </SheetDescription>
         </SheetHeader>
-        <div className="h-[80vh] overflow-y-auto">
+        <div className="h-[80vh] overflow-y-auto ">
           <CreateColaboradorForm onSuccess={onClose} />
         </div>
         <SheetFooter>

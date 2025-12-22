@@ -13,6 +13,30 @@ export function formatFieldName(campo: string): string {
     clabe: "CLABE",
     sueldo: "Sueldo",
     activos: "Activos",
+    // Datos personales
+    fechaIngreso: "Fecha de ingreso",
+    genero: "Género",
+    fechaNacimiento: "Fecha de nacimiento",
+    nacionalidad: "Nacionalidad",
+    estadoCivil: "Estado civil",
+    tipoSangre: "Tipo de sangre",
+    // Contacto y dirección
+    direccion: "Dirección",
+    telefono: "Teléfono",
+    // Datos fiscales
+    rfc: "RFC",
+    curp: "CURP",
+    // Académicos y laborales previos
+    ultimoGradoEstudios: "Último grado de estudios",
+    escuela: "Escuela",
+    ultimoTrabajo: "Último trabajo",
+    // Referencias personales
+    nombreReferenciaPersonal: "Nombre referencia personal",
+    telefonoReferenciaPersonal: "Teléfono referencia personal",
+    parentescoReferenciaPersonal: "Parentesco referencia personal",
+    // Referencias laborales
+    nombreReferenciaLaboral: "Nombre referencia laboral",
+    telefonoReferenciaLaboral: "Teléfono referencia laboral",
   };
 
   return fieldNames[campo] || campo;
@@ -21,10 +45,7 @@ export function formatFieldName(campo: string): string {
 /**
  * Formatea un valor según el tipo de campo
  */
-export function formatFieldValue(
-  campo: string,
-  valor: string | null
-): string {
+export function formatFieldValue(campo: string, valor: string | null): string {
   if (valor === null || valor === "") {
     return "Sin valor";
   }
@@ -78,4 +99,3 @@ export function formatFieldValue(
   // Valores string normales
   return valor;
 }
-

@@ -15,13 +15,39 @@ export const useCreateColaboradorForm = (onSuccess?: () => void) => {
       status: ColaboradorEstado.CONTRATADO as ColaboradorEstado,
       imss: true,
       socioId: "__none__",
+      // Datos personales
+      fechaIngreso: "",
+      genero: "",
+      fechaNacimiento: "",
+      nacionalidad: "",
+      estadoCivil: "",
+      tipoSangre: "",
+      // Contacto y dirección
+      direccion: "",
+      telefono: "",
+      // Datos fiscales
+      rfc: "",
+      curp: "",
+      // Académicos y laborales previos
+      ultimoGradoEstudios: "",
+      escuela: "",
+      ultimoTrabajo: "",
+      // Referencias personales
+      nombreReferenciaPersonal: "",
+      telefonoReferenciaPersonal: "",
+      parentescoReferenciaPersonal: "",
+      // Referencias laborales
+      nombreReferenciaLaboral: "",
+      telefonoReferenciaLaboral: "",
       banco: "",
       clabe: "",
       sueldo: "",
       activos: [] as string[],
     },
     validators: {
-      onSubmit: createColaboradorSchemaUI,
+      // Cast necesario porque Zod no implementa completamente StandardSchemaV1
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onSubmit: createColaboradorSchemaUI as any,
     },
     onSubmit: async ({ value }) => {
       const formData = new FormData();
@@ -33,6 +59,45 @@ export const useCreateColaboradorForm = (onSuccess?: () => void) => {
       formData.append(
         "socioId",
         value.socioId === "__none__" ? "" : value.socioId
+      );
+      // Datos personales
+      formData.append("fechaIngreso", value.fechaIngreso);
+      formData.append("genero", value.genero);
+      formData.append("fechaNacimiento", value.fechaNacimiento);
+      formData.append("nacionalidad", value.nacionalidad || "");
+      formData.append("estadoCivil", value.estadoCivil || "");
+      formData.append("tipoSangre", value.tipoSangre || "");
+      // Contacto y dirección
+      formData.append("direccion", value.direccion);
+      formData.append("telefono", value.telefono);
+      // Datos fiscales
+      formData.append("rfc", value.rfc || "");
+      formData.append("curp", value.curp || "");
+      // Académicos y laborales previos
+      formData.append("ultimoGradoEstudios", value.ultimoGradoEstudios || "");
+      formData.append("escuela", value.escuela || "");
+      formData.append("ultimoTrabajo", value.ultimoTrabajo || "");
+      // Referencias personales
+      formData.append(
+        "nombreReferenciaPersonal",
+        value.nombreReferenciaPersonal || ""
+      );
+      formData.append(
+        "telefonoReferenciaPersonal",
+        value.telefonoReferenciaPersonal || ""
+      );
+      formData.append(
+        "parentescoReferenciaPersonal",
+        value.parentescoReferenciaPersonal || ""
+      );
+      // Referencias laborales
+      formData.append(
+        "nombreReferenciaLaboral",
+        value.nombreReferenciaLaboral || ""
+      );
+      formData.append(
+        "telefonoReferenciaLaboral",
+        value.telefonoReferenciaLaboral || ""
       );
       formData.append("banco", value.banco);
       formData.append("clabe", value.clabe);

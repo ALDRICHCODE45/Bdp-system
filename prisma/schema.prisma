@@ -94,22 +94,47 @@ model Socio {
 }
 
 model Colaborador {
-  id        String                 @id @default(uuid())
-  name      String
-  correo    String                 @unique
-  puesto    String
-  status    ColaboradorEstado      @default(CONTRATADO)
-  imss      Boolean                @default(true)
-  socioId   String?
-  socio     Socio?                 @relation(fields: [socioId], references: [id], onDelete: SetNull)
-  banco     String
-  clabe     String
-  sueldo    Decimal                @db.Decimal(15, 3)
-  activos   String[]
-  historial ColaboradorHistorial[]
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-  asistencias Asistencia[]
+  id                           String                 @id @default(uuid())
+  name                         String
+  correo                       String                 @unique
+  puesto                       String
+  status                       ColaboradorEstado      @default(CONTRATADO)
+  imss                         Boolean                @default(true)
+  socioId                      String?
+  socio                        Socio?                 @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  // Datos personales
+  fechaIngreso                 DateTime               @default(now())
+  genero                       String?
+  fechaNacimiento              DateTime?
+  nacionalidad                 String?
+  estadoCivil                  String?
+  tipoSangre                   String?
+  // Contacto y dirección
+  direccion                    String?
+  telefono                     String?
+  // Datos fiscales
+  rfc                          String?
+  curp                         String?
+  // Académicos y laborales previos
+  ultimoGradoEstudios          String?
+  escuela                      String?
+  ultimoTrabajo                String?
+  // Referencias personales
+  nombreReferenciaPersonal     String?
+  telefonoReferenciaPersonal   String?
+  parentescoReferenciaPersonal String?
+  // Referencias laborales
+  nombreReferenciaLaboral      String?
+  telefonoReferenciaLaboral    String?
+  // Datos financieros actuales
+  banco                        String
+  clabe                        String
+  sueldo                       Decimal                @db.Decimal(15, 3)
+  activos                      String[]
+  historial                    ColaboradorHistorial[]
+  createdAt                    DateTime               @default(now())
+  updatedAt                    DateTime               @updatedAt
+  asistencias                  Asistencia[]
 
   @@index([socioId])
   @@index([status])
@@ -542,19 +567,17 @@ model FileAttachment {
   @@index([entityId])
 }
 
-
-
 enum AsistenciaTipo {
   Entrada
   Salida
 }
 
 model Asistencia {
-  id            String        @id @default(uuid())
-  tipo          AsistenciaTipo
-  fecha         DateTime
-  correo        String
-  colaborador   Colaborador   @relation(fields: [correo], references: [correo], onDelete: Cascade)
+  id          String         @id @default(uuid())
+  tipo        AsistenciaTipo
+  fecha       DateTime
+  correo      String
+  colaborador Colaborador    @relation(fields: [correo], references: [correo], onDelete: Cascade)
 
   @@index([correo])
 }

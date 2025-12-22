@@ -36,6 +36,8 @@ import {
   CreditCard,
   FileText,
   CheckCircle2,
+  CalendarDays,
+  Phone,
 } from "lucide-react";
 
 interface ColaboradorHistorySheetProps {
@@ -95,6 +97,24 @@ export function ColaboradorHistorySheet({
       clabe: <CreditCard className="size-4" />,
       sueldo: <DollarSign className="size-4" />,
       activos: <FileText className="size-4" />,
+      fechaIngreso: <CalendarDays className="size-4" />,
+      genero: <User className="size-4" />,
+      fechaNacimiento: <CalendarDays className="size-4" />,
+      nacionalidad: <User className="size-4" />,
+      estadoCivil: <User className="size-4" />,
+      tipoSangre: <FileText className="size-4" />,
+      direccion: <Building2 className="size-4" />,
+      telefono: <Phone className="size-4" />,
+      rfc: <FileText className="size-4" />,
+      curp: <FileText className="size-4" />,
+      ultimoGradoEstudios: <FileText className="size-4" />,
+      escuela: <Building2 className="size-4" />,
+      ultimoTrabajo: <Building2 className="size-4" />,
+      nombreReferenciaPersonal: <User className="size-4" />,
+      telefonoReferenciaPersonal: <Phone className="size-4" />,
+      parentescoReferenciaPersonal: <User className="size-4" />,
+      nombreReferenciaLaboral: <User className="size-4" />,
+      telefonoReferenciaLaboral: <Phone className="size-4" />,
     };
     return iconMap[campo] || <Edit className="size-4" />;
   };

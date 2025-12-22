@@ -28,7 +28,10 @@ export function EditColaboradorSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side={sheetSide}>
+      <SheetContent
+        side={sheetSide}
+        className="w-full sm:min-w-[800px] lg:min-w-[800px]"
+      >
         <SheetHeader>
           <SheetTitle>Editar Colaborador</SheetTitle>
           <SheetDescription>
