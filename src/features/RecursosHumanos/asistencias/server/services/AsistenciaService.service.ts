@@ -2,9 +2,10 @@ import { Result, Ok, Err } from "@/core/shared/result/result";
 import { CreateAsistenciaDto } from "../Dtos/CreateAsistenciaDto.Dto";
 import { AsistenciaRepository } from "../repositories/AsistenciaRepository.repository";
 import { AsistenciaDto } from "../Dtos/AsistenciaDto.dto";
+import { AsistenciaWithColaborador } from "../mappers/AsistenciaMapper";
 
 export class AsistenciaService {
-  constructor(private readonly asistenciaRepository: AsistenciaRepository) { }
+  constructor(private readonly asistenciaRepository: AsistenciaRepository) {}
 
   async create(
     input: CreateAsistenciaDto,
@@ -28,6 +29,17 @@ export class AsistenciaService {
         error instanceof Error
           ? error
           : new Error("Error al obtener asistencia"),
+      );
+    }
+  }
+
+  async getAll(): Promise<Result<AsistenciaWithColaborador[], Error>> {
+    try {
+      const allAsistencias = await this.asistenciaRepository.getAll();
+      return Ok(allAsistencias);
+    } catch (e) {
+      return Err(
+        e instanceof Error ? e : new Error("Error al obtener asistencia"),
       );
     }
   }

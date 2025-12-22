@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { QRCode } from "@/components/ui/shadcn-io/qr-code";
+import { QRCode } from "@/core/shared/ui/qr-code";
 import { Button } from "@/core/shared/ui/button";
 import { useRouter } from "next/navigation";
 import { Separator } from "@/core/shared/ui/separator";
@@ -38,7 +38,7 @@ const QREntradasPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 w-full">
           <Card className="w-md ">
             <CardContent>
-              <QRCode data="http://192.168.100.16:3000/registro-automatico?tipo=Entrada" />
+              <QRCode data="http://192.168.100.17:3000/registro-automatico?tipo=Entrada" />
             </CardContent>
             <Separator />
             <CardFooter className="flex justify-center font-semibold">
@@ -48,7 +48,7 @@ const QREntradasPage = () => {
 
           <Card className="w-md ">
             <CardContent>
-              <QRCode data="http://192.168.100.16:3000/registro-automatico?tipo=Salida" />
+              <QRCode data="http://192.168.100.17:3000/registro-automatico?tipo=Salida" />
             </CardContent>
             <Separator />
             <CardFooter className="font-semibold flex justify-center ">

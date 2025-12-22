@@ -1,7 +1,7 @@
 import { Asistencia, Colaborador } from "@prisma/client";
 import { AsistenciaDto } from "../Dtos/AsistenciaDto.dto";
 
-type AsistenciaWithColaborador = Asistencia & {
+export type AsistenciaWithColaborador = Asistencia & {
   colaborador: Pick<Colaborador, "id" | "name" | "correo" | "puesto">;
 };
 
@@ -20,4 +20,10 @@ export const toAsistenciaDto = (
       puesto: asistenciaEntity.colaborador.puesto,
     },
   };
+};
+
+export const toAsistenciatoArray = (
+  asistencias: AsistenciaWithColaborador[],
+): AsistenciaDto[] => {
+  return asistencias.map(toAsistenciaDto);
 };
