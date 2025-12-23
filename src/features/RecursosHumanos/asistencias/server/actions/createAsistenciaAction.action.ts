@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 // import { createAsistenciaSchema } from "../../schemas/createAsistenciaSchema.schema";
 import { CreateAsistenciaDto } from "../Dtos/CreateAsistenciaDto.Dto";
 import { makeAsistenciaService } from "../services/makeAsistenciaService";
@@ -12,4 +13,5 @@ export const createAsistenciaAction = async (input: CreateAsistenciaDto) => {
   if (!result.ok) {
     return { ok: false, message: result.error.message };
   }
+  revalidatePath("/asistencias");
 };
