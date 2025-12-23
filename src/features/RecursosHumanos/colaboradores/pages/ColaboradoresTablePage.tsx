@@ -17,7 +17,7 @@ const CreateColaboradorSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 interface TableData {
