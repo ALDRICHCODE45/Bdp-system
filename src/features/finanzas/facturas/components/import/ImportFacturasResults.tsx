@@ -32,8 +32,16 @@ export function ImportFacturasResults({
   onClose,
   onNewImport,
 }: ImportFacturasResultsProps) {
-  const { creadas, actualizadas, omitidas, errores, clientesCreados, ingresosCreados, egresosCreados, resultados } =
-    results;
+  const {
+    creadas,
+    actualizadas,
+    omitidas,
+    errores,
+    clientesCreados,
+    ingresosCreados,
+    egresosCreados,
+    resultados,
+  } = results;
 
   const hasErrors = errores > 0;
   const isPartialSuccess = hasErrors && (creadas > 0 || actualizadas > 0);
@@ -237,12 +245,19 @@ function ResultCard({
   icon: React.ReactNode;
   label: string;
   value: number;
-  variant: "success" | "info" | "neutral" | "error" | "purple" | "orange" | "pink";
+  variant:
+    | "success"
+    | "info"
+    | "neutral"
+    | "error"
+    | "purple"
+    | "orange"
+    | "pink";
 }) {
   const bgColors = {
     success: "bg-green-50 dark:bg-green-950/30",
     info: "bg-blue-50 dark:bg-blue-950/30",
-    neutral: "bg-gray-50 dark:bg-gray-950/30",
+    neutral: "bg-gray-50 dark:bg-muted/30",
     error: "bg-red-50 dark:bg-red-950/30",
     purple: "bg-purple-50 dark:bg-purple-950/30",
     orange: "bg-orange-50 dark:bg-orange-950/30",
@@ -277,7 +292,7 @@ function ResultRow({
   const statusConfig = {
     created: { bg: "bg-green-50 dark:bg-green-950/30", text: "text-green-700" },
     updated: { bg: "bg-blue-50 dark:bg-blue-950/30", text: "text-blue-700" },
-    skipped: { bg: "bg-gray-50 dark:bg-gray-950/30", text: "text-gray-700" },
+    skipped: { bg: "bg-gray-50 dark:bg-muted/30", text: "text-gray-700" },
     error: { bg: "bg-red-50 dark:bg-red-950/30", text: "text-red-700" },
   };
 
@@ -292,7 +307,8 @@ function ResultRow({
       <p className={`text-xs ${config.text}`}>{result.message}</p>
       {result.clienteCreado && (
         <p className="text-xs text-muted-foreground mt-1">
-          Cliente creado: {result.clienteCreado.nombre} ({result.clienteCreado.rfc})
+          Cliente creado: {result.clienteCreado.nombre} (
+          {result.clienteCreado.rfc})
         </p>
       )}
       {result.ingresoCreado && (

@@ -15,7 +15,7 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <section className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-white dark:bg-black z-50">
+    <section className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-white dark:bg-background z-50">
       <div className="flex flex-col items-center justify-center text-center">
         <h1 className="mb-4 text-7xl tracking-tight font-extrabold lg:text-9xl text-primary-600 dark:text-primary-500">
           500
@@ -23,7 +23,7 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
         <p className="mb-4 text-3xl tracking-tight font-bold  md:text-4xl">
           Algo salió mal.
         </p>
-        <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-gray-400">
+        <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-muted-foreground">
           Lo sentimos, ha ocurrido un error interno en el servidor. Por favor,
           intenta nuevamente más tarde o vuelve a la página principal.
         </p>

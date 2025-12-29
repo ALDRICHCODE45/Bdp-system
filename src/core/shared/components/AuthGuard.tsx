@@ -22,10 +22,10 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
   if (isLoading) {
     return (
       fallback || (
-        <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">
+        <div className="flex items-center justify-center min-h-screen bg-white dark:bg-background">
           <div
             className="animate-spin rounded-full h-16 w-16 border-4 border-t-transparent 
-                        border-gray-900 dark:border-gray-100 dark:border-t-transparent"
+                        border-gray-900 dark:border-foreground/20 dark:border-t-transparent"
             role="status"
             aria-label="Cargando..."
           />

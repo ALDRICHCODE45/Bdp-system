@@ -11,7 +11,7 @@ export default function NotFound() {
         <p className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl">
           No tienes los privilegios para acceder a esta ruta
         </p>
-        <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-gray-400">
+        <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-muted-foreground">
           Lo sentimos, no puedes acceder a esta página. Hay mucho por explorar
           en la página principal.
         </p>

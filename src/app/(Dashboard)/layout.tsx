@@ -26,7 +26,7 @@ export default function DashboardLayout({
         <SidebarProvider defaultOpen={false}>
           <AppSidebar />
           <SidebarInset className="flex flex-col min-h-screen w-full min-w-0">
-            <header className="sticky bg-white dark:bg-black top-0 z-50 flex justify-between w-full h-16 shrink-0 items-center gap-2 border-b min-w-0">
+            <header className="sticky bg-white dark:bg-background top-0 z-50 flex justify-between w-full h-16 shrink-0 items-center gap-2 border-b min-w-0">
               <div className="flex items-center gap-2 px-4 min-w-0 flex-1">
                 <SidebarTrigger className="-ml-1 flex-shrink-0" />
                 <Separator

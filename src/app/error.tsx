@@ -23,7 +23,7 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
         <p className="mb-4 text-3xl tracking-tight font-bold md:text-4xl">
           Algo salió mal.
         </p>
-        <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-gray-400">
+        <p className="mb-4 w-lg text-lg font-light text-gray-500 dark:text-muted-foreground">
           Lo sentimos, ha ocurrido un error interno en el servidor. Por favor,
           intenta nuevamente más tarde o vuelve a la página principal.
         </p>
