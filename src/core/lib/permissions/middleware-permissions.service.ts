@@ -125,7 +125,7 @@ export class MiddlewarePermissionsService {
             auth && typeof auth === "object"
               ? JSON.stringify(auth, null, 2).substring(0, 200)
               : String(auth),
-        }
+        },
       );
     }
 
@@ -152,7 +152,7 @@ export class MiddlewarePermissionsService {
    */
   static hasRequiredPermission(
     permissions: string[],
-    requiredPermission: string
+    requiredPermission: string,
   ): boolean {
     // Verificar admin primero (más rápido)
     if (this.hasAdminPermission(permissions)) {
@@ -173,7 +173,7 @@ export class MiddlewarePermissionsService {
   static logPermissionCheck(
     auth: unknown,
     pathname: string,
-    hasAccess: boolean
+    hasAccess: boolean,
   ): void {
     if (process.env.NODE_ENV === "development") {
       const permissions = this.extractPermissions(auth);

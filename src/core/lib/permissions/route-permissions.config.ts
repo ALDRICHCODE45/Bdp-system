@@ -22,9 +22,12 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   // Módulo de Recursos Humanos
   "/colaboradores": "colaboradores:acceder",
   "/socios": "socios:acceder",
+  "/asistencias": "asistencias:acceder",
 
   // Módulo de Recepción
   "/entradas-salidas": "recepcion:acceder",
+  "/qr-entry": "recepcion:acceder",
+  "/register-qr-entry": "recepcion:acceder",
 
   // Módulo de Sistema
   "/usuarios": "usuarios:acceder",

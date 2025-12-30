@@ -1,4 +1,7 @@
-import { isModularPermission, getResourceActions } from "./permissions.constant";
+import {
+  isModularPermission,
+  getResourceActions,
+} from "./permissions.constant";
 
 /**
  * Verifica si un usuario tiene un permiso específico
@@ -7,7 +10,7 @@ import { isModularPermission, getResourceActions } from "./permissions.constant"
  */
 export function hasPermission(
   userPermissions: string[],
-  requiredPermission: string
+  requiredPermission: string,
 ): boolean {
   // Si el usuario tiene el permiso de administrador, tiene acceso a todo
   if (userPermissions.includes("admin:all")) {
@@ -40,10 +43,10 @@ export function hasPermission(
  */
 export function hasAnyPermission(
   userPermissions: string[],
-  requiredPermissions: string[]
+  requiredPermissions: string[],
 ): boolean {
   return requiredPermissions.some((permission) =>
-    hasPermission(userPermissions, permission)
+    hasPermission(userPermissions, permission),
   );
 }
 
@@ -52,10 +55,10 @@ export function hasAnyPermission(
  */
 export function hasAllPermissions(
   userPermissions: string[],
-  requiredPermissions: string[]
+  requiredPermissions: string[],
 ): boolean {
   return requiredPermissions.every((permission) =>
-    hasPermission(userPermissions, permission)
+    hasPermission(userPermissions, permission),
   );
 }
 
@@ -89,4 +92,3 @@ export function getEffectivePermissions(userPermissions: string[]): string[] {
 
   return effective;
 }
-

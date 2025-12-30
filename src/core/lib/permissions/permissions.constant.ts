@@ -224,6 +224,46 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     description:
       "Gestionar completamente el módulo de colaboradores (incluye todas las acciones)",
   },
+  // Asistencias - Granulares
+  {
+    name: "asistencias:acceder",
+    resource: "asistencias",
+    action: "acceder",
+    description: "Acceder a la tabla de socios",
+  },
+  {
+    name: "asistencias:ver",
+    resource: "asistencias",
+    action: "ver",
+    description: "Ver unicamente la tabla de asistencias",
+  },
+  {
+    name: "asistencias:crear",
+    resource: "asistencias",
+    action: "crear",
+    description: "crear registros de asistencias en la tabla de asistencias",
+  },
+  {
+    name: "asistencias:editar",
+    resource: "asistencias",
+    action: "editar",
+    description: "editar registros de asistencias en la tabla de asistencias",
+  },
+  {
+    name: "asistencias:eliminar",
+    resource: "asistencias",
+    action: "eliminar",
+    description: "eliminar registros de asistencias en la tabla de asistencias",
+  },
+
+  // Asistencias - Modulares
+  {
+    name: "asistencias:gestionar",
+    resource: "asistencias",
+    action: "gestionar",
+    description:
+      "Gestionar completamente el módulo de asistencias(incluye todas las acciones)",
+  },
 
   // Socios - Granulares
   {
@@ -459,7 +499,7 @@ export function getAllPermissionNames(): string[] {
  * Obtener permisos por recurso
  */
 export function getPermissionsByResource(
-  resource: string
+  resource: string,
 ): PermissionDefinition[] {
   return ALL_PERMISSIONS.filter((p) => p.resource === resource);
 }
