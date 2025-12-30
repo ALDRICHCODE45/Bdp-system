@@ -45,6 +45,23 @@ const facturadoPorOptions = [
   { label: "APP", value: "app" },
 ];
 
+// Genera opciones de periodo para los ultimos 24 meses
+const generatePeriodoOptions = () => {
+  const options = [{ label: "Todos", value: "todos" }];
+  const now = new Date();
+  for (let i = 0; i < 24; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const value = `${year}-${month}`;
+    const label = date.toLocaleDateString("es-MX", { year: "numeric", month: "long" });
+    options.push({ label: label.charAt(0).toUpperCase() + label.slice(1), value });
+  }
+  return options;
+};
+
+const periodoOptions = generatePeriodoOptions();
+
 interface IngresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
@@ -68,11 +85,19 @@ export function IngresosFilters({
     handleFormaPagoChange,
     handleFacturadoPorChange,
     handleMontoFilter,
+    handlePeriodoChange,
+    handleClienteChange,
+    handleProyectoChange,
+    handleSolicitanteChange,
     selectedDateRange,
     selectedEstado,
     selectedFormaPago,
     selectedFacturadoPor,
     selectedMontoRange,
+    selectedPeriodo,
+    clienteFilter,
+    proyectoFilter,
+    solicitanteFilter,
     setMontoRange,
   } = useIngresosTableFilters(table);
 
@@ -151,6 +176,53 @@ export function IngresosFilters({
             onValueChange={handleFacturadoPorChange}
             options={facturadoPorOptions}
           />
+
+          {/* Filtro de Período */}
+          <FilterSelect
+            value={selectedPeriodo}
+            label="Período"
+            onValueChange={handlePeriodoChange}
+            options={periodoOptions}
+          />
+
+          {/* Filtro de Cliente */}
+          <div className="space-y-2">
+            <Label htmlFor="cliente-filter" className="text-xs font-medium">
+              Cliente
+            </Label>
+            <Input
+              id="cliente-filter"
+              placeholder="Buscar cliente..."
+              value={clienteFilter}
+              onChange={(e) => handleClienteChange(e.target.value)}
+            />
+          </div>
+
+          {/* Filtro de Proyecto */}
+          <div className="space-y-2">
+            <Label htmlFor="proyecto-filter" className="text-xs font-medium">
+              Proyecto
+            </Label>
+            <Input
+              id="proyecto-filter"
+              placeholder="Buscar proyecto..."
+              value={proyectoFilter}
+              onChange={(e) => handleProyectoChange(e.target.value)}
+            />
+          </div>
+
+          {/* Filtro de Solicitante */}
+          <div className="space-y-2">
+            <Label htmlFor="solicitante-filter" className="text-xs font-medium">
+              Solicitante
+            </Label>
+            <Input
+              id="solicitante-filter"
+              placeholder="Buscar solicitante..."
+              value={solicitanteFilter}
+              onChange={(e) => handleSolicitanteChange(e.target.value)}
+            />
+          </div>
 
           {/* Filtro de rango de fechas */}
           <div className="space-y-2">

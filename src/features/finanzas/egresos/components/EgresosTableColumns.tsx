@@ -83,6 +83,9 @@ export const columns: ColumnDef<EgresoDto>[] = [
       );
     },
     size: 12,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
   },
   {
     header: "Categoría",
@@ -110,6 +113,9 @@ export const columns: ColumnDef<EgresoDto>[] = [
       );
     },
     size: 12,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
   },
   {
     header: "Proveedor",
@@ -118,6 +124,11 @@ export const columns: ColumnDef<EgresoDto>[] = [
       <div className="text-sm truncate">{row.getValue("proveedor")}</div>
     ),
     size: 20,
+    filterFn: (row, id, value: string) => {
+      if (!value) return true;
+      const proveedor = (row.getValue(id) as string).toLowerCase();
+      return proveedor.includes(value.toLowerCase());
+    },
   },
   {
     header: "Factura",
@@ -146,6 +157,10 @@ export const columns: ColumnDef<EgresoDto>[] = [
       <div className="text-sm truncate">{row.getValue("periodo")}</div>
     ),
     size: 10,
+    filterFn: (row, id, value) => {
+      if (!value || value === "todos") return true;
+      return row.getValue(id) === value;
+    },
   },
   {
     header: "Forma de Pago",
@@ -171,6 +186,9 @@ export const columns: ColumnDef<EgresoDto>[] = [
       );
     },
     size: 12,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
   },
   {
     header: "Cantidad",
@@ -187,6 +205,12 @@ export const columns: ColumnDef<EgresoDto>[] = [
       );
     },
     size: 15,
+    filterFn: (row, id, value: { min?: number; max?: number }) => {
+      const cantidad = parseFloat(row.getValue(id) as string);
+      if (value.min !== undefined && cantidad < value.min) return false;
+      if (value.max !== undefined && cantidad > value.max) return false;
+      return true;
+    },
   },
   {
     header: "Estado",
@@ -212,6 +236,9 @@ export const columns: ColumnDef<EgresoDto>[] = [
       );
     },
     size: 10,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
   },
   {
     header: "Fecha Pago",
@@ -227,6 +254,15 @@ export const columns: ColumnDef<EgresoDto>[] = [
       );
     },
     size: 12,
+    filterFn: (row, id, value) => {
+      const date = row.getValue(id) as string | null;
+      if (!date || !value) return true;
+      const rowDate = new Date(date);
+      const { from, to } = value;
+      if (from && rowDate < from) return false;
+      if (to && rowDate > to) return false;
+      return true;
+    },
   },
   {
     header: "Solicitante",

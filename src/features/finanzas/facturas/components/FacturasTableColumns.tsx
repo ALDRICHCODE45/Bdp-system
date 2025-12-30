@@ -104,6 +104,11 @@ export const columns: ColumnDef<FacturaDto>[] = [
       );
     },
     size: 10,
+    filterFn: (row, id, value: string) => {
+      if (!value) return true;
+      const nombre = (row.getValue(id) as string).toLowerCase();
+      return nombre.includes(value.toLowerCase());
+    },
   },
   {
     accessorKey: "concepto",
@@ -137,6 +142,12 @@ export const columns: ColumnDef<FacturaDto>[] = [
       return <div className="font-medium">{formatted}</div>;
     },
     size: 10,
+    filterFn: (row, id, value: { min?: number; max?: number }) => {
+      const monto = row.getValue(id) as number;
+      if (value.min !== undefined && monto < value.min) return false;
+      if (value.max !== undefined && monto > value.max) return false;
+      return true;
+    },
   },
   {
     accessorKey: "periodo",
@@ -159,6 +170,10 @@ export const columns: ColumnDef<FacturaDto>[] = [
       );
     },
     size: 7,
+    filterFn: (row, id, value) => {
+      if (!value || value === "todos") return true;
+      return row.getValue(id) === value;
+    },
   },
   {
     accessorKey: "estado",
@@ -315,6 +330,11 @@ export const columns: ColumnDef<FacturaDto>[] = [
       );
     },
     size: 9,
+    filterFn: (row, id, value: string) => {
+      if (!value) return true;
+      const rfc = (row.getValue(id) as string).toLowerCase();
+      return rfc.includes(value.toLowerCase());
+    },
   },
   {
     accessorKey: "rfcReceptor",
@@ -400,6 +420,11 @@ export const columns: ColumnDef<FacturaDto>[] = [
       );
     },
     size: 9,
+    filterFn: (row, id, value: string) => {
+      if (!value) return true;
+      const creador = (row.getValue(id) as string | null)?.toLowerCase() || "";
+      return creador.includes(value.toLowerCase());
+    },
   },
   {
     accessorKey: "autorizadoPorNombre",

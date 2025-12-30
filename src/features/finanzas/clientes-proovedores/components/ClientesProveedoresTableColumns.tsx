@@ -108,6 +108,10 @@ export const columns: ColumnDef<ClienteProveedorDto>[] = [
       return <div className="text-sm truncate">{banco}</div>;
     },
     size: 15,
+    filterFn: (row, id, value) => {
+      if (!value || value === "todos") return true;
+      return row.getValue(id) === value;
+    },
   },
   {
     header: "No. Cuenta",
@@ -141,6 +145,15 @@ export const columns: ColumnDef<ClienteProveedorDto>[] = [
       );
     },
     size: 15,
+    filterFn: (row, id, value) => {
+      const date = row.getValue(id) as string | null;
+      if (!date || !value) return true;
+      const rowDate = new Date(date);
+      const { from, to } = value;
+      if (from && rowDate < from) return false;
+      if (to && rowDate > to) return false;
+      return true;
+    },
   },
   {
     header: "Socio Responsable",
@@ -150,6 +163,11 @@ export const columns: ColumnDef<ClienteProveedorDto>[] = [
       return <div className="text-sm truncate">{socio?.nombre || "N/A"}</div>;
     },
     size: 15,
+    filterFn: (row, _id, value: string) => {
+      if (!value) return true;
+      const socio = (row.original.socioResponsable?.nombre as string || "").toLowerCase();
+      return socio.includes(value.toLowerCase());
+    },
   },
 
   {

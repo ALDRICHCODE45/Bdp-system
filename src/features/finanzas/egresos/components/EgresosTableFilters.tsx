@@ -26,8 +26,27 @@ import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import {
   categoriasEgresoOptions,
   estadosEgresosOptions,
+  clasificacionesEgresoOptions,
+  formasPagoEgresoOptions,
 } from "../types/EgresosFilterOptions";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
+
+// Genera opciones de periodo para los ultimos 24 meses
+const generatePeriodoOptions = () => {
+  const options = [{ label: "Todos", value: "todos" }];
+  const now = new Date();
+  for (let i = 0; i < 24; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const value = `${year}-${month}`;
+    const label = date.toLocaleDateString("es-MX", { year: "numeric", month: "long" });
+    options.push({ label: label.charAt(0).toUpperCase() + label.slice(1), value });
+  }
+  return options;
+};
+
+const periodoOptions = generatePeriodoOptions();
 
 interface EgresosFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
@@ -51,10 +70,18 @@ export function EgresosFilters({
     handleDateRangeChange,
     handleEstadoChange,
     handleMontoFilter,
+    handleClasificacionChange,
+    handleFormaPagoChange,
+    handlePeriodoChange,
+    handleProveedorChange,
     selectedCategoria,
     selectedDateRange,
     selectedEstado,
     selectedMontoRange,
+    selectedClasificacion,
+    selectedFormaPago,
+    selectedPeriodo,
+    proveedorFilter,
     setMontoRange,
   } = useEgresosTableFilters(table);
 
@@ -124,6 +151,44 @@ export function EgresosFilters({
             options={estadosEgresosOptions}
             value={selectedEstado}
           />
+
+          {/* Filtro de Clasificación */}
+          <FilterSelect
+            label="Clasificación"
+            onValueChange={handleClasificacionChange}
+            options={clasificacionesEgresoOptions}
+            value={selectedClasificacion}
+          />
+
+          {/* Filtro de Forma de Pago */}
+          <FilterSelect
+            label="Forma de Pago"
+            onValueChange={handleFormaPagoChange}
+            options={formasPagoEgresoOptions}
+            value={selectedFormaPago}
+          />
+
+          {/* Filtro de Período */}
+          <FilterSelect
+            label="Período"
+            onValueChange={handlePeriodoChange}
+            options={periodoOptions}
+            value={selectedPeriodo}
+          />
+
+          {/* Filtro de Proveedor */}
+          <div className="space-y-2 w-full min-w-0">
+            <Label htmlFor="proveedor-filter" className="text-xs font-medium">
+              Proveedor
+            </Label>
+            <Input
+              id="proveedor-filter"
+              placeholder="Buscar proveedor..."
+              value={proveedorFilter}
+              onChange={(e) => handleProveedorChange(e.target.value)}
+              className="w-full min-w-0"
+            />
+          </div>
 
           {/* Filtro de rango de fechas */}
           <div className="space-y-2 w-full min-w-0">

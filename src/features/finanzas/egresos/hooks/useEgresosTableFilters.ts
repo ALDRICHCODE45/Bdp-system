@@ -7,6 +7,10 @@ export const useEgresosTableFilters = (table: Table<unknown>) => {
   const [selectedCategoria, setSelectedCategoria] = useState<string>("todos");
   const [selectedEstado, setSelectedEstado] = useState<string>("todos");
   const [selectedMontoRange, setMontoRange] = useState({ min: "", max: "" });
+  const [selectedClasificacion, setSelectedClasificacion] = useState<string>("todos");
+  const [selectedFormaPago, setSelectedFormaPago] = useState<string>("todos");
+  const [selectedPeriodo, setSelectedPeriodo] = useState<string>("todos");
+  const [proveedorFilter, setProveedorFilter] = useState<string>("");
 
   const handleDateRangeChange = useCallback(
     (range: DateRange | undefined) => {
@@ -63,15 +67,71 @@ export const useEgresosTableFilters = (table: Table<unknown>) => {
     table.setPageIndex(0);
   }, [table, selectedMontoRange]);
 
+  const handleClasificacionChange = useCallback(
+    (clasificacion: string) => {
+      setSelectedClasificacion(clasificacion);
+      if (clasificacion === "todos") {
+        table.getColumn("clasificacion")?.setFilterValue(undefined);
+      } else {
+        table.getColumn("clasificacion")?.setFilterValue(clasificacion);
+      }
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
+  const handleFormaPagoChange = useCallback(
+    (formaPago: string) => {
+      setSelectedFormaPago(formaPago);
+      if (formaPago === "todos") {
+        table.getColumn("formaPago")?.setFilterValue(undefined);
+      } else {
+        table.getColumn("formaPago")?.setFilterValue(formaPago);
+      }
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
+  const handlePeriodoChange = useCallback(
+    (periodo: string) => {
+      setSelectedPeriodo(periodo);
+      if (periodo === "todos") {
+        table.getColumn("periodo")?.setFilterValue(undefined);
+      } else {
+        table.getColumn("periodo")?.setFilterValue(periodo);
+      }
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
+  const handleProveedorChange = useCallback(
+    (value: string) => {
+      setProveedorFilter(value);
+      table.getColumn("proveedor")?.setFilterValue(value || undefined);
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
   const clearFilters = useCallback(() => {
     setDateRange(undefined);
     setSelectedCategoria("todos");
     setSelectedEstado("todos");
     setMontoRange({ min: "", max: "" });
+    setSelectedClasificacion("todos");
+    setSelectedFormaPago("todos");
+    setSelectedPeriodo("todos");
+    setProveedorFilter("");
     table.getColumn("fechaPago")?.setFilterValue(undefined);
     table.getColumn("categoria")?.setFilterValue(undefined);
     table.getColumn("estado")?.setFilterValue(undefined);
     table.getColumn("cantidad")?.setFilterValue(undefined);
+    table.getColumn("clasificacion")?.setFilterValue(undefined);
+    table.getColumn("formaPago")?.setFilterValue(undefined);
+    table.getColumn("periodo")?.setFilterValue(undefined);
+    table.getColumn("proveedor")?.setFilterValue(undefined);
   }, [table]);
 
   return {
@@ -80,6 +140,10 @@ export const useEgresosTableFilters = (table: Table<unknown>) => {
     selectedEstado,
     selectedMontoRange,
     selectedDateRange,
+    selectedClasificacion,
+    selectedFormaPago,
+    selectedPeriodo,
+    proveedorFilter,
     setMontoRange,
 
     //methods
@@ -87,6 +151,10 @@ export const useEgresosTableFilters = (table: Table<unknown>) => {
     handleDateRangeChange,
     handleEstadoChange,
     handleMontoFilter,
+    handleClasificacionChange,
+    handleFormaPagoChange,
+    handlePeriodoChange,
+    handleProveedorChange,
     clearFilters,
   };
 };

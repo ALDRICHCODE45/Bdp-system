@@ -3,13 +3,24 @@ import { Badge } from "@/core/shared/ui/badge";
 import { Card, CardContent, CardHeader } from "@/core/shared/ui/card";
 import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
+import { Button } from "@/core/shared/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/core/shared/ui/popover";
+import { Calendar } from "@/core/shared/ui/calendar";
 import { Table } from "@tanstack/react-table";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/core/lib/utils";
 import { useClientesProovedoresTableFilters } from "../hooks/useClientesProovedoresTableFilters.hook";
 import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import {
   estadosClienteProovedor,
   tipoClienteProovedorOptions,
+  bancosOptions,
 } from "../types/ClientesProovedoresFiltersOptions";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
 
@@ -33,8 +44,14 @@ export const ClientesProovedoresTableFilters = ({
     clearFilters,
     handleEstadoChange,
     handleTipoChange,
+    handleBancoChange,
+    handleSocioResponsableChange,
+    handleDateRangeChange,
     selectedEstado,
     selectedTipo,
+    selectedBanco,
+    socioResponsableFilter,
+    selectedDateRange,
   } = useClientesProovedoresTableFilters(table);
 
   return (
@@ -105,7 +122,75 @@ export const ClientesProovedoresTableFilters = ({
               value={selectedEstado}
             />
 
-            {/* Filtro de rango de fechas */}
+            {/* Filtro de Banco */}
+            <FilterSelect
+              label="Banco"
+              onValueChange={handleBancoChange}
+              options={bancosOptions}
+              value={selectedBanco}
+            />
+
+            {/* Filtro de Socio Responsable */}
+            <div className="space-y-2 w-full min-w-0">
+              <Label htmlFor="socio-filter" className="text-xs font-medium">
+                Socio Responsable
+              </Label>
+              <Input
+                id="socio-filter"
+                placeholder="Buscar socio..."
+                value={socioResponsableFilter}
+                onChange={(e) => handleSocioResponsableChange(e.target.value)}
+                className="w-full min-w-0"
+              />
+            </div>
+
+            {/* Filtro de rango de fechas de registro */}
+            <div className="space-y-2 w-full min-w-0">
+              <Label htmlFor="date-range-filter" className="text-xs font-medium">
+                Fecha de Registro
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal min-w-0",
+                      !selectedDateRange && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">
+                      {selectedDateRange?.from ? (
+                        selectedDateRange.to ? (
+                          <>
+                            {format(selectedDateRange.from, "d/M/yy", {
+                              locale: es,
+                            })}{" "}
+                            -{" "}
+                            {format(selectedDateRange.to, "d/M/yy", {
+                              locale: es,
+                            })}
+                          </>
+                        ) : (
+                          format(selectedDateRange.from, "d/M/yy", { locale: es })
+                        )
+                      ) : (
+                        "Seleccionar fechas"
+                      )}
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    defaultMonth={selectedDateRange?.from}
+                    selected={selectedDateRange}
+                    onSelect={handleDateRangeChange}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </CardContent>
       </Card>

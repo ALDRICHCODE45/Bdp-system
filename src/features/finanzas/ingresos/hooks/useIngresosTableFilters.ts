@@ -9,6 +9,10 @@ export const useIngresosTableFilters = (table: Table<unknown>) => {
   const [selectedFacturadoPor, setSelectedFacturadoPor] =
     useState<string>("todos");
   const [selectedMontoRange, setMontoRange] = useState({ min: "", max: "" });
+  const [selectedPeriodo, setSelectedPeriodo] = useState<string>("todos");
+  const [clienteFilter, setClienteFilter] = useState<string>("");
+  const [proyectoFilter, setProyectoFilter] = useState<string>("");
+  const [solicitanteFilter, setSolicitanteFilter] = useState<string>("");
 
   const handleDateRangeChange = useCallback(
     (range: DateRange | undefined) => {
@@ -78,17 +82,65 @@ export const useIngresosTableFilters = (table: Table<unknown>) => {
     table.setPageIndex(0);
   }, [table, selectedMontoRange]);
 
+  const handlePeriodoChange = useCallback(
+    (periodo: string) => {
+      setSelectedPeriodo(periodo);
+      if (periodo === "todos") {
+        table.getColumn("periodo")?.setFilterValue(undefined);
+      } else {
+        table.getColumn("periodo")?.setFilterValue(periodo);
+      }
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
+  const handleClienteChange = useCallback(
+    (value: string) => {
+      setClienteFilter(value);
+      table.getColumn("cliente")?.setFilterValue(value || undefined);
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
+  const handleProyectoChange = useCallback(
+    (value: string) => {
+      setProyectoFilter(value);
+      table.getColumn("clienteProyecto")?.setFilterValue(value || undefined);
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
+  const handleSolicitanteChange = useCallback(
+    (value: string) => {
+      setSolicitanteFilter(value);
+      table.getColumn("solicitante")?.setFilterValue(value || undefined);
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
   const clearFilters = useCallback(() => {
     setDateRange(undefined);
     setSelectedEstado("todos");
     setSelectedFormaPago("todos");
     setSelectedFacturadoPor("todos");
     setMontoRange({ min: "", max: "" });
+    setSelectedPeriodo("todos");
+    setClienteFilter("");
+    setProyectoFilter("");
+    setSolicitanteFilter("");
     table.getColumn("fechaPago")?.setFilterValue(undefined);
     table.getColumn("estado")?.setFilterValue(undefined);
     table.getColumn("formaPago")?.setFilterValue(undefined);
     table.getColumn("facturadoPor")?.setFilterValue(undefined);
     table.getColumn("cantidad")?.setFilterValue(undefined);
+    table.getColumn("periodo")?.setFilterValue(undefined);
+    table.getColumn("cliente")?.setFilterValue(undefined);
+    table.getColumn("clienteProyecto")?.setFilterValue(undefined);
+    table.getColumn("solicitante")?.setFilterValue(undefined);
   }, [table]);
 
   return {
@@ -98,6 +150,10 @@ export const useIngresosTableFilters = (table: Table<unknown>) => {
     selectedFacturadoPor,
     selectedMontoRange,
     selectedDateRange,
+    selectedPeriodo,
+    clienteFilter,
+    proyectoFilter,
+    solicitanteFilter,
     setMontoRange,
 
     //methods
@@ -106,6 +162,10 @@ export const useIngresosTableFilters = (table: Table<unknown>) => {
     handleFormaPagoChange,
     handleFacturadoPorChange,
     handleMontoFilter,
+    handlePeriodoChange,
+    handleClienteChange,
+    handleProyectoChange,
+    handleSolicitanteChange,
     clearFilters,
   };
 };

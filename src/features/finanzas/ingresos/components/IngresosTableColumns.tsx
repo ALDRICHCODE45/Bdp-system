@@ -117,6 +117,11 @@ export const columns: ColumnDef<IngresoDto>[] = [
       );
     },
     size: 12,
+    filterFn: (row, id, value: string) => {
+      if (!value) return true;
+      const cliente = (row.getValue(id) as string).toLowerCase();
+      return cliente.includes(value.toLowerCase());
+    },
   },
   {
     accessorKey: "solicitante",
@@ -130,6 +135,11 @@ export const columns: ColumnDef<IngresoDto>[] = [
       );
     },
     size: 17,
+    filterFn: (row, _id, value: string) => {
+      if (!value) return true;
+      const solicitante = (row.original.solicitanteNombre as string || "").toLowerCase();
+      return solicitante.includes(value.toLowerCase());
+    },
   },
   {
     accessorKey: "autorizador",
@@ -162,6 +172,10 @@ export const columns: ColumnDef<IngresoDto>[] = [
     },
     enableSorting: true,
     size: 17,
+    filterFn: (row, id, value) => {
+      if (!value || value === "todos") return true;
+      return row.getValue(id) === value;
+    },
   },
   {
     accessorKey: "formaPago",
@@ -309,6 +323,11 @@ export const columns: ColumnDef<IngresoDto>[] = [
       );
     },
     size: 17,
+    filterFn: (row, id, value: string) => {
+      if (!value) return true;
+      const proyecto = (row.getValue(id) as string).toLowerCase();
+      return proyecto.includes(value.toLowerCase());
+    },
   },
   {
     accessorKey: "fechaParticipacion",

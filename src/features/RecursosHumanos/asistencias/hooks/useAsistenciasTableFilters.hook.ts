@@ -2,47 +2,70 @@
 import { AsistenciaTipo } from "@prisma/client";
 import { Table } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
+import { DateRange } from "react-day-picker";
 
 export const useAsistenciasTableFilters = (table: Table<unknown>) => {
   const [selectedTipo, setSelectedTipo] = useState<AsistenciaTipo | "todos">(
     "todos",
   );
+  const [selectedDateRange, setDateRange] = useState<DateRange | undefined>();
+  const [nombreColaboradorFilter, setNombreColaboradorFilter] = useState<string>("");
 
-  const handleEstadoChange = useCallback(
-    (newEstado: AsistenciaTipo | "todos") => {
-      setSelectedTipo(newEstado);
+  const handleTipoChange = useCallback(
+    (newTipo: string) => {
+      setSelectedTipo(newTipo as AsistenciaTipo | "todos");
 
-      if (newEstado === "todos") {
-        table.getColumn("isActive")?.setFilterValue(undefined);
+      if (newTipo === "todos") {
+        table.getColumn("tipo")?.setFilterValue(undefined);
         return;
       }
 
-      switch (newEstado) {
-        case "Entrada":
-          table.getColumn("tipo")?.setFilterValue(true);
-          table.setPageIndex(0);
-          break;
-        case "Salida":
-          table.getColumn("tipo")?.setFilterValue(false);
-          table.setPageIndex(0);
-          break;
-        default:
-          break;
+      table.getColumn("tipo")?.setFilterValue(newTipo);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
+
+  const handleDateRangeChange = useCallback(
+    (range: DateRange | undefined) => {
+      setDateRange(range);
+      if (!range || (!range.from && !range.to)) {
+        table.getColumn("fecha")?.setFilterValue(undefined);
+        return;
       }
+      table.getColumn("fecha")?.setFilterValue(range);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
+
+  const handleNombreColaboradorChange = useCallback(
+    (value: string) => {
+      setNombreColaboradorFilter(value);
+      table.getColumn("colaboradorNombre")?.setFilterValue(value || undefined);
+      table.setPageIndex(0);
     },
     [table],
   );
 
   const clearFilters = useCallback(() => {
     setSelectedTipo("todos");
+    setDateRange(undefined);
+    setNombreColaboradorFilter("");
     table.getColumn("tipo")?.setFilterValue(undefined);
+    table.getColumn("fecha")?.setFilterValue(undefined);
+    table.getColumn("colaboradorNombre")?.setFilterValue(undefined);
   }, [table]);
 
   return {
     //constants
     selectedTipo,
+    selectedDateRange,
+    nombreColaboradorFilter,
     //methods
-    handleEstadoChange,
+    handleTipoChange,
+    handleDateRangeChange,
+    handleNombreColaboradorChange,
     clearFilters,
   };
 };

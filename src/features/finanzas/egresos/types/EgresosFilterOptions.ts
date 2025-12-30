@@ -12,3 +12,19 @@ export const estadosEgresosOptions = [
   { value: "Pendiente", label: "Pendiente" },
   { value: "Cancelado", label: "Cancelado" },
 ];
+
+export const clasificacionesEgresoOptions = [
+  { value: "todos", label: "Todas las clasificaciones" },
+  { value: "gasto op", label: "Gasto Op" },
+  { value: "honorarios", label: "Honorarios" },
+  { value: "servicios", label: "Servicios" },
+  { value: "arrendamiento", label: "Arrendamiento" },
+  { value: "comisiones", label: "Comisiones" },
+];
+
+export const formasPagoEgresoOptions = [
+  { value: "todos", label: "Todas las formas" },
+  { value: "transferencia", label: "Transferencia" },
+  { value: "efectivo", label: "Efectivo" },
+  { value: "cheque", label: "Cheque" },
+];

@@ -32,6 +32,23 @@ const formaPagoOptions = [
   { label: "Cheque", value: "cheque" },
 ];
 
+// Genera opciones de periodo para los ultimos 24 meses
+const generatePeriodoOptions = () => {
+  const options = [{ label: "Todos", value: "todos" }];
+  const now = new Date();
+  for (let i = 0; i < 24; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const value = `${year}-${month}`;
+    const label = date.toLocaleDateString("es-MX", { year: "numeric", month: "long" });
+    options.push({ label: label.charAt(0).toUpperCase() + label.slice(1), value });
+  }
+  return options;
+};
+
+const periodoOptions = generatePeriodoOptions();
+
 interface FacturasFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
@@ -56,10 +73,18 @@ export function FacturasFilters({
     handleTipoOrigenChange,
     handleFormaPagoChange,
     handleMontoFilter,
+    handlePeriodoChange,
+    handleClienteProveedorChange,
+    handleRfcEmisorChange,
+    handleCreadoPorChange,
     selectedEstado,
     selectedTipoOrigen,
     selectedFormaPago,
     selectedMontoRange,
+    selectedPeriodo,
+    clienteProveedorFilter,
+    rfcEmisorFilter,
+    creadoPorFilter,
     setMontoRange,
   } = useFacturasTableFilters(table);
 
@@ -123,6 +148,48 @@ export function FacturasFilters({
             value={selectedFormaPago}
             onValueChange={handleFormaPagoChange}
           />
+
+          <FilterSelect
+            label="Período"
+            options={periodoOptions}
+            value={selectedPeriodo}
+            onValueChange={handlePeriodoChange}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="clienteProveedor">Cliente/Proveedor</Label>
+            <Input
+              id="clienteProveedor"
+              type="text"
+              placeholder="Buscar cliente/proveedor..."
+              value={clienteProveedorFilter}
+              onChange={(e) => handleClienteProveedorChange(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="rfcEmisor">RFC Emisor</Label>
+            <Input
+              id="rfcEmisor"
+              type="text"
+              placeholder="Buscar RFC..."
+              value={rfcEmisorFilter}
+              onChange={(e) => handleRfcEmisorChange(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="creadoPor">Creado Por</Label>
+            <Input
+              id="creadoPor"
+              type="text"
+              placeholder="Buscar creador..."
+              value={creadoPorFilter}
+              onChange={(e) => handleCreadoPorChange(e.target.value)}
+            />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="montoMin">Rango de Monto</Label>
