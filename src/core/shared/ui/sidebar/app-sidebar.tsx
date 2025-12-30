@@ -17,7 +17,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
   const { permissions } = usePermissions();
 
-  // TODO: Manejar el caso cuando user es null/undefined
   const userData = user
     ? {
         name: user.name || "Usuario",
