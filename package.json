@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "bunx tsx src/core/seed/seed.ts",
-    "prisma:deploy": "bunx prisma migrate deploy && bunx prisma generate",
+    "prisma:deploy": "bunx prisma migrate deploy && bunx prisma generate"
   },
   "prisma": {
     "seed": "bunx tsx src/core/seed/seed.ts"
