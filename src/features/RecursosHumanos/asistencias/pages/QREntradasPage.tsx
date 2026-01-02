@@ -38,7 +38,7 @@ const QREntradasPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 w-full">
           <Card className="w-md ">
             <CardContent>
-              <QRCode data="http://192.168.100.17:3000/registro-automatico?tipo=Entrada" />
+              <QRCode data="https://bdp-system-production.up.railway.app/registro-automatico?tipo=Entrada" />
             </CardContent>
             <Separator />
             <CardFooter className="flex justify-center font-semibold">
@@ -48,7 +48,7 @@ const QREntradasPage = () => {
 
           <Card className="w-md ">
             <CardContent>
-              <QRCode data="http://192.168.100.17:3000/registro-automatico?tipo=Salida" />
+              <QRCode data="https://bdp-system-production.up.railway.app/registro-automatico?tipo=Salida" />
             </CardContent>
             <Separator />
             <CardFooter className="font-semibold flex justify-center ">
