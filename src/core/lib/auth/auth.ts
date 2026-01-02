@@ -1,10 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
-import { env } from "@/core/shared/config/env.config";
-import { BcryptPasswordHasher } from "@/core/shared/security/hasher";
 
-// Importaciones dinámicas para evitar que Prisma se incluya en el bundle del Edge Runtime
+// Importaciones dinámicas para evitar que dependencias pesadas se incluyan en el bundle del Edge Runtime
 // Estas solo se cargarán cuando se necesiten (en el callback authorize)
 const getPrisma = async () => {
   const prismaModule = await import("@/core/lib/prisma");
@@ -16,6 +13,23 @@ const getPrismaUserRepository = async () => {
     "@/features/sistema/usuarios/server/repositories/PrismaUserRepository.repository"
   );
   return PrismaUserRepository;
+};
+
+const getZod = async () => {
+  const zodModule = await import("zod");
+  return zodModule.z;
+};
+
+const getBcryptPasswordHasher = async () => {
+  const { BcryptPasswordHasher } = await import(
+    "@/core/shared/security/hasher"
+  );
+  return BcryptPasswordHasher;
+};
+
+const getEnv = async () => {
+  const envModule = await import("@/core/shared/config/env.config");
+  return envModule.env;
 };
 
 // Extender los tipos de NextAuth para incluir el rol y permisos
@@ -52,6 +66,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        // Importaciones dinámicas: solo se cargan cuando se necesitan
+        // Esto evita que dependencias pesadas se incluyan en el bundle del Edge Runtime
+        const [z, prisma, PrismaUserRepository, BcryptPasswordHasher] =
+          await Promise.all([
+            getZod(),
+            getPrisma(),
+            getPrismaUserRepository(),
+            getBcryptPasswordHasher(),
+          ]);
+
         const parsedCredentials = z
           .object({ email: z.string().email(), password: z.string().min(1) })
           .safeParse(credentials);
@@ -61,13 +85,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const { email, password } = parsedCredentials.data;
-
-        // Importaciones dinámicas: solo se cargan cuando se necesitan
-        // Esto evita que Prisma se incluya en el bundle del Edge Runtime
-        const [prisma, PrismaUserRepository] = await Promise.all([
-          getPrisma(),
-          getPrismaUserRepository(),
-        ]);
 
         // Lazy initialization: crear instancias solo cuando se necesiten
         const userRepository = new PrismaUserRepository(prisma);
@@ -198,5 +215,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
-  secret: env.AUTH_SECRET, // TODO: Agregar NEXTAUTH_SECRET a .env.local
+  secret: process.env.AUTH_SECRET, // Usar process.env directamente para evitar importar env.config
 });
