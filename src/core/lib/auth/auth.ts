@@ -2,9 +2,21 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { env } from "@/core/shared/config/env.config";
-import prisma from "@/core/lib/prisma";
-import { PrismaUserRepository } from "@/features/sistema/usuarios/server/repositories/PrismaUserRepository.repository";
 import { BcryptPasswordHasher } from "@/core/shared/security/hasher";
+
+// Importaciones dinámicas para evitar que Prisma se incluya en el bundle del Edge Runtime
+// Estas solo se cargarán cuando se necesiten (en el callback authorize)
+const getPrisma = async () => {
+  const prismaModule = await import("@/core/lib/prisma");
+  return prismaModule.default;
+};
+
+const getPrismaUserRepository = async () => {
+  const { PrismaUserRepository } = await import(
+    "@/features/sistema/usuarios/server/repositories/PrismaUserRepository.repository"
+  );
+  return PrismaUserRepository;
+};
 
 // Extender los tipos de NextAuth para incluir el rol y permisos
 declare module "next-auth" {
@@ -50,6 +62,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const { email, password } = parsedCredentials.data;
 
+        // Importaciones dinámicas: solo se cargan cuando se necesitan
+        // Esto evita que Prisma se incluya en el bundle del Edge Runtime
+        const [prisma, PrismaUserRepository] = await Promise.all([
+          getPrisma(),
+          getPrismaUserRepository(),
+        ]);
+
         // Lazy initialization: crear instancias solo cuando se necesiten
         const userRepository = new PrismaUserRepository(prisma);
         const passwordHasher = new BcryptPasswordHasher();
@@ -69,7 +88,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Verificar contraseña
         const isPasswordValid = await passwordHasher.verify(
           password,
-          user.password,
+          user.password
         );
 
         if (!isPasswordValid) {
