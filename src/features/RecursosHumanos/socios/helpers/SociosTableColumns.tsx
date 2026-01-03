@@ -42,7 +42,7 @@ export const columns: ColumnDef<SocioDto>[] = [
     size: 15,
   },
   {
-    header: "N° Colaboradores",
+    header: "Colaboradores",
     accessorKey: "numeroEmpleados",
     cell: ({ row }) => (
       <>

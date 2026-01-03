@@ -18,7 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/core/shared/ui/empty";
-import { UserX } from "lucide-react";
+import { Users, UserX } from "lucide-react";
 
 interface Props {
   row: Row<SocioDto>;
@@ -35,7 +35,9 @@ export const ShowColaboradoresDialog = ({ row }: Props) => {
     <>
       <Dialog onOpenChange={() => refetch()}>
         <DialogTrigger asChild>
-          <Button variant={"outline"}>{row.original.numeroEmpleados}</Button>
+          <Button variant={"outline"}>
+            <Users strokeWidth={1.5} />
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
