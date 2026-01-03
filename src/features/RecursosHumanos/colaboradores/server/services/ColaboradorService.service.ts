@@ -33,6 +33,30 @@ type UpdateColaboradorInput = {
   sueldo: number;
   activos: string[];
   usuarioId?: string | null;
+  // Datos personales
+  fechaIngreso?: Date;
+  genero?: string | null;
+  fechaNacimiento?: Date | null;
+  nacionalidad?: string | null;
+  estadoCivil?: string | null;
+  tipoSangre?: string | null;
+  // Contacto y dirección
+  direccion?: string | null;
+  telefono?: string | null;
+  // Datos fiscales
+  rfc?: string | null;
+  curp?: string | null;
+  // Académicos y laborales previos
+  ultimoGradoEstudios?: string | null;
+  escuela?: string | null;
+  ultimoTrabajo?: string | null;
+  // Referencias personales
+  nombreReferenciaPersonal?: string | null;
+  telefonoReferenciaPersonal?: string | null;
+  parentescoReferenciaPersonal?: string | null;
+  // Referencias laborales
+  nombreReferenciaLaboral?: string | null;
+  telefonoReferenciaLaboral?: string | null;
 };
 
 export class ColaboradorService {
@@ -140,6 +164,30 @@ export class ColaboradorService {
           clabe: input.clabe,
           sueldo: new Prisma.Decimal(input.sueldo),
           activos: input.activos,
+          // Datos personales
+          fechaIngreso: input.fechaIngreso,
+          genero: input.genero,
+          fechaNacimiento: input.fechaNacimiento,
+          nacionalidad: input.nacionalidad,
+          estadoCivil: input.estadoCivil,
+          tipoSangre: input.tipoSangre,
+          // Contacto y dirección
+          direccion: input.direccion,
+          telefono: input.telefono,
+          // Datos fiscales
+          rfc: input.rfc,
+          curp: input.curp,
+          // Académicos y laborales previos
+          ultimoGradoEstudios: input.ultimoGradoEstudios,
+          escuela: input.escuela,
+          ultimoTrabajo: input.ultimoTrabajo,
+          // Referencias personales
+          nombreReferenciaPersonal: input.nombreReferenciaPersonal,
+          telefonoReferenciaPersonal: input.telefonoReferenciaPersonal,
+          parentescoReferenciaPersonal: input.parentescoReferenciaPersonal,
+          // Referencias laborales
+          nombreReferenciaLaboral: input.nombreReferenciaLaboral,
+          telefonoReferenciaLaboral: input.telefonoReferenciaLaboral,
         });
 
         // Crear historial para los cambios

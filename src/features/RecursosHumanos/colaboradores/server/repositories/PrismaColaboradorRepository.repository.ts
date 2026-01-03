@@ -54,6 +54,52 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
         clabe: data.clabe,
         sueldo: data.sueldo,
         activos: data.activos,
+        // Datos personales
+        ...(data.fechaIngreso !== undefined && {
+          fechaIngreso: data.fechaIngreso,
+        }),
+        ...(data.genero !== undefined && { genero: data.genero }),
+        ...(data.fechaNacimiento !== undefined && {
+          fechaNacimiento: data.fechaNacimiento,
+        }),
+        ...(data.nacionalidad !== undefined && {
+          nacionalidad: data.nacionalidad,
+        }),
+        ...(data.estadoCivil !== undefined && {
+          estadoCivil: data.estadoCivil,
+        }),
+        ...(data.tipoSangre !== undefined && { tipoSangre: data.tipoSangre }),
+        // Contacto y dirección
+        ...(data.direccion !== undefined && { direccion: data.direccion }),
+        ...(data.telefono !== undefined && { telefono: data.telefono }),
+        // Datos fiscales
+        ...(data.rfc !== undefined && { rfc: data.rfc }),
+        ...(data.curp !== undefined && { curp: data.curp }),
+        // Académicos y laborales previos
+        ...(data.ultimoGradoEstudios !== undefined && {
+          ultimoGradoEstudios: data.ultimoGradoEstudios,
+        }),
+        ...(data.escuela !== undefined && { escuela: data.escuela }),
+        ...(data.ultimoTrabajo !== undefined && {
+          ultimoTrabajo: data.ultimoTrabajo,
+        }),
+        // Referencias personales
+        ...(data.nombreReferenciaPersonal !== undefined && {
+          nombreReferenciaPersonal: data.nombreReferenciaPersonal,
+        }),
+        ...(data.telefonoReferenciaPersonal !== undefined && {
+          telefonoReferenciaPersonal: data.telefonoReferenciaPersonal,
+        }),
+        ...(data.parentescoReferenciaPersonal !== undefined && {
+          parentescoReferenciaPersonal: data.parentescoReferenciaPersonal,
+        }),
+        // Referencias laborales
+        ...(data.nombreReferenciaLaboral !== undefined && {
+          nombreReferenciaLaboral: data.nombreReferenciaLaboral,
+        }),
+        ...(data.telefonoReferenciaLaboral !== undefined && {
+          telefonoReferenciaLaboral: data.telefonoReferenciaLaboral,
+        }),
       },
       include: {
         socio: {

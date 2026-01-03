@@ -7,6 +7,7 @@ import { useModalState } from "@/core/shared/hooks/useModalState";
 import { CreateColaboradorActions } from "./ColaboradorActions.config";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
+import { useRouter } from "next/navigation";
 
 const EditColaboradorSheet = dynamic(
   () =>
@@ -16,7 +17,7 @@ const EditColaboradorSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const DeleteColaboradorAlertDialog = dynamic(
@@ -27,7 +28,7 @@ const DeleteColaboradorAlertDialog = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const ColaboradorHistorySheet = dynamic(
@@ -38,10 +39,11 @@ const ColaboradorHistorySheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 export function RhRowActions({ row }: { row: Row<ColaboradorDto> }) {
+  const router = useRouter();
   const colaborador = row.original;
   const { isOpen, openModal, closeModal } = useModalState();
   const {
@@ -62,10 +64,15 @@ export function RhRowActions({ row }: { row: Row<ColaboradorDto> }) {
     await deleteColaboradorMutation.mutateAsync(colaborador.id);
   };
 
+  const navigateToColaboradorProfile = () => {
+    router.push(`/colaboradores/${row.original.id}`);
+  };
+
   const actions = CreateColaboradorActions(
     openModal,
     openDeleteModal,
-    OpenHistory
+    OpenHistory,
+    navigateToColaboradorProfile,
   );
 
   return (

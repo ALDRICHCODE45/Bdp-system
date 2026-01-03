@@ -33,6 +33,30 @@ export type UpdateColaboradorArgs = {
   clabe: string;
   sueldo: Prisma.Decimal | number;
   activos: string[];
+  // Datos personales
+  fechaIngreso?: Date;
+  genero?: string | null;
+  fechaNacimiento?: Date | null;
+  nacionalidad?: string | null;
+  estadoCivil?: string | null;
+  tipoSangre?: string | null;
+  // Contacto y dirección
+  direccion?: string | null;
+  telefono?: string | null;
+  // Datos fiscales
+  rfc?: string | null;
+  curp?: string | null;
+  // Académicos y laborales previos
+  ultimoGradoEstudios?: string | null;
+  escuela?: string | null;
+  ultimoTrabajo?: string | null;
+  // Referencias personales
+  nombreReferenciaPersonal?: string | null;
+  telefonoReferenciaPersonal?: string | null;
+  parentescoReferenciaPersonal?: string | null;
+  // Referencias laborales
+  nombreReferenciaLaboral?: string | null;
+  telefonoReferenciaLaboral?: string | null;
 };
 
 export interface ColaboradorRepository {

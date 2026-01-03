@@ -11,7 +11,8 @@ export interface ColaboradorAction {
 export const CreateColaboradorActions = (
   onEdit: () => void,
   onDelete: () => void,
-  onShowHistory: () => void
+  onShowHistory: () => void,
+  onClickProfile: () => void,
 ): ColaboradorAction[] => {
   const actions: ColaboradorAction[] = [
     {
@@ -29,6 +30,12 @@ export const CreateColaboradorActions = (
       id: "history",
       label: "Historial",
       onClick: onShowHistory,
+    },
+    {
+      id: "profile",
+      label: "Perfil",
+      variant: "default",
+      onClick: onClickProfile,
     },
   ];
 
