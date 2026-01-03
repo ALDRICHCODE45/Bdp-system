@@ -1,6 +1,7 @@
 import { makeColaboradorService } from "@/features/RecursosHumanos/colaboradores/server/services/makeColaboradorService";
 import { toColaboradorDto } from "@/features/RecursosHumanos/colaboradores/server/mappers/colaboradorMapper";
 import prisma from "@/core/lib/prisma";
+import { ColaboradorIndividualPage } from "@/features/RecursosHumanos/colaboradores/pages/ColaboradorInividualPage.page";
 
 type Params = Promise<{ colaboradorId: string }>;
 
@@ -27,11 +28,5 @@ export default async function ColaboradorPage({ params }: PageProps) {
   // Aquí puedes hacer fetch de los datos del colaborador
   const colaborador = await getColaborador(colaboradorId);
 
-  return (
-    <div>
-      <h1>Colaborador:{colaborador.name}</h1>
-      <p>ID: {colaboradorId}</p>
-      {/* Más contenido */}
-    </div>
-  );
+  return <ColaboradorIndividualPage colaborador={colaborador} />;
 }
