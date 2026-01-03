@@ -7,7 +7,7 @@ import type { ColaboradorWithSocio } from "../repositories/ColaboradorRepository
  * @returns ColaboradorDto
  */
 export function toColaboradorDto(
-  colaborador: ColaboradorWithSocio
+  colaborador: ColaboradorWithSocio,
 ): ColaboradorDto {
   return {
     id: colaborador.id,
@@ -60,7 +60,7 @@ export function toColaboradorDto(
  * @returns Array de ColaboradorDto
  */
 export function toColaboradorDtoArray(
-  colaboradores: ColaboradorWithSocio[]
+  colaboradores: ColaboradorWithSocio[],
 ): ColaboradorDto[] {
   return colaboradores.map(toColaboradorDto);
 }

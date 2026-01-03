@@ -4,6 +4,7 @@ import { cn } from "@/core/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { SocioDto } from "../server/dtos/SocioDto.dto";
 import { SociosRowActions } from "../components/forms/SociosRowActions";
+import { ShowColaboradoresDialog } from "../components/ShowColaboradoresDialog";
 
 export const columns: ColumnDef<SocioDto>[] = [
   {
@@ -44,7 +45,11 @@ export const columns: ColumnDef<SocioDto>[] = [
     header: "N° Colaboradores",
     accessorKey: "numeroEmpleados",
     cell: ({ row }) => (
-      <div className="text-sm text-center">{row.original.numeroEmpleados}</div>
+      <>
+        <div className="text-sm text-center">
+          <ShowColaboradoresDialog row={row} />
+        </div>
+      </>
     ),
     size: 10,
   },
@@ -58,7 +63,7 @@ export const columns: ColumnDef<SocioDto>[] = [
           "text-xs",
           row.getValue("activo")
             ? "bg-green-100 text-green-800"
-            : "bg-gray-100 text-gray-800"
+            : "bg-gray-100 text-gray-800",
         )}
       >
         {row.getValue("activo") ? "Activo" : "Inactivo"}

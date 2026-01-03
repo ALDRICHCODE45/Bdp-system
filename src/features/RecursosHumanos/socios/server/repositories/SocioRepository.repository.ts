@@ -30,5 +30,8 @@ export interface SocioRepository {
   findById(data: { id: string }): Promise<SocioEntity | null>;
   findByEmail(data: { email: string }): Promise<boolean>;
   getAll(): Promise<SocioEntity[]>;
+  getAllColaboradoresBySocioId(
+    socioId: string,
+  ): Promise<{ correo: string; name: string; id: string }[] | undefined>;
   countColaboradores(data: { id: string }): Promise<number>;
 }

@@ -44,7 +44,7 @@ export class SocioService {
       return Ok(socio);
     } catch (error) {
       return Err(
-        error instanceof Error ? error : new Error("Error al crear socio")
+        error instanceof Error ? error : new Error("Error al crear socio"),
       );
     }
   }
@@ -65,7 +65,7 @@ export class SocioService {
       return Ok(socio);
     } catch (error) {
       return Err(
-        error instanceof Error ? error : new Error("Error al actualizar socio")
+        error instanceof Error ? error : new Error("Error al actualizar socio"),
       );
     }
   }
@@ -87,8 +87,8 @@ export class SocioService {
       if (colaboradoresCount > 0) {
         return Err(
           new Error(
-            `No se puede eliminar el socio porque tiene ${colaboradoresCount} colaborador(es) asignado(s)`
-          )
+            `No se puede eliminar el socio porque tiene ${colaboradoresCount} colaborador(es) asignado(s)`,
+          ),
         );
       }
 
@@ -97,7 +97,7 @@ export class SocioService {
       return Ok(undefined);
     } catch (error) {
       return Err(
-        error instanceof Error ? error : new Error("Error al eliminar socio")
+        error instanceof Error ? error : new Error("Error al eliminar socio"),
       );
     }
   }
@@ -113,7 +113,25 @@ export class SocioService {
       return Ok(socio);
     } catch (error) {
       return Err(
-        error instanceof Error ? error : new Error("Error al obtener socio")
+        error instanceof Error ? error : new Error("Error al obtener socio"),
+      );
+    }
+  }
+  async getColaboradoresBySocioId(
+    socioId: string,
+  ): Promise<Result<{ correo: string; id: string; name: string }[], Error>> {
+    try {
+      const colaboradoresFromSocio =
+        await this.socioRepository.getAllColaboradoresBySocioId(socioId);
+
+      if (!colaboradoresFromSocio) {
+        return Err(new Error("Colaboradores no encontrados"));
+      }
+
+      return Ok(colaboradoresFromSocio);
+    } catch (error) {
+      return Err(
+        error instanceof Error ? error : new Error("Error al obtener socio"),
       );
     }
   }
@@ -124,7 +142,7 @@ export class SocioService {
       return Ok(socios);
     } catch (error) {
       return Err(
-        error instanceof Error ? error : new Error("Error al obtener socios")
+        error instanceof Error ? error : new Error("Error al obtener socios"),
       );
     }
   }

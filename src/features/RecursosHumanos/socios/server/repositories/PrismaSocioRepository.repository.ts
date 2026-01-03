@@ -76,6 +76,25 @@ export class PrismaSocioRepository implements SocioRepository {
     }));
   }
 
+  async getAllColaboradoresBySocioId(
+    socioId: string,
+  ): Promise<{ correo: string; name: string; id: string }[] | undefined> {
+    const socio = await this.prisma.socio.findUnique({
+      where: { id: socioId },
+      include: {
+        colaboradores: {
+          select: {
+            name: true,
+            correo: true,
+            id: true,
+          },
+        },
+      },
+    });
+
+    return socio?.colaboradores;
+  }
+
   async countColaboradores(data: { id: string }): Promise<number> {
     return await this.prisma.colaborador.count({
       where: { socioId: data.id },
