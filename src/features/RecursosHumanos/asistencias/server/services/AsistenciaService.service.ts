@@ -56,4 +56,19 @@ export class AsistenciaService {
       );
     }
   }
+
+  async getByCorreo(
+    correo: string,
+  ): Promise<Result<AsistenciaWithColaborador[], Error>> {
+    try {
+      const asistencias = await this.asistenciaRepository.getByCorreo(correo);
+      return Ok(asistencias);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener asistencias por correo"),
+      );
+    }
+  }
 }

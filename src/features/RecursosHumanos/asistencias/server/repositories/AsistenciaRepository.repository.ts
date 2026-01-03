@@ -7,4 +7,5 @@ export interface AsistenciaRepository {
   create(data: CreateAsistenciaDto): Promise<AsistenciaDto>;
   delete(data: { id: string }): Promise<void>;
   getAll(): Promise<AsistenciaWithColaborador[]>;
+  getByCorreo(correo: string): Promise<AsistenciaWithColaborador[]>;
 }

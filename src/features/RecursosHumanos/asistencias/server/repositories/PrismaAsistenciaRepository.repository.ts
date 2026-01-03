@@ -90,4 +90,37 @@ export class PrismaAsistenciaRepository implements AsistenciaRepository {
 
     return toAsistenciaDto(asistenciaResult.value);
   }
+
+  async getByCorreo(correo: string): Promise<AsistenciaWithColaborador[]> {
+    const asistenciasResult = await TryCatch(
+      this.prisma.asistencia.findMany({
+        where: {
+          correo: correo,
+        },
+        include: {
+          colaborador: {
+            select: {
+              id: true,
+              name: true,
+              correo: true,
+              puesto: true,
+            },
+          },
+        },
+        orderBy: {
+          fecha: "desc",
+        },
+      }),
+    );
+
+    if (!asistenciasResult.ok) {
+      throw asistenciasResult.error;
+    }
+
+    if (!asistenciasResult.value || asistenciasResult.value.length === 0) {
+      return [];
+    }
+
+    return asistenciasResult.value;
+  }
 }

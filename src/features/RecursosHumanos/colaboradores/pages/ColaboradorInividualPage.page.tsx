@@ -22,6 +22,7 @@ import { Separator } from "@/core/shared/ui/separator";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
+import { ColaboradorAsistenciaStats } from "../components/ColaboradorAsistenciaStats";
 
 const EditColaboradorSheet = dynamic(
   () =>
@@ -70,6 +71,9 @@ export const ColaboradorIndividualPage = ({ colaborador }: Props) => {
                 Referencias
               </TabsTrigger>
             )}
+            <TabsTrigger value="estadisticas" className="whitespace-nowrap">
+              Estadísticas
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -267,6 +271,11 @@ export const ColaboradorIndividualPage = ({ colaborador }: Props) => {
             </div>
           </TabsContent>
         )}
+
+        {/* Tab: Estadísticas de Asistencia */}
+        <TabsContent value="estadisticas" className="mt-6">
+          <ColaboradorAsistenciaStats correo={colaborador.correo} />
+        </TabsContent>
       </Tabs>
 
       {/* Modal de Edición */}
