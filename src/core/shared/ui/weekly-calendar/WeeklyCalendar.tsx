@@ -4,6 +4,8 @@ import * as React from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/core/lib/utils";
 import { Button } from "../button";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface WeekCalendarProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect"> {
@@ -169,10 +171,7 @@ function WeekCalendar({
 
   const canSelectMore = selected.length < maxSelections;
 
-  const monthName = currentMonth.toLocaleString("default", {
-    month: "long",
-    year: "numeric",
-  });
+  const monthName = format(currentMonth, "MMMM yyyy", { locale: es });
 
   return (
     <div
@@ -243,7 +242,8 @@ function WeekCalendar({
                 <span className="text-sm">
                   {weekStart.getDate()} - {weekEnd.getDate()}{" "}
                   {weekEnd.getMonth() !== weekStart.getMonth() &&
-                    weekEnd.toLocaleString("default", { month: "short" })}
+                    weekEnd.getMonth() !== weekStart.getMonth() &&
+                    format(weekEnd, "MMM", { locale: es })}
                 </span>
                 {renderWeekBadge && renderWeekBadge(weekStart)}
               </div>
