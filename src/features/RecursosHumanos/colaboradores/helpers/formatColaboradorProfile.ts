@@ -112,3 +112,22 @@ export function calculateAge(fechaNacimiento: string | null): number | null {
   }
 }
 
+/**
+ * Formatea una fecha y hora en formato legible
+ * Ejemplo: "Lunes, 5 de enero, 2025 - 08:30 AM"
+ */
+export function formatDateTime(date: Date | string | null): string {
+  if (!date) {
+    return "No especificado";
+  }
+
+  try {
+    const fecha = typeof date === "string" ? new Date(date) : date;
+    
+    // Formato: "EEEE, d 'de' MMMM, yyyy - hh:mm a" (día, fecha completa - hora AM/PM)
+    return format(fecha, "EEEE, d 'de' MMMM, yyyy - hh:mm a", { locale: es });
+  } catch {
+    return "No especificado";
+  }
+}
+

@@ -80,7 +80,7 @@ function assignColor(tardanzas: number): "green" | "yellow" | "red" {
  * Procesa asistencias y las agrupa por semana con estadísticas
  */
 export function processAsistenciasStats(
-  asistencias: AsistenciaDto[],
+  asistencias: AsistenciaDto[]
 ): WeekStats[] {
   // Convertir fechas string a Date si es necesario
   const asistenciasWithDates = asistencias.map((asistencia) => ({
@@ -127,19 +127,97 @@ export function processAsistenciasStats(
 
   // Ordenar por fecha (más recientes primero)
   return semanasStats.sort(
-    (a, b) => b.weekStart.getTime() - a.weekStart.getTime(),
+    (a, b) => b.weekStart.getTime() - a.weekStart.getTime()
   );
 }
 
 /**
+ * Busca estadísticas para una semana específica
+ * @param weekStartMonday Inicio de semana (lunes)
+ * @param allWeeks Array de todas las semanas procesadas
+ * @returns WeekStats si existe, null si no hay datos
+ */
+export function getWeekStatsForWeekStart(
+  weekStartMonday: Date,
+  allWeeks: WeekStats[]
+): WeekStats | null {
+  const weekISO = weekStartMonday.toISOString();
+  return allWeeks.find((week) => week.weekStartISO === weekISO) || null;
+}
+
+/**
  * Filtra semanas procesadas según las semanas seleccionadas
+ * Si una semana seleccionada no tiene datos, retorna un WeekStats vacío con tardanzas: 0
  */
 export function filterWeeksBySelection(
   allWeeks: WeekStats[],
-  selectedWeekStarts: string[],
+  selectedWeekStarts: string[]
 ): WeekStats[] {
-  return allWeeks.filter((week) =>
-    selectedWeekStarts.includes(week.weekStartISO),
-  );
+  return selectedWeekStarts
+    .map((weekISO) => {
+      const weekStats = allWeeks.find((week) => week.weekStartISO === weekISO);
+
+      if (weekStats) {
+        return weekStats;
+      }
+
+      // Si no hay datos para esta semana, crear estructura vacía
+      const weekStart = parseISO(weekISO);
+      return {
+        weekStart,
+        weekStartISO: weekISO,
+        weekLabel: format(weekStart, "dd/MM/yyyy", { locale: es }),
+        weekRange: formatWeekRange(weekStart),
+        tardanzas: 0,
+        color: "green" as const,
+      };
+    })
+    .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime()); // Ordenar cronológicamente
 }
 
+/**
+ * Filtra asistencias que pertenecen a una semana específica
+ * @param weekStartISO ISO string del inicio de semana (lunes)
+ * @param asistencias Array de todas las asistencias
+ * @returns Array de asistencias filtradas (solo entradas en días laborales), ordenadas por fecha
+ */
+export function getAsistenciasByWeekStart(
+  weekStartISO: string,
+  asistencias: AsistenciaDto[]
+): AsistenciaDto[] {
+  const weekStart = parseISO(weekStartISO);
+
+  // Convertir fechas string a Date si es necesario
+  const asistenciasWithDates = asistencias.map((asistencia) => ({
+    ...asistencia,
+    fecha:
+      typeof asistencia.fecha === "string"
+        ? parseISO(asistencia.fecha)
+        : asistencia.fecha,
+  }));
+
+  // Filtrar: solo entradas en días laborales que pertenecen a esta semana
+  const filtered = asistenciasWithDates.filter((asistencia) => {
+    if (asistencia.tipo !== "Entrada") {
+      return false;
+    }
+
+    if (!isWorkDay(asistencia.fecha)) {
+      return false;
+    }
+
+    // Verificar que la fecha pertenece a esta semana
+    const asistenciaWeekStart = getWeekStart(asistencia.fecha);
+    return asistenciaWeekStart.toISOString() === weekStartISO;
+  });
+
+  // Ordenar por fecha (más antiguas primero)
+  return filtered.sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
+}
+
+/**
+ * Exportar isLateEntry para uso en otros componentes
+ */
+export function isLateEntryHelper(fechaHora: Date): boolean {
+  return isLateEntry(fechaHora);
+}

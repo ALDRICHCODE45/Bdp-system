@@ -13,6 +13,7 @@ import { es } from "date-fns/locale";
 
 interface ColaboradorAsistenciaChartProps {
   data: WeekStats[];
+  onWeekClick?: (weekStats: WeekStats) => void;
 }
 
 /**
@@ -46,6 +47,7 @@ function getColorHSL(color: "green" | "yellow" | "red"): string {
  */
 export function ColaboradorAsistenciaChart({
   data,
+  onWeekClick,
 }: ColaboradorAsistenciaChartProps) {
   if (data.length === 0) {
     return (
@@ -55,12 +57,13 @@ export function ColaboradorAsistenciaChart({
     );
   }
 
-  // Transformar datos para la gráfica
+  // Transformar datos para la gráfica, manteniendo referencia a WeekStats
   const chartData = data.map((week) => ({
     week: format(week.weekStart, "dd/MM", { locale: es }),
     weekRange: week.weekRange,
     tardanzas: week.tardanzas,
     color: week.color,
+    weekStats: week, // Mantener referencia completa para el click
   }));
 
   return (
@@ -104,9 +107,21 @@ export function ColaboradorAsistenciaChart({
             />
           }
         />
-        <Bar dataKey="tardanzas" radius={[4, 4, 0, 0]}>
+        <Bar
+          dataKey="tardanzas"
+          radius={[4, 4, 0, 0]}
+          onClick={(data: any, index: number) => {
+            if (onWeekClick && chartData[index]?.weekStats) {
+              onWeekClick(chartData[index].weekStats);
+            }
+          }}
+          cursor={onWeekClick ? "pointer" : "default"}
+        >
           {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={getColorHSL(entry.color)} />
+            <Cell
+              key={`cell-${index}`}
+              fill={getColorHSL(entry.color)}
+            />
           ))}
         </Bar>
       </BarChart>

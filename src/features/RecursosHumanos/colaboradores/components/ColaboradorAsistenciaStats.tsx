@@ -5,10 +5,12 @@ import { useColaboradorAsistencias } from "../hooks/useColaboradorAsistencias.ho
 import {
   processAsistenciasStats,
   filterWeeksBySelection,
+  getAsistenciasByWeekStart,
   type WeekStats,
 } from "@/features/RecursosHumanos/asistencias/helpers/processAsistenciasStats";
-import { ColaboradorAsistenciaWeekSelector } from "./ColaboradorAsistenciaWeekSelector";
+import { ColaboradorAsistenciaWeekCalendar } from "./ColaboradorAsistenciaWeekCalendar";
 import { ColaboradorAsistenciaChart } from "./ColaboradorAsistenciaChart";
+import { ColaboradorAsistenciaDetailsDialog } from "./ColaboradorAsistenciaDetailsDialog";
 import {
   Card,
   CardContent,
@@ -16,7 +18,13 @@ import {
   CardTitle,
 } from "@/core/shared/ui/card";
 import { Spinner } from "@/core/shared/ui/spinner";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ListFilter } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/core/shared/ui/popover";
+import { Button } from "@/core/shared/ui/button";
 
 interface ColaboradorAsistenciaStatsProps {
   correo: string;
@@ -31,6 +39,8 @@ export function ColaboradorAsistenciaStats({
   correo,
 }: ColaboradorAsistenciaStatsProps) {
   const [selectedWeeks, setSelectedWeeks] = useState<string[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<WeekStats | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const {
     data: asistencias,
@@ -55,16 +65,21 @@ export function ColaboradorAsistenciaStats({
     return filterWeeksBySelection(allWeeks, selectedWeeks);
   }, [allWeeks, selectedWeeks]);
 
-  const handleWeekToggle = (weekStartISO: string) => {
-    setSelectedWeeks((prev) => {
-      if (prev.includes(weekStartISO)) {
-        // Deseleccionar
-        return prev.filter((w) => w !== weekStartISO);
-      } else {
-        // Seleccionar (ya validado en el componente)
-        return [...prev, weekStartISO];
-      }
-    });
+  const handleWeeksChange = (weekISOs: string[]) => {
+    setSelectedWeeks(weekISOs);
+  };
+
+  // Filtrar asistencias de la semana seleccionada para el dialog
+  const selectedWeekAsistencias = useMemo(() => {
+    if (!selectedWeek || !asistencias) {
+      return [];
+    }
+    return getAsistenciasByWeekStart(selectedWeek.weekStartISO, asistencias);
+  }, [selectedWeek, asistencias]);
+
+  const handleWeekClick = (weekStats: WeekStats) => {
+    setSelectedWeek(weekStats);
+    setIsDialogOpen(true);
   };
 
   if (isLoading) {
@@ -108,15 +123,26 @@ export function ColaboradorAsistenciaStats({
       {/* Selector de semanas */}
       <Card>
         <CardHeader>
-          <CardTitle>Seleccionar semanas</CardTitle>
+          <CardTitle>Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <ColaboradorAsistenciaWeekSelector
-            weeks={allWeeks}
-            selectedWeeks={selectedWeeks}
-            onWeekToggle={handleWeekToggle}
-            maxWeeks={MAX_WEEKS}
-          />
+          <Popover>
+            <PopoverTrigger>
+              <Button variant={"outline"}>
+                <ListFilter strokeWidth={1.5} />
+                Seleccionar semanas
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-2xl ml-20">
+              <ColaboradorAsistenciaWeekCalendar
+                availableWeeks={allWeeks}
+                selectedWeeks={selectedWeeks}
+                onWeeksChange={handleWeeksChange}
+                maxWeeks={MAX_WEEKS}
+                initialMonth={new Date()}
+              />
+            </PopoverContent>
+          </Popover>
         </CardContent>
       </Card>
 
@@ -127,7 +153,10 @@ export function ColaboradorAsistenciaStats({
             <CardTitle>Estadísticas de puntualidad</CardTitle>
           </CardHeader>
           <CardContent>
-            <ColaboradorAsistenciaChart data={filteredWeeks} />
+            <ColaboradorAsistenciaChart
+              data={filteredWeeks}
+              onWeekClick={handleWeekClick}
+            />
           </CardContent>
         </Card>
       )}
@@ -139,6 +168,14 @@ export function ColaboradorAsistenciaStats({
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog de detalles */}
+      <ColaboradorAsistenciaDetailsDialog
+        weekStats={selectedWeek}
+        asistencias={selectedWeekAsistencias}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+      />
     </div>
   );
 }

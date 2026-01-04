@@ -43,8 +43,13 @@ export const ColaboradorProfileHeaderCardBasicInformation = ({
       <Card className="p-4">
         <div className="flex items-center justify-between gap-2 mb-1">
           <div className="flex gap-2 items-center">
-            {<Icon className="hidden sm:block" />}
-            <span className="text-xs  font-medium text-muted-foreground uppercase">
+            {
+              <Icon
+                strokeWidth={1.3}
+                className="hidden sm:block text-gray-500 dark:text-gray-200"
+              />
+            }
+            <span className="text-xs  font-medium  uppercase text-gray-900 dark:text-gray-300">
               {title}
             </span>
           </div>
@@ -61,7 +66,9 @@ export const ColaboradorProfileHeaderCardBasicInformation = ({
           </div>
         </div>
 
-        <div className="text-sm font-semibold line-clamp-2">{content}</div>
+        <div className="text-sm font-semibold line-clamp-2 text-gray-600 dark:text-gray-300">
+          {content}
+        </div>
       </Card>
     </>
   );
