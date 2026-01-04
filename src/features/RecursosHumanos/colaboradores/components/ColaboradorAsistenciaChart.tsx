@@ -101,7 +101,9 @@ export function ColaboradorAsistenciaChart({
                 return data?.weekRange || value;
               }}
               formatter={(value) => [
-                `${value} ${Number(value) === 1 ? "llegada tarde" : "llegadas tarde"}`,
+                `${value} ${
+                  Number(value) === 1 ? "llegada tarde" : "llegadas tarde"
+                }`,
                 "Tardanzas",
               ]}
             />
@@ -110,6 +112,7 @@ export function ColaboradorAsistenciaChart({
         <Bar
           dataKey="tardanzas"
           radius={[4, 4, 0, 0]}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onClick={(data: any, index: number) => {
             if (onWeekClick && chartData[index]?.weekStats) {
               onWeekClick(chartData[index].weekStats);
@@ -118,14 +121,10 @@ export function ColaboradorAsistenciaChart({
           cursor={onWeekClick ? "pointer" : "default"}
         >
           {chartData.map((entry, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={getColorHSL(entry.color)}
-            />
+            <Cell key={`cell-${index}`} fill={getColorHSL(entry.color)} />
           ))}
         </Bar>
       </BarChart>
     </ChartContainer>
   );
 }
-
