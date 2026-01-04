@@ -32,7 +32,7 @@ const EditColaboradorSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 interface Props {
@@ -67,10 +67,10 @@ export const ColaboradorIndividualPage = ({ colaborador }: Props) => {
               colaborador.parentescoReferenciaPersonal ||
               colaborador.nombreReferenciaLaboral ||
               colaborador.telefonoReferenciaLaboral) && (
-              <TabsTrigger value="referencias" className="whitespace-nowrap">
-                Referencias
-              </TabsTrigger>
-            )}
+                <TabsTrigger value="referencias" className="whitespace-nowrap">
+                  Referencias
+                </TabsTrigger>
+              )}
             <TabsTrigger value="estadisticas" className="whitespace-nowrap">
               Estadísticas
             </TabsTrigger>
@@ -169,21 +169,21 @@ export const ColaboradorIndividualPage = ({ colaborador }: Props) => {
             {(colaborador.ultimoGradoEstudios ||
               colaborador.escuela ||
               colaborador.ultimoTrabajo) && (
-              <ColaboradorProfileSection title="Formación Académica y Laboral">
-                <ColaboradorInfoField
-                  label="Último grado de estudios"
-                  value={formatValue(colaborador.ultimoGradoEstudios)}
-                />
-                <ColaboradorInfoField
-                  label="Escuela"
-                  value={formatValue(colaborador.escuela)}
-                />
-                <ColaboradorInfoField
-                  label="Último trabajo"
-                  value={formatValue(colaborador.ultimoTrabajo)}
-                />
-              </ColaboradorProfileSection>
-            )}
+                <ColaboradorProfileSection title="Formación Académica y Laboral">
+                  <ColaboradorInfoField
+                    label="Último grado de estudios"
+                    value={formatValue(colaborador.ultimoGradoEstudios)}
+                  />
+                  <ColaboradorInfoField
+                    label="Escuela"
+                    value={formatValue(colaborador.escuela)}
+                  />
+                  <ColaboradorInfoField
+                    label="Último trabajo"
+                    value={formatValue(colaborador.ultimoTrabajo)}
+                  />
+                </ColaboradorProfileSection>
+              )}
           </div>
         </TabsContent>
 
@@ -232,45 +232,45 @@ export const ColaboradorIndividualPage = ({ colaborador }: Props) => {
           colaborador.parentescoReferenciaPersonal ||
           colaborador.nombreReferenciaLaboral ||
           colaborador.telefonoReferenciaLaboral) && (
-          <TabsContent value="referencias" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {(colaborador.nombreReferenciaPersonal ||
-                colaborador.telefonoReferenciaPersonal ||
-                colaborador.parentescoReferenciaPersonal) && (
-                <ColaboradorProfileSection title="Referencia Personal">
-                  <ColaboradorInfoField
-                    label="Nombre"
-                    value={formatValue(colaborador.nombreReferenciaPersonal)}
-                  />
-                  <ColaboradorInfoField
-                    label="Teléfono"
-                    value={formatValue(colaborador.telefonoReferenciaPersonal)}
-                  />
-                  <ColaboradorInfoField
-                    label="Parentesco"
-                    value={formatValue(
-                      colaborador.parentescoReferenciaPersonal
-                    )}
-                  />
-                </ColaboradorProfileSection>
-              )}
+            <TabsContent value="referencias" className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(colaborador.nombreReferenciaPersonal ||
+                  colaborador.telefonoReferenciaPersonal ||
+                  colaborador.parentescoReferenciaPersonal) && (
+                    <ColaboradorProfileSection title="Referencia Personal">
+                      <ColaboradorInfoField
+                        label="Nombre"
+                        value={formatValue(colaborador.nombreReferenciaPersonal)}
+                      />
+                      <ColaboradorInfoField
+                        label="Teléfono"
+                        value={formatValue(colaborador.telefonoReferenciaPersonal)}
+                      />
+                      <ColaboradorInfoField
+                        label="Parentesco"
+                        value={formatValue(
+                          colaborador.parentescoReferenciaPersonal,
+                        )}
+                      />
+                    </ColaboradorProfileSection>
+                  )}
 
-              {(colaborador.nombreReferenciaLaboral ||
-                colaborador.telefonoReferenciaLaboral) && (
-                <ColaboradorProfileSection title="Referencia Laboral">
-                  <ColaboradorInfoField
-                    label="Nombre"
-                    value={formatValue(colaborador.nombreReferenciaLaboral)}
-                  />
-                  <ColaboradorInfoField
-                    label="Teléfono"
-                    value={formatValue(colaborador.telefonoReferenciaLaboral)}
-                  />
-                </ColaboradorProfileSection>
-              )}
-            </div>
-          </TabsContent>
-        )}
+                {(colaborador.nombreReferenciaLaboral ||
+                  colaborador.telefonoReferenciaLaboral) && (
+                    <ColaboradorProfileSection title="Referencia Laboral">
+                      <ColaboradorInfoField
+                        label="Nombre"
+                        value={formatValue(colaborador.nombreReferenciaLaboral)}
+                      />
+                      <ColaboradorInfoField
+                        label="Teléfono"
+                        value={formatValue(colaborador.telefonoReferenciaLaboral)}
+                      />
+                    </ColaboradorProfileSection>
+                  )}
+              </div>
+            </TabsContent>
+          )}
 
         {/* Tab: Estadísticas de Asistencia */}
         <TabsContent value="estadisticas" className="mt-6">

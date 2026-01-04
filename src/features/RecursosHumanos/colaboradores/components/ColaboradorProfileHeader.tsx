@@ -6,7 +6,11 @@ import { Button } from "@/core/shared/ui/button";
 import { Card } from "@/core/shared/ui/card";
 import { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import { calculateAge } from "../helpers/formatColaboradorProfile";
-import { Edit, Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { Edit, Mail, Phone, MapPin, Calendar, Copy, Check } from "lucide-react";
+import { useCopyToClipboard } from "@/core/shared/hooks/use-copy-to-clipboard";
+import { useEffect } from "react";
+import { showToast } from "@/core/shared/helpers/CustomToast";
+import { ColaboradorProfileHeaderCardBasicInformation } from "./ColaboradorProfileHederCardBasicInformation";
 
 interface ColaboradorProfileHeaderProps {
   colaborador: ColaboradorDto;
@@ -94,51 +98,36 @@ export function ColaboradorProfileHeader({
       {/* Cards de Información Rápida */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {age !== null && (
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground uppercase">
-                Edad
-              </span>
-            </div>
-            <div className="text-2xl font-bold">{age}</div>
-          </Card>
+          <ColaboradorProfileHeaderCardBasicInformation
+            content={age.toString()}
+            Icon={Calendar}
+            title="EDAD"
+            key={age}
+          />
         )}
         {colaborador.direccion && (
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground uppercase">
-                Ubicación
-              </span>
-            </div>
-            <div className="text-sm font-semibold line-clamp-2">
-              {colaborador.direccion}
-            </div>
-          </Card>
+          <ColaboradorProfileHeaderCardBasicInformation
+            content={colaborador.direccion}
+            Icon={MapPin}
+            title="Ubicación"
+            key={colaborador.direccion}
+          />
         )}
         {colaborador.telefono && (
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground uppercase">
-                Contacto
-              </span>
-            </div>
-            <div className="text-sm font-semibold">{colaborador.telefono}</div>
-          </Card>
+          <ColaboradorProfileHeaderCardBasicInformation
+            content={colaborador.telefono}
+            Icon={Phone}
+            title="Contacto"
+            key={colaborador.telefono}
+          />
         )}
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase">
-              ID
-            </span>
-          </div>
-          <div className="text-xs font-mono font-semibold break-all">
-            {colaborador.id}
-          </div>
-        </Card>
+
+        <ColaboradorProfileHeaderCardBasicInformation
+          content={colaborador.id}
+          Icon={Mail}
+          title="ID"
+          key={colaborador.id}
+        />
       </div>
     </div>
   );
