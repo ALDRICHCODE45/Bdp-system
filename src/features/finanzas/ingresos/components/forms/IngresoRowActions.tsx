@@ -9,6 +9,8 @@ import { useDeleteIngreso } from "../../hooks/useDeleteIngreso.hook";
 import { createIngresoActions } from "./IngresoActions.config";
 import { useCopyToClipboard } from "@/core/shared/hooks/use-copy-to-clipboard";
 import { showToast } from "@/core/shared/helpers/CustomToast";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditIngresoSheet = dynamic(
   () =>
@@ -85,23 +87,37 @@ export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
     <>
       <ColaboradorActionsDropdown actions={actions} />
 
-      {isDeleteOpen && (
-        <DeleteIngresoAlertDialog
-          isOpen={isDeleteOpen}
-          onOpenChange={closeDeleteModal}
-          onConfirmDelete={handleDelete}
-          ingresoToDelete={ingreso.concepto}
-          isLoading={deleteIngresoMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.ingresos.eliminar,
+          PermissionActions.ingresos.gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteIngresoAlertDialog
+            isOpen={isDeleteOpen}
+            onOpenChange={closeDeleteModal}
+            onConfirmDelete={handleDelete}
+            ingresoToDelete={ingreso.concepto}
+            isLoading={deleteIngresoMutation.isPending}
+          />
+        )}
+      </PermissionGuard>
 
-      {isOpen && (
-        <EditIngresoSheet
-          ingreso={ingreso}
-          isOpen={true}
-          onClose={closeModal}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.ingresos.editar,
+          PermissionActions.ingresos.gestionar,
+        ]}
+      >
+        {isOpen && (
+          <EditIngresoSheet
+            ingreso={ingreso}
+            isOpen={true}
+            onClose={closeModal}
+          />
+        )}
+      </PermissionGuard>
 
       {isHistoryOpen && (
         <IngresoHistorySheet

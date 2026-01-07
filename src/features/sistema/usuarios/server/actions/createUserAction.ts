@@ -3,8 +3,18 @@ import { revalidatePath } from "next/cache";
 import { makeUserService } from "../services/makeUserService";
 import { createUserSchema } from "../validators/createUserSchema";
 import prisma from "@/core/lib/prisma";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const createUserAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.usuarios.crear,
+      PermissionActions.usuarios.gestionar,
+    ],
+    "No tienes permiso para crear usuarios"
+  );
   const name = input.get("name");
   const email = input.get("email");
   const password = input.get("password");

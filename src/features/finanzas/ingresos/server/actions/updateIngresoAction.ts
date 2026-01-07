@@ -5,8 +5,19 @@ import { updateIngresoSchema } from "../validators/updateIngresoSchema";
 import { toIngresoDto } from "../mappers/ingresoMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const updateIngresoAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.ingresos.editar,
+      PermissionActions.ingresos.gestionar,
+    ],
+    "No tienes permiso para editar ingresos"
+  );
+
   // Obtener usuario autenticado
   const session = await auth();
   const usuarioId = session?.user?.id || null;

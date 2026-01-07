@@ -2,8 +2,18 @@
 import { revalidatePath } from "next/cache";
 import { makeIngresoService } from "../services/makeIngresoService";
 import prisma from "@/core/lib/prisma";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const deleteIngresoAction = async (id: string) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.ingresos.eliminar,
+      PermissionActions.ingresos.gestionar,
+    ],
+    "No tienes permiso para eliminar ingresos"
+  );
   try {
     const ingresoService = makeIngresoService({ prisma });
     const result = await ingresoService.delete(id);

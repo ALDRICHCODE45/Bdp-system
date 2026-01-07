@@ -8,6 +8,8 @@ import { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateColaboradorSheet = dynamic(
   () =>
@@ -41,10 +43,24 @@ export const ColaboradoresTablePage = ({ tableData }: TableData) => {
         subtitle="Administra la información de tus colaboradores"
         title="Gestión de Colaboradores"
       />
-      <DataTable columns={columns} data={tableData} config={tableConfig} />
+      <PermissionGuard
+        permissions={[
+          PermissionActions.colaboradores.acceder,
+          PermissionActions.colaboradores.gestionar,
+        ]}
+      >
+        <DataTable columns={columns} data={tableData} config={tableConfig} />
+      </PermissionGuard>
 
       {/* Modal con lazy loading */}
-      {isOpen && <CreateColaboradorSheet isOpen={true} onClose={closeModal} />}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.colaboradores.crear,
+          PermissionActions.colaboradores.gestionar,
+        ]}
+      >
+        {isOpen && <CreateColaboradorSheet isOpen={true} onClose={closeModal} />}
+      </PermissionGuard>
     </div>
   );
 };

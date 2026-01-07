@@ -8,6 +8,8 @@ import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import { SociosTableConfig } from "../components/SociosTableConfig";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateSocioSheet = dynamic(
   () =>
@@ -41,8 +43,22 @@ export const SociosTablePage = ({ tableData }: SociosTablePageProps) => {
         subtitle="Administra la información de los socios responsables"
         title="Gestión de Socios"
       />
-      <DataTable columns={columns} data={tableData} config={tableConfig} />
-      {isOpen && <CreateSocioSheet isOpen={true} onClose={closeModal} />}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.socios.acceder,
+          PermissionActions.socios.gestionar,
+        ]}
+      >
+        <DataTable columns={columns} data={tableData} config={tableConfig} />
+      </PermissionGuard>
+      <PermissionGuard
+        permissions={[
+          PermissionActions.socios.crear,
+          PermissionActions.socios.gestionar,
+        ]}
+      >
+        {isOpen && <CreateSocioSheet isOpen={true} onClose={closeModal} />}
+      </PermissionGuard>
     </div>
   );
 };

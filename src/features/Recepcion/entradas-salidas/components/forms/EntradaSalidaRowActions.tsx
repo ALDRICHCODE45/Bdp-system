@@ -8,6 +8,8 @@ import { useModalState } from "@/core/shared/hooks/useModalState";
 import { CreateEntradaSalidaActions } from "./EntradaSalidaActions.config";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditEntradaSalidaSheet = dynamic(
   () =>
@@ -89,33 +91,47 @@ export function EntradaSalidaRowActions({
     <>
       <EntradaSalidaActionsDropdown actions={actions} />
 
-      {isDeleteOpen && (
-        <DeleteEntradaSalidaAlertDialog
-          isOpen={isDeleteOpen}
-          onOpenChange={closeDeleteModal}
-          onConfirmDelete={handleDelete}
-          entradaSalidaToDelete={entradaSalida.visitante}
-          isLoading={deleteEntradaSalidaMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.recepcion.eliminar,
+          PermissionActions.recepcion.gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteEntradaSalidaAlertDialog
+            isOpen={isDeleteOpen}
+            onOpenChange={closeDeleteModal}
+            onConfirmDelete={handleDelete}
+            entradaSalidaToDelete={entradaSalida.visitante}
+            isLoading={deleteEntradaSalidaMutation.isPending}
+          />
+        )}
+      </PermissionGuard>
 
-      {isRegistrarSalidaOpen && (
-        <RegistrarSalidaDialog
-          isOpen={isRegistrarSalidaOpen}
-          onOpenChange={closeRegistrarSalidaModal}
-          entradaSalida={entradaSalida}
-          onConfirm={handleRegistrarSalida}
-          isLoading={registrarSalidaMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.recepcion.editar,
+          PermissionActions.recepcion.gestionar,
+        ]}
+      >
+        {isRegistrarSalidaOpen && (
+          <RegistrarSalidaDialog
+            isOpen={isRegistrarSalidaOpen}
+            onOpenChange={closeRegistrarSalidaModal}
+            entradaSalida={entradaSalida}
+            onConfirm={handleRegistrarSalida}
+            isLoading={registrarSalidaMutation.isPending}
+          />
+        )}
 
-      {isOpen && (
-        <EditEntradaSalidaSheet
-          entradaSalida={entradaSalida}
-          isOpen={true}
-          onClose={closeModal}
-        />
-      )}
+        {isOpen && (
+          <EditEntradaSalidaSheet
+            entradaSalida={entradaSalida}
+            isOpen={true}
+            onClose={closeModal}
+          />
+        )}
+      </PermissionGuard>
     </>
   );
 }

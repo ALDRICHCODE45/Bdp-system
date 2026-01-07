@@ -9,6 +9,8 @@ import { useDeleteEgreso } from "../../hooks/useDeleteEgreso.hook";
 import { createEgresoActions } from "./EgresoActions.config";
 import { useCopyToClipboard } from "@/core/shared/hooks/use-copy-to-clipboard";
 import { showToast } from "@/core/shared/helpers/CustomToast";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditEgresoSheet = dynamic(
   () =>
@@ -83,19 +85,33 @@ export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
     <>
       <ColaboradorActionsDropdown actions={actions} />
 
-      {isDeleteOpen && (
-        <DeleteEgresoAlertDialog
-          isOpen={isDeleteOpen}
-          onOpenChange={closeDeleteModal}
-          onConfirmDelete={handleDelete}
-          egresoToDelete={egreso.concepto}
-          isLoading={deleteEgresoMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.egresos.eliminar,
+          PermissionActions.egresos.gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteEgresoAlertDialog
+            isOpen={isDeleteOpen}
+            onOpenChange={closeDeleteModal}
+            onConfirmDelete={handleDelete}
+            egresoToDelete={egreso.concepto}
+            isLoading={deleteEgresoMutation.isPending}
+          />
+        )}
+      </PermissionGuard>
 
-      {isOpen && (
-        <EditEgresoSheet egreso={egreso} isOpen={true} onClose={closeModal} />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.egresos.editar,
+          PermissionActions.egresos.gestionar,
+        ]}
+      >
+        {isOpen && (
+          <EditEgresoSheet egreso={egreso} isOpen={true} onClose={closeModal} />
+        )}
+      </PermissionGuard>
 
       {isHistoryOpen && (
         <EgresoHistorySheet

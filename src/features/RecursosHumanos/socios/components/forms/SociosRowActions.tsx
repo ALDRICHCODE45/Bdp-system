@@ -7,6 +7,8 @@ import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { SocioDto } from "../../server/dtos/SocioDto.dto";
 import { useDeleteSocio } from "../../hooks/useDeleteSocio.hook";
 import { createSocioActions } from "./SocioActions.config";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditSocioSheet = dynamic(
   () =>
@@ -51,19 +53,33 @@ export function SociosRowActions({ row }: { row: Row<SocioDto> }) {
     <>
       <ColaboradorActionsDropdown actions={actions} />
 
-      {isDeleteOpen && (
-        <DeleteSocioAlertDialog
-          isOpen={isDeleteOpen}
-          onOpenChange={closeDeleteModal}
-          onConfirmDelete={handleDelete}
-          socioToDelete={socio.nombre}
-          isLoading={deleteSocioMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.socios.eliminar,
+          PermissionActions.socios.gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteSocioAlertDialog
+            isOpen={isDeleteOpen}
+            onOpenChange={closeDeleteModal}
+            onConfirmDelete={handleDelete}
+            socioToDelete={socio.nombre}
+            isLoading={deleteSocioMutation.isPending}
+          />
+        )}
+      </PermissionGuard>
 
-      {isOpen && (
-        <EditSocioSheet socio={socio} isOpen={true} onClose={closeModal} />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.socios.editar,
+          PermissionActions.socios.gestionar,
+        ]}
+      >
+        {isOpen && (
+          <EditSocioSheet socio={socio} isOpen={true} onClose={closeModal} />
+        )}
+      </PermissionGuard>
     </>
   );
 }

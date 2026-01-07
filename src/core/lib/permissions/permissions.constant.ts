@@ -22,12 +22,6 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     description: "Acceder al módulo de facturas",
   },
   {
-    name: "facturas:ver",
-    resource: "facturas",
-    action: "ver",
-    description: "Ver listado de facturas",
-  },
-  {
     name: "facturas:crear",
     resource: "facturas",
     action: "crear",
@@ -60,12 +54,6 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     resource: "ingresos",
     action: "acceder",
     description: "Acceder al módulo de ingresos",
-  },
-  {
-    name: "ingresos:ver",
-    resource: "ingresos",
-    action: "ver",
-    description: "Ver listado de ingresos",
   },
   {
     name: "ingresos:crear",
@@ -102,12 +90,6 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     description: "Acceder al módulo de egresos",
   },
   {
-    name: "egresos:ver",
-    resource: "egresos",
-    action: "ver",
-    description: "Ver listado de egresos",
-  },
-  {
     name: "egresos:crear",
     resource: "egresos",
     action: "crear",
@@ -140,12 +122,6 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     resource: "clientes-proovedores",
     action: "acceder",
     description: "Acceder al módulo de clientes y proveedores",
-  },
-  {
-    name: "clientes-proovedores:ver",
-    resource: "clientes-proovedores",
-    action: "ver",
-    description: "Ver listado de clientes y proveedores",
   },
   {
     name: "clientes-proovedores:crear",
@@ -187,12 +163,6 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     description: "Acceder al módulo de colaboradores",
   },
   {
-    name: "colaboradores:ver",
-    resource: "colaboradores",
-    action: "ver",
-    description: "Ver listado de colaboradores",
-  },
-  {
     name: "colaboradores:crear",
     resource: "colaboradores",
     action: "crear",
@@ -232,12 +202,6 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     description: "Acceder a la tabla de socios",
   },
   {
-    name: "asistencias:ver",
-    resource: "asistencias",
-    action: "ver",
-    description: "Ver unicamente la tabla de asistencias",
-  },
-  {
     name: "asistencias:crear",
     resource: "asistencias",
     action: "crear",
@@ -271,12 +235,6 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     resource: "socios",
     action: "acceder",
     description: "Acceder al módulo de socios",
-  },
-  {
-    name: "socios:ver",
-    resource: "socios",
-    action: "ver",
-    description: "Ver listado de socios",
   },
   {
     name: "socios:crear",
@@ -318,12 +276,6 @@ const RECEPCION_PERMISSIONS: PermissionDefinition[] = [
     description: "Acceder al módulo de recepción",
   },
   {
-    name: "recepcion:ver",
-    resource: "recepcion",
-    action: "ver",
-    description: "Ver entradas y salidas",
-  },
-  {
     name: "recepcion:crear",
     resource: "recepcion",
     action: "crear",
@@ -361,12 +313,6 @@ const SISTEMA_PERMISSIONS: PermissionDefinition[] = [
     resource: "roles",
     action: "acceder",
     description: "Acceder al módulo de roles",
-  },
-  {
-    name: "roles:ver",
-    resource: "roles",
-    action: "ver",
-    description: "Ver listado de roles",
   },
   {
     name: "roles:crear",
@@ -409,12 +355,6 @@ const SISTEMA_PERMISSIONS: PermissionDefinition[] = [
     description: "Acceder al módulo de usuarios",
   },
   {
-    name: "usuarios:ver",
-    resource: "usuarios",
-    action: "ver",
-    description: "Ver listado de usuarios",
-  },
-  {
     name: "usuarios:crear",
     resource: "usuarios",
     action: "crear",
@@ -449,10 +389,10 @@ const SISTEMA_PERMISSIONS: PermissionDefinition[] = [
 
   // Permisos - Granulares
   {
-    name: "permisos:ver",
+    name: "permisos:acceder",
     resource: "permisos",
-    action: "ver",
-    description: "Ver listado de permisos",
+    action: "acceder",
+    description: "Acceder al módulo de permisos",
   },
 ];
 
@@ -499,7 +439,7 @@ export function getAllPermissionNames(): string[] {
  * Obtener permisos por recurso
  */
 export function getPermissionsByResource(
-  resource: string,
+  resource: string
 ): PermissionDefinition[] {
   return ALL_PERMISSIONS.filter((p) => p.resource === resource);
 }

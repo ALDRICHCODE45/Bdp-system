@@ -55,7 +55,7 @@ export function FacturasTablePage({ tableData }: FacturasTablePageProps) {
       />
       <PermissionGuard
         permissions={[
-          PermissionActions.facturas.ver,
+          PermissionActions.facturas.acceder,
           PermissionActions.facturas.gestionar,
         ]}
       >

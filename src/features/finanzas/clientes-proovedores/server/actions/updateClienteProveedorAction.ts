@@ -5,8 +5,19 @@ import { updateClienteProveedorSchema } from "../validators/updateClienteProveed
 import { toClienteProveedorDto } from "../mappers/clienteProveedorMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const updateClienteProveedorAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions["clientes-proovedores"].editar,
+      PermissionActions["clientes-proovedores"].gestionar,
+    ],
+    "No tienes permiso para editar clientes o proveedores"
+  );
+
   // Obtener usuario autenticado
   const session = await auth();
   const usuarioId = session?.user?.id || null;

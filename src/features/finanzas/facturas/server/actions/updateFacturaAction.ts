@@ -4,8 +4,15 @@ import { makeFacturaService } from "../services/makeFacturaService";
 import { toFacturaDto } from "../mappers/facturaMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const updateFacturaAction = async (input: FormData) => {
+  await requireAnyPermission(
+    [PermissionActions.facturas.editar, PermissionActions.facturas.gestionar],
+    "No tienes permiso para editar la factura"
+  );
+
   const session = await auth();
   const usuarioId = session?.user?.id || null;
 
@@ -100,4 +107,3 @@ export const updateFacturaAction = async (input: FormData) => {
   revalidatePath("/facturas");
   return { ok: true, data: facturaDto };
 };
-

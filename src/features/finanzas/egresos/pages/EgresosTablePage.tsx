@@ -8,6 +8,8 @@ import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { EgresoDto } from "../server/dtos/EgresoDto.dto";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateEgresoSheet = dynamic(
   () =>
@@ -42,10 +44,24 @@ export const EgresosTablePage = ({ tableData }: EgresosTablePageProps) => {
         subtitle="Administra y filtra los egresos de tu empresa"
         title="Gestión de Egresos"
       />
-      <DataTable columns={columns} data={tableData} config={tableConfig} />
+      <PermissionGuard
+        permissions={[
+          PermissionActions.egresos.acceder,
+          PermissionActions.egresos.gestionar,
+        ]}
+      >
+        <DataTable columns={columns} data={tableData} config={tableConfig} />
+      </PermissionGuard>
 
       {/* Modal con lazy loading */}
-      {isOpen && <CreateEgresoSheet isOpen={true} onClose={closeModal} />}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.egresos.crear,
+          PermissionActions.egresos.gestionar,
+        ]}
+      >
+        {isOpen && <CreateEgresoSheet isOpen={true} onClose={closeModal} />}
+      </PermissionGuard>
     </div>
   );
 };

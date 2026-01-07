@@ -5,8 +5,19 @@ import { createColaboradorSchema } from "../validators/createColaboradorSchema";
 import { toColaboradorDto } from "../mappers/colaboradorMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const createColaboradorAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.colaboradores.crear,
+      PermissionActions.colaboradores.gestionar,
+    ],
+    "No tienes permiso para crear colaboradores"
+  );
+
   // Obtener usuario autenticado
   const session = await auth();
   const usuarioId = session?.user?.id || null;

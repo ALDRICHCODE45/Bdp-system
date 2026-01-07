@@ -8,6 +8,8 @@ import { UserActionsDropdown } from "./UserActionsDropdown";
 import { createUserActions } from "./userActions.config";
 import { showToast } from "@/core/shared/helpers/CustomToast";
 import { useDeleteUser } from "../../hooks/useDeleteUser.hook";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditUserSheet = dynamic(
   () =>
@@ -69,24 +71,38 @@ export function RowCellActions({ row }: { row: Row<UserDto> }) {
     <>
       <UserActionsDropdown actions={actions} />
 
-      {isDeleteOpen && (
-        <DeleteUserAlertDialog
-          isOpen={isDeleteOpen}
-          onOpenChange={closeDeleteModal}
-          onConfirmDelete={handleDelete}
-          userNameToDelete={row.original.name}
-          isLoading={deleteUserMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.usuarios.eliminar,
+          PermissionActions.usuarios.gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteUserAlertDialog
+            isOpen={isDeleteOpen}
+            onOpenChange={closeDeleteModal}
+            onConfirmDelete={handleDelete}
+            userNameToDelete={row.original.name}
+            isLoading={deleteUserMutation.isPending}
+          />
+        )}
+      </PermissionGuard>
 
-      {isOpen && (
-        <EditUserSheet
-          isOpen={true}
-          onClose={closeModal}
-          mode="add"
-          userId={row.original.id}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.usuarios.editar,
+          PermissionActions.usuarios.gestionar,
+        ]}
+      >
+        {isOpen && (
+          <EditUserSheet
+            isOpen={true}
+            onClose={closeModal}
+            mode="add"
+            userId={row.original.id}
+          />
+        )}
+      </PermissionGuard>
     </>
   );
 }

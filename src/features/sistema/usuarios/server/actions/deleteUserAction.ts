@@ -3,8 +3,18 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/core/lib/prisma";
 import { PrismaUserRepository } from "../repositories/PrismaUserRepository.repository";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const deleteUserAction = async (userId: string) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.usuarios.eliminar,
+      PermissionActions.usuarios.gestionar,
+    ],
+    "No tienes permiso para eliminar usuarios"
+  );
   try {
     const authenticatedUser = await auth();
     const authenticatedUserId = authenticatedUser?.user.id;

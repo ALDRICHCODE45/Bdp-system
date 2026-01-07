@@ -9,6 +9,8 @@ import { useModalState } from "@/core/shared/hooks/useModalState";
 import { EntradasSalidasTableColumns } from "../components/table/EntradaSalidaTableColumns";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateEntradaSalidaSheet = dynamic(
   () =>
@@ -44,16 +46,30 @@ export const EntradasYSalidasTablePage = ({
         subtitle="Administra las entradas y salidas de tu empresa"
         title="Gestión de Entradas y Salidas"
       />
-      <DataTable
-        columns={EntradasSalidasTableColumns}
-        data={tableData}
-        config={tableConfig}
-      />
+      <PermissionGuard
+        permissions={[
+          PermissionActions.recepcion.acceder,
+          PermissionActions.recepcion.gestionar,
+        ]}
+      >
+        <DataTable
+          columns={EntradasSalidasTableColumns}
+          data={tableData}
+          config={tableConfig}
+        />
+      </PermissionGuard>
 
       {/* Modal con lazy loading */}
-      {isOpen && (
-        <CreateEntradaSalidaSheet isOpen={true} onClose={closeModal} />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.recepcion.crear,
+          PermissionActions.recepcion.gestionar,
+        ]}
+      >
+        {isOpen && (
+          <CreateEntradaSalidaSheet isOpen={true} onClose={closeModal} />
+        )}
+      </PermissionGuard>
     </div>
   );
 };

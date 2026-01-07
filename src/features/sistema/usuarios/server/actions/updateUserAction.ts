@@ -4,6 +4,8 @@ import { editUserSchema } from "../validators/editUserSchema";
 import prisma from "@/core/lib/prisma";
 import { PrismaUserRepository } from "../repositories/PrismaUserRepository.repository";
 import { BcryptPasswordHasher } from "@/core/shared/security/hasher";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 // Tipo para el FormData esperado
 type UpdateUserFormData = {
@@ -35,6 +37,15 @@ function getFormDataValues(formData: FormData): UpdateUserFormData {
 }
 
 export const updateUserAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.usuarios.editar,
+      PermissionActions.usuarios.gestionar,
+    ],
+    "No tienes permiso para editar usuarios"
+  );
+
   const formValues = getFormDataValues(input);
 
   let roles: string[] = [];

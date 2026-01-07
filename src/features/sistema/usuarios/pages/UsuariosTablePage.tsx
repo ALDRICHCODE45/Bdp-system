@@ -8,6 +8,8 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateUserSheet = dynamic(
   () =>
@@ -42,16 +44,30 @@ export const UsuariosTablePage = ({ tableData }: UsuariosTablePageProps) => {
           title="Gestión de Usuarios"
         />
 
-        <DataTable
-          columns={UserTableColumns}
-          data={tableData}
-          config={tableConfig}
-        />
+        <PermissionGuard
+          permissions={[
+            PermissionActions.usuarios.acceder,
+            PermissionActions.usuarios.gestionar,
+          ]}
+        >
+          <DataTable
+            columns={UserTableColumns}
+            data={tableData}
+            config={tableConfig}
+          />
+        </PermissionGuard>
 
         {/* Modal con lazy loading */}
-        {isOpen && (
-          <CreateUserSheet isOpen={true} onClose={closeModal} mode="add" />
-        )}
+        <PermissionGuard
+          permissions={[
+            PermissionActions.usuarios.crear,
+            PermissionActions.usuarios.gestionar,
+          ]}
+        >
+          {isOpen && (
+            <CreateUserSheet isOpen={true} onClose={closeModal} mode="add" />
+          )}
+        </PermissionGuard>
       </div>
     </>
   );

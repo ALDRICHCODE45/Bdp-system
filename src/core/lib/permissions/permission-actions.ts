@@ -6,7 +6,6 @@
 export const PermissionActions = {
   facturas: {
     acceder: "facturas:acceder",
-    ver: "facturas:ver",
     crear: "facturas:crear",
     editar: "facturas:editar",
     eliminar: "facturas:eliminar",
@@ -14,7 +13,6 @@ export const PermissionActions = {
   },
   ingresos: {
     acceder: "ingresos:acceder",
-    ver: "ingresos:ver",
     crear: "ingresos:crear",
     editar: "ingresos:editar",
     eliminar: "ingresos:eliminar",
@@ -22,7 +20,6 @@ export const PermissionActions = {
   },
   egresos: {
     acceder: "egresos:acceder",
-    ver: "egresos:ver",
     crear: "egresos:crear",
     editar: "egresos:editar",
     eliminar: "egresos:eliminar",
@@ -30,7 +27,6 @@ export const PermissionActions = {
   },
   "clientes-proovedores": {
     acceder: "clientes-proovedores:acceder",
-    ver: "clientes-proovedores:ver",
     crear: "clientes-proovedores:crear",
     editar: "clientes-proovedores:editar",
     eliminar: "clientes-proovedores:eliminar",
@@ -38,7 +34,6 @@ export const PermissionActions = {
   },
   colaboradores: {
     acceder: "colaboradores:acceder",
-    ver: "colaboradores:ver",
     crear: "colaboradores:crear",
     editar: "colaboradores:editar",
     eliminar: "colaboradores:eliminar",
@@ -47,7 +42,6 @@ export const PermissionActions = {
   },
   socios: {
     acceder: "socios:acceder",
-    ver: "socios:ver",
     crear: "socios:crear",
     editar: "socios:editar",
     eliminar: "socios:eliminar",
@@ -55,7 +49,6 @@ export const PermissionActions = {
   },
   asistencias: {
     acceder: "asistencias:acceder",
-    ver: "asistencias:ver",
     crear: "asistencias:crear",
     editar: "asistencias:editar",
     eliminar: "asistencias:eliminar",
@@ -63,7 +56,6 @@ export const PermissionActions = {
   },
   recepcion: {
     acceder: "recepcion:acceder",
-    ver: "recepcion:ver",
     crear: "recepcion:crear",
     editar: "recepcion:editar",
     eliminar: "recepcion:eliminar",
@@ -71,7 +63,6 @@ export const PermissionActions = {
   },
   usuarios: {
     acceder: "usuarios:acceder",
-    ver: "usuarios:ver",
     crear: "usuarios:crear",
     editar: "usuarios:editar",
     eliminar: "usuarios:eliminar",
@@ -80,7 +71,6 @@ export const PermissionActions = {
   },
   roles: {
     acceder: "roles:acceder",
-    ver: "roles:ver",
     crear: "roles:crear",
     editar: "roles:editar",
     eliminar: "roles:eliminar",
@@ -88,7 +78,7 @@ export const PermissionActions = {
     gestionar: "roles:gestionar",
   },
   permisos: {
-    ver: "permisos:ver",
+    acceder: "permisos:acceder",
   },
 } as const;
 

@@ -4,8 +4,18 @@ import { makeSocioService } from "../services/makeSocioService";
 import { updateSocioSchema } from "../validators/updateSocioSchema";
 import { toSocioDto } from "../mappers/socioMapper";
 import prisma from "@/core/lib/prisma";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const updateSocioAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.socios.editar,
+      PermissionActions.socios.gestionar,
+    ],
+    "No tienes permiso para editar socios"
+  );
   const id = input.get("id");
   const nombre = input.get("nombre");
   const email = input.get("email");

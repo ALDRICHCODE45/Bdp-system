@@ -5,8 +5,19 @@ import { createEgresoSchema } from "../validators/createEgresoSchema";
 import { toEgresoDto } from "../mappers/egresoMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const createEgresoAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.egresos.crear,
+      PermissionActions.egresos.gestionar,
+    ],
+    "No tienes permiso para crear egresos"
+  );
+
   // Obtener usuario autenticado
   const session = await auth();
   const usuarioId = session?.user?.id || null;

@@ -20,6 +20,8 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { exportFacturaToPDF } from "../../helpers/exportFacturaToPDF";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditFacturaSheet = dynamic(
   () =>
@@ -124,21 +126,35 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {isOpen && (
-        <EditFacturaSheet
-          isOpen={true}
-          onClose={closeModal}
-          factura={factura}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.facturas.editar,
+          PermissionActions.facturas.gestionar,
+        ]}
+      >
+        {isOpen && (
+          <EditFacturaSheet
+            isOpen={true}
+            onClose={closeModal}
+            factura={factura}
+          />
+        )}
+      </PermissionGuard>
 
-      {isDeleteOpen && (
-        <DeleteFacturaAlertDialog
-          isOpen={isDeleteOpen}
-          onClose={closeDeleteModal}
-          factura={factura}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.facturas.eliminar,
+          PermissionActions.facturas.gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteFacturaAlertDialog
+            isOpen={isDeleteOpen}
+            onClose={closeDeleteModal}
+            factura={factura}
+          />
+        )}
+      </PermissionGuard>
 
       {isHistoryOpen && (
         <FacturaHistorySheet

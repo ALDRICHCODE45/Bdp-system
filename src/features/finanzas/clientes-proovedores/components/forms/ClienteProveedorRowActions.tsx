@@ -7,6 +7,8 @@ import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { ClienteProveedorDto } from "../../server/dtos/ClienteProveedorDto.dto";
 import { useDeleteClienteProveedor } from "../../hooks/useDeleteClienteProveedor.hook";
 import { createClienteProveedorActions } from "./ClienteProveedorActions.config";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditClienteProveedorSheet = dynamic(
   () =>
@@ -76,23 +78,37 @@ export function ClienteProveedorRowActions({
     <>
       <ColaboradorActionsDropdown actions={actions} />
 
-      {isDeleteOpen && (
-        <DeleteClienteProveedorAlertDialog
-          isOpen={isDeleteOpen}
-          onOpenChange={closeDeleteModal}
-          onConfirmDelete={handleDelete}
-          clienteProveedorToDelete={clienteProveedor.nombre}
-          isLoading={deleteClienteProveedorMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions["clientes-proovedores"].eliminar,
+          PermissionActions["clientes-proovedores"].gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteClienteProveedorAlertDialog
+            isOpen={isDeleteOpen}
+            onOpenChange={closeDeleteModal}
+            onConfirmDelete={handleDelete}
+            clienteProveedorToDelete={clienteProveedor.nombre}
+            isLoading={deleteClienteProveedorMutation.isPending}
+          />
+        )}
+      </PermissionGuard>
 
-      {isOpen && (
-        <EditClienteProveedorSheet
-          clienteProveedor={clienteProveedor}
-          isOpen={true}
-          onClose={closeModal}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions["clientes-proovedores"].editar,
+          PermissionActions["clientes-proovedores"].gestionar,
+        ]}
+      >
+        {isOpen && (
+          <EditClienteProveedorSheet
+            clienteProveedor={clienteProveedor}
+            isOpen={true}
+            onClose={closeModal}
+          />
+        )}
+      </PermissionGuard>
 
       {isHistoryOpen && (
         <ClienteProveedorHistorySheet

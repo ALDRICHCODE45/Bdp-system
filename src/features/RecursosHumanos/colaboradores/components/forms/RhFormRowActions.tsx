@@ -8,6 +8,8 @@ import { CreateColaboradorActions } from "./ColaboradorActions.config";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { useRouter } from "next/navigation";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const EditColaboradorSheet = dynamic(
   () =>
@@ -79,23 +81,37 @@ export function RhRowActions({ row }: { row: Row<ColaboradorDto> }) {
     <>
       <ColaboradorActionsDropdown actions={actions} />
 
-      {isDeleteOpen && (
-        <DeleteColaboradorAlertDialog
-          isOpen={isDeleteOpen}
-          onOpenChange={closeDeleteModal}
-          onConfirmDelete={handleDelete}
-          colaboradorToDelete={colaborador.name}
-          isLoading={deleteColaboradorMutation.isPending}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.colaboradores.eliminar,
+          PermissionActions.colaboradores.gestionar,
+        ]}
+      >
+        {isDeleteOpen && (
+          <DeleteColaboradorAlertDialog
+            isOpen={isDeleteOpen}
+            onOpenChange={closeDeleteModal}
+            onConfirmDelete={handleDelete}
+            colaboradorToDelete={colaborador.name}
+            isLoading={deleteColaboradorMutation.isPending}
+          />
+        )}
+      </PermissionGuard>
 
-      {isOpen && (
-        <EditColaboradorSheet
-          colaborador={colaborador}
-          isOpen={true}
-          onClose={closeModal}
-        />
-      )}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.colaboradores.editar,
+          PermissionActions.colaboradores.gestionar,
+        ]}
+      >
+        {isOpen && (
+          <EditColaboradorSheet
+            colaborador={colaborador}
+            isOpen={true}
+            onClose={closeModal}
+          />
+        )}
+      </PermissionGuard>
 
       {isHistoryOpen && (
         <ColaboradorHistorySheet

@@ -4,14 +4,15 @@ import { makeFacturaService } from "../services/makeFacturaService";
 import { toFacturaDto } from "../mappers/facturaMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
-import { requirePermission } from "@/core/lib/permissions/server-permissions-guard";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const createFacturaAction = async (input: FormData) => {
   // Verificar permiso antes de continuar
-  await requirePermission(
-    PermissionActions.facturas.crear,
-    "No tienes permiso para crear facturas"
+
+  await requireAnyPermission(
+    [PermissionActions.facturas.crear, PermissionActions.facturas.gestionar],
+    "No tienes permiso para crear la factura"
   );
 
   const session = await auth();

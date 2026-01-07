@@ -8,6 +8,8 @@ import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateClienteProveedorSheet = dynamic(
   () =>
@@ -44,12 +46,28 @@ export const ClientesProovedoresTablePage = ({
         subtitle="Administra los clientes y los proveedores"
         title="Clientes y Proveedores"
       />
-      <DataTable columns={columns} data={tableData} config={tableConfig} />
+
+      <PermissionGuard
+        permissions={[
+          PermissionActions["clientes-proovedores"].acceder,
+          PermissionActions["clientes-proovedores"].gestionar,
+        ]}
+      >
+        <DataTable columns={columns} data={tableData} config={tableConfig} />
+      </PermissionGuard>
 
       {/* Modal con lazy loading */}
-      {isOpen && (
-        <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
-      )}
+
+      <PermissionGuard
+        permissions={[
+          PermissionActions["clientes-proovedores"].crear,
+          PermissionActions["clientes-proovedores"].gestionar,
+        ]}
+      >
+        {isOpen && (
+          <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
+        )}
+      </PermissionGuard>
     </div>
   );
 };

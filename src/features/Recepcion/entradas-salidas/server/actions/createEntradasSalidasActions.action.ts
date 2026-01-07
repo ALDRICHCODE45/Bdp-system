@@ -4,8 +4,18 @@ import { revalidatePath } from "next/cache";
 import { makeEntradasSalidasService } from "../services/makeEntradasSalidasService";
 import { createEntradasSalidasSchema } from "../validators/createEntradasSalidasSchemas.schema";
 import prisma from "@/core/lib/prisma";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const createEntradasSalidasAction = async (formData: FormData) => {
+  // Verificar permiso antes de continuar
+  await requireAnyPermission(
+    [
+      PermissionActions.recepcion.crear,
+      PermissionActions.recepcion.gestionar,
+    ],
+    "No tienes permiso para crear entradas y salidas"
+  );
   try {
     const visitante = formData.get("visitante");
     const motivo = formData.get("motivo");

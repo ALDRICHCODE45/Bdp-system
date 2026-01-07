@@ -8,6 +8,8 @@ import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { IngresoDto } from "../server/dtos/IngresoDto.dto";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateIngresoSheet = dynamic(
   () =>
@@ -42,10 +44,24 @@ export const IngresosTablePage = ({ tableData }: IngresosTablePageProps) => {
         subtitle="Administra y filtra los ingresos de tu empresa"
         title="Gestión de Ingresos"
       />
-      <DataTable columns={columns} data={tableData} config={tableConfig} />
+      <PermissionGuard
+        permissions={[
+          PermissionActions.ingresos.acceder,
+          PermissionActions.ingresos.gestionar,
+        ]}
+      >
+        <DataTable columns={columns} data={tableData} config={tableConfig} />
+      </PermissionGuard>
 
       {/* Modal con lazy loading */}
-      {isOpen && <CreateIngresoSheet isOpen={true} onClose={closeModal} />}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.ingresos.crear,
+          PermissionActions.ingresos.gestionar,
+        ]}
+      >
+        {isOpen && <CreateIngresoSheet isOpen={true} onClose={closeModal} />}
+      </PermissionGuard>
     </div>
   );
 };

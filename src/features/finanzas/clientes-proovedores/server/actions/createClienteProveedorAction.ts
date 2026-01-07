@@ -5,8 +5,18 @@ import { createClienteProveedorSchema } from "../validators/createClienteProveed
 import { toClienteProveedorDto } from "../mappers/clienteProveedorMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const createClienteProveedorAction = async (input: FormData) => {
+  await requireAnyPermission(
+    [
+      PermissionActions["clientes-proovedores"].crear,
+      PermissionActions["clientes-proovedores"].gestionar,
+    ],
+    "No tienes permiso para crear el cliente/proovedor"
+  );
+
   // Obtener usuario autenticado
   const session = await auth();
   const usuarioId = session?.user?.id || null;
