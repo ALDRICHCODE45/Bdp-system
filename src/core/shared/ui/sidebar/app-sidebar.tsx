@@ -3,15 +3,17 @@ import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from "@/core/shared/ui/sidebar";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { sidebarLinks } from "./data/SidebarLinks";
+import { sidebarLinks, teamsData } from "./data/SidebarLinks";
 import { useAuth } from "@/core/shared/hooks/use-auth";
 import { usePermissions } from "@/core/shared/hooks/use-permissions";
 import { filterSidebarLinks } from "./helpers/filterSidebarByPermissions";
+import { TeamSwitcher } from "./TeamSwitcher";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
@@ -37,11 +39,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props} variant="floating">
       <SidebarHeader>
-        <NavUser user={userData} />
+        <TeamSwitcher teams={teamsData} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={filteredLinks} />
       </SidebarContent>
+
+      <SidebarFooter>
+        <NavUser user={userData} />
+      </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

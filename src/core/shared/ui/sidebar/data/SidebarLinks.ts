@@ -6,6 +6,8 @@ import {
   Handshake,
   Headset,
   Monitor,
+  Building2,
+  Scale,
 } from "lucide-react";
 
 export const sidebarLinks = {
@@ -14,23 +16,6 @@ export const sidebarLinks = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Finanzas",
@@ -107,3 +92,16 @@ export const sidebarLinks = {
     },
   ],
 };
+
+export const teamsData = [
+  {
+    name: "GlobalServ",
+    logo: Scale,
+    plan: "Enterprise",
+  },
+  {
+    name: "BDP",
+    logo: Landmark,
+    plan: "Startup",
+  },
+];
