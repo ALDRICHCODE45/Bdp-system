@@ -17,3 +17,15 @@ export class ValidationError extends DomainError {
     super(code, message);
   }
 }
+
+export class PermissionError extends Error {
+  constructor(
+    message: string,
+    public permission: string,
+    public code: string = "PERMISSION_DENIED"
+  ) {
+    super(message);
+    this.name = "PermissionError";
+    Object.setPrototypeOf(this, PermissionError.prototype);
+  }
+}

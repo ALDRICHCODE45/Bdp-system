@@ -4,8 +4,16 @@ import { makeFacturaService } from "../services/makeFacturaService";
 import { toFacturaDto } from "../mappers/facturaMapper";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requirePermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 export const createFacturaAction = async (input: FormData) => {
+  // Verificar permiso antes de continuar
+  await requirePermission(
+    PermissionActions.facturas.crear,
+    "No tienes permiso para crear facturas"
+  );
+
   const session = await auth();
   const usuarioId = session?.user?.id || null;
 
@@ -20,8 +28,11 @@ export const createFacturaAction = async (input: FormData) => {
   const folioFiscal = input.get("folioFiscal") as string;
   const fechaEmisionString = input.get("fechaEmision");
   const fechaVencimientoString = input.get("fechaVencimiento");
-  const estado = (input.get("estado") ||
-    "BORRADOR") as "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
+  const estado = (input.get("estado") || "BORRADOR") as
+    | "BORRADOR"
+    | "ENVIADA"
+    | "PAGADA"
+    | "CANCELADA";
   const formaPago = input.get("formaPago") as
     | "TRANSFERENCIA"
     | "EFECTIVO"
@@ -95,4 +106,3 @@ export const createFacturaAction = async (input: FormData) => {
   revalidatePath("/facturas");
   return { ok: true, data: facturaDto };
 };
-

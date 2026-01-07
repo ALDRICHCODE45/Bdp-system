@@ -1,7 +1,10 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { hasPermission, hasAnyPermission } from "@/core/lib/permissions/permission-checker";
+import {
+  hasPermission,
+  hasAnyPermission,
+} from "@/core/lib/permissions/permission-checker";
 
 export function usePermissions() {
   const { data: session } = useSession();
@@ -22,4 +25,3 @@ export function usePermissions() {
     isAdmin: checkPermission("admin:all"),
   };
 }
-

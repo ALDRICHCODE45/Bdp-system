@@ -13,7 +13,7 @@ interface PermissionGuardProps {
 
 /**
  * Componente que protege contenido basado en permisos del usuario
- * 
+ *
  * @param permission - Permiso único requerido
  * @param permissions - Array de permisos (si requireAll es true, necesita todos; si es false, necesita al menos uno)
  * @param requireAll - Si es true, requiere todos los permisos; si es false, requiere al menos uno (default: false)
@@ -61,4 +61,3 @@ export function PermissionGuard({
   // Si no se especifican permisos, mostrar contenido (por seguridad, mejor no mostrar nada)
   return <>{fallback || null}</>;
 }
-

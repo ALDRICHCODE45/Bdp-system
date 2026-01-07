@@ -11,6 +11,8 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { ImportFacturasDialog } from "../components/import";
+import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const CreateFacturaSheet = dynamic(
   () =>
@@ -51,16 +53,39 @@ export function FacturasTablePage({ tableData }: FacturasTablePageProps) {
         subtitle="Administra y gestiona las facturas de tu empresa"
         title="Gestion de Facturas"
       />
-      <DataTable columns={columns} data={tableData} config={tableConfig} />
+      <PermissionGuard
+        permissions={[
+          PermissionActions.facturas.ver,
+          PermissionActions.facturas.gestionar,
+        ]}
+      >
+        <DataTable columns={columns} data={tableData} config={tableConfig} />
+      </PermissionGuard>
 
       {/* Modal con lazy loading */}
-      {isOpen && <CreateFacturaSheet isOpen={true} onClose={closeModal} />}
+
+      <PermissionGuard
+        permissions={[
+          PermissionActions.facturas.crear,
+          PermissionActions.facturas.gestionar,
+        ]}
+      >
+        {isOpen && <CreateFacturaSheet isOpen={true} onClose={closeModal} />}
+      </PermissionGuard>
 
       {/* Dialog de importación */}
-      <ImportFacturasDialog
-        open={importDialogOpen}
-        onOpenChange={setImportDialogOpen}
-      />
+
+      <PermissionGuard
+        permissions={[
+          PermissionActions.facturas.crear,
+          PermissionActions.facturas.gestionar,
+        ]}
+      >
+        <ImportFacturasDialog
+          open={importDialogOpen}
+          onOpenChange={setImportDialogOpen}
+        />
+      </PermissionGuard>
     </div>
   );
 }
