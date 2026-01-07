@@ -176,6 +176,58 @@ export function useAssignPermissions(roleId: string | null) {
     return selectedPermissionIds.includes(permissionId);
   };
 
+  const hasAnyPermission = (resource: string): boolean => {
+    const resourcePermissions = permissions.filter(
+      (p) => p.resource === resource
+    );
+    return resourcePermissions.some((p) =>
+      selectedPermissionIds.includes(p.id)
+    );
+  };
+
+  const getPermissionStats = (resource: string) => {
+    const resourcePermissions = permissions.filter(
+      (p) => p.resource === resource
+    );
+    const modularPermission = resourcePermissions.find(
+      (p) => p.action === "gestionar"
+    );
+    const actionPermissions = resourcePermissions.filter(
+      (p) => p.action !== "gestionar" && p.action !== "acceder"
+    );
+    const accessPermission = resourcePermissions.find(
+      (p) => p.action === "acceder"
+    );
+
+    const hasModular = modularPermission
+      ? selectedPermissionIds.includes(modularPermission.id)
+      : false;
+    const assignedActions = actionPermissions.filter((p) =>
+      selectedPermissionIds.includes(p.id)
+    ).length;
+    const hasAccess = accessPermission
+      ? selectedPermissionIds.includes(accessPermission.id)
+      : false;
+
+    const totalPermissions = resourcePermissions.length;
+    const assignedPermissions = resourcePermissions.filter((p) =>
+      selectedPermissionIds.includes(p.id)
+    ).length;
+
+    return {
+      hasModular,
+      assignedActions,
+      hasAccess,
+      totalPermissions,
+      assignedPermissions,
+      totalActions: actionPermissions.length,
+    };
+  };
+
+  const getTotalAssignedPermissions = (): number => {
+    return selectedPermissionIds.length;
+  };
+
   return {
     permissions,
     selectedPermissionIds,
@@ -187,5 +239,8 @@ export function useAssignPermissions(roleId: string | null) {
     getPermissionsByModule,
     isModularSelected,
     isPermissionSelected,
+    hasAnyPermission,
+    getPermissionStats,
+    getTotalAssignedPermissions,
   };
 }
