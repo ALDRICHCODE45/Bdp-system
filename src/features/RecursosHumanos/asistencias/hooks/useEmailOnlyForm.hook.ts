@@ -3,7 +3,7 @@
 import { showToast } from "@/core/shared/helpers/CustomToast";
 import { useForm } from "@tanstack/react-form";
 import { setLocalStorageItem } from "@/core/shared/helpers/localStorage.helper";
-import { createAsistenciaAction } from "../server/actions/createAsistenciaAction.action";
+import { createAsistenciaPublicAction } from "../server/actions/createAsistenciaPublicAction.action";
 import z from "zod";
 
 type TipoAsistencia = "Entrada" | "Salida";
@@ -26,32 +26,41 @@ export const useEmailOnlyForm = ({ tipo, onSuccess }: UseEmailOnlyFormOptions) =
       onSubmit: emailOnlySchema,
     },
     onSubmit: async ({ value }) => {
-      setLocalStorageItem("correo", value.email);
+      try {
+        setLocalStorageItem("correo", value.email);
 
-      const args = {
-        correo: value.email,
-        tipo,
-        fecha: new Date(),
-      };
+        const args = {
+          correo: value.email,
+          tipo,
+          fecha: new Date(),
+        };
 
-      const result = await createAsistenciaAction(args);
+        const result = await createAsistenciaPublicAction(args);
 
-      if (result && !result.ok) {
+        if (result && !result.ok) {
+          showToast({
+            title: `La ${tipo} no se pudo registrar`,
+            description: result.message || "Intenta de nuevo mas tarde!",
+            type: "error",
+          });
+          return;
+        }
+
         showToast({
-          title: `La ${tipo} no se pudo registrar`,
-          description: "Intenta de nuevo mas tarde!",
+          title: `${tipo} Registrada satisfactoriamente`,
+          description: "Que tengas Excelente dia!",
+          type: "success",
+        });
+
+        onSuccess?.();
+      } catch (error) {
+        console.error("Error in email form:", error);
+        showToast({
+          title: "Error al registrar",
+          description: "Error desconocido. Intenta de nuevo.",
           type: "error",
         });
-        return;
       }
-
-      showToast({
-        title: `${tipo} Registrada satisfactoriamente`,
-        description: "Que tengas Excelente dia!",
-        type: "success",
-      });
-
-      onSuccess?.();
     },
   });
 

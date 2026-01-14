@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { showToast } from "@/core/shared/helpers/CustomToast";
-import { createAsistenciaAction } from "../server/actions/createAsistenciaAction.action";
+import { createAsistenciaPublicAction } from "../server/actions/createAsistenciaPublicAction.action";
 import { getLocalStorageItem } from "@/core/shared/helpers/localStorage.helper";
 
 type TipoAsistencia = "Entrada" | "Salida";
@@ -40,30 +40,40 @@ export const useAutoRegisterEntry = ({
 
     setState("loading");
 
-    const args = {
-      correo: email,
-      tipo,
-      fecha: new Date(),
-    };
+    try {
+      const args = {
+        correo: email,
+        tipo,
+        fecha: new Date(),
+      };
 
-    const result = await createAsistenciaAction(args);
+      const result = await createAsistenciaPublicAction(args);
 
-    if (result && !result.ok) {
+      if (result && !result.ok) {
+        setState("error");
+        showToast({
+          title: `La ${tipo} no se pudo registrar`,
+          description: result.message || "Intenta de nuevo mas tarde!",
+          type: "error",
+        });
+        return;
+      }
+
+      setState("success");
+      showToast({
+        title: `${tipo} Registrada satisfactoriamente`,
+        description: "Que tengas Excelente dia!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error registering attendance:", error);
       setState("error");
       showToast({
-        title: `La ${tipo} no se pudo registrar`,
-        description: "Intenta de nuevo mas tarde!",
+        title: "Error al registrar",
+        description: "Error desconocido. Intenta de nuevo.",
         type: "error",
       });
-      return;
     }
-
-    setState("success");
-    showToast({
-      title: `${tipo} Registrada satisfactoriamente`,
-      description: "Que tengas Excelente dia!",
-      type: "success",
-    });
   }, [email, tipo, state]);
 
   const reset = useCallback(() => {
