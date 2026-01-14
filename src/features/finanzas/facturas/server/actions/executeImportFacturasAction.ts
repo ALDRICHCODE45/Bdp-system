@@ -49,8 +49,11 @@ export async function executeImportFacturasAction(
       return { ok: false, error: result.error.message };
     }
 
-    // Revalidar las rutas de facturas
+    // Revalidar las rutas afectadas por la importación
     revalidatePath("/facturas");
+    revalidatePath("/ingresos");
+    revalidatePath("/egresos");
+    revalidatePath("/clientes-proovedores");
 
     return { ok: true, data: result.value };
   } catch (error) {
