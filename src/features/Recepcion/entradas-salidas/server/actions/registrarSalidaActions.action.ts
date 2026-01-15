@@ -42,4 +42,3 @@ export const registrarSalidaAction = async (formData: FormData) => {
     return { ok: false, error: "Error al registrar la salida" };
   }
 };
-

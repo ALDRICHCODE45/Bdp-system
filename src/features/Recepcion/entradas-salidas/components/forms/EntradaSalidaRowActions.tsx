@@ -19,7 +19,7 @@ const EditEntradaSalidaSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const DeleteEntradaSalidaAlertDialog = dynamic(
@@ -30,7 +30,7 @@ const DeleteEntradaSalidaAlertDialog = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const RegistrarSalidaDialog = dynamic(
@@ -41,7 +41,7 @@ const RegistrarSalidaDialog = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 export function EntradaSalidaRowActions({
@@ -84,7 +84,7 @@ export function EntradaSalidaRowActions({
     openModal,
     openDeleteModal,
     openRegistrarSalidaModal,
-    hasHoraSalida
+    hasHoraSalida,
   );
 
   return (
@@ -108,22 +108,22 @@ export function EntradaSalidaRowActions({
         )}
       </PermissionGuard>
 
+      {isRegistrarSalidaOpen && (
+        <RegistrarSalidaDialog
+          isOpen={isRegistrarSalidaOpen}
+          onOpenChange={closeRegistrarSalidaModal}
+          entradaSalida={entradaSalida}
+          onConfirm={handleRegistrarSalida}
+          isLoading={registrarSalidaMutation.isPending}
+        />
+      )}
+
       <PermissionGuard
         permissions={[
           PermissionActions.recepcion.editar,
           PermissionActions.recepcion.gestionar,
         ]}
       >
-        {isRegistrarSalidaOpen && (
-          <RegistrarSalidaDialog
-            isOpen={isRegistrarSalidaOpen}
-            onOpenChange={closeRegistrarSalidaModal}
-            entradaSalida={entradaSalida}
-            onConfirm={handleRegistrarSalida}
-            isLoading={registrarSalidaMutation.isPending}
-          />
-        )}
-
         {isOpen && (
           <EditEntradaSalidaSheet
             entradaSalida={entradaSalida}
