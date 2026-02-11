@@ -67,4 +67,5 @@ export interface ColaboradorRepository {
   findByCorreo(data: { correo: string }): Promise<ColaboradorWithSocio | null>;
   getAll(): Promise<ColaboradorWithSocio[]>;
   findBySocioId(data: { socioId: string }): Promise<ColaboradorWithSocio[]>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }>;
 }

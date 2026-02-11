@@ -129,5 +129,29 @@ export class PrismaIngresoRepository implements IngresoRepository {
       },
     });
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: IngresoEntity[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.ingreso.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          clienteRef: true,
+          ingresadoPorRef: true,
+          solicitanteRef: true,
+          autorizadorRef: true,
+        },
+      }),
+      this.prisma.ingreso.count(),
+    ]);
+
+    return { data, totalCount };
+  }
 }
 

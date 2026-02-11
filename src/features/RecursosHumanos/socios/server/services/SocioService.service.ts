@@ -146,4 +146,13 @@ export class SocioService {
       );
     }
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: SocioEntity[]; totalCount: number }, Error>> {
+    try {
+      const result = await this.socioRepository.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error("Error al obtener socios paginados"));
+    }
+  }
 }

@@ -8,4 +8,5 @@ export interface AsistenciaRepository {
   delete(data: { id: string }): Promise<void>;
   getAll(): Promise<AsistenciaWithColaborador[]>;
   getByCorreo(correo: string): Promise<AsistenciaWithColaborador[]>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: AsistenciaWithColaborador[]; totalCount: number }>;
 }

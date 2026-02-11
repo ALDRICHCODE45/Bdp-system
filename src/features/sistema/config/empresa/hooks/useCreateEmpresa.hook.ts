@@ -19,9 +19,6 @@ export const useCreateEmpresa = () => {
       await queryClient.invalidateQueries({
         queryKey: ["empresa"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["empresa"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al crear empresa");

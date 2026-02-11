@@ -9,10 +9,9 @@ export function QueryProvider({ children }: { children: ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Con SSR, usualmente queremos establecer un staleTime por defecto
-            // mayor a 0 para evitar refetch inmediato en el cliente
-            staleTime: 60 * 1000, // 1 minuto
-            retry: 3,
+            staleTime: 5 * 60 * 1000, // 5 minutos
+            gcTime: 30 * 60 * 1000, // 30 minutos
+            retry: 2,
             refetchOnWindowFocus: false,
           },
         },

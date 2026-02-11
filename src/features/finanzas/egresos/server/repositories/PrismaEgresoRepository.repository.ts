@@ -135,5 +135,30 @@ export class PrismaEgresoRepository implements EgresoRepository {
       },
     });
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: EgresoEntity[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.egreso.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          proveedorRef: true,
+          clienteProyectoRef: true,
+          ingresadoPorRef: true,
+          solicitanteRef: true,
+          autorizadorRef: true,
+        },
+      }),
+      this.prisma.egreso.count(),
+    ]);
+
+    return { data, totalCount };
+  }
 }
 

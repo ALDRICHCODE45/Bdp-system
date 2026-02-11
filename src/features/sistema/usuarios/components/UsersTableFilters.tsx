@@ -34,7 +34,7 @@ export const UsersTableFilters = ({
           <div className="flex items-center gap-2 min-w-0">
             <Filter className="h-5 w-5 text-primary flex-shrink-0" />
             <Badge variant="outline" className="ml-2 flex-shrink-0">
-              {table.getFilteredRowModel().rows.length} resultados
+              {table.getRowCount()} resultados
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">

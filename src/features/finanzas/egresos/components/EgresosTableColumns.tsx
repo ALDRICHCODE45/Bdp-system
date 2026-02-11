@@ -7,6 +7,11 @@ import { EgresoRowActions } from "./forms/EgresoRowActions";
 import { Checkbox } from "@/core/shared/ui/checkbox";
 import { UploadEgresoColumn } from "./columns/UploadEgresoColumn";
 
+const currencyFormatter = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+});
+
 export const columns: ColumnDef<EgresoDto>[] = [
   {
     id: "select",
@@ -195,10 +200,7 @@ export const columns: ColumnDef<EgresoDto>[] = [
     accessorKey: "cantidad",
     cell: ({ row }) => {
       const cantidad = parseFloat(row.getValue("cantidad"));
-      const formatted = new Intl.NumberFormat("es-MX", {
-        style: "currency",
-        currency: "MXN",
-      }).format(cantidad);
+      const formatted = currencyFormatter.format(cantidad);
 
       return (
         <div className="font-medium text-red-600 truncate">{formatted}</div>

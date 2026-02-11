@@ -98,6 +98,31 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: UserWithRoles[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    return { data: data as UserWithRoles[], totalCount };
+  }
+
   async update(data: {
     id: string;
     email: string;

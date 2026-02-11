@@ -20,9 +20,6 @@ export const useEditClienteProveedor = () => {
       await queryClient.invalidateQueries({
         queryKey: ["clientesProveedores"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["clientesProveedores"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al actualizar cliente/proveedor");

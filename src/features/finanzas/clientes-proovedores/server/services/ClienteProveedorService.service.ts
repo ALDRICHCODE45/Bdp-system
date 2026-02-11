@@ -256,4 +256,13 @@ export class ClienteProveedorService {
       );
     }
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: ClienteProveedorEntity[]; totalCount: number }, Error>> {
+    try {
+      const result = await this.clienteProveedorRepository.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error("Error al obtener clientes/proveedores paginados"));
+    }
+  }
 }

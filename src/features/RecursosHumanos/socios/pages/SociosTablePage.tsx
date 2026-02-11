@@ -1,7 +1,8 @@
 "use client";
+import { useMemo, useState } from "react";
+import { SortingState } from "@tanstack/react-table";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { columns } from "../helpers/SociosTableColumns";
-import { SocioDto } from "../server/dtos/SocioDto.dto";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
@@ -10,6 +11,7 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { useSociosPaginated } from "../hooks/useSociosPaginated.hook";
 
 const CreateSocioSheet = dynamic(
   () =>
@@ -22,12 +24,17 @@ const CreateSocioSheet = dynamic(
   }
 );
 
-interface SociosTablePageProps {
-  tableData: SocioDto[];
-}
-
-export const SociosTablePage = ({ tableData }: SociosTablePageProps) => {
+export const SociosTablePage = () => {
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [sorting, setSorting] = useState<SortingState>([]);
   const { isOpen, openModal, closeModal } = useModalState();
+
+  const { data, isPending, isFetching } = useSociosPaginated({
+    page: pagination.pageIndex + 1,
+    pageSize: pagination.pageSize,
+    sortBy: sorting[0]?.id,
+    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+  });
 
   const handleAdd = () => {
     openModal();
@@ -36,6 +43,19 @@ export const SociosTablePage = ({ tableData }: SociosTablePageProps) => {
   const tableConfig = createTableConfig(SociosTableConfig, {
     onAdd: handleAdd,
   });
+
+  const serverConfig = useMemo(() => ({
+    ...tableConfig,
+    pagination: {
+      ...tableConfig.pagination,
+      manualPagination: true,
+      pageCount: data?.pageCount ?? 0,
+      totalCount: data?.totalCount ?? 0,
+      onPaginationChange: setPagination,
+    },
+    manualSorting: true,
+    onSortingChange: setSorting,
+  }), [tableConfig, data?.pageCount, data?.totalCount]);
 
   return (
     <div className="container mx-auto py-6">
@@ -49,7 +69,12 @@ export const SociosTablePage = ({ tableData }: SociosTablePageProps) => {
           PermissionActions.socios.gestionar,
         ]}
       >
-        <DataTable columns={columns} data={tableData} config={tableConfig} />
+        <DataTable
+          columns={columns}
+          data={data?.data ?? []}
+          config={serverConfig}
+          isLoading={isPending && !isFetching}
+        />
       </PermissionGuard>
       <PermissionGuard
         permissions={[

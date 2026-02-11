@@ -123,4 +123,32 @@ export class PrismaAsistenciaRepository implements AsistenciaRepository {
 
     return asistenciasResult.value;
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: import("../mappers/AsistenciaMapper").AsistenciaWithColaborador[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { fecha: "desc" as const };
+
+    const [rawData, totalCount] = await Promise.all([
+      this.prisma.asistencia.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          colaborador: {
+            select: {
+              id: true,
+              name: true,
+              correo: true,
+              puesto: true,
+            },
+          },
+        },
+      }),
+      this.prisma.asistencia.count(),
+    ]);
+
+    return { data: toAsistenciatoArray(rawData), totalCount };
+  }
 }

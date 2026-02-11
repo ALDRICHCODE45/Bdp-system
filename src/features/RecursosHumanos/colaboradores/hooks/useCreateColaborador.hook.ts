@@ -23,9 +23,6 @@ export const useCreateColaborador = () => {
       await queryClient.invalidateQueries({
         queryKey: ["colaboradores"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["colaboradores"],
-      });
     },
     onError: (error: Error) => {
       showToast({

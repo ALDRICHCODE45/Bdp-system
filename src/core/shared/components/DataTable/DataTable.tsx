@@ -1,5 +1,6 @@
+"use no memo";
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -15,12 +16,34 @@ import {
   RowSelectionState,
 } from "@tanstack/react-table";
 import { UserPlus } from "lucide-react";
+import { TooltipProvider } from "@/core/shared/ui/tooltip";
 
 import { TableConfig } from "./types";
 import { TableBodyDataTable } from "./DataTableBody";
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableFilters } from "./DataTableFilters";
 import { TableSkeleton } from "./TableSkeleton";
+
+// Default config values (static, defined outside component to avoid re-creation)
+const DEFAULT_FILTERS = {
+  searchColumn: "nombre",
+  searchPlaceholder: "Buscar...",
+  showSearch: true,
+} as const;
+
+const DEFAULT_ACTIONS = {
+  showAddButton: true,
+  addButtonText: "Agregar",
+  showExportButton: false,
+  showRefreshButton: false,
+} as const;
+
+const DEFAULT_PAGINATION = {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10, 20, 50] as number[],
+  showPageSizeSelector: true,
+  showPaginationInfo: true,
+} as const;
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -40,49 +63,24 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
-  // Configuración por defecto
-  const defaultConfig: Required<TableConfig<TData>> = {
-    filters: {
-      searchColumn: "nombre",
-      searchPlaceholder: "Buscar...",
-      showSearch: true,
-    },
-    actions: {
-      showAddButton: true,
-      addButtonText: "Agregar",
-      addButtonIcon: <UserPlus />,
-      showExportButton: false,
-      showRefreshButton: false,
-    },
-    pagination: {
-      defaultPageSize: 5,
-      pageSizeOptions: [5, 10, 20, 50],
-      showPageSizeSelector: true,
-      showPaginationInfo: true,
-    },
-    emptyStateMessage: "No se encontraron resultados.",
-    enableSorting: true,
-    enableColumnVisibility: false,
-    enableRowSelection: false,
-    isLoading: false,
-    skeletonRows: 5,
-  };
-
   // Combinar configuración por defecto con la proporcionada
-  const finalConfig = {
-    filters: { ...defaultConfig.filters, ...config.filters },
-    actions: { ...defaultConfig.actions, ...config.actions },
-    pagination: { ...defaultConfig.pagination, ...config.pagination },
+  const finalConfig = useMemo(() => ({
+    filters: { ...DEFAULT_FILTERS, ...config.filters },
+    actions: { addButtonIcon: <UserPlus />, ...DEFAULT_ACTIONS, ...config.actions },
+    pagination: { ...DEFAULT_PAGINATION, ...config.pagination },
     emptyStateMessage:
-      config.emptyStateMessage || defaultConfig.emptyStateMessage,
-    enableSorting: config.enableSorting ?? defaultConfig.enableSorting,
-    enableColumnVisibility:
-      config.enableColumnVisibility ?? defaultConfig.enableColumnVisibility,
-    enableRowSelection:
-      config.enableRowSelection ?? defaultConfig.enableRowSelection,
+      config.emptyStateMessage || "No se encontraron resultados.",
+    enableSorting: config.enableSorting ?? true,
+    enableColumnVisibility: config.enableColumnVisibility ?? false,
+    enableRowSelection: config.enableRowSelection ?? false,
     isLoading: isLoadingProp ?? config.isLoading ?? false,
     skeletonRows: config.skeletonRows ?? 5,
-  };
+    manualSorting: config.manualSorting,
+    onSortingChange: config.onSortingChange,
+  }), [config, isLoadingProp]);
+
+  const isManualPagination = !!finalConfig.pagination.manualPagination;
+  const isManualSorting = !!finalConfig.manualSorting;
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -95,17 +93,45 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    getSortedRowModel: isManualSorting ? undefined : getSortedRowModel(),
+    manualSorting: isManualSorting,
+    onSortingChange: (updater) => {
+      setSorting(updater);
+      if (finalConfig.onSortingChange) {
+        const newSorting =
+          typeof updater === "function" ? updater(sorting) : updater;
+        finalConfig.onSortingChange(newSorting);
+      }
+    },
     enableSortingRemoval: false,
-    getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
+    getPaginationRowModel: isManualPagination
+      ? undefined
+      : getPaginationRowModel(),
+    manualPagination: isManualPagination,
+    pageCount: isManualPagination
+      ? (finalConfig.pagination.pageCount ?? -1)
+      : undefined,
+    rowCount: isManualPagination
+      ? (finalConfig.pagination.totalCount ?? undefined)
+      : undefined,
+    onPaginationChange: (updater) => {
+      setPagination(updater);
+      if (finalConfig.pagination.onPaginationChange) {
+        const newPagination =
+          typeof updater === "function" ? updater(pagination) : updater;
+        finalConfig.pagination.onPaginationChange(newPagination);
+      }
+    },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFilteredRowModel: isManualPagination
+      ? undefined
+      : getFilteredRowModel(),
+    getFacetedUniqueValues: isManualPagination
+      ? undefined
+      : getFacetedUniqueValues(),
     enableRowSelection: finalConfig.enableRowSelection,
     state: {
       sorting,
@@ -118,6 +144,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
+    <TooltipProvider>
     <div
       className="space-y-4 w-full max-w-full min-w-0 overflow-hidden"
       role="region"
@@ -157,5 +184,6 @@ export function DataTable<TData, TValue>({
         <DataTablePagination<TData> config={finalConfig} table={table} />
       </nav>
     </div>
+    </TooltipProvider>
   );
 }

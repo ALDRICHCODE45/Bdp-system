@@ -89,4 +89,29 @@ export class PrismaRoleRepository implements RoleRepository {
     });
     return count > 0;
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: import("@prisma/client").Role[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.role.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          permissions: {
+            include: {
+              permission: true,
+            },
+          },
+        },
+      }),
+      this.prisma.role.count(),
+    ]);
+
+    return { data, totalCount };
+  }
 }

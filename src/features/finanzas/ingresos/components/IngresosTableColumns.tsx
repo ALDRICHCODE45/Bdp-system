@@ -5,7 +5,6 @@ import { Badge } from "@/core/shared/ui/badge";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/core/shared/ui/tooltip";
 import { IngresoDto } from "../server/dtos/IngresoDto.dto";
@@ -18,6 +17,11 @@ import {
 import { FileText } from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
 import { UploadIngresoColumn } from "./columns/UploadIngresoColumn";
+
+const currencyFormatter = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+});
 
 export const columns: ColumnDef<IngresoDto>[] = [
   {
@@ -52,8 +56,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
     cell: ({ row }) => {
       const folioFiscal = row.getValue("folioFiscal") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[120px] truncate font-mono text-xs">
                 {folioFiscal}
@@ -62,8 +65,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
             <TooltipContent>
               <p className="font-mono text-xs">{folioFiscal}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 17,
@@ -74,8 +76,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
     cell: ({ row }) => {
       const concepto = row.getValue("concepto") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[200px] truncate font-medium">
                 {concepto}
@@ -84,8 +85,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
             <TooltipContent>
               <p className="max-w-xs">{concepto}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     enableSorting: true,
@@ -97,8 +97,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
     cell: ({ row }) => {
       const ingreso = row.original;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[150px] truncate">{ingreso.cliente}</div>
             </TooltipTrigger>
@@ -112,8 +111,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
                 )}
               </div>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 12,
@@ -209,10 +207,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
     header: "Cantidad",
     cell: ({ row }) => {
       const cantidad = row.getValue("cantidad") as number;
-      const formatted = new Intl.NumberFormat("es-MX", {
-        style: "currency",
-        currency: "MXN",
-      }).format(cantidad);
+      const formatted = currencyFormatter.format(cantidad);
       return <div className="font-semibold text-green-600">{formatted}</div>;
     },
     enableSorting: true,
@@ -308,8 +303,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
     cell: ({ row }) => {
       const clienteProyecto = row.getValue("clienteProyecto") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[120px] truncate font-mono text-xs">
                 {clienteProyecto}
@@ -318,8 +312,7 @@ export const columns: ColumnDef<IngresoDto>[] = [
             <TooltipContent>
               <p className="font-mono text-xs">{clienteProyecto}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 17,

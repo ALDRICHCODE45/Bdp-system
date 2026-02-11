@@ -48,4 +48,5 @@ export interface ClienteProveedorRepository {
   findById(data: { id: string }): Promise<ClienteProveedorEntity | null>;
   findByRfcAndTipo(data: { rfc: string; tipo: string }): Promise<boolean>;
   getAll(): Promise<ClienteProveedorEntity[]>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ClienteProveedorEntity[]; totalCount: number }>;
 }

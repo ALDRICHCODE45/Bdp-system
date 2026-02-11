@@ -18,9 +18,6 @@ export const useDeleteFactura = () => {
       await queryClient.invalidateQueries({
         queryKey: ["facturas"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["facturas"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al eliminar factura");

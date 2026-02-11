@@ -78,6 +78,14 @@ export interface PaginationConfig {
   pageSizeOptions?: number[];
   showPageSizeSelector?: boolean;
   showPaginationInfo?: boolean;
+  // Server-side pagination
+  manualPagination?: boolean;
+  pageCount?: number;
+  totalCount?: number;
+  onPaginationChange?: (pagination: {
+    pageIndex: number;
+    pageSize: number;
+  }) => void;
 }
 
 // Configuración de la tabla
@@ -91,4 +99,9 @@ export interface TableConfig<TData> {
   enableRowSelection?: boolean;
   isLoading?: boolean;
   skeletonRows?: number;
+  // Server-side sorting
+  manualSorting?: boolean;
+  onSortingChange?: (
+    sorting: import("@tanstack/react-table").SortingState
+  ) => void;
 }

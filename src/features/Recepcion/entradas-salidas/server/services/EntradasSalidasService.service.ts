@@ -120,4 +120,13 @@ export class EntradasSalidasService {
       );
     }
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: EntradasSalidasDTO[]; totalCount: number }, Error>> {
+    try {
+      const result = await this.entradasSalidasRepository.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error("Error al obtener entradas/salidas paginadas"));
+    }
+  }
 }

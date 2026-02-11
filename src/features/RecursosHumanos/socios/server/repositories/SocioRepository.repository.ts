@@ -34,4 +34,5 @@ export interface SocioRepository {
     socioId: string,
   ): Promise<{ correo: string; name: string; id: string }[] | undefined>;
   countColaboradores(data: { id: string }): Promise<number>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: SocioEntity[]; totalCount: number }>;
 }

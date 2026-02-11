@@ -100,4 +100,32 @@ export class PrismaSocioRepository implements SocioRepository {
       where: { socioId: data.id },
     });
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: import("./SocioRepository.repository").SocioEntity[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [socios, totalCount] = await Promise.all([
+      this.prisma.socio.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          _count: {
+            select: { colaboradores: true },
+          },
+        },
+      }),
+      this.prisma.socio.count(),
+    ]);
+
+    const data = socios.map((socio) => ({
+      ...socio,
+      numeroEmpleados: socio._count?.colaboradores ?? 0,
+    }));
+
+    return { data, totalCount };
+  }
 }

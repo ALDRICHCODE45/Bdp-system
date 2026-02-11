@@ -12,4 +12,5 @@ export interface RoleRepository {
   update(data: UpdateRoleDto): Promise<Role>;
   delete(data: { id: string }): Promise<void>;
   hasUsers(data: { id: string }): Promise<boolean>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: Role[]; totalCount: number }>;
 }

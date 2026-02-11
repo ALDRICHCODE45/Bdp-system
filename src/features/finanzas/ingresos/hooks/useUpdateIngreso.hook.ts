@@ -18,9 +18,6 @@ export const useUpdateIngreso = () => {
       await queryClient.invalidateQueries({
         queryKey: ["ingresos"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["ingresos"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al actualizar ingreso");

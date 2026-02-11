@@ -18,9 +18,6 @@ export const useDeleteEgreso = () => {
       await queryClient.invalidateQueries({
         queryKey: ["egresos"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["egresos"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al eliminar egreso");

@@ -31,13 +31,7 @@ export const useCreateRoleForm = () => {
         throw new Error(result.error || "Error al crear rol");
       }
 
-      // Invalidar y refetchear queries de lista de roles para asegurar datos actualizados
       await queryClient.invalidateQueries({
-        queryKey: ["roles"],
-      });
-
-      // Forzar refetch inmediato de la query de roles para actualizar componentes activos
-      await queryClient.refetchQueries({
         queryKey: ["roles"],
       });
 

@@ -18,9 +18,6 @@ export const useUpdateEgreso = () => {
       await queryClient.invalidateQueries({
         queryKey: ["egresos"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["egresos"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al actualizar egreso");

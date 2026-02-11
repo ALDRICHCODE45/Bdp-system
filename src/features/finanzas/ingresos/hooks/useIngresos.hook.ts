@@ -1,17 +1,18 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { getAllIngresosAction } from "../server/actions/getAllIngresosAction";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { getPaginatedIngresosAction } from "../server/actions/getPaginatedIngresosAction";
+import { PaginationParams } from "@/core/shared/types/pagination.types";
 
-export const useIngresos = () => {
+export const useIngresos = (params: PaginationParams) => {
   return useQuery({
-    queryKey: ["ingresos"],
+    queryKey: ["ingresos", params.page, params.pageSize, params.sortBy, params.sortOrder],
     queryFn: async () => {
-      const result = await getAllIngresosAction();
-      if (!result.ok || !result.data) {
+      const result = await getPaginatedIngresosAction(params);
+      if (!result.ok) {
         throw new Error(result.error || "Error al cargar ingresos");
       }
       return result.data;
     },
+    placeholderData: keepPreviousData,
   });
 };
-

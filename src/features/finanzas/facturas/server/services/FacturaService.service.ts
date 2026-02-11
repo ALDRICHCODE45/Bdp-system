@@ -280,4 +280,13 @@ export class FacturaService {
       );
     }
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: FacturaEntity[]; totalCount: number }, Error>> {
+    try {
+      const result = await this.facturaRepository.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error("Error al obtener facturas paginadas"));
+    }
+  }
 }

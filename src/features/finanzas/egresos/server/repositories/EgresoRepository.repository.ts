@@ -85,5 +85,6 @@ export interface EgresoRepository {
   findById(data: { id: string }): Promise<EgresoEntity | null>;
   findByFolioFiscal(folioFiscal: string): Promise<boolean>;
   getAll(): Promise<EgresoEntity[]>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: EgresoEntity[]; totalCount: number }>;
 }
 

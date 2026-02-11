@@ -88,4 +88,13 @@ export class RoleService {
     await this.roleRepository.delete({ id });
     return Ok(true);
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<import("@/core/shared/result/result").Result<{ data: import("@prisma/client").Role[]; totalCount: number }, Error>> {
+    try {
+      const result = await this.roleRepository.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error("Error al obtener roles paginados"));
+    }
+  }
 }

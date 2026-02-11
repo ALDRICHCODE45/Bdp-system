@@ -27,9 +27,12 @@ export const DataTablePagination = <TData,>({
   config,
   table,
 }: DataTablePaginationProps<TData>) => {
+  const isManualPagination = !!config.pagination?.manualPagination;
   const pageCount = table.getPageCount();
   const currentPage = table.getState().pagination.pageIndex + 1;
-  const totalRows = table.getRowCount();
+  const totalRows = isManualPagination
+    ? (config.pagination?.totalCount ?? 0)
+    : table.getRowCount();
   const pageSize = table.getState().pagination.pageSize;
   const startRow =
     totalRows === 0 ? 0 : table.getState().pagination.pageIndex * pageSize + 1;

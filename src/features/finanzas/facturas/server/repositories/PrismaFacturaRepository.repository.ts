@@ -159,5 +159,29 @@ export class PrismaFacturaRepository implements FacturaRepository {
 
     return facturas;
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: FacturaEntity[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.factura.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          clienteProveedorRef: true,
+          ingresadoPorRef: true,
+          creadoPorRef: true,
+          autorizadoPorRef: true,
+        },
+      }),
+      this.prisma.factura.count(),
+    ]);
+
+    return { data, totalCount };
+  }
 }
 

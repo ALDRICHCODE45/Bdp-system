@@ -6,7 +6,6 @@ import { Badge } from "@/core/shared/ui/badge";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/core/shared/ui/tooltip";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
@@ -14,6 +13,11 @@ import { FacturaRowActions } from "./forms/FacturaRowActions";
 import { ViewNotesColumn } from "./columns/ViewNotesColumn";
 import { ViewAddressColumn } from "./columns/ViewAddressColumn";
 import { UploadFacturaColumn } from "./columns/UploadFacturaColumn";
+
+const currencyFormatter = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+});
 
 export const columns: ColumnDef<FacturaDto>[] = [
   {
@@ -47,8 +51,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const numeroFactura = row.getValue("numeroFactura") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild className="flex justify-center">
               <div className="max-w-[100px] truncate font-mono text-sm">
                 {numeroFactura}
@@ -57,8 +60,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
             <TooltipContent>
               <p className="font-mono text-xs">{numeroFactura}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 10,
@@ -69,8 +71,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const folioFiscal = row.getValue("folioFiscal") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[120px] truncate font-mono text-sm">
                 {folioFiscal}
@@ -79,8 +80,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
             <TooltipContent>
               <p className="font-mono text-xs">{folioFiscal}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 10,
@@ -91,16 +91,14 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const nombre = row.getValue("clienteProveedor") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild className="flex justify-center">
               <div className="max-w-[150px] truncate">{nombre}</div>
             </TooltipTrigger>
             <TooltipContent>
               <p>{nombre}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 10,
@@ -116,16 +114,14 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const concepto = row.getValue("concepto") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[200px] truncate">{concepto}</div>
             </TooltipTrigger>
             <TooltipContent>
               <p>{concepto}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 15,
@@ -135,10 +131,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     header: "Monto",
     cell: ({ row }) => {
       const monto = row.getValue("monto") as number;
-      const formatted = new Intl.NumberFormat("es-MX", {
-        style: "currency",
-        currency: "MXN",
-      }).format(monto);
+      const formatted = currencyFormatter.format(monto);
       return <div className="font-medium">{formatted}</div>;
     },
     size: 10,
@@ -155,8 +148,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const periodo = row.getValue("periodo") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[80px] truncate font-mono text-xs">
                 {periodo}
@@ -165,8 +157,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
             <TooltipContent>
               <p className="font-mono text-xs">{periodo}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 7,
@@ -315,8 +306,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const rfc = row.getValue("rfcEmisor") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[100px] truncate font-mono text-xs">
                 {rfc}
@@ -325,8 +315,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
             <TooltipContent>
               <p className="font-mono text-xs">{rfc}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 9,
@@ -342,8 +331,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const rfc = row.getValue("rfcReceptor") as string;
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[100px] truncate font-mono text-xs">
                 {rfc}
@@ -352,8 +340,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
             <TooltipContent>
               <p className="font-mono text-xs">{rfc}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 9,
@@ -407,16 +394,14 @@ export const columns: ColumnDef<FacturaDto>[] = [
         return <div className="text-xs text-muted-foreground">-</div>;
       }
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[100px] truncate text-xs">{creador}</div>
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-xs">{creador}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 9,
@@ -435,8 +420,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
         return <div className="text-xs text-muted-foreground">-</div>;
       }
       return (
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="max-w-[100px] truncate text-xs">
                 {autorizador}
@@ -445,8 +429,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
             <TooltipContent>
               <p className="text-xs">{autorizador}</p>
             </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        </Tooltip>
       );
     },
     size: 9,

@@ -18,9 +18,6 @@ export const useEditSocio = () => {
       await queryClient.invalidateQueries({
         queryKey: ["socios"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["socios"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al actualizar socio");

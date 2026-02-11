@@ -51,4 +51,13 @@ export class UserService {
 
     return Ok(toUserDtoArray(users));
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<import("@/core/shared/result/result").Result<{ data: import("../mappers/userMapper").UserWithRoles[]; totalCount: number }, Error>> {
+    try {
+      const result = await this.userRepository.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error("Error al obtener usuarios paginados"));
+    }
+  }
 }

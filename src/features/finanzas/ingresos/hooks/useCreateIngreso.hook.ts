@@ -18,9 +18,6 @@ export const useCreateIngreso = () => {
       await queryClient.invalidateQueries({
         queryKey: ["ingresos"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["ingresos"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al crear ingreso");

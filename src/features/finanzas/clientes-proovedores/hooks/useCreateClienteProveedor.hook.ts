@@ -18,9 +18,6 @@ export const useCreateClienteProveedor = () => {
       await queryClient.invalidateQueries({
         queryKey: ["clientesProveedores"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["clientesProveedores"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al crear cliente/proveedor");

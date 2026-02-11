@@ -183,6 +183,9 @@ model EntradasSalidas {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([fecha])
+  @@index([createdAt])
 }
 
 model User {
@@ -580,4 +583,6 @@ model Asistencia {
   colaborador Colaborador    @relation(fields: [correo], references: [correo], onDelete: Cascade)
 
   @@index([correo])
+  @@index([fecha])
+  @@index([tipo])
 }

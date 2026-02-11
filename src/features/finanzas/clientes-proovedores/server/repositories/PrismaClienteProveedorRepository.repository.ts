@@ -104,6 +104,28 @@ export class PrismaClienteProveedorRepository
     return !!clienteProveedor;
   }
 
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ClienteProveedorEntity[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.clienteProveedor.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          socio: true,
+          ingresadoPorRef: true,
+        },
+      }),
+      this.prisma.clienteProveedor.count(),
+    ]);
+
+    return { data, totalCount };
+  }
+
   async getAll(): Promise<ClienteProveedorEntity[]> {
     return await this.prisma.clienteProveedor.findMany({
       orderBy: {

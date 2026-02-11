@@ -18,9 +18,6 @@ export const useEditColaborador = () => {
       await queryClient.invalidateQueries({
         queryKey: ["colaboradores"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["colaboradores"],
-      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al actualizar colaborador");

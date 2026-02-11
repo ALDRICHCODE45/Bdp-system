@@ -1,4 +1,6 @@
 "use client";
+import { useMemo, useState } from "react";
+import { SortingState } from "@tanstack/react-table";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { columns } from "../components/EgresosTableColumns";
 import { EgresosTableConfig } from "../components/EgresosTableConfig";
@@ -7,9 +9,9 @@ import { useModalState } from "@/core/shared/hooks/useModalState";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
-import { EgresoDto } from "../server/dtos/EgresoDto.dto";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { useEgresos } from "../hooks/useEgresos.hook";
 
 const CreateEgresoSheet = dynamic(
   () =>
@@ -22,12 +24,17 @@ const CreateEgresoSheet = dynamic(
   }
 );
 
-interface EgresosTablePageProps {
-  tableData: EgresoDto[];
-}
-
-export const EgresosTablePage = ({ tableData }: EgresosTablePageProps) => {
+export const EgresosTablePage = () => {
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [sorting, setSorting] = useState<SortingState>([]);
   const { isOpen, openModal, closeModal } = useModalState();
+
+  const { data, isPending, isFetching } = useEgresos({
+    page: pagination.pageIndex + 1,
+    pageSize: pagination.pageSize,
+    sortBy: sorting[0]?.id,
+    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+  });
 
   const handleAdd = () => {
     openModal();
@@ -37,6 +44,19 @@ export const EgresosTablePage = ({ tableData }: EgresosTablePageProps) => {
   const tableConfig = createTableConfig(EgresosTableConfig, {
     onAdd: handleAdd,
   });
+
+  const serverConfig = useMemo(() => ({
+    ...tableConfig,
+    pagination: {
+      ...tableConfig.pagination,
+      manualPagination: true,
+      pageCount: data?.pageCount ?? 0,
+      totalCount: data?.totalCount ?? 0,
+      onPaginationChange: setPagination,
+    },
+    manualSorting: true,
+    onSortingChange: setSorting,
+  }), [tableConfig, data?.pageCount, data?.totalCount]);
 
   return (
     <div className="container mx-auto py-6">
@@ -50,7 +70,12 @@ export const EgresosTablePage = ({ tableData }: EgresosTablePageProps) => {
           PermissionActions.egresos.gestionar,
         ]}
       >
-        <DataTable columns={columns} data={tableData} config={tableConfig} />
+        <DataTable
+          columns={columns}
+          data={data?.data ?? []}
+          config={serverConfig}
+          isLoading={isPending && !isFetching}
+        />
       </PermissionGuard>
 
       {/* Modal con lazy loading */}

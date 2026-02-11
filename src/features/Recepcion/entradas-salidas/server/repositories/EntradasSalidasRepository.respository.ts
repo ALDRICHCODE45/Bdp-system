@@ -12,4 +12,5 @@ export interface EntradasSalidasRepository {
   }): Promise<EntradasSalidasDTO | null>;
   getAll(): Promise<EntradasSalidasDTO[]>;
   registrarSalida(data: { id: string; hora_salida: Date }): Promise<EntradasSalidasDTO>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: EntradasSalidasDTO[]; totalCount: number }>;
 }

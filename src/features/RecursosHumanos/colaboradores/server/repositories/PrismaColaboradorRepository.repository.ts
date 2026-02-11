@@ -168,6 +168,33 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
     });
   }
 
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { createdAt: "desc" as const };
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.colaborador.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+        include: {
+          socio: {
+            select: {
+              id: true,
+              nombre: true,
+              email: true,
+            },
+          },
+        },
+      }),
+      this.prisma.colaborador.count(),
+    ]);
+
+    return { data, totalCount };
+  }
+
   async findBySocioId(data: {
     socioId: string;
   }): Promise<ColaboradorWithSocio[]> {

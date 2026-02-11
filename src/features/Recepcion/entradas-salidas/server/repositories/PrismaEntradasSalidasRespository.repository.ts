@@ -95,4 +95,22 @@ export class PrismaEntradasSalidasRepository
 
     return toEntradaSalidaDTO(prismaEntradasSalidas);
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: EntradasSalidasDTO[]; totalCount: number }> {
+    const skip = (params.page - 1) * params.pageSize;
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder || "desc" }
+      : { fecha: "desc" as const };
+
+    const [rawData, totalCount] = await Promise.all([
+      this.prisma.entradasSalidas.findMany({
+        skip,
+        take: params.pageSize,
+        orderBy,
+      }),
+      this.prisma.entradasSalidas.count(),
+    ]);
+
+    return { data: toEntradasSalidasDTOArray(rawData), totalCount };
+  }
 }

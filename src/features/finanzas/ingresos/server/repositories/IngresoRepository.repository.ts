@@ -70,5 +70,6 @@ export interface IngresoRepository {
   findById(data: { id: string }): Promise<IngresoEntity | null>;
   findByFolioFiscal(folioFiscal: string): Promise<boolean>;
   getAll(): Promise<IngresoEntity[]>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: IngresoEntity[]; totalCount: number }>;
 }
 

@@ -17,9 +17,6 @@ export const useDeleteSocio = () => {
       await queryClient.invalidateQueries({
         queryKey: ["socios"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["socios"],
-      });
       // También invalidar colaboradores por si tenían este socio asignado
       await queryClient.invalidateQueries({
         queryKey: ["colaboradores"],

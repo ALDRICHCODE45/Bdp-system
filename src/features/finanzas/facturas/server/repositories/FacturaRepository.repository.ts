@@ -77,5 +77,6 @@ export interface FacturaRepository {
   findByFolioFiscal(folioFiscal: string): Promise<boolean>;
   findByOrigenId(origenId: string): Promise<FacturaEntity[]>;
   getAll(): Promise<FacturaEntity[]>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: FacturaEntity[]; totalCount: number }>;
 }
 

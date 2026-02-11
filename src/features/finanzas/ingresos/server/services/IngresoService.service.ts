@@ -290,5 +290,14 @@ export class IngresoService {
       );
     }
   }
+
+  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: IngresoEntity[]; totalCount: number }, Error>> {
+    try {
+      const result = await this.ingresoRepository.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error("Error al obtener ingresos paginados"));
+    }
+  }
 }
 

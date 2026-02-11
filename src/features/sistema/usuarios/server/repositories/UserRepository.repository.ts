@@ -26,4 +26,5 @@ export interface UserRepository {
   }): Promise<UserWithRoles | null>;
   findById(data: { id: string }): Promise<UserWithRoles | null>;
   getAllUsers(): Promise<UserWithRoles[]>;
+  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: UserWithRoles[]; totalCount: number }>;
 }

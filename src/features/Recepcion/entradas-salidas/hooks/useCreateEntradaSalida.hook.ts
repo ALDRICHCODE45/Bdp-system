@@ -23,9 +23,6 @@ export const useCreateEntradaSalida = () => {
       await queryClient.invalidateQueries({
         queryKey: ["entradas-salidas"],
       });
-      await queryClient.refetchQueries({
-        queryKey: ["entradas-salidas"],
-      });
     },
     onError: (error: Error) => {
       showToast({
