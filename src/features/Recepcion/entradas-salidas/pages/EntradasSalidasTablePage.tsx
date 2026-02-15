@@ -26,9 +26,17 @@ const CreateEntradaSalidaSheet = dynamic(
 );
 
 export const EntradasYSalidasTablePage = () => {
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
-  const [sorting, setSorting] = useState<SortingState>([]);
   const { isOpen, openModal, closeModal } = useModalState();
+
+  const tableConfig = createTableConfig(EntradasSalidasTableConfig, {
+    onAdd: () => openModal(),
+  });
+
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: tableConfig.pagination?.defaultPageSize ?? 10,
+  });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const { data, isPending, isFetching } = useEntradasSalidas({
     page: pagination.pageIndex + 1,
@@ -37,26 +45,21 @@ export const EntradasYSalidasTablePage = () => {
     sortOrder: sorting[0]?.desc ? "desc" : "asc",
   });
 
-  const handleAdd = () => {
-    openModal();
-  };
-
-  const tableConfig = createTableConfig(EntradasSalidasTableConfig, {
-    onAdd: handleAdd,
-  });
-
-  const serverConfig = useMemo(() => ({
-    ...tableConfig,
-    pagination: {
-      ...tableConfig.pagination,
-      manualPagination: true,
-      pageCount: data?.pageCount ?? 0,
-      totalCount: data?.totalCount ?? 0,
-      onPaginationChange: setPagination,
-    },
-    manualSorting: true,
-    onSortingChange: setSorting,
-  }), [tableConfig, data?.pageCount, data?.totalCount]);
+  const serverConfig = useMemo(
+    () => ({
+      ...tableConfig,
+      pagination: {
+        ...tableConfig.pagination,
+        manualPagination: true,
+        pageCount: data?.pageCount ?? 0,
+        totalCount: data?.totalCount ?? 0,
+        onPaginationChange: setPagination,
+      },
+      manualSorting: true,
+      onSortingChange: setSorting,
+    }),
+    [tableConfig, data?.pageCount, data?.totalCount],
+  );
 
   return (
     <div className="container mx-auto py-6">

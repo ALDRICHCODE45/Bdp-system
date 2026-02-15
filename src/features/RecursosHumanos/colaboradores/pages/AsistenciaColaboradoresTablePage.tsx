@@ -10,19 +10,23 @@ import { useRouter } from "next/navigation";
 import { useAsistencias } from "../../asistencias/hooks/useAsistencias.hook";
 
 export const AsistenciaColaboradoresTablePage = () => {
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
-  const [sorting, setSorting] = useState<SortingState>([]);
   const router = useRouter();
+
+  const tableConfig = createTableConfig(AsistenciasTableConfig, {
+    onAdd: () => router.push("/register-qr-entry"),
+  });
+
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: tableConfig.pagination?.defaultPageSize ?? 10,
+  });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const { data, isPending, isFetching } = useAsistencias({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
     sortBy: sorting[0]?.id,
     sortOrder: sorting[0]?.desc ? "desc" : "asc",
-  });
-
-  const tableConfig = createTableConfig(AsistenciasTableConfig, {
-    onAdd: () => router.push("/register-qr-entry"),
   });
 
   const serverConfig = useMemo(() => ({

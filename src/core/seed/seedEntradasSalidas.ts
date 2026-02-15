@@ -1,29 +1,70 @@
 import prisma from "@/core/lib/prisma";
 
 const visitantes = [
-  "Juan Perez", "Maria Garcia", "Carlos Lopez", "Ana Martinez", "Pedro Sanchez",
-  "Laura Rodriguez", "Miguel Torres", "Sofia Ramirez", "Diego Herrera", "Valentina Cruz",
-  "Andres Morales", "Camila Flores", "Fernando Diaz", "Isabella Vargas", "Roberto Mendoza",
-  "Daniela Castro", "Jorge Reyes", "Patricia Gutierrez", "Luis Ortega", "Gabriela Navarro",
+  "Juan Perez",
+  "Maria Garcia",
+  "Carlos Lopez",
+  "Ana Martinez",
+  "Pedro Sanchez",
+  "Laura Rodriguez",
+  "Miguel Torres",
+  "Sofia Ramirez",
+  "Diego Herrera",
+  "Valentina Cruz",
+  "Andres Morales",
+  "Camila Flores",
+  "Fernando Diaz",
+  "Isabella Vargas",
+  "Roberto Mendoza",
+  "Daniela Castro",
+  "Jorge Reyes",
+  "Patricia Gutierrez",
+  "Luis Ortega",
+  "Gabriela Navarro",
 ];
 
 const destinatarios = [
-  "Gerencia General", "Recursos Humanos", "Contabilidad", "Direccion Financiera",
-  "Area de Proyectos", "Departamento Legal", "Soporte Tecnico", "Administracion",
-  "Recepcion", "Sala de Reuniones",
+  "Gerencia General",
+  "Recursos Humanos",
+  "Contabilidad",
+  "Direccion Financiera",
+  "Area de Proyectos",
+  "Departamento Legal",
+  "Soporte Tecnico",
+  "Administracion",
+  "Recepcion",
+  "Sala de Reuniones",
 ];
 
 const motivos = [
-  "Reunion de trabajo", "Entrega de documentos", "Visita programada",
-  "Mantenimiento de equipos", "Entrevista de trabajo", "Auditoria",
-  "Capacitacion", "Firma de contrato", "Consulta general", "Entrega de paquete",
-  "Reparacion de instalaciones", "Revision de proyecto", "Presentacion comercial",
-  "Servicio de limpieza", "Inspeccion de seguridad",
+  "Reunion de trabajo",
+  "Entrega de documentos",
+  "Visita programada",
+  "Mantenimiento de equipos",
+  "Entrevista de trabajo",
+  "Auditoria",
+  "Capacitacion",
+  "Firma de contrato",
+  "Consulta general",
+  "Entrega de paquete",
+  "Reparacion de instalaciones",
+  "Revision de proyecto",
+  "Presentacion comercial",
+  "Servicio de limpieza",
+  "Inspeccion de seguridad",
 ];
 
 const correspondencias = [
-  null, "Sobre manila", "Paquete pequeno", "Caja", "Documentos legales",
-  "Factura impresa", null, "Carta certificada", null, "Material de oficina",
+  null,
+  "Sobre manila",
+  "Paquete pequeno",
+  "Caja",
+  "Documentos legales",
+  "Factura impresa",
+  null,
+  "Carta certificada",
+  null,
+  "Material de oficina",
 ];
 
 function randomItem<T>(arr: T[]): T {
@@ -40,12 +81,19 @@ function randomPhone(): string | null {
 function randomDate(daysBack: number): Date {
   const now = new Date();
   const past = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
-  return new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
+  return new Date(
+    past.getTime() + Math.random() * (now.getTime() - past.getTime()),
+  );
 }
 
 function randomEntryTime(fecha: Date): Date {
   const entry = new Date(fecha);
-  entry.setHours(7 + Math.floor(Math.random() * 4), Math.floor(Math.random() * 60), 0, 0);
+  entry.setHours(
+    7 + Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 60),
+    0,
+    0,
+  );
   return entry;
 }
 

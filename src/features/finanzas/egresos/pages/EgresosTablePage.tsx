@@ -25,24 +25,23 @@ const CreateEgresoSheet = dynamic(
 );
 
 export const EgresosTablePage = () => {
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
-  const [sorting, setSorting] = useState<SortingState>([]);
   const { isOpen, openModal, closeModal } = useModalState();
+
+  const tableConfig = createTableConfig(EgresosTableConfig, {
+    onAdd: () => openModal(),
+  });
+
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: tableConfig.pagination?.defaultPageSize ?? 10,
+  });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const { data, isPending, isFetching } = useEgresos({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
     sortBy: sorting[0]?.id,
     sortOrder: sorting[0]?.desc ? "desc" : "asc",
-  });
-
-  const handleAdd = () => {
-    openModal();
-  };
-
-  // Crear configuración con handlers
-  const tableConfig = createTableConfig(EgresosTableConfig, {
-    onAdd: handleAdd,
   });
 
   const serverConfig = useMemo(() => ({
