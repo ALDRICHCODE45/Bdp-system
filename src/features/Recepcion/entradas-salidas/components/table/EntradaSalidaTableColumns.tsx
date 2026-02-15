@@ -4,6 +4,11 @@ import { EntradasSalidasDTO } from "../../server/dtos/EntradasSalidasDto.dto";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { EntradaSalidaRowActions } from "../forms/EntradaSalidaRowActions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/core/shared/ui/tooltip";
 
 export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
   {
@@ -18,7 +23,19 @@ export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
     header: "Motivo",
     accessorKey: "motivo",
     cell: ({ row }) => (
-      <div className="text-sm truncate">{row.getValue("motivo")}</div>
+      <Tooltip>
+        <TooltipTrigger>
+          <div
+            className="text-sm truncate max-w-[200px]"
+            title={row.getValue("motivo")}
+          >
+            {row.getValue("motivo")}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[300px]">
+          <p>{row.getValue("motivo")}</p>
+        </TooltipContent>
+      </Tooltip>
     ),
     size: 25,
   },
