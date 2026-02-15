@@ -11,7 +11,7 @@ export const getPaginatedEntradasSalidasAction = async (
   const pageSize = Math.min(Math.max(1, params.pageSize), 100);
 
   const service = makeEntradasSalidasService({ prisma });
-  const result = await service.getPaginated({ page, pageSize, sortBy: params.sortBy, sortOrder: params.sortOrder });
+  const result = await service.getPaginated({ page, pageSize, sortBy: params.sortBy, sortOrder: params.sortOrder, search: params.search });
 
   if (!result.ok) {
     return { ok: false, error: result.error.message };

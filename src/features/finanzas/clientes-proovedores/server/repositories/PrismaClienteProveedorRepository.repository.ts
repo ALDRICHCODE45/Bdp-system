@@ -11,6 +11,11 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
 
+const clienteProveedorIncludes = {
+  socio: { select: { id: true, nombre: true } },
+  ingresadoPorRef: { select: { name: true } },
+} as const;
+
 export class PrismaClienteProveedorRepository
   implements ClienteProveedorRepository
 {
@@ -39,10 +44,7 @@ export class PrismaClienteProveedorRepository
         socioId: data.socioId,
         ingresadoPor: data.ingresadoPor,
       },
-      include: {
-        socio: true,
-        ingresadoPorRef: true,
-      },
+      include: clienteProveedorIncludes,
     });
   }
 
@@ -67,9 +69,7 @@ export class PrismaClienteProveedorRepository
         notas: data.notas,
         socioId: data.socioId,
       },
-      include: {
-        socio: true,
-      },
+      include: clienteProveedorIncludes,
     });
   }
 
@@ -82,10 +82,7 @@ export class PrismaClienteProveedorRepository
   async findById(data: { id: string }): Promise<ClienteProveedorEntity | null> {
     return await this.prisma.clienteProveedor.findUnique({
       where: { id: data.id },
-      include: {
-        socio: true,
-        ingresadoPorRef: true,
-      },
+      include: clienteProveedorIncludes,
     });
   }
 
@@ -131,10 +128,7 @@ export class PrismaClienteProveedorRepository
       orderBy: {
         createdAt: "desc",
       },
-      include: {
-        socio: true,
-        ingresadoPorRef: true,
-      },
+      include: clienteProveedorIncludes,
     });
   }
 }

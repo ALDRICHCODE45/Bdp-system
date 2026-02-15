@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { SortingState } from "@tanstack/react-table";
+import { useEffect, useMemo, useState } from "react";
+import { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
@@ -13,6 +13,7 @@ import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { useEntradasSalidas } from "../hooks/useEntradasSalidas.hook";
+import { useDebounce } from "@/core/shared/hooks/use-debounce";
 
 const CreateEntradaSalidaSheet = dynamic(
   () =>
@@ -37,12 +38,22 @@ export const EntradasYSalidasTablePage = () => {
     pageSize: tableConfig.pagination?.defaultPageSize ?? 10,
   });
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const searchValue =
+    (columnFilters.find((f) => f.id === "visitante")?.value as string) ?? "";
+  const debouncedSearch = useDebounce(searchValue, 300);
+
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [debouncedSearch]);
 
   const { data, isPending, isFetching } = useEntradasSalidas({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
     sortBy: sorting[0]?.id,
     sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    search: debouncedSearch || undefined,
   });
 
   const serverConfig = useMemo(
@@ -57,6 +68,8 @@ export const EntradasYSalidasTablePage = () => {
       },
       manualSorting: true,
       onSortingChange: setSorting,
+      manualFiltering: true,
+      onColumnFiltersChange: setColumnFilters,
     }),
     [tableConfig, data?.pageCount, data?.totalCount],
   );

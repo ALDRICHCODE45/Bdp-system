@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { EntradasSalidasDTO } from "../dtos/EntradasSalidasDto.dto";
 import { CreateEntradSalidaArgs } from "../dtos/CreateEntradasSalidas.dto";
 import { UpdateEntradaSalidaArgs } from "../dtos/UpdateEntadasSalidas.dto";
@@ -102,13 +102,23 @@ export class PrismaEntradasSalidasRepository
       ? { [params.sortBy]: params.sortOrder || "desc" }
       : { fecha: "desc" as const };
 
+    const where: Prisma.EntradasSalidasWhereInput = {};
+    if (params.search) {
+      where.OR = [
+        { visitante: { contains: params.search, mode: "insensitive" } },
+        { destinatario: { contains: params.search, mode: "insensitive" } },
+        { motivo: { contains: params.search, mode: "insensitive" } },
+      ];
+    }
+
     const [rawData, totalCount] = await Promise.all([
       this.prisma.entradasSalidas.findMany({
         skip,
         take: params.pageSize,
         orderBy,
+        where,
       }),
-      this.prisma.entradasSalidas.count(),
+      this.prisma.entradasSalidas.count({ where }),
     ]);
 
     return { data: toEntradasSalidasDTOArray(rawData), totalCount };

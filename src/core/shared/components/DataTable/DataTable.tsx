@@ -77,10 +77,13 @@ export function DataTable<TData, TValue>({
     skeletonRows: config.skeletonRows ?? 5,
     manualSorting: config.manualSorting,
     onSortingChange: config.onSortingChange,
+    manualFiltering: config.manualFiltering,
+    onColumnFiltersChange: config.onColumnFiltersChange,
   }), [config, isLoadingProp]);
 
   const isManualPagination = !!finalConfig.pagination.manualPagination;
   const isManualSorting = !!finalConfig.manualSorting;
+  const isManualFiltering = !!finalConfig.manualFiltering;
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -122,14 +125,22 @@ export function DataTable<TData, TValue>({
         finalConfig.pagination.onPaginationChange(newPagination);
       }
     },
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: (updater) => {
+      setColumnFilters(updater);
+      if (finalConfig.onColumnFiltersChange) {
+        const newFilters =
+          typeof updater === "function" ? updater(columnFilters) : updater;
+        finalConfig.onColumnFiltersChange(newFilters);
+      }
+    },
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-    getFilteredRowModel: isManualPagination
+    manualFiltering: isManualFiltering,
+    getFilteredRowModel: (isManualPagination || isManualFiltering)
       ? undefined
       : getFilteredRowModel(),
-    getFacetedUniqueValues: isManualPagination
+    getFacetedUniqueValues: (isManualPagination || isManualFiltering)
       ? undefined
       : getFacetedUniqueValues(),
     enableRowSelection: finalConfig.enableRowSelection,

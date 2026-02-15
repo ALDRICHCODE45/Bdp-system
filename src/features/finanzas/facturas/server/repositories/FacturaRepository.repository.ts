@@ -1,10 +1,10 @@
 import { Factura, ClienteProveedor, User, Socio } from "@prisma/client";
 
 export type FacturaEntity = Factura & {
-  clienteProveedorRef?: ClienteProveedor | null;
-  ingresadoPorRef?: User | null;
-  creadoPorRef?: Socio | null;
-  autorizadoPorRef?: Socio | null;
+  clienteProveedorRef?: Pick<ClienteProveedor, 'id' | 'nombre' | 'rfc' | 'direccion'> | null;
+  ingresadoPorRef?: Pick<User, 'name'> | null;
+  creadoPorRef?: Pick<Socio, 'nombre'> | null;
+  autorizadoPorRef?: Pick<Socio, 'nombre'> | null;
 };
 
 export type CreateFacturaArgs = {

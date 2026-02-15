@@ -19,6 +19,12 @@ const currencyFormatter = new Intl.NumberFormat("es-MX", {
   currency: "MXN",
 });
 
+const dateFormatter = new Intl.DateTimeFormat("es-MX", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
+
 export const columns: ColumnDef<FacturaDto>[] = [
   {
     id: "select",
@@ -230,11 +236,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     header: "Fecha Emisión",
     cell: ({ row }) => {
       const fecha = row.getValue("fechaEmision") as string;
-      const formatted = new Intl.DateTimeFormat("es-MX", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }).format(new Date(fecha));
+      const formatted = dateFormatter.format(new Date(fecha));
       return <div className="text-xs">{formatted}</div>;
     },
     size: 9,
@@ -260,11 +262,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     header: "Fecha Vencimiento",
     cell: ({ row }) => {
       const fecha = row.getValue("fechaVencimiento") as string;
-      const formatted = new Intl.DateTimeFormat("es-MX", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }).format(new Date(fecha));
+      const formatted = dateFormatter.format(new Date(fecha));
       return <div className="text-xs">{formatted}</div>;
     },
     size: 9,
@@ -275,11 +273,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const fecha = row.getValue("fechaPago") as string | undefined;
       if (!fecha) return <div className="text-xs text-muted-foreground">-</div>;
-      const formatted = new Intl.DateTimeFormat("es-MX", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }).format(new Date(fecha));
+      const formatted = dateFormatter.format(new Date(fecha));
       return <div className="text-xs">{formatted}</div>;
     },
     size: 9,
@@ -376,11 +370,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
     header: "Fecha Registro",
     cell: ({ row }) => {
       const fecha = row.getValue("fechaRegistro") as string;
-      const formatted = new Intl.DateTimeFormat("es-MX", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }).format(new Date(fecha));
+      const formatted = dateFormatter.format(new Date(fecha));
       return <div className="text-xs">{formatted}</div>;
     },
     size: 9,

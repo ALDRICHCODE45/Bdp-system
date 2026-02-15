@@ -12,6 +12,14 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
 
+const egresoIncludes = {
+  proveedorRef: { select: { id: true, nombre: true, rfc: true } },
+  clienteProyectoRef: { select: { id: true, nombre: true, rfc: true } },
+  ingresadoPorRef: { select: { name: true } },
+  solicitanteRef: { select: { id: true, nombre: true } },
+  autorizadorRef: { select: { id: true, nombre: true } },
+} as const;
+
 export class PrismaEgresoRepository implements EgresoRepository {
   constructor(
     private prisma: PrismaClient | PrismaTransactionClient
@@ -45,13 +53,7 @@ export class PrismaEgresoRepository implements EgresoRepository {
         notas: data.notas,
         ingresadoPor: data.ingresadoPor,
       },
-      include: {
-        proveedorRef: true,
-        clienteProyectoRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: egresoIncludes,
     });
   }
 
@@ -83,13 +85,7 @@ export class PrismaEgresoRepository implements EgresoRepository {
         clienteProyectoId: data.clienteProyectoId ?? null,
         notas: data.notas,
       },
-      include: {
-        proveedorRef: true,
-        clienteProyectoRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: egresoIncludes,
     });
   }
 
@@ -102,13 +98,7 @@ export class PrismaEgresoRepository implements EgresoRepository {
   async findById(data: { id: string }): Promise<EgresoEntity | null> {
     return await this.prisma.egreso.findUnique({
       where: { id: data.id },
-      include: {
-        proveedorRef: true,
-        clienteProyectoRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: egresoIncludes,
     });
   }
 
@@ -126,13 +116,7 @@ export class PrismaEgresoRepository implements EgresoRepository {
       orderBy: {
         createdAt: "desc",
       },
-      include: {
-        proveedorRef: true,
-        clienteProyectoRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: egresoIncludes,
     });
   }
 

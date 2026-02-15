@@ -330,6 +330,8 @@ model Egreso {
   @@index([ingresadoPor])
   @@index([solicitanteId])
   @@index([autorizadorId])
+  @@index([estado, createdAt])
+  @@index([periodo, createdAt])
 }
 
 model EgresoHistorial {
@@ -439,6 +441,8 @@ model Ingreso {
   @@index([ingresadoPor])
   @@index([solicitanteId])
   @@index([autorizadorId])
+  @@index([estado, createdAt])
+  @@index([periodo, createdAt])
 }
 
 model IngresoHistorial {
@@ -500,6 +504,8 @@ model Factura {
   @@index([ingresadoPor])
   @@index([creadoPorId])
   @@index([autorizadoPorId])
+  @@index([estado, createdAt])
+  @@index([periodo, fechaEmision])
 }
 
 model FacturaHistorial {

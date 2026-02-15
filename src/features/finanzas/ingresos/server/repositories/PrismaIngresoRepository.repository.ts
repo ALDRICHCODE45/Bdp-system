@@ -12,6 +12,13 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
 
+const ingresoIncludes = {
+  clienteRef: { select: { id: true, nombre: true, rfc: true } },
+  ingresadoPorRef: { select: { name: true } },
+  solicitanteRef: { select: { id: true, nombre: true } },
+  autorizadorRef: { select: { id: true, nombre: true } },
+} as const;
+
 export class PrismaIngresoRepository implements IngresoRepository {
   constructor(
     private prisma: PrismaClient | PrismaTransactionClient
@@ -44,12 +51,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
         notas: data.notas,
         ingresadoPor: data.ingresadoPor,
       },
-      include: {
-        clienteRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: ingresoIncludes,
     });
   }
 
@@ -80,12 +82,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
         facturaId: data.facturaId,
         notas: data.notas,
       },
-      include: {
-        clienteRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: ingresoIncludes,
     });
   }
 
@@ -98,12 +95,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
   async findById(data: { id: string }): Promise<IngresoEntity | null> {
     return await this.prisma.ingreso.findUnique({
       where: { id: data.id },
-      include: {
-        clienteRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: ingresoIncludes,
     });
   }
 
@@ -121,12 +113,7 @@ export class PrismaIngresoRepository implements IngresoRepository {
       orderBy: {
         createdAt: "desc",
       },
-      include: {
-        clienteRef: true,
-        ingresadoPorRef: true,
-        solicitanteRef: true,
-        autorizadorRef: true,
-      },
+      include: ingresoIncludes,
     });
   }
 

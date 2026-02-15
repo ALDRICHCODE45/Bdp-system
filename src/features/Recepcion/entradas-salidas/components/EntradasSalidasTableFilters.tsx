@@ -5,9 +5,7 @@ import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
 import { Table } from "@tanstack/react-table";
 import { Filter, Search } from "lucide-react";
-//import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
-import { useEntradasSalidasTableFilters } from "../hooks/useEntradasSalidasTableFilters.hook";
 
 interface EntradasSalidasTableFilters extends BaseFilterProps {
   table: Table<unknown>;
@@ -23,9 +21,6 @@ export const EntradasSalidasTableFilters = ({
   addButtonText = "Agregar",
   onAdd,
 }: EntradasSalidasTableFilters) => {
-  const { clearFilters, handleEstadoChange, selectedEstado } =
-    useEntradasSalidasTableFilters(table);
-
   return (
     <>
       <Card className="mb-6 border-0 shadow-md w-full min-w-0 overflow-hidden">
@@ -43,7 +38,7 @@ export const EntradasSalidasTableFilters = ({
               addButtonText={addButtonText}
               buttonTooltipText="Agregar Entrada/Salida"
               onClearFilters={() => {
-                clearFilters();
+                table.getColumn("visitante")?.setFilterValue("");
                 onGlobalFilterChange?.("");
               }}
               onAdd={onAdd}
@@ -62,30 +57,18 @@ export const EntradasSalidasTableFilters = ({
                 <Input
                   id="search"
                   className="w-full pl-9 min-w-0"
-                  placeholder="Buscar Entrada/Salida..."
+                  placeholder="Buscar por visitante, destinatario o motivo..."
                   value={
                     (table.getColumn("visitante")?.getFilterValue() ??
                       "") as string
                   }
                   onChange={(e) => {
-                    table.getColumn("name")?.setFilterValue(e.target.value);
-                    onGlobalFilterChange?.(e.target.value);
+                    table.getColumn("visitante")?.setFilterValue(e.target.value);
                   }}
                 />
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
-
-            {/* Filtro de categoría */}
-
-            {/* <FilterSelect
-              label="Estado"
-              onValueChange={handleEstadoChange}
-              options={estadosUser}
-              value={selectedEstado}
-            /> */}
-
-            {/* Filtro de rango de fechas */}
           </div>
         </CardContent>
       </Card>

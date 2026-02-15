@@ -1,10 +1,10 @@
 import { Ingreso, ClienteProveedor, User, Socio } from "@prisma/client";
 
 export type IngresoEntity = Ingreso & {
-  clienteRef?: ClienteProveedor | null;
-  ingresadoPorRef?: User | null;
-  solicitanteRef?: Socio | null;
-  autorizadorRef?: Socio | null;
+  clienteRef?: Pick<ClienteProveedor, 'id' | 'nombre' | 'rfc'> | null;
+  ingresadoPorRef?: Pick<User, 'name'> | null;
+  solicitanteRef?: Pick<Socio, 'id' | 'nombre'> | null;
+  autorizadorRef?: Pick<Socio, 'id' | 'nombre'> | null;
 };
 
 export type CreateIngresoArgs = {

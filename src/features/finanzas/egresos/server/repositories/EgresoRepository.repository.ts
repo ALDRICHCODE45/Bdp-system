@@ -1,11 +1,11 @@
 import { Egreso, ClienteProveedor, User, Socio } from "@prisma/client";
 
 export type EgresoEntity = Egreso & {
-  proveedorRef?: ClienteProveedor | null;
-  clienteProyectoRef?: ClienteProveedor | null;
-  ingresadoPorRef?: User | null;
-  solicitanteRef?: Socio | null;
-  autorizadorRef?: Socio | null;
+  proveedorRef?: Pick<ClienteProveedor, 'id' | 'nombre' | 'rfc'> | null;
+  clienteProyectoRef?: Pick<ClienteProveedor, 'id' | 'nombre' | 'rfc'> | null;
+  ingresadoPorRef?: Pick<User, 'name'> | null;
+  solicitanteRef?: Pick<Socio, 'id' | 'nombre'> | null;
+  autorizadorRef?: Pick<Socio, 'id' | 'nombre'> | null;
 };
 
 export type CreateEgresoArgs = {

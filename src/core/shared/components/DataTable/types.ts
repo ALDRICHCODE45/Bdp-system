@@ -104,4 +104,9 @@ export interface TableConfig<TData> {
   onSortingChange?: (
     sorting: import("@tanstack/react-table").SortingState
   ) => void;
+  // Server-side filtering
+  manualFiltering?: boolean;
+  onColumnFiltersChange?: (
+    filters: import("@tanstack/react-table").ColumnFiltersState
+  ) => void;
 }

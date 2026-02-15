@@ -5,7 +5,7 @@ import { PaginationParams } from "@/core/shared/types/pagination.types";
 
 export const useEntradasSalidas = (params: PaginationParams) => {
   return useQuery({
-    queryKey: ["entradas-salidas", params.page, params.pageSize, params.sortBy, params.sortOrder],
+    queryKey: ["entradas-salidas", params.page, params.pageSize, params.sortBy, params.sortOrder, params.search],
     queryFn: async () => {
       const result = await getPaginatedEntradasSalidasAction(params);
       if (!result.ok) {

@@ -78,27 +78,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Obtener los roles del usuario
         const roles = user.roles.map((userRole) => userRole.role.name);
-        // console.log("Roles del usuario en authorize", { roles });
         const primaryRole = roles[0] || "user";
 
-        // Obtener todos los permisos de todos los roles del usuario
+        // Obtener todos los permisos de todos los roles del usuario en una sola query
         const roleIds = user.roles.map((userRole) => userRole.role.id);
-        const allPermissions: string[] = [];
-
-        // Obtener permisos de cada rol
-        for (const roleId of roleIds) {
-          const rolePermissions = await prisma.rolePermission.findMany({
-            where: { roleId },
-            include: { permission: true },
-          });
-          // console.log("Role permissions en authorize aun", { rolePermissions });
-
-          rolePermissions.forEach((rp) => {
-            if (!allPermissions.includes(rp.permission.name)) {
-              allPermissions.push(rp.permission.name);
-            }
-          });
-        }
+        const rolePermissions = await prisma.rolePermission.findMany({
+          where: { roleId: { in: roleIds } },
+          include: { permission: { select: { name: true } } },
+        });
+        const allPermissions = [
+          ...new Set(rolePermissions.map((rp) => rp.permission.name)),
+        ];
 
         return {
           id: user.id,
@@ -113,34 +103,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // TODO: [DEBUG] Log para verificar cambios de usuario - REMOVER EN PRODUCCIÓN
-        // console.log("[JWT Callback] Nuevo login detectado:", {
-        //   userId: user.id,
-        //   email: user.email,
-        //   role: user.role,
-        //   permissionsCount: user.permissions?.length || 0,
-        // });
-
         if (user.role) {
           token.role = user.role;
         }
         if (user.permissions) {
           token.permissions = user.permissions;
-          // TODO: [DEBUG] REMOVER EN PRODUCCIÓN
-          // console.log("Existen los roles del usuario en jwt", {
-          //   permisos: user.permissions,
-          // });
         }
-        // TODO: [DEBUG] REMOVER EN PRODUCCIÓN
-        // console.log("No existen los roles ni permisos en jwt");
-      } else {
-        // TODO: [DEBUG] Log para verificar reutilización de token - REMOVER EN PRODUCCIÓN
-        // console.log("[JWT Callback] Token existente:", {
-        //   userId: token.sub,
-        //   role: token.role,
-        //   permissionsCount:
-        //     (token.permissions as string[] | undefined)?.length || 0,
-        // });
       }
       return token;
     },
@@ -152,22 +120,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         if (token.permissions) {
           session.user.permissions = token.permissions as string[];
-          // TODO: [DEBUG] REMOVER EN PRODUCCIÓN
-          // console.log("Existen los roles del usuario en session", {
-          //   permisos: session.user.permissions,
-          // });
         }
-        // TODO: [DEBUG] REMOVER EN PRODUCCIÓN
-        //console.log("No existen los roles ni permisos en session");
-
-        // TODO: [DEBUG] Log para verificar sesión creada - REMOVER EN PRODUCCIÓN
-        // console.log("[Session Callback] Sesión creada:", {
-        //   userId: session.user.id,
-        //   email: session.user.email,
-        //   role: session.user.role,
-        //   permissions: session.user.permissions?.slice(0, 3) || [], // Primeros 3 permisos
-        //   totalPermissions: session.user.permissions?.length || 0,
-        // });
       }
       return session;
     },

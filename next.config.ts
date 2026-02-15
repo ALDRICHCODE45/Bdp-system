@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "1mb", // Permite archivos de hasta 10MB
     },
+    optimizePackageImports: ["lucide-react", "date-fns", "recharts"],
   },
 };
 

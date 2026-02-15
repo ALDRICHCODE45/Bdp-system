@@ -12,6 +12,13 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
 
+const facturaIncludes = {
+  clienteProveedorRef: { select: { id: true, nombre: true, rfc: true, direccion: true } },
+  ingresadoPorRef: { select: { name: true } },
+  creadoPorRef: { select: { nombre: true } },
+  autorizadoPorRef: { select: { nombre: true } },
+} as const;
+
 export class PrismaFacturaRepository implements FacturaRepository {
   constructor(
     private prisma: PrismaClient | PrismaTransactionClient
@@ -47,12 +54,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
         notas: data.notas,
         ingresadoPor: data.ingresadoPor,
       },
-      include: {
-        clienteProveedorRef: true,
-        ingresadoPorRef: true,
-        creadoPorRef: true,
-        autorizadoPorRef: true,
-      },
+      include: facturaIncludes,
     });
 
     return factura;
@@ -88,12 +90,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
         autorizadoPorId: data.autorizadoPorId,
         notas: data.notas,
       },
-      include: {
-        clienteProveedorRef: true,
-        ingresadoPorRef: true,
-        creadoPorRef: true,
-        autorizadoPorRef: true,
-      },
+      include: facturaIncludes,
     });
 
     return factura;
@@ -108,12 +105,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
   async findById(data: { id: string }): Promise<FacturaEntity | null> {
     const factura = await this.prisma.factura.findUnique({
       where: { id: data.id },
-      include: {
-        clienteProveedorRef: true,
-        ingresadoPorRef: true,
-        creadoPorRef: true,
-        autorizadoPorRef: true,
-      },
+      include: facturaIncludes,
     });
 
     return factura;
@@ -130,12 +122,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
   async findByOrigenId(origenId: string): Promise<FacturaEntity[]> {
     const facturas = await this.prisma.factura.findMany({
       where: { origenId },
-      include: {
-        clienteProveedorRef: true,
-        ingresadoPorRef: true,
-        creadoPorRef: true,
-        autorizadoPorRef: true,
-      },
+      include: facturaIncludes,
       orderBy: {
         createdAt: "desc",
       },
@@ -146,12 +133,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
 
   async getAll(): Promise<FacturaEntity[]> {
     const facturas = await this.prisma.factura.findMany({
-      include: {
-        clienteProveedorRef: true,
-        ingresadoPorRef: true,
-        creadoPorRef: true,
-        autorizadoPorRef: true,
-      },
+      include: facturaIncludes,
       orderBy: {
         createdAt: "desc",
       },
