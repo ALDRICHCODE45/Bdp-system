@@ -60,6 +60,7 @@ export const UploadClienteProveedorColumn = ({
     if (isOpen) {
       loadFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, clienteProveedorId]);
 
   const handleUploadSuccess = () => {

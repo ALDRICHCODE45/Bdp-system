@@ -3,6 +3,8 @@ import { CreateEntradSalidaArgs } from "../dtos/CreateEntradasSalidas.dto";
 import { UpdateEntradaSalidaArgs } from "../dtos/UpdateEntadasSalidas.dto";
 import { EntradasSalidasDTO } from "../dtos/EntradasSalidasDto.dto";
 import { EntradasSalidasRepository } from "../repositories/EntradasSalidasRepository.respository";
+import { PaginationParams } from "@/core/shared/types/pagination.types";
+import { Prisma } from "@prisma/client";
 
 export class EntradasSalidasService {
   constructor(
@@ -60,18 +62,15 @@ export class EntradasSalidasService {
 
   async delete(id: string): Promise<Result<void, Error>> {
     try {
-      // Verificar que la entrada/salida existe
-      const existingEntradaSalida =
-        await this.entradasSalidasRepository.findById({ id });
-
-      if (!existingEntradaSalida) {
-        return Err(new Error("Entrada/Salida no encontrada"));
-      }
-
       await this.entradasSalidasRepository.delete({ id });
-
       return Ok(undefined);
     } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        return Err(new Error("Entrada/Salida no encontrada"));
+      }
       return Err(
         error instanceof Error
           ? error
@@ -85,7 +84,7 @@ export class EntradasSalidasService {
     hora_salida: Date;
   }): Promise<Result<EntradasSalidasDTO, Error>> {
     try {
-      // Verificar que la entrada/salida existe
+      // Fetch to validate business rules (hora_salida > hora_entrada, not already registered)
       const existingEntradaSalida =
         await this.entradasSalidasRepository.findById({ id: data.id });
 
@@ -93,14 +92,12 @@ export class EntradasSalidasService {
         return Err(new Error("Entrada/Salida no encontrada"));
       }
 
-      // Validar que hora_salida sea posterior a hora_entrada
       if (data.hora_salida <= existingEntradaSalida.hora_entrada) {
         return Err(
           new Error("La hora de salida debe ser posterior a la hora de entrada")
         );
       }
 
-      // Validar que no tenga ya una hora_salida (opcional pero buena práctica)
       if (existingEntradaSalida.hora_salida) {
         return Err(
           new Error("Esta entrada/salida ya tiene una hora de salida registrada")
@@ -121,7 +118,7 @@ export class EntradasSalidasService {
     }
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: EntradasSalidasDTO[]; totalCount: number }, Error>> {
+  async getPaginated(params: PaginationParams): Promise<Result<{ data: EntradasSalidasDTO[]; totalCount: number }, Error>> {
     try {
       const result = await this.entradasSalidasRepository.getPaginated(params);
       return Ok(result);

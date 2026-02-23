@@ -8,7 +8,6 @@ import { deleteFileAction } from "@/features/Files/server/actions/deleteFileActi
 import { toast } from "sonner";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -43,14 +42,14 @@ export function FileList({ files, entityType, onFileDeleted }: FileListProps) {
 
       toast.success("Archivo eliminado correctamente");
       onFileDeleted?.();
-    } catch (error) {
+    } catch {
       toast.error("Error al eliminar el archivo");
     } finally {
       setDeletingFileId(null);
     }
   };
 
-  const handleDownload = (fileUrl: string, fileName: string) => {
+  const handleDownload = (fileUrl: string, _fileName: string) => {
     window.open(fileUrl, "_blank");
   };
 

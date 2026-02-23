@@ -1,14 +1,12 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { TryCatch } from "@/core/shared/helpers/tryCatch";
 import { showToast } from "../helpers/CustomToast";
 
 export function useAuth() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const { setTheme } = useTheme();
 
   const login = async (email: string, password: string) => {

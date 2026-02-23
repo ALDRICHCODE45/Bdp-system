@@ -24,7 +24,7 @@ export const useCreateColaborador = () => {
         queryKey: ["colaboradores"],
       });
     },
-    onError: (error: Error) => {
+    onError: (_error: Error) => {
       showToast({
         description: "El colaborador no pudo ser creado",
         title: "Ha Ocurrido un error",

@@ -1,7 +1,6 @@
 import { PermissionRepository } from "../repositories/PermissionRepository.repository";
-import { Err, Ok } from "@/core/shared/result/result";
-import { ConflictError } from "@/core/shared/errors/domain";
-import { toPermissionDto, toPermissionDtoArray } from "../mappers/permissionMapper";
+import { Ok } from "@/core/shared/result/result";
+import { toPermissionDtoArray } from "../mappers/permissionMapper";
 
 export class PermissionService {
   constructor(private readonly permissionRepository: PermissionRepository) {}

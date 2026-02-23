@@ -66,7 +66,7 @@ export function FileUploadDropZone({
       toast.success("Archivos subidos correctamente");
       setFiles([]);
       onUploadSuccess?.();
-    } catch (error) {
+    } catch {
       toast.error("Error al subir los archivos");
     } finally {
       setUploading(false);

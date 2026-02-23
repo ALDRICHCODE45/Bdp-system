@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getRolesAction } from "@/features/sistema/config/roles/server/actions/getRolesAction";
 
 // Hook para obtener roles

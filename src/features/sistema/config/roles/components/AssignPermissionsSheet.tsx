@@ -29,7 +29,7 @@ import {
 import { Badge } from "@/core/shared/ui/badge";
 import { Loader2, ChevronDown, Shield, CheckCircle2 } from "lucide-react";
 import { cn } from "@/core/lib/utils";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface AssignPermissionsSheetProps {
   isOpen: boolean;

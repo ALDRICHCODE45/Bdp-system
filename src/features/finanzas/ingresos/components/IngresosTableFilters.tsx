@@ -54,8 +54,14 @@ const generatePeriodoOptions = () => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const value = `${year}-${month}`;
-    const label = date.toLocaleDateString("es-MX", { year: "numeric", month: "long" });
-    options.push({ label: label.charAt(0).toUpperCase() + label.slice(1), value });
+    const label = date.toLocaleDateString("es-MX", {
+      year: "numeric",
+      month: "long",
+    });
+    options.push({
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      value,
+    });
   }
   return options;
 };
@@ -102,7 +108,7 @@ export function IngresosFilters({
   } = useIngresosTableFilters(table);
 
   return (
-    <Card className="mb-6 border-0 shadow-md w-full min-w-0 overflow-hidden">
+    <Card className="mb-6 w-full min-w-0 overflow-hidden">
       <CardHeader className="pb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <Filter className="h-5 w-5 text-primary flex-shrink-0" />
@@ -235,7 +241,7 @@ export function IngresosFilters({
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !selectedDateRange && "text-muted-foreground"
+                    !selectedDateRange && "text-muted-foreground",
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -301,4 +307,3 @@ export function IngresosFilters({
     </Card>
   );
 }
-

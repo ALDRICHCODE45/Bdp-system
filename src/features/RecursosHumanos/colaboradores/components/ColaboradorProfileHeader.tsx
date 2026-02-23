@@ -6,10 +6,7 @@ import { Button } from "@/core/shared/ui/button";
 import { Card } from "@/core/shared/ui/card";
 import { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import { calculateAge } from "../helpers/formatColaboradorProfile";
-import { Edit, Mail, Phone, MapPin, Calendar, Copy, Check } from "lucide-react";
-import { useCopyToClipboard } from "@/core/shared/hooks/use-copy-to-clipboard";
-import { useEffect } from "react";
-import { showToast } from "@/core/shared/helpers/CustomToast";
+import { Edit, Mail, Phone, MapPin, Calendar } from "lucide-react";
 import { ColaboradorProfileHeaderCardBasicInformation } from "./ColaboradorProfileHederCardBasicInformation";
 
 interface ColaboradorProfileHeaderProps {

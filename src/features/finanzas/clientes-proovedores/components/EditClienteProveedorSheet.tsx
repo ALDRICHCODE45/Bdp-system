@@ -68,6 +68,7 @@ export function EditClienteProveedorSheet({
     if (isOpen && clienteProveedor) {
       loadFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, clienteProveedor?.id]);
 
   return (

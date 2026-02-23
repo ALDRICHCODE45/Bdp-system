@@ -185,8 +185,6 @@ export function getAsistenciasByWeekStart(
   weekStartISO: string,
   asistencias: AsistenciaDto[]
 ): AsistenciaDto[] {
-  const weekStart = parseISO(weekStartISO);
-
   // Convertir fechas string a Date si es necesario
   const asistenciasWithDates = asistencias.map((asistencia) => ({
     ...asistencia,

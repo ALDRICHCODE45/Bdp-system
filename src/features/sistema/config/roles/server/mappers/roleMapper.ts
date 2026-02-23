@@ -1,6 +1,5 @@
 import { Role, Permission } from "@prisma/client";
 import { RoleDto } from "../../types/RoleDto.dto";
-import { PermissionDto } from "@/features/sistema/config/permissions/types/PermissionDto.dto";
 import { toPermissionDto } from "@/features/sistema/config/permissions/server/mappers/permissionMapper";
 
 type RoleWithPermissions = Role & {

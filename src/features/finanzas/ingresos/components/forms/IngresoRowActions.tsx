@@ -47,7 +47,7 @@ const IngresoHistorySheet = dynamic(
 
 export function IngresoRowActions({ row }: { row: Row<IngresoDto> }) {
   const ingreso = row.original;
-  const { copyToClipboard, copied } = useCopyToClipboard();
+  const { copyToClipboard } = useCopyToClipboard();
   const { isOpen, openModal, closeModal } = useModalState();
   const {
     isOpen: isDeleteOpen,

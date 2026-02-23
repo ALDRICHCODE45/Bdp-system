@@ -12,12 +12,12 @@ import {
 export class PrismaAsistenciaRepository implements AsistenciaRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async delete(data: { id: string }): Promise<void> {
+  async delete(_data: { id: string }): Promise<void> {
     //TODO:implementar
     throw new Error("realizar implementacion");
   }
 
-  async getById(data: { id: string }): Promise<AsistenciaDto> {
+  async getById(_data: { id: string }): Promise<AsistenciaDto> {
     //TODO:implementar
     throw new Error("realizar implementacion");
   }

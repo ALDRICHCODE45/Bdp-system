@@ -23,7 +23,7 @@ export const ColaboradoresTableFilters = ({
   addButtonText = "Agregar",
   onAdd,
 }: ColaboradoresTableFilters) => {
-  const { clearFilters, handleEstadoChange, selectedEstado } =
+  const { clearFilters, handleEstadoChange: _handleEstadoChange, selectedEstado: _selectedEstado } =
     useColaboradoresTableFilters(table);
 
   return (

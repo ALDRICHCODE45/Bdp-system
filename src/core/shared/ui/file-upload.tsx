@@ -803,6 +803,7 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
   const DropzonePrimitive = asChild ? Slot : "div";
 
   return (
+    // eslint-disable-next-line jsx-a11y/role-supports-aria-props
     <DropzonePrimitive
       role="region"
       id={context.dropzoneId}
@@ -889,6 +890,7 @@ function FileUploadList(props: FileUploadListProps) {
   const ListPrimitive = asChild ? Slot : "div";
 
   return (
+    // eslint-disable-next-line jsx-a11y/role-supports-aria-props
     <ListPrimitive
       role="list"
       id={context.listId}
@@ -1085,6 +1087,7 @@ function FileUploadItemPreview(props: FileUploadItemPreviewProps) {
 
         return (
           // biome-ignore lint/performance/noImgElement: dynamic file URLs from user uploads don't work well with Next.js Image optimization
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt={file.name} className="size-full object-cover" />
         );
       }

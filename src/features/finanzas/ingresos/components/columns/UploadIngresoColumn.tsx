@@ -56,6 +56,7 @@ export const UploadIngresoColumn = ({
     if (isOpen) {
       loadFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, ingresoId]);
 
   const handleUploadSuccess = () => {

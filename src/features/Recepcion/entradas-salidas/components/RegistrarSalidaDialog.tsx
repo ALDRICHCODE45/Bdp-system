@@ -36,11 +36,7 @@ export const RegistrarSalidaDialog = ({
   const [horaSalida, setHoraSalida] = useState("");
   const [error, setError] = useState("");
 
-  // Obtener hora actual por defecto
-  const now = new Date();
-  const horaActual = `${String(now.getHours()).padStart(2, "0")}:${String(
-    now.getMinutes()
-  ).padStart(2, "0")}`;
+  // Hora actual disponible si se necesita como default
 
   // Formatear hora de entrada para mostrar
   const horaEntradaDate = new Date(entradaSalida.hora_entrada);

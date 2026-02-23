@@ -1,10 +1,10 @@
 "use client";
+import { useState } from "react";
 import { Row } from "@tanstack/react-table";
 import { EntradasSalidasDTO } from "../../server/dtos/EntradasSalidasDto.dto";
 import { useDeleteEntradaSalida } from "../../hooks/useDeleteEntradaSalida.hook";
 import { useRegistrarSalida } from "../../hooks/useRegistrarSalida.hook";
 import { EntradaSalidaActionsDropdown } from "../EntradaSalidaActionsDropdown";
-import { useModalState } from "@/core/shared/hooks/useModalState";
 import { CreateEntradaSalidaActions } from "./EntradaSalidaActions.config";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
@@ -44,30 +44,24 @@ const RegistrarSalidaDialog = dynamic(
   },
 );
 
+type ModalAction = "edit" | "delete" | "registrarSalida" | null;
+
 export function EntradaSalidaRowActions({
   row,
 }: {
   row: Row<EntradasSalidasDTO>;
 }) {
   const entradaSalida = row.original;
-  const { isOpen, openModal, closeModal } = useModalState();
-  const {
-    isOpen: isDeleteOpen,
-    openModal: openDeleteModal,
-    closeModal: closeDeleteModal,
-  } = useModalState();
-  const {
-    isOpen: isRegistrarSalidaOpen,
-    openModal: openRegistrarSalidaModal,
-    closeModal: closeRegistrarSalidaModal,
-  } = useModalState();
+  const [activeAction, setActiveAction] = useState<ModalAction>(null);
 
   const deleteEntradaSalidaMutation = useDeleteEntradaSalida();
   const registrarSalidaMutation = useRegistrarSalida();
 
+  const closeAction = () => setActiveAction(null);
+
   const handleDelete = async () => {
     await deleteEntradaSalidaMutation.mutateAsync(entradaSalida.id);
-    closeDeleteModal();
+    closeAction();
   };
 
   const handleRegistrarSalida = async (horaSalidaISO: string) => {
@@ -75,15 +69,15 @@ export function EntradaSalidaRowActions({
     formData.append("id", entradaSalida.id);
     formData.append("hora_salida", horaSalidaISO);
     await registrarSalidaMutation.mutateAsync(formData);
-    closeRegistrarSalidaModal();
+    closeAction();
   };
 
   const hasHoraSalida = !!entradaSalida.hora_salida;
 
   const actions = CreateEntradaSalidaActions(
-    openModal,
-    openDeleteModal,
-    openRegistrarSalidaModal,
+    () => setActiveAction("edit"),
+    () => setActiveAction("delete"),
+    () => setActiveAction("registrarSalida"),
     hasHoraSalida,
   );
 
@@ -97,10 +91,10 @@ export function EntradaSalidaRowActions({
           PermissionActions.recepcion.gestionar,
         ]}
       >
-        {isDeleteOpen && (
+        {activeAction === "delete" && (
           <DeleteEntradaSalidaAlertDialog
-            isOpen={isDeleteOpen}
-            onOpenChange={closeDeleteModal}
+            isOpen={true}
+            onOpenChange={closeAction}
             onConfirmDelete={handleDelete}
             entradaSalidaToDelete={entradaSalida.visitante}
             isLoading={deleteEntradaSalidaMutation.isPending}
@@ -108,10 +102,10 @@ export function EntradaSalidaRowActions({
         )}
       </PermissionGuard>
 
-      {isRegistrarSalidaOpen && (
+      {activeAction === "registrarSalida" && (
         <RegistrarSalidaDialog
-          isOpen={isRegistrarSalidaOpen}
-          onOpenChange={closeRegistrarSalidaModal}
+          isOpen={true}
+          onOpenChange={closeAction}
           entradaSalida={entradaSalida}
           onConfirm={handleRegistrarSalida}
           isLoading={registrarSalidaMutation.isPending}
@@ -124,11 +118,11 @@ export function EntradaSalidaRowActions({
           PermissionActions.recepcion.gestionar,
         ]}
       >
-        {isOpen && (
+        {activeAction === "edit" && (
           <EditEntradaSalidaSheet
             entradaSalida={entradaSalida}
             isOpen={true}
-            onClose={closeModal}
+            onClose={closeAction}
           />
         )}
       </PermissionGuard>

@@ -7,6 +7,17 @@ import {
   toEntradaSalidaDTO,
   toEntradasSalidasDTOArray,
 } from "../mappers/EntradasSalidasMapper.mapper";
+import { PaginationParams } from "@/core/shared/types/pagination.types";
+
+const ALLOWED_SORT_COLUMNS = new Set([
+  "visitante",
+  "destinatario",
+  "motivo",
+  "fecha",
+  "hora_entrada",
+  "hora_salida",
+  "createdAt",
+]);
 
 export class PrismaEntradasSalidasRepository
   implements EntradasSalidasRepository
@@ -36,7 +47,7 @@ export class PrismaEntradasSalidasRepository
     });
   }
 
-  findByDestinatario(data: {
+  findByDestinatario(_data: {
     correo: string;
   }): Promise<EntradasSalidasDTO | null> {
     throw new Error("Implementar");
@@ -67,18 +78,18 @@ export class PrismaEntradasSalidasRepository
     const prismaEntradasSalidas = await this.prisma.entradasSalidas.update({
       where: { id },
       data: {
-        ...(updateData.visitante && { visitante: updateData.visitante }),
-        ...(updateData.destinatario && { destinatario: updateData.destinatario }),
-        ...(updateData.motivo && { motivo: updateData.motivo }),
+        ...(updateData.visitante !== undefined && { visitante: updateData.visitante }),
+        ...(updateData.destinatario !== undefined && { destinatario: updateData.destinatario }),
+        ...(updateData.motivo !== undefined && { motivo: updateData.motivo }),
         ...(updateData.telefono !== undefined && {
           telefono: updateData.telefono ?? null,
         }),
         ...(updateData.correspondencia !== undefined && {
           correspondencia: updateData.correspondencia ?? null,
         }),
-        ...(updateData.fecha && { fecha: updateData.fecha }),
-        ...(updateData.hora_entrada && { hora_entrada: updateData.hora_entrada }),
-        ...(updateData.hora_salida && { hora_salida: updateData.hora_salida }),
+        ...(updateData.fecha !== undefined && { fecha: updateData.fecha }),
+        ...(updateData.hora_entrada !== undefined && { hora_entrada: updateData.hora_entrada }),
+        ...(updateData.hora_salida !== undefined && { hora_salida: updateData.hora_salida }),
       },
     });
 
@@ -96,10 +107,15 @@ export class PrismaEntradasSalidasRepository
     return toEntradaSalidaDTO(prismaEntradasSalidas);
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: EntradasSalidasDTO[]; totalCount: number }> {
+  async getPaginated(params: PaginationParams): Promise<{ data: EntradasSalidasDTO[]; totalCount: number }> {
     const skip = (params.page - 1) * params.pageSize;
-    const orderBy = params.sortBy
-      ? { [params.sortBy]: params.sortOrder || "desc" }
+
+    const sortColumn = params.sortBy && ALLOWED_SORT_COLUMNS.has(params.sortBy)
+      ? params.sortBy
+      : undefined;
+
+    const orderBy = sortColumn
+      ? { [sortColumn]: params.sortOrder || "desc" }
       : { fecha: "desc" as const };
 
     const where: Prisma.EntradasSalidasWhereInput = {};

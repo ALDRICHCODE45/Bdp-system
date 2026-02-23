@@ -16,9 +16,7 @@ import {
   TimelineContent,
   TimelineDate,
   TimelineHeader,
-  TimelineIndicator,
   TimelineItem,
-  TimelineSeparator,
   TimelineTitle,
 } from "@/core/shared/ui/timeline";
 import { format, formatDistanceToNow } from "date-fns";
@@ -85,6 +83,7 @@ export function ColaboradorHistorySheet({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getFieldIcon = (campo: string) => {
     const iconMap: Record<string, React.ReactNode> = {
       name: <User className="size-4" />,

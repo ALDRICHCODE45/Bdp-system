@@ -65,6 +65,7 @@ export function EditEgresoSheet({
     if (isOpen && egreso) {
       loadFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, egreso?.id]);
 
   return (

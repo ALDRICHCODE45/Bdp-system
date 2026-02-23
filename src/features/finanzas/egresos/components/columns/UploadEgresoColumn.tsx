@@ -56,6 +56,7 @@ export const UploadEgresoColumn = ({
     if (isOpen) {
       loadFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, egresoId]);
 
   const handleUploadSuccess = () => {

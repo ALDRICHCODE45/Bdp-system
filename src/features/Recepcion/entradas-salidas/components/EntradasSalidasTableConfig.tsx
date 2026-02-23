@@ -19,15 +19,11 @@ export const EntradasSalidasTableConfig: TableConfig<EntradasSalidasDTO> = {
   },
   actions: {
     showExportButton: true,
-    onExport: () => {
-      console.log("Exportando Entrada/Salida");
-    },
+    onExport: () => {},
     showAddButton: true,
     addButtonIcon: <PlusCircle />,
     addButtonText: "Agregar Entrada/Salida",
-    onAdd: () => {
-      console.log("Agregando Entrada/Salida");
-    },
+    onAdd: () => {},
   },
   emptyStateMessage: "No se encontraron Entradas/Salidas",
   pagination: {

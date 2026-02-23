@@ -36,7 +36,7 @@ interface FacturaHistorySheetProps {
 export function FacturaHistorySheet({
   isOpen,
   onClose,
-  facturaConcepto,
+  facturaConcepto: _facturaConcepto,
   facturaId,
 }: FacturaHistorySheetProps) {
   const isMobile = useIsMobile();

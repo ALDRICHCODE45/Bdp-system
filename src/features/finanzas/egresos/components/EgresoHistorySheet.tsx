@@ -36,7 +36,7 @@ interface EgresoHistorySheetProps {
 export function EgresoHistorySheet({
   isOpen,
   onClose,
-  egresoConcepto,
+  egresoConcepto: _egresoConcepto,
   egresoId,
 }: EgresoHistorySheetProps) {
   const isMobile = useIsMobile();

@@ -1,5 +1,5 @@
 "use client";
-import { ColumnDef, Row } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { UserDto } from "../server/dtos/UserDto.dto";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";

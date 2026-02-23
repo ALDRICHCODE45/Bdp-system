@@ -1,4 +1,4 @@
-import { LucideIcon, Shield } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 export interface RoleAction {
   id: string;

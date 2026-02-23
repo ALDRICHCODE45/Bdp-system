@@ -10,7 +10,7 @@ export const getEgresoByIdAction = async (id: string) => {
 
   try {
     idSchema.parse(id);
-  } catch (error) {
+  } catch {
     return { ok: false, error: "ID de egreso inválido" };
   }
 

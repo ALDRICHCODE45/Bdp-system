@@ -89,6 +89,7 @@ export interface PaginationConfig {
 }
 
 // Configuración de la tabla
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface TableConfig<TData> {
   filters?: FilterConfig;
   actions?: ActionConfig;

@@ -65,6 +65,7 @@ export function EditIngresoSheet({
     if (isOpen && ingreso) {
       loadFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, ingreso?.id]);
 
   return (

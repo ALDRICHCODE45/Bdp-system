@@ -1,12 +1,8 @@
 import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   Landmark,
   Handshake,
   Headset,
   Monitor,
-  Building2,
   Scale,
 } from "lucide-react";
 

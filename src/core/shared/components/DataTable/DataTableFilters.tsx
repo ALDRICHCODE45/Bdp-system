@@ -30,7 +30,11 @@ export function DataTableFilters<TData>({
   const [searchValue, setSearchValue] = useState<string>(currentFilterValue);
 
   // Debounce del valor de búsqueda (300ms por defecto)
-  const debouncedSearchValue = useDebounce(searchValue, 300);
+  // Skip debounce when manualFiltering is active — the page already debounces
+  const debouncedSearchValue = useDebounce(
+    searchValue,
+    config.manualFiltering ? 0 : 300,
+  );
 
   // Actualizar el filtro de la tabla cuando el valor debounceado cambia
   useEffect(() => {
@@ -47,7 +51,8 @@ export function DataTableFilters<TData>({
     if (filterValue !== searchValue) {
       setSearchValue(filterValue);
     }
-  }, [currentFilterValue, searchColumn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFilterValue, searchColumn, searchValue]);
 
   // Función para limpiar la búsqueda
   const handleClearSearch = () => {
@@ -67,12 +72,14 @@ export function DataTableFilters<TData>({
   return (
     <>
       {CustomFilterComponent ? (
-        <CustomFilterComponent
-          table={table as TanstackTable<unknown>}
-          onGlobalFilterChange={setGlobalFilter}
-          onExport={config.actions?.onExport}
-          {...customFilterProps}
-        />
+        <div className="mx-1">
+          <CustomFilterComponent
+            table={table as TanstackTable<unknown>}
+            onGlobalFilterChange={setGlobalFilter}
+            onExport={config.actions?.onExport}
+            {...customFilterProps}
+          />
+        </div>
       ) : (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full min-w-0">
           <div className="flex items-center gap-3 w-full sm:w-auto min-w-0 flex-1">

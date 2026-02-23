@@ -48,7 +48,7 @@ const EgresoHistorySheet = dynamic(
 export function EgresoRowActions({ row }: { row: Row<EgresoDto> }) {
   const egreso = row.original;
   const { isOpen, openModal, closeModal } = useModalState();
-  const { copyToClipboard, copied } = useCopyToClipboard();
+  const { copyToClipboard } = useCopyToClipboard();
   const {
     isOpen: isDeleteOpen,
     openModal: openDeleteModal,

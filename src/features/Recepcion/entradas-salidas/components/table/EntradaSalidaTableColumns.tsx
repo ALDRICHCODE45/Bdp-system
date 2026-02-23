@@ -22,21 +22,19 @@ export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
   {
     header: "Motivo",
     accessorKey: "motivo",
-    cell: ({ row }) => (
-      <Tooltip>
-        <TooltipTrigger>
-          <div
-            className="text-sm truncate max-w-[200px]"
-            title={row.getValue("motivo")}
-          >
-            {row.getValue("motivo")}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-[300px]">
-          <p>{row.getValue("motivo")}</p>
-        </TooltipContent>
-      </Tooltip>
-    ),
+    cell: ({ row }) => {
+      const motivo = row.getValue<string>("motivo");
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="text-sm truncate max-w-[200px]">{motivo}</div>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-[300px]">
+            <p>{motivo}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
     size: 25,
   },
   {
@@ -51,7 +49,22 @@ export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
     header: "Telefono",
     accessorKey: "telefono",
     cell: ({ row }) => {
-      return <div>{row.getValue("telefono")}</div>;
+      const telefono = row.getValue("telefono") || undefined;
+      return (
+        <>
+          <div>
+            {telefono ? (
+              <div>{String(telefono)}</div>
+            ) : (
+              <>
+                <p className="italic text-sm text-muted-foreground">
+                  No Ingresado.
+                </p>
+              </>
+            )}
+          </div>
+        </>
+      );
     },
     size: 8,
   },
@@ -62,7 +75,7 @@ export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
       const fecha = row.original.fecha as Date;
       if (!fecha) return <div>-</div>;
 
-      const fechaFormateada = format(new Date(fecha), "dd/MM/yyyy", {
+      const fechaFormateada = format(fecha, "dd/MM/yyyy", {
         locale: es,
       });
 
@@ -77,7 +90,7 @@ export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
       const horaEntrada = row.original.hora_entrada as Date;
       if (!horaEntrada) return <div>-</div>;
 
-      const horaFormateada = format(new Date(horaEntrada), "HH:mm", {
+      const horaFormateada = format(horaEntrada, "HH:mm", {
         locale: es,
       });
 
@@ -98,7 +111,7 @@ export const EntradasSalidasTableColumns: ColumnDef<EntradasSalidasDTO>[] = [
         );
       }
 
-      const horaFormateada = format(new Date(horaSalida), "HH:mm", {
+      const horaFormateada = format(horaSalida, "HH:mm", {
         locale: es,
       });
 

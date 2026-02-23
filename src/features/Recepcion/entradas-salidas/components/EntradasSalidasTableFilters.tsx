@@ -23,7 +23,7 @@ export const EntradasSalidasTableFilters = ({
 }: EntradasSalidasTableFilters) => {
   return (
     <>
-      <Card className="mb-6 border-0 shadow-md w-full min-w-0 overflow-hidden">
+      <Card className="mb-6 w-full min-w-0 overflow-hidden">
         <CardHeader className="pb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <Filter className="h-5 w-5 text-primary flex-shrink-0" />
@@ -63,7 +63,9 @@ export const EntradasSalidasTableFilters = ({
                       "") as string
                   }
                   onChange={(e) => {
-                    table.getColumn("visitante")?.setFilterValue(e.target.value);
+                    table
+                      .getColumn("visitante")
+                      ?.setFilterValue(e.target.value);
                   }}
                 />
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

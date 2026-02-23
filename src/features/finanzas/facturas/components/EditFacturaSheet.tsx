@@ -65,6 +65,7 @@ export function EditFacturaSheet({
     if (isOpen && factura) {
       loadFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, factura?.id]);
 
   if (!factura) return null;

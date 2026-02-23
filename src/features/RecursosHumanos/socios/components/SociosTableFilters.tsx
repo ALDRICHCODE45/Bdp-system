@@ -23,7 +23,7 @@ export const SociosTableFilters = ({
   addButtonText = "Agregar",
   onAdd,
 }: SociosTableFiltersProps) => {
-  const { clearFilters, handleEstadoChange, selectedEstado } =
+  const { clearFilters, handleEstadoChange: _handleEstadoChange, selectedEstado: _selectedEstado } =
     useSociosTableFilters(table);
 
   return (

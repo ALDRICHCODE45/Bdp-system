@@ -3,17 +3,15 @@ import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from "@/core/shared/ui/sidebar";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { sidebarLinks, teamsData } from "./data/SidebarLinks";
+import { sidebarLinks } from "./data/SidebarLinks";
 import { useAuth } from "@/core/shared/hooks/use-auth";
 import { usePermissions } from "@/core/shared/hooks/use-permissions";
 import { filterSidebarLinks } from "./helpers/filterSidebarByPermissions";
-import { TeamSwitcher } from "./TeamSwitcher";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();

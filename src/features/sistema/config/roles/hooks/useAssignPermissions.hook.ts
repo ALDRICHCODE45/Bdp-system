@@ -37,7 +37,7 @@ export function useAssignPermissions(roleId: string | null) {
             type: "error",
           });
         }
-      } catch (error) {
+      } catch {
         showToast({
           title: "Error",
           description: "Error al cargar permisos",
@@ -131,7 +131,7 @@ export function useAssignPermissions(roleId: string | null) {
         });
         return false;
       }
-    } catch (error) {
+    } catch {
       showToast({
         title: "Error",
         description: "Error al guardar permisos",

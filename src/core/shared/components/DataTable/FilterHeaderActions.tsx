@@ -17,7 +17,7 @@ interface FilterHeaderActions {
 
 export const FilterHeaderActions = ({
   AddButtonIcon,
-  addButtonText,
+  addButtonText: _addButtonText,
   onClearFilters,
   showAddButton = false,
   buttonTooltipText,

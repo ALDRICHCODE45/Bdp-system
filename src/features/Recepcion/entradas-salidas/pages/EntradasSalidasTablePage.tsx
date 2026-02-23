@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
@@ -29,9 +29,11 @@ const CreateEntradaSalidaSheet = dynamic(
 export const EntradasYSalidasTablePage = () => {
   const { isOpen, openModal, closeModal } = useModalState();
 
-  const tableConfig = createTableConfig(EntradasSalidasTableConfig, {
-    onAdd: () => openModal(),
-  });
+  const handleOpenModal = useCallback(() => openModal(), [openModal]);
+  const tableConfig = useMemo(
+    () => createTableConfig(EntradasSalidasTableConfig, { onAdd: handleOpenModal }),
+    [handleOpenModal],
+  );
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -48,11 +50,11 @@ export const EntradasYSalidasTablePage = () => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
   }, [debouncedSearch]);
 
-  const { data, isPending, isFetching } = useEntradasSalidas({
+  const { data, isPending } = useEntradasSalidas({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
     sortBy: sorting[0]?.id,
-    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    sortOrder: sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined,
     search: debouncedSearch || undefined,
   });
 
@@ -90,7 +92,7 @@ export const EntradasYSalidasTablePage = () => {
           columns={EntradasSalidasTableColumns}
           data={data?.data ?? []}
           config={serverConfig}
-          isLoading={isPending && !isFetching}
+          isLoading={isPending}
         />
       </PermissionGuard>
 

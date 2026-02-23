@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/core/shared/ui/popover";
-import { BanknoteArrowUp, NotebookPen } from "lucide-react";
+import { BanknoteArrowUp } from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
 
 export const ViewClabeInterbancariaPopOver = ({

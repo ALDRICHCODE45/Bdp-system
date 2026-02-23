@@ -64,22 +64,29 @@ export function DataTable<TData, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
   // Combinar configuración por defecto con la proporcionada
-  const finalConfig = useMemo(() => ({
-    filters: { ...DEFAULT_FILTERS, ...config.filters },
-    actions: { addButtonIcon: <UserPlus />, ...DEFAULT_ACTIONS, ...config.actions },
-    pagination: { ...DEFAULT_PAGINATION, ...config.pagination },
-    emptyStateMessage:
-      config.emptyStateMessage || "No se encontraron resultados.",
-    enableSorting: config.enableSorting ?? true,
-    enableColumnVisibility: config.enableColumnVisibility ?? false,
-    enableRowSelection: config.enableRowSelection ?? false,
-    isLoading: isLoadingProp ?? config.isLoading ?? false,
-    skeletonRows: config.skeletonRows ?? 5,
-    manualSorting: config.manualSorting,
-    onSortingChange: config.onSortingChange,
-    manualFiltering: config.manualFiltering,
-    onColumnFiltersChange: config.onColumnFiltersChange,
-  }), [config, isLoadingProp]);
+  const finalConfig = useMemo(
+    () => ({
+      filters: { ...DEFAULT_FILTERS, ...config.filters },
+      actions: {
+        addButtonIcon: <UserPlus />,
+        ...DEFAULT_ACTIONS,
+        ...config.actions,
+      },
+      pagination: { ...DEFAULT_PAGINATION, ...config.pagination },
+      emptyStateMessage:
+        config.emptyStateMessage || "No se encontraron resultados.",
+      enableSorting: config.enableSorting ?? true,
+      enableColumnVisibility: config.enableColumnVisibility ?? false,
+      enableRowSelection: config.enableRowSelection ?? false,
+      isLoading: isLoadingProp ?? config.isLoading ?? false,
+      skeletonRows: config.skeletonRows ?? 5,
+      manualSorting: config.manualSorting,
+      onSortingChange: config.onSortingChange,
+      manualFiltering: config.manualFiltering,
+      onColumnFiltersChange: config.onColumnFiltersChange,
+    }),
+    [config, isLoadingProp],
+  );
 
   const isManualPagination = !!finalConfig.pagination.manualPagination;
   const isManualSorting = !!finalConfig.manualSorting;
@@ -137,12 +144,14 @@ export function DataTable<TData, TValue>({
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
     manualFiltering: isManualFiltering,
-    getFilteredRowModel: (isManualPagination || isManualFiltering)
-      ? undefined
-      : getFilteredRowModel(),
-    getFacetedUniqueValues: (isManualPagination || isManualFiltering)
-      ? undefined
-      : getFacetedUniqueValues(),
+    getFilteredRowModel:
+      isManualPagination || isManualFiltering
+        ? undefined
+        : getFilteredRowModel(),
+    getFacetedUniqueValues:
+      isManualPagination || isManualFiltering
+        ? undefined
+        : getFacetedUniqueValues(),
     enableRowSelection: finalConfig.enableRowSelection,
     state: {
       sorting,
@@ -156,45 +165,45 @@ export function DataTable<TData, TValue>({
 
   return (
     <TooltipProvider>
-    <div
-      className="space-y-4 w-full max-w-full min-w-0 overflow-hidden"
-      role="region"
-      aria-label="Tabla de datos"
-    >
-      {/* Filtros personalizados o por defecto */}
       <div
-        className="w-full min-w-0"
-        role="search"
-        aria-label="Filtros de búsqueda"
+        className="space-y-4 w-full max-w-full min-w-0 overflow-hidden"
+        role="region"
+        aria-label="Tabla de datos"
       >
-        <DataTableFilters
-          config={finalConfig}
-          setGlobalFilter={setGlobalFilter}
-          table={table}
-        />
-      </div>
-
-      {/* Cuerpo de la tabla*/}
-      <div className="w-full min-w-0">
-        {finalConfig.isLoading ? (
-          <TableSkeleton
-            columns={columns.length}
-            rows={finalConfig.skeletonRows}
-          />
-        ) : (
-          <TableBodyDataTable<TData, TValue>
-            columns={columns}
+        {/* Filtros personalizados o por defecto */}
+        <div
+          className="w-full min-w-0"
+          role="search"
+          aria-label="Filtros de búsqueda"
+        >
+          <DataTableFilters
             config={finalConfig}
+            setGlobalFilter={setGlobalFilter}
             table={table}
           />
-        )}
-      </div>
+        </div>
 
-      {/* Pagination */}
-      <nav className="w-full min-w-0" aria-label="Navegación de paginación">
-        <DataTablePagination<TData> config={finalConfig} table={table} />
-      </nav>
-    </div>
+        {/* Cuerpo de la tabla*/}
+        <div className="w-full min-w-0">
+          {finalConfig.isLoading ? (
+            <TableSkeleton
+              columns={columns.length}
+              rows={finalConfig.skeletonRows}
+            />
+          ) : (
+            <TableBodyDataTable<TData, TValue>
+              columns={columns}
+              config={finalConfig}
+              table={table}
+            />
+          )}
+        </div>
+
+        {/* Pagination */}
+        <nav className="w-full min-w-0" aria-label="Navegación de paginación">
+          <DataTablePagination<TData> config={finalConfig} table={table} />
+        </nav>
+      </div>
     </TooltipProvider>
   );
 }
