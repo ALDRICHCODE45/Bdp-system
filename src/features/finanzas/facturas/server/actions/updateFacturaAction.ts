@@ -17,85 +17,62 @@ export const updateFacturaAction = async (input: FormData) => {
   const usuarioId = session?.user?.id || null;
 
   const id = input.get("id") as string;
-  const tipoOrigen = input.get("tipoOrigen") as "INGRESO" | "EGRESO";
-  const origenId = input.get("origenId") as string;
-  const clienteProveedorId = input.get("clienteProveedorId") as string;
-  const clienteProveedor = input.get("clienteProveedor") as string;
   const concepto = input.get("concepto") as string;
-  const montoString = input.get("monto");
-  const periodo = input.get("periodo") as string;
-  const numeroFactura = input.get("numeroFactura") as string;
-  const folioFiscal = input.get("folioFiscal") as string;
-  const fechaEmisionString = input.get("fechaEmision");
-  const fechaVencimientoString = input.get("fechaVencimiento");
-  const estado = input.get("estado") as
+  const serie = (input.get("serie") as string) || null;
+  const folio = (input.get("folio") as string) || null;
+  const subtotalString = input.get("subtotal");
+  const totalImpuestosTrasladadosString = input.get("totalImpuestosTransladados");
+  const totalImpuestosRetenidosString = input.get("totalImpuestosRetenidos");
+  const totalString = input.get("total");
+  const uuid = input.get("uuid") as string;
+  const rfcEmisor = input.get("rfcEmisor") as string;
+  const nombreReceptor = (input.get("nombreReceptor") as string) || null;
+  const rfcReceptor = input.get("rfcReceptor") as string;
+  const metodoPago = (input.get("metodoPago") as string) || null;
+  const moneda = (input.get("moneda") as string) || "MXN";
+  const usoCfdi = (input.get("usoCfdi") as string) || null;
+  const status = input.get("status") as
     | "BORRADOR"
     | "ENVIADA"
     | "PAGADA"
     | "CANCELADA";
-  const formaPago = input.get("formaPago") as
-    | "TRANSFERENCIA"
-    | "EFECTIVO"
-    | "CHEQUE";
-  const rfcEmisor = input.get("rfcEmisor") as string;
-  const rfcReceptor = input.get("rfcReceptor") as string;
-  const direccionEmisor = input.get("direccionEmisor") as string;
-  const direccionReceptor = input.get("direccionReceptor") as string;
-  const numeroCuenta = input.get("numeroCuenta") as string;
-  const clabe = input.get("clabe") as string;
-  const banco = input.get("banco") as string;
+  const nombreEmisor = (input.get("nombreEmisor") as string) || null;
+  const statusPago = (input.get("statusPago") as string) || null;
   const fechaPagoString = input.get("fechaPago");
-  const fechaRegistroString = input.get("fechaRegistro");
-  const creadoPor = input.get("creadoPor") as string;
-  const creadoPorId = input.get("creadoPorId") as string;
-  const autorizadoPor = input.get("autorizadoPor") as string;
-  const autorizadoPorId = input.get("autorizadoPorId") as string;
-  const notas = input.get("notas") || null;
 
-  const monto = montoString ? parseFloat(montoString as string) : 0;
-  const fechaEmision = fechaEmisionString
-    ? new Date(fechaEmisionString as string)
-    : new Date();
-  const fechaVencimiento = fechaVencimientoString
-    ? new Date(fechaVencimientoString as string)
-    : new Date();
+  const subtotal = subtotalString ? parseFloat(subtotalString as string) : 0;
+  const totalImpuestosTransladados = totalImpuestosTrasladadosString
+    ? parseFloat(totalImpuestosTrasladadosString as string)
+    : null;
+  const totalImpuestosRetenidos = totalImpuestosRetenidosString
+    ? parseFloat(totalImpuestosRetenidosString as string)
+    : null;
+  const total = totalString ? parseFloat(totalString as string) : 0;
   const fechaPago = fechaPagoString
     ? new Date(fechaPagoString as string)
     : null;
-  const fechaRegistro = fechaRegistroString
-    ? new Date(fechaRegistroString as string)
-    : new Date();
 
   const facturaService = makeFacturaService({ prisma });
   const result = await facturaService.update({
     id,
-    tipoOrigen,
-    origenId,
-    clienteProveedorId,
-    clienteProveedor,
     concepto,
-    monto,
-    periodo,
-    numeroFactura,
-    folioFiscal,
-    fechaEmision,
-    fechaVencimiento,
-    estado,
-    formaPago,
+    serie,
+    folio,
+    subtotal,
+    totalImpuestosTransladados,
+    totalImpuestosRetenidos,
+    total,
+    uuid,
     rfcEmisor,
+    nombreReceptor,
     rfcReceptor,
-    direccionEmisor,
-    direccionReceptor,
-    numeroCuenta,
-    clabe,
-    banco,
+    metodoPago,
+    moneda,
+    usoCfdi,
+    status,
+    nombreEmisor,
+    statusPago,
     fechaPago,
-    fechaRegistro,
-    creadoPor,
-    creadoPorId,
-    autorizadoPor,
-    autorizadoPorId,
-    notas: notas as string | null,
     usuarioId,
   });
 

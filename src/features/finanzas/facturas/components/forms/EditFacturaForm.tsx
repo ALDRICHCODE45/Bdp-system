@@ -10,7 +10,6 @@ import {
   FieldDescription,
 } from "@/core/shared/ui/field";
 import { Input } from "@/core/shared/ui/input";
-import { Textarea } from "@/core/shared/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -19,7 +18,6 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 import { useUpdateFacturaForm } from "../../hooks/useUpdateFacturaForm.hook";
-import { useSocios } from "@/features/RecursosHumanos/socios/hooks/useSocios.hook";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
 import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
 import { useState } from "react";
@@ -43,10 +41,8 @@ export const EditFacturaForm = ({
   onSuccess,
 }: EditFacturaFormProps) => {
   const form = useUpdateFacturaForm(factura, onSuccess);
-  const { data: socios } = useSocios();
-  const sociosActivos = socios?.filter((s) => s.activo) || [];
   const [canEdit, setCanEdit] = useState<boolean>(
-    factura.estado === "borrador"
+    factura.status === "borrador"
   );
 
   if (!canEdit) {
@@ -59,7 +55,7 @@ export const EditFacturaForm = ({
           <EmptyTitle>Advertencia.</EmptyTitle>
           <EmptyDescription>
             Es recomendable<span className="font-bold"> NO </span>Editar esta
-            factura. Solo se recomienda editar las facturas con estado{" "}
+            factura. Solo se recomienda editar las facturas con status{" "}
             <span className="font-bold"> BORRADOR </span>
           </EmptyDescription>
         </EmptyHeader>
@@ -85,89 +81,74 @@ export const EditFacturaForm = ({
         }}
       >
         <FieldGroup>
-          {/* SECCIÓN: Origen (Solo Lectura) */}
+          {/* SECCIÓN: Datos CFDI */}
           <div className="col-span-full">
             <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-              Datos del Origen
+              Datos CFDI
             </h3>
           </div>
 
-          {/* Tipo de Origen (Solo Lectura) */}
-          <form.Field name="tipoOrigen">
+          {/* UUID */}
+          <form.Field name="uuid">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field orientation="responsive" data-invalid={isInvalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="uuid">UUID</FieldLabel>
+                    <FieldDescription>UUID fiscal del CFDI</FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldContent>
+                  <Input
+                    id="uuid"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+
+          {/* Serie */}
+          <form.Field name="serie">
             {(field) => (
               <Field orientation="responsive">
                 <FieldContent>
-                  <FieldLabel htmlFor="tipoOrigen">Tipo de Origen</FieldLabel>
-                  <FieldDescription>No editable</FieldDescription>
+                  <FieldLabel htmlFor="serie">Serie</FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
                 </FieldContent>
                 <Input
-                  id="tipoOrigen"
-                  name={field.name}
-                  value={field.state.value === "ingreso" ? "Ingreso" : "Egreso"}
-                  readOnly
-                  className="bg-muted"
-                />
-              </Field>
-            )}
-          </form.Field>
-
-          {/* ID del Origen (Solo Lectura) */}
-          <form.Field name="origenId">
-            {(field) => (
-              <Field orientation="responsive">
-                <FieldContent>
-                  <FieldLabel htmlFor="origenId">ID del Origen</FieldLabel>
-                  <FieldDescription>No editable</FieldDescription>
-                </FieldContent>
-                <Input
-                  id="origenId"
-                  name={field.name}
-                  value={field.state.value ?? "Sin vinculación"}
-                  readOnly
-                  className="bg-muted font-mono text-xs"
-                />
-              </Field>
-            )}
-          </form.Field>
-
-          {/* clienteProveedorId (hidden) */}
-          <form.Field name="clienteProveedorId">
-            {(field) => (
-              <input
-                type="hidden"
-                name={field.name}
-                value={field.state.value}
-              />
-            )}
-          </form.Field>
-
-          {/* Cliente/Proveedor (Solo Lectura) */}
-          <form.Field name="clienteProveedor">
-            {(field) => (
-              <Field orientation="responsive">
-                <FieldContent>
-                  <FieldLabel htmlFor="clienteProveedor">
-                    Cliente/Proveedor
-                  </FieldLabel>
-                  <FieldDescription>No editable</FieldDescription>
-                </FieldContent>
-                <Input
-                  id="clienteProveedor"
+                  id="serie"
                   name={field.name}
                   value={field.state.value}
-                  readOnly
-                  className="bg-muted"
+                  onChange={(e) => field.handleChange(e.target.value)}
                 />
               </Field>
             )}
           </form.Field>
 
-          {/* SECCIÓN: Datos Principales */}
-          <div className="col-span-full mt-4">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-              Datos Principales
-            </h3>
-          </div>
+          {/* Folio */}
+          <form.Field name="folio">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="folio">Folio</FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
+                </FieldContent>
+                <Input
+                  id="folio"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
 
           {/* Concepto */}
           <form.Field name="concepto">
@@ -197,22 +178,29 @@ export const EditFacturaForm = ({
             }}
           </form.Field>
 
-          {/* Monto */}
-          <form.Field name="monto">
+          {/* SECCIÓN: Montos */}
+          <div className="col-span-full mt-4">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+              Montos
+            </h3>
+          </div>
+
+          {/* Subtotal */}
+          <form.Field name="subtotal">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="monto">Monto</FieldLabel>
-                    <FieldDescription>Cantidad a facturar</FieldDescription>
+                    <FieldLabel htmlFor="subtotal">Subtotal</FieldLabel>
+                    <FieldDescription>Monto antes de impuestos</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
                   </FieldContent>
                   <Input
-                    id="monto"
+                    id="subtotal"
                     name={field.name}
                     type="number"
                     step="0.01"
@@ -227,103 +215,100 @@ export const EditFacturaForm = ({
             }}
           </form.Field>
 
-          {/* Periodo */}
-          <form.Field name="periodo">
+          {/* Impuestos Trasladados */}
+          <form.Field name="totalImpuestosTransladados">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="totalImpuestosTransladados">
+                    Impuestos Trasladados
+                  </FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
+                </FieldContent>
+                <Input
+                  id="totalImpuestosTransladados"
+                  name={field.name}
+                  type="number"
+                  step="0.01"
+                  value={field.state.value}
+                  onChange={(e) =>
+                    field.handleChange(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </Field>
+            )}
+          </form.Field>
+
+          {/* Impuestos Retenidos */}
+          <form.Field name="totalImpuestosRetenidos">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="totalImpuestosRetenidos">
+                    Impuestos Retenidos
+                  </FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
+                </FieldContent>
+                <Input
+                  id="totalImpuestosRetenidos"
+                  name={field.name}
+                  type="number"
+                  step="0.01"
+                  value={field.state.value}
+                  onChange={(e) =>
+                    field.handleChange(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </Field>
+            )}
+          </form.Field>
+
+          {/* Total */}
+          <form.Field name="total">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="periodo">Periodo</FieldLabel>
-                    <FieldDescription>Formato: YYYY-MM</FieldDescription>
+                    <FieldLabel htmlFor="total">Total</FieldLabel>
+                    <FieldDescription>Monto total</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
                   </FieldContent>
                   <Input
-                    id="periodo"
+                    id="total"
                     name={field.name}
+                    type="number"
+                    step="0.01"
                     value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
+                    onChange={(e) =>
+                      field.handleChange(parseFloat(e.target.value) || 0)
+                    }
                     aria-invalid={isInvalid}
-                    placeholder="2024-01"
                   />
                 </Field>
               );
             }}
           </form.Field>
 
-          {/* SECCIÓN: Datos de Factura */}
+          {/* SECCIÓN: Status y Pago */}
           <div className="col-span-full mt-4">
             <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-              Datos de Factura
+              Status y Pago
             </h3>
           </div>
 
-          {/* Número de Factura */}
-          <form.Field name="numeroFactura">
+          {/* Status */}
+          <form.Field name="status">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="numeroFactura">
-                      Número de Factura
-                    </FieldLabel>
-                    <FieldDescription>Número único</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Input
-                    id="numeroFactura"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* Folio Fiscal */}
-          <form.Field name="folioFiscal">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="folioFiscal">Folio Fiscal</FieldLabel>
-                    <FieldDescription>UUID fiscal</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Input
-                    id="folioFiscal"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* Estado */}
-          <form.Field name="estado">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="estado">Estado</FieldLabel>
+                    <FieldLabel htmlFor="status">Status</FieldLabel>
                     <FieldDescription>Estado actual</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -338,8 +323,8 @@ export const EditFacturaForm = ({
                       )
                     }
                   >
-                    <SelectTrigger id="estado" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar estado" />
+                    <SelectTrigger id="status" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar status" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
                       <SelectItem value="borrador">Borrador</SelectItem>
@@ -353,16 +338,41 @@ export const EditFacturaForm = ({
             }}
           </form.Field>
 
-          {/* Forma de Pago */}
-          <form.Field name="formaPago">
+          {/* Método de Pago */}
+          <form.Field name="metodoPago">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="metodoPago">Método de Pago</FieldLabel>
+                  <FieldDescription>PUE/PPD</FieldDescription>
+                </FieldContent>
+                <Select
+                  name={field.name}
+                  value={field.state.value}
+                  onValueChange={(value) => field.handleChange(value)}
+                >
+                  <SelectTrigger id="metodoPago">
+                    <SelectValue placeholder="Seleccionar método" />
+                  </SelectTrigger>
+                  <SelectContent position="item-aligned">
+                    <SelectItem value="PUE">PUE</SelectItem>
+                    <SelectItem value="PPD">PPD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          </form.Field>
+
+          {/* Moneda */}
+          <form.Field name="moneda">
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field orientation="responsive" data-invalid={isInvalid}>
                   <FieldContent>
-                    <FieldLabel htmlFor="formaPago">Forma de Pago</FieldLabel>
-                    <FieldDescription>Método de pago</FieldDescription>
+                    <FieldLabel htmlFor="moneda">Moneda</FieldLabel>
+                    <FieldDescription>Moneda de la factura</FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
@@ -370,21 +380,14 @@ export const EditFacturaForm = ({
                   <Select
                     name={field.name}
                     value={field.state.value}
-                    onValueChange={(value) =>
-                      field.handleChange(
-                        value as "transferencia" | "efectivo" | "cheque"
-                      )
-                    }
+                    onValueChange={(value) => field.handleChange(value)}
                   >
-                    <SelectTrigger id="formaPago" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar forma de pago" />
+                    <SelectTrigger id="moneda" aria-invalid={isInvalid}>
+                      <SelectValue placeholder="Seleccionar moneda" />
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
-                      <SelectItem value="transferencia">
-                        Transferencia
-                      </SelectItem>
-                      <SelectItem value="efectivo">Efectivo</SelectItem>
-                      <SelectItem value="cheque">Cheque</SelectItem>
+                      <SelectItem value="MXN">MXN</SelectItem>
+                      <SelectItem value="USD">USD</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -392,80 +395,51 @@ export const EditFacturaForm = ({
             }}
           </form.Field>
 
-          {/* SECCIÓN: Fechas */}
-          <div className="col-span-full mt-4">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-              Fechas
-            </h3>
-          </div>
-
-          {/* Fecha Emisión */}
-          <form.Field name="fechaEmision">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="fechaEmision">
-                      Fecha de Emisión
-                    </FieldLabel>
-                    <FieldDescription>Selecciona la fecha</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <DatePicker
-                    date={
-                      field.state.value
-                        ? new Date(field.state.value)
-                        : undefined
-                    }
-                    onDateChange={(date) => {
-                      field.handleChange(
-                        date ? date.toISOString().split("T")[0] : ""
-                      );
-                    }}
-                  />
-                </Field>
-              );
-            }}
+          {/* Uso CFDI */}
+          <form.Field name="usoCfdi">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="usoCfdi">Uso CFDI</FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
+                </FieldContent>
+                <Input
+                  id="usoCfdi"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="G03, P01, etc."
+                />
+              </Field>
+            )}
           </form.Field>
 
-          {/* Fecha Vencimiento */}
-          <form.Field name="fechaVencimiento">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="fechaVencimiento">
-                      Fecha de Vencimiento
-                    </FieldLabel>
-                    <FieldDescription>Selecciona la fecha</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <DatePicker
-                    date={
-                      field.state.value
-                        ? new Date(field.state.value)
-                        : undefined
-                    }
-                    onDateChange={(date) => {
-                      field.handleChange(
-                        date ? date.toISOString().split("T")[0] : ""
-                      );
-                    }}
-                  />
-                </Field>
-              );
-            }}
+          {/* Status Pago */}
+          <form.Field name="statusPago">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="statusPago">Status de Pago</FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
+                </FieldContent>
+                <Select
+                  name={field.name}
+                  value={field.state.value}
+                  onValueChange={(value) => field.handleChange(value)}
+                >
+                  <SelectTrigger id="statusPago">
+                    <SelectValue placeholder="Seleccionar status" />
+                  </SelectTrigger>
+                  <SelectContent position="item-aligned">
+                    <SelectItem value="Vigente">Vigente</SelectItem>
+                    <SelectItem value="Cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
           </form.Field>
 
-          {/* Fecha de Pago (Opcional) */}
+          {/* Fecha de Pago */}
           <form.Field name="fechaPago">
             {(field) => (
               <Field orientation="responsive">
@@ -485,39 +459,6 @@ export const EditFacturaForm = ({
                 />
               </Field>
             )}
-          </form.Field>
-
-          {/* Fecha de Registro */}
-          <form.Field name="fechaRegistro">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="fechaRegistro">
-                      Fecha de Registro
-                    </FieldLabel>
-                    <FieldDescription>Fecha de creación</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <DatePicker
-                    date={
-                      field.state.value
-                        ? new Date(field.state.value)
-                        : undefined
-                    }
-                    onDateChange={(date) => {
-                      field.handleChange(
-                        date ? date.toISOString().split("T")[0] : ""
-                      );
-                    }}
-                  />
-                </Field>
-              );
-            }}
           </form.Field>
 
           {/* SECCIÓN: Datos Fiscales */}
@@ -554,6 +495,42 @@ export const EditFacturaForm = ({
             }}
           </form.Field>
 
+          {/* Nombre Emisor */}
+          <form.Field name="nombreEmisor">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="nombreEmisor">Nombre Emisor</FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
+                </FieldContent>
+                <Input
+                  id="nombreEmisor"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
+
+          {/* Nombre Receptor */}
+          <form.Field name="nombreReceptor">
+            {(field) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="nombreReceptor">Nombre Receptor</FieldLabel>
+                  <FieldDescription>Opcional</FieldDescription>
+                </FieldContent>
+                <Input
+                  id="nombreReceptor"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
+
           {/* RFC Receptor */}
           <form.Field name="rfcReceptor">
             {(field) => {
@@ -581,264 +558,11 @@ export const EditFacturaForm = ({
             }}
           </form.Field>
 
-          {/* Dirección Emisor */}
-          <form.Field name="direccionEmisor">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="direccionEmisor">
-                      Dirección Emisor
-                    </FieldLabel>
-                    <FieldDescription>Dirección completa</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Textarea
-                    id="direccionEmisor"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* Dirección Receptor */}
-          <form.Field name="direccionReceptor">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="direccionReceptor">
-                      Dirección Receptor
-                    </FieldLabel>
-                    <FieldDescription>Dirección completa</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Textarea
-                    id="direccionReceptor"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* Número de Cuenta */}
-          <form.Field name="numeroCuenta">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="numeroCuenta">Número de Cuenta</FieldLabel>
-                    <FieldDescription>Cuenta bancaria</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Input
-                    id="numeroCuenta"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* CLABE */}
-          <form.Field name="clabe">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="clabe">CLABE</FieldLabel>
-                    <FieldDescription>18 dígitos</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Input
-                    id="clabe"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                    maxLength={18}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* Banco */}
-          <form.Field name="banco">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="banco">Banco</FieldLabel>
-                    <FieldDescription>Institución bancaria</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Input
-                    id="banco"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* SECCIÓN: Metadatos */}
-          <div className="col-span-full mt-4">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-              Metadatos
-            </h3>
-          </div>
-
-          {/* Creado Por */}
-          <form.Field name="creadoPorId">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="creadoPorId">Creado Por</FieldLabel>
-                    <FieldDescription>Selecciona el socio creador</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Select
-                    name={field.name}
-                    value={field.state.value}
-                    onValueChange={(value) => {
-                      field.handleChange(value);
-                      const socio = sociosActivos.find((s) => s.id === value);
-                      if (socio) {
-                        form.setFieldValue("creadoPor", socio.nombre);
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="creadoPorId" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar socio" />
-                    </SelectTrigger>
-                    <SelectContent position="item-aligned">
-                      {sociosActivos.map((socio) => (
-                        <SelectItem key={socio.id} value={socio.id}>
-                          {socio.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* Autorizado Por */}
-          <form.Field name="autorizadoPorId">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field orientation="responsive" data-invalid={isInvalid}>
-                  <FieldContent>
-                    <FieldLabel htmlFor="autorizadoPorId">
-                      Autorizado Por
-                    </FieldLabel>
-                    <FieldDescription>Selecciona el socio autorizador</FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldContent>
-                  <Select
-                    name={field.name}
-                    value={field.state.value}
-                    onValueChange={(value) => {
-                      field.handleChange(value);
-                      const socio = sociosActivos.find((s) => s.id === value);
-                      if (socio) {
-                        form.setFieldValue("autorizadoPor", socio.nombre);
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="autorizadoPorId" aria-invalid={isInvalid}>
-                      <SelectValue placeholder="Seleccionar socio" />
-                    </SelectTrigger>
-                    <SelectContent position="item-aligned">
-                      {sociosActivos.map((socio) => (
-                        <SelectItem key={socio.id} value={socio.id}>
-                          {socio.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              );
-            }}
-          </form.Field>
-
-          {/* SECCIÓN: Notas */}
-          <div className="col-span-full mt-4">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-              Notas
-            </h3>
-          </div>
-
-          {/* Notas */}
-          <form.Field name="notas">
-            {(field) => {
-              return (
-                <Field orientation="responsive">
-                  <FieldContent>
-                    <FieldLabel htmlFor="notas">Notas</FieldLabel>
-                    <FieldDescription>Notas adicionales</FieldDescription>
-                  </FieldContent>
-                  <Textarea
-                    id="notas"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                </Field>
-              );
-            }}
-          </form.Field>
-
           {/* Submit Button */}
           <div className="flex justify-end mt-4 col-span-full">
             <Button
               type="submit"
-              className="w-full fles justify-center"
+              className="w-full flex justify-center"
               form="edit-factura-form"
             >
               Actualizar Factura

@@ -4,9 +4,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  UserPlus,
-  Link2,
-  Unlink,
 } from "lucide-react";
 import { Badge } from "@/core/shared/ui/badge";
 import {
@@ -17,36 +14,30 @@ import {
 } from "@/core/shared/ui/accordion";
 import { Checkbox } from "@/core/shared/ui/checkbox";
 import { ScrollArea } from "@/core/shared/ui/scroll-area";
-import { RadioGroup, RadioGroupItem } from "@/core/shared/ui/radio-group";
-import { Label } from "@/core/shared/ui/label";
-import { ImportExcelPreviewDto, DuplicadaDto, SinVinculacionDto, AccionSinVinculacion } from "../../server/dtos/ImportExcelPreviewDto.dto";
+import { ImportExcelPreviewDto, DuplicadaDto } from "../../server/dtos/ImportExcelPreviewDto.dto";
 import { ValidatedExcelRowDto } from "../../server/dtos/ImportFacturaExcelRowDto.dto";
 
 interface ImportFacturasPreviewProps {
   preview: ImportExcelPreviewDto;
   duplicadasAActualizar: string[];
   actualizarTodasDuplicadas: boolean;
-  accionesSinVinculacion: Record<number, AccionSinVinculacion>;
   onToggleDuplicada: (id: string) => void;
   onToggleActualizarTodas: () => void;
-  onSetAccionSinVinculacion: (rowNumber: number, accion: AccionSinVinculacion) => void;
 }
 
 export function ImportFacturasPreview({
   preview,
   duplicadasAActualizar,
   actualizarTodasDuplicadas,
-  accionesSinVinculacion,
   onToggleDuplicada,
   onToggleActualizarTodas,
-  onSetAccionSinVinculacion,
 }: ImportFacturasPreviewProps) {
-  const { resumen, nuevas, duplicadas, sinVinculacion, clientesNuevos, errores } = preview;
+  const { resumen, nuevas, duplicadas, errores } = preview;
 
   return (
     <div className="space-y-4">
       {/* Resumen */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <SummaryCard
           icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
           label="Nuevas"
@@ -60,32 +51,11 @@ export function ImportFacturasPreview({
           variant="warning"
         />
         <SummaryCard
-          icon={<Unlink className="h-5 w-5 text-orange-600" />}
-          label="Sin vinculacion"
-          value={resumen.totalSinVinculacion}
-          variant="orange"
-        />
-        <SummaryCard
-          icon={<UserPlus className="h-5 w-5 text-blue-600" />}
-          label="Clientes nuevos"
-          value={resumen.totalClientesNuevos}
-          variant="info"
-        />
-        <SummaryCard
           icon={<XCircle className="h-5 w-5 text-red-600" />}
           label="Errores"
           value={resumen.totalErrores}
           variant="error"
         />
-      </div>
-
-      {/* Info de vinculacion */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-        <Link2 className="h-4 w-4" />
-        <span>
-          {resumen.totalConVinculacion} facturas con vinculacion I/E encontrada,{" "}
-          {resumen.totalSinVinculacion} sin vinculacion (elige que hacer con cada una)
-        </span>
       </div>
 
       <ScrollArea className="h-[400px] pr-4">
@@ -152,70 +122,6 @@ export function ImportFacturasPreview({
             </AccordionItem>
           )}
 
-          {/* Facturas sin vinculacion */}
-          {sinVinculacion.length > 0 && (
-            <AccordionItem value="sinVinculacion" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <Unlink className="h-4 w-4 text-orange-600" />
-                  <span>Facturas sin vinculacion ({sinVinculacion.length})</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Estas facturas no tienen un Ingreso/Egreso con el mismo folio fiscal.
-                  Selecciona que hacer con cada una:
-                </p>
-                <div className="space-y-3 pt-2">
-                  {sinVinculacion.map((item) => (
-                    <SinVinculacionRow
-                      key={item.row.rowNumber}
-                      item={item}
-                      accionSeleccionada={accionesSinVinculacion[item.row.rowNumber]}
-                      onAccionChange={(accion) => onSetAccionSinVinculacion(item.row.rowNumber, accion)}
-                    />
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
-
-          {/* Clientes nuevos */}
-          {clientesNuevos.length > 0 && (
-            <AccordionItem value="clientes" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4 text-blue-600" />
-                  <span>Clientes nuevos a crear ({clientesNuevos.length})</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Estos clientes se crearan automaticamente durante la
-                  importacion.
-                </p>
-                <div className="space-y-2 pt-2">
-                  {clientesNuevos.map((cliente) => (
-                    <div
-                      key={cliente.rfc}
-                      className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-sm"
-                    >
-                      <div>
-                        <p className="font-medium">{cliente.nombre}</p>
-                        <p className="text-muted-foreground">
-                          RFC: {cliente.rfc}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">
-                        {cliente.rowNumbers.length} factura(s)
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
-
           {/* Errores */}
           {errores.length > 0 && (
             <AccordionItem value="errores" className="border rounded-lg px-4">
@@ -261,14 +167,12 @@ function SummaryCard({
   icon: React.ReactNode;
   label: string;
   value: number;
-  variant: "success" | "warning" | "info" | "error" | "orange";
+  variant: "success" | "warning" | "error";
 }) {
   const bgColors = {
     success: "bg-green-50 dark:bg-green-950/30",
     warning: "bg-yellow-50 dark:bg-yellow-950/30",
-    info: "bg-blue-50 dark:bg-blue-950/30",
     error: "bg-red-50 dark:bg-red-950/30",
-    orange: "bg-orange-50 dark:bg-orange-950/30",
   };
 
   return (
@@ -287,20 +191,10 @@ function NuevaFacturaRow({ row }: { row: ValidatedExcelRowDto }) {
     <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/30 rounded-lg text-sm">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium">{row.folioFiscal}</span>
-          {row.vinculacion?.encontrado ? (
-            <Badge variant="outline" className="text-xs">
-              <Link2 className="h-3 w-3 mr-1" />
-              {row.vinculacion.tipoOrigen}
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="text-xs">
-              Sin vinculacion
-            </Badge>
-          )}
+          <span className="font-medium">{row.uuid}</span>
         </div>
         <p className="text-muted-foreground">
-          {row.clienteProveedor} - ${row.monto?.toLocaleString()}
+          {row.nombreReceptor || row.rfcReceptor} - ${row.total?.toLocaleString()}
         </p>
       </div>
       <Badge variant="secondary">Fila {row.rowNumber}</Badge>
@@ -330,69 +224,23 @@ function DuplicadaFacturaRow({
         />
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-medium">{duplicada.row.folioFiscal}</span>
+            <span className="font-medium">{duplicada.row.uuid}</span>
             <Badge variant="secondary">Fila {duplicada.row.rowNumber}</Badge>
           </div>
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
               <p className="text-muted-foreground mb-1">En Excel:</p>
-              <p>{duplicada.row.clienteProveedor}</p>
-              <p>${duplicada.row.monto?.toLocaleString()}</p>
+              <p>{duplicada.row.nombreReceptor || duplicada.row.rfcReceptor}</p>
+              <p>${duplicada.row.total?.toLocaleString()}</p>
             </div>
             <div>
               <p className="text-muted-foreground mb-1">En sistema:</p>
-              <p>{duplicada.existing.clienteProveedor}</p>
-              <p>${duplicada.existing.monto?.toLocaleString()}</p>
+              <p>{duplicada.existing.nombreReceptor || duplicada.existing.rfcReceptor}</p>
+              <p>${duplicada.existing.total?.toLocaleString()}</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function SinVinculacionRow({
-  item,
-  accionSeleccionada,
-  onAccionChange,
-}: {
-  item: SinVinculacionDto;
-  accionSeleccionada: AccionSinVinculacion;
-  onAccionChange: (accion: AccionSinVinculacion) => void;
-}) {
-  return (
-    <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg text-sm">
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-medium">{item.row.folioFiscal}</span>
-        <Badge variant="secondary">Fila {item.row.rowNumber}</Badge>
-      </div>
-      <p className="text-muted-foreground mb-3">
-        {item.row.clienteProveedor} - ${item.row.monto?.toLocaleString()}
-      </p>
-      <RadioGroup
-        value={accionSeleccionada || ""}
-        onValueChange={(value) => onAccionChange(value as AccionSinVinculacion)}
-        className="space-y-2"
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="crear_ingreso" id={`ingreso-${item.row.rowNumber}`} />
-          <Label htmlFor={`ingreso-${item.row.rowNumber}`} className="cursor-pointer">
-            Crear Ingreso automaticamente
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="crear_egreso" id={`egreso-${item.row.rowNumber}`} />
-          <Label htmlFor={`egreso-${item.row.rowNumber}`} className="cursor-pointer">
-            Crear Egreso automaticamente
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="sin_vincular" id={`sin-${item.row.rowNumber}`} />
-          <Label htmlFor={`sin-${item.row.rowNumber}`} className="cursor-pointer">
-            Solo factura (sin vincular a I/E)
-          </Label>
-        </div>
-      </RadioGroup>
     </div>
   );
 }

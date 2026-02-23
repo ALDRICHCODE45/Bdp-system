@@ -3,28 +3,24 @@
  */
 export function formatFieldName(campo: string): string {
   const fieldNames: Record<string, string> = {
-    tipoOrigen: "Tipo de Origen",
-    origenId: "ID Origen",
-    clienteProveedorId: "ID Cliente/Proveedor",
-    clienteProveedor: "Cliente/Proveedor",
     concepto: "Concepto",
-    monto: "Monto",
-    periodo: "Período",
-    numeroFactura: "Número de Factura",
-    folioFiscal: "Folio Fiscal",
-    fechaEmision: "Fecha de Emisión",
-    fechaVencimiento: "Fecha de Vencimiento",
-    estado: "Estado",
-    formaPago: "Forma de Pago",
+    serie: "Serie",
+    folio: "Folio",
+    subtotal: "Subtotal",
+    totalImpuestosTransladados: "Impuestos Trasladados",
+    totalImpuestosRetenidos: "Impuestos Retenidos",
+    total: "Total",
+    uuid: "UUID",
+    metodoPago: "Método de Pago",
+    moneda: "Moneda",
+    usoCfdi: "Uso CFDI",
+    status: "Status",
+    nombreEmisor: "Nombre Emisor",
+    nombreReceptor: "Nombre Receptor",
+    statusPago: "Status de Pago",
     rfcEmisor: "RFC Emisor",
     rfcReceptor: "RFC Receptor",
-    direccionEmisor: "Dirección Emisor",
-    direccionReceptor: "Dirección Receptor",
     fechaPago: "Fecha de Pago",
-    fechaRegistro: "Fecha de Registro",
-    creadoPor: "Creado Por",
-    autorizadoPor: "Autorizado Por",
-    notas: "Notas",
   };
 
   return fieldNames[campo] || campo;
@@ -41,38 +37,24 @@ export function formatFieldValue(
     return "Sin valor";
   }
 
-  // Enums - Estado
-  if (campo === "estado") {
-    const estadoMap: Record<string, string> = {
+  // Enums - Status
+  if (campo === "status") {
+    const statusMap: Record<string, string> = {
       borrador: "Borrador",
       enviada: "Enviada",
       pagada: "Pagada",
       cancelada: "Cancelada",
     };
-    return estadoMap[valor] || valor;
+    return statusMap[valor] || valor;
   }
 
-  // Enums - Forma de Pago
-  if (campo === "formaPago") {
-    const formaPagoMap: Record<string, string> = {
-      transferencia: "Transferencia",
-      efectivo: "Efectivo",
-      cheque: "Cheque",
-    };
-    return formaPagoMap[valor] || valor;
-  }
-
-  // Enums - Tipo de Origen
-  if (campo === "tipoOrigen") {
-    const tipoOrigenMap: Record<string, string> = {
-      ingreso: "Ingreso",
-      egreso: "Egreso",
-    };
-    return tipoOrigenMap[valor] || valor;
-  }
-
-  // Decimal - Monto
-  if (campo === "monto") {
+  // Decimal - Subtotal, Total, Impuestos
+  if (
+    campo === "subtotal" ||
+    campo === "total" ||
+    campo === "totalImpuestosTransladados" ||
+    campo === "totalImpuestosRetenidos"
+  ) {
     try {
       const monto = Number(valor);
       if (!isNaN(monto)) {
@@ -80,38 +62,6 @@ export function formatFieldValue(
           style: "currency",
           currency: "MXN",
         }).format(monto);
-      }
-    } catch {
-      return valor;
-    }
-  }
-
-  // DateTime - Fecha de Emisión
-  if (campo === "fechaEmision") {
-    try {
-      const fecha = new Date(valor);
-      if (!isNaN(fecha.getTime())) {
-        return new Intl.DateTimeFormat("es-MX", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }).format(fecha);
-      }
-    } catch {
-      return valor;
-    }
-  }
-
-  // DateTime - Fecha de Vencimiento
-  if (campo === "fechaVencimiento") {
-    try {
-      const fecha = new Date(valor);
-      if (!isNaN(fecha.getTime())) {
-        return new Intl.DateTimeFormat("es-MX", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }).format(fecha);
       }
     } catch {
       return valor;
@@ -136,23 +86,6 @@ export function formatFieldValue(
     }
   }
 
-  // DateTime - Fecha de Registro
-  if (campo === "fechaRegistro") {
-    try {
-      const fecha = new Date(valor);
-      if (!isNaN(fecha.getTime())) {
-        return new Intl.DateTimeFormat("es-MX", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }).format(fecha);
-      }
-    } catch {
-      return valor;
-    }
-  }
-
   // Valores string normales
   return valor;
 }
-

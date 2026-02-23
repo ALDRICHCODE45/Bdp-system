@@ -4,28 +4,24 @@ import { Result, Err, Ok } from "@/core/shared/result/result";
 import { Prisma, FacturaHistorial } from "@prisma/client";
 
 type FacturaData = {
-  tipoOrigen: string | null;
-  origenId: string | null;
-  clienteProveedorId: string;
-  clienteProveedor: string;
   concepto: string;
-  monto: Prisma.Decimal | number;
-  periodo: string;
-  numeroFactura: string;
-  folioFiscal: string;
-  fechaEmision: Date;
-  fechaVencimiento: Date;
-  estado: string;
-  formaPago: string;
+  serie: string | null;
+  folio: string | null;
+  subtotal: Prisma.Decimal | number;
+  totalImpuestosTransladados: Prisma.Decimal | number | null;
+  totalImpuestosRetenidos: Prisma.Decimal | number | null;
+  total: Prisma.Decimal | number;
+  uuid: string;
   rfcEmisor: string;
+  nombreReceptor: string | null;
   rfcReceptor: string;
-  direccionEmisor: string;
-  direccionReceptor: string;
+  metodoPago: string | null;
+  moneda: string;
+  usoCfdi: string | null;
+  status: string;
+  nombreEmisor: string | null;
+  statusPago: string | null;
   fechaPago: Date | null;
-  fechaRegistro: Date;
-  creadoPor: string | null;
-  autorizadoPor: string | null;
-  notas: string | null;
 };
 
 export class FacturaHistorialService {
@@ -71,6 +67,32 @@ export class FacturaHistorialService {
   }
 
   /**
+   * Extrae los datos relevantes de una entidad Factura
+   */
+  private extractFacturaData(factura: FacturaEntity): FacturaData {
+    return {
+      concepto: factura.concepto,
+      serie: factura.serie,
+      folio: factura.folio,
+      subtotal: factura.subtotal,
+      totalImpuestosTransladados: factura.totalImpuestosTransladados,
+      totalImpuestosRetenidos: factura.totalImpuestosRetenidos,
+      total: factura.total,
+      uuid: factura.uuid,
+      rfcEmisor: factura.rfcEmisor,
+      nombreReceptor: factura.nombreReceptor,
+      rfcReceptor: factura.rfcReceptor,
+      metodoPago: factura.metodoPago,
+      moneda: factura.moneda,
+      usoCfdi: factura.usoCfdi,
+      status: factura.status,
+      nombreEmisor: factura.nombreEmisor,
+      statusPago: factura.statusPago,
+      fechaPago: factura.fechaPago,
+    };
+  }
+
+  /**
    * Detecta cambios entre dos objetos de factura
    */
   private detectChanges(
@@ -88,28 +110,24 @@ export class FacturaHistorialService {
     }> = [];
 
     const fields: (keyof FacturaData)[] = [
-      "tipoOrigen",
-      "origenId",
-      "clienteProveedorId",
-      "clienteProveedor",
       "concepto",
-      "monto",
-      "periodo",
-      "numeroFactura",
-      "folioFiscal",
-      "fechaEmision",
-      "fechaVencimiento",
-      "estado",
-      "formaPago",
+      "serie",
+      "folio",
+      "subtotal",
+      "totalImpuestosTransladados",
+      "totalImpuestosRetenidos",
+      "total",
+      "uuid",
       "rfcEmisor",
+      "nombreReceptor",
       "rfcReceptor",
-      "direccionEmisor",
-      "direccionReceptor",
+      "metodoPago",
+      "moneda",
+      "usoCfdi",
+      "status",
+      "nombreEmisor",
+      "statusPago",
       "fechaPago",
-      "fechaRegistro",
-      "creadoPor",
-      "autorizadoPor",
-      "notas",
     ];
 
     for (const field of fields) {
@@ -140,30 +158,7 @@ export class FacturaHistorialService {
     usuarioId?: string | null
   ): Promise<Result<void, Error>> {
     try {
-      const facturaData: FacturaData = {
-        tipoOrigen: factura.tipoOrigen,
-        origenId: factura.origenId,
-        clienteProveedorId: factura.clienteProveedorId,
-        clienteProveedor: factura.clienteProveedor,
-        concepto: factura.concepto,
-        monto: factura.monto,
-        periodo: factura.periodo,
-        numeroFactura: factura.numeroFactura,
-        folioFiscal: factura.folioFiscal,
-        fechaEmision: factura.fechaEmision,
-        fechaVencimiento: factura.fechaVencimiento,
-        estado: factura.estado,
-        formaPago: factura.formaPago,
-        rfcEmisor: factura.rfcEmisor,
-        rfcReceptor: factura.rfcReceptor,
-        direccionEmisor: factura.direccionEmisor,
-        direccionReceptor: factura.direccionReceptor,
-        fechaPago: factura.fechaPago,
-        fechaRegistro: factura.fechaRegistro,
-        creadoPor: factura.creadoPorRef?.nombre ?? null,
-        autorizadoPor: factura.autorizadoPorRef?.nombre ?? null,
-        notas: factura.notas,
-      };
+      const facturaData = this.extractFacturaData(factura);
 
       // Crear registros de historial para todos los campos iniciales
       const historialRecords = Object.keys(facturaData).map((field) => ({
@@ -200,55 +195,8 @@ export class FacturaHistorialService {
     usuarioId?: string | null
   ): Promise<Result<void, Error>> {
     try {
-      const oldData: FacturaData = {
-        tipoOrigen: oldFactura.tipoOrigen,
-        origenId: oldFactura.origenId,
-        clienteProveedorId: oldFactura.clienteProveedorId,
-        clienteProveedor: oldFactura.clienteProveedor,
-        concepto: oldFactura.concepto,
-        monto: oldFactura.monto,
-        periodo: oldFactura.periodo,
-        numeroFactura: oldFactura.numeroFactura,
-        folioFiscal: oldFactura.folioFiscal,
-        fechaEmision: oldFactura.fechaEmision,
-        fechaVencimiento: oldFactura.fechaVencimiento,
-        estado: oldFactura.estado,
-        formaPago: oldFactura.formaPago,
-        rfcEmisor: oldFactura.rfcEmisor,
-        rfcReceptor: oldFactura.rfcReceptor,
-        direccionEmisor: oldFactura.direccionEmisor,
-        direccionReceptor: oldFactura.direccionReceptor,
-        fechaPago: oldFactura.fechaPago,
-        fechaRegistro: oldFactura.fechaRegistro,
-        creadoPor: oldFactura.creadoPorRef?.nombre ?? null,
-        autorizadoPor: oldFactura.autorizadoPorRef?.nombre ?? null,
-        notas: oldFactura.notas,
-      };
-
-      const newData: FacturaData = {
-        tipoOrigen: newFactura.tipoOrigen,
-        origenId: newFactura.origenId,
-        clienteProveedorId: newFactura.clienteProveedorId,
-        clienteProveedor: newFactura.clienteProveedor,
-        concepto: newFactura.concepto,
-        monto: newFactura.monto,
-        periodo: newFactura.periodo,
-        numeroFactura: newFactura.numeroFactura,
-        folioFiscal: newFactura.folioFiscal,
-        fechaEmision: newFactura.fechaEmision,
-        fechaVencimiento: newFactura.fechaVencimiento,
-        estado: newFactura.estado,
-        formaPago: newFactura.formaPago,
-        rfcEmisor: newFactura.rfcEmisor,
-        rfcReceptor: newFactura.rfcReceptor,
-        direccionEmisor: newFactura.direccionEmisor,
-        direccionReceptor: newFactura.direccionReceptor,
-        fechaPago: newFactura.fechaPago,
-        fechaRegistro: newFactura.fechaRegistro,
-        creadoPor: newFactura.creadoPorRef?.nombre ?? null,
-        autorizadoPor: newFactura.autorizadoPorRef?.nombre ?? null,
-        notas: newFactura.notas,
-      };
+      const oldData = this.extractFacturaData(oldFactura);
+      const newData = this.extractFacturaData(newFactura);
 
       const changes = this.detectChanges(oldData, newData);
 
@@ -300,4 +248,3 @@ export class FacturaHistorialService {
     }
   }
 }
-

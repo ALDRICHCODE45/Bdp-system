@@ -1,53 +1,32 @@
 import { z } from "zod";
 
 export const createFacturaSchemaUI = z.object({
-  tipoOrigen: z.enum(["ingreso", "egreso"], {
-    message: "Tipo de origen inválido",
-  }),
-  origenId: z.string().uuid("ID de origen inválido"),
-  clienteProveedorId: z.string().uuid("ID de cliente/proveedor inválido"),
-  clienteProveedor: z.string().min(1, "El cliente/proveedor es requerido"),
   concepto: z.string().min(1, "El concepto es requerido"),
-  monto: z.number().positive("El monto debe ser mayor a 0"),
-  periodo: z
-    .string()
-    .regex(/^\d{4}-\d{2}$/, "El periodo debe tener el formato YYYY-MM"),
-  numeroFactura: z.string().min(1, "El número de factura es requerido"),
-  folioFiscal: z.string().min(1, "El folio fiscal es requerido"),
-  fechaEmision: z.string().min(1, "La fecha de emisión es requerida"),
-  fechaVencimiento: z.string().min(1, "La fecha de vencimiento es requerida"),
-  estado: z.enum(["borrador", "enviada", "pagada", "cancelada"], {
-    message: "Estado inválido",
-  }),
-  formaPago: z.enum(["transferencia", "efectivo", "cheque"], {
-    message: "Forma de pago inválida",
-  }),
+  serie: z.string().optional(),
+  folio: z.string().optional(),
+  subtotal: z.number().min(0, "El subtotal debe ser mayor o igual a 0"),
+  totalImpuestosTransladados: z.number().optional(),
+  totalImpuestosRetenidos: z.number().optional(),
+  total: z.number().min(0, "El total debe ser mayor o igual a 0"),
+  uuid: z.string().min(1, "El UUID es requerido"),
   rfcEmisor: z
     .string()
     .min(12, "El RFC emisor debe tener al menos 12 caracteres")
     .max(13, "El RFC emisor debe tener máximo 13 caracteres"),
+  nombreReceptor: z.string().optional(),
   rfcReceptor: z
     .string()
     .min(12, "El RFC receptor debe tener al menos 12 caracteres")
     .max(13, "El RFC receptor debe tener máximo 13 caracteres"),
-  direccionEmisor: z.string().min(1, "La dirección del emisor es requerida"),
-  direccionReceptor: z
-    .string()
-    .min(1, "La dirección del receptor es requerida"),
-  numeroCuenta: z.string().min(1, "El número de cuenta es requerido"),
-  clabe: z
-    .string()
-    .min(18, "La CLABE debe tener 18 dígitos")
-    .max(18, "La CLABE debe tener 18 dígitos"),
-  banco: z.string().min(1, "El banco es requerido"),
+  metodoPago: z.string().optional(),
+  moneda: z.string().min(1, "La moneda es requerida"),
+  usoCfdi: z.string().optional(),
+  status: z.enum(["borrador", "enviada", "pagada", "cancelada"], {
+    message: "Status inválido",
+  }),
+  nombreEmisor: z.string().optional(),
+  statusPago: z.string().optional(),
   fechaPago: z.string().optional(),
-  fechaRegistro: z.string().min(1, "La fecha de registro es requerida"),
-  creadoPor: z.string().min(1, "El nombre del creador es requerido"),
-  creadoPorId: z.string().min(1, "El ID del creador es requerido"),
-  autorizadoPor: z.string().min(1, "El nombre del autorizador es requerido"),
-  autorizadoPorId: z.string().min(1, "El ID del autorizador es requerido"),
-  notas: z.string().optional(),
 });
 
 export type CreateFacturaFormValues = z.infer<typeof createFacturaSchemaUI>;
-

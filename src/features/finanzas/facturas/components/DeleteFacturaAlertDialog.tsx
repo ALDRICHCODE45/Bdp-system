@@ -28,7 +28,7 @@ export function DeleteFacturaAlertDialog({
   const [inputValue, setInputValue] = useState("");
 
   if (!factura) return null;
-  const canDelete = factura.estado === "borrador";
+  const canDelete = factura.status === "borrador";
   const isMatch = inputValue.trim() === factura.id;
 
   const handleDelete = async () => {
@@ -69,7 +69,7 @@ export function DeleteFacturaAlertDialog({
               <>
                 Solo se pueden eliminar facturas en estado{" "}
                 <strong>BORRADOR</strong>. Esta factura tiene el estado{" "}
-                <strong>{factura.estado.toUpperCase()}</strong>.
+                <strong>{factura.status.toUpperCase()}</strong>.
               </>
             )}
           </AlertDialogDescription>

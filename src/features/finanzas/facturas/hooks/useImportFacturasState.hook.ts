@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ImportExcelPreviewDto, ImportOptionsDto, AccionSinVinculacion } from "../server/dtos/ImportExcelPreviewDto.dto";
+import { ImportExcelPreviewDto, ImportOptionsDto } from "../server/dtos/ImportExcelPreviewDto.dto";
 import { ImportExecutionResultDto } from "../server/dtos/ImportFacturaResultDto.dto";
 
 export type ImportStep = "upload" | "preview" | "executing" | "results";
@@ -19,7 +19,6 @@ const initialState: ImportState = {
   options: {
     duplicadasAActualizar: [],
     actualizarTodasDuplicadas: false,
-    accionesSinVinculacion: {},
   },
   results: null,
 };
@@ -69,26 +68,10 @@ export const useImportFacturasState = () => {
       options: {
         ...prev.options,
         actualizarTodasDuplicadas: !prev.options.actualizarTodasDuplicadas,
-        duplicadasAActualizar: [], // Limpiar selección individual
+        duplicadasAActualizar: [],
       },
     }));
   }, []);
-
-  const setAccionSinVinculacion = useCallback(
-    (rowNumber: number, accion: AccionSinVinculacion) => {
-      setState((prev) => ({
-        ...prev,
-        options: {
-          ...prev.options,
-          accionesSinVinculacion: {
-            ...prev.options.accionesSinVinculacion,
-            [rowNumber]: accion,
-          },
-        },
-      }));
-    },
-    []
-  );
 
   const setStep = useCallback((step: ImportStep) => {
     setState((prev) => ({ ...prev, step }));
@@ -125,7 +108,6 @@ export const useImportFacturasState = () => {
     setOptions,
     toggleDuplicadaUpdate,
     toggleActualizarTodas,
-    setAccionSinVinculacion,
     setStep,
     setResults,
     reset,

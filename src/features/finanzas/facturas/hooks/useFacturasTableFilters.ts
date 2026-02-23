@@ -1,169 +1,101 @@
 import { Table } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
-import { DateRange } from "react-day-picker";
 
 export const useFacturasTableFilters = (table: Table<unknown>) => {
-  const [selectedDateRange, setDateRange] = useState<DateRange | undefined>();
-  const [selectedEstado, setSelectedEstado] = useState<string>("todos");
-  const [selectedTipoOrigen, setSelectedTipoOrigen] = useState<string>("todos");
-  const [selectedFormaPago, setSelectedFormaPago] = useState<string>("todos");
-  const [selectedMontoRange, setMontoRange] = useState({ min: "", max: "" });
-  const [selectedPeriodo, setSelectedPeriodo] = useState<string>("todos");
-  const [clienteProveedorFilter, setClienteProveedorFilter] = useState<string>("");
-  const [rfcEmisorFilter, setRfcEmisorFilter] = useState<string>("");
-  const [creadoPorFilter, setCreadoPorFilter] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("todos");
+  const [selectedMetodoPago, setSelectedMetodoPago] = useState<string>("todos");
+  const [selectedMoneda, setSelectedMoneda] = useState<string>("todos");
+  const [selectedStatusPago, setSelectedStatusPago] = useState<string>("todos");
+  const [selectedTotalRange, setTotalRange] = useState({ min: "", max: "" });
 
-  const handleDateRangeChange = useCallback(
-    (range: DateRange | undefined) => {
-      setDateRange(range);
-      if (!range || (!range.from && !range.to)) {
-        table.getColumn("fechaEmision")?.setFilterValue(undefined);
-        return;
-      }
-      table.getColumn("fechaEmision")?.setFilterValue(range);
-      table.setPageIndex(0);
-    },
-    [table]
-  );
-
-  const handleEstadoChange = useCallback(
-    (estado: string) => {
-      setSelectedEstado(estado);
-      if (estado === "todos") {
-        table.getColumn("estado")?.setFilterValue(undefined);
+  const handleStatusChange = useCallback(
+    (status: string) => {
+      setSelectedStatus(status);
+      if (status === "todos") {
+        table.getColumn("status")?.setFilterValue(undefined);
       } else {
-        table.getColumn("estado")?.setFilterValue(estado);
+        table.getColumn("status")?.setFilterValue(status);
       }
-      table.setPageIndex(0);
     },
     [table]
   );
 
-  const handleTipoOrigenChange = useCallback(
-    (tipoOrigen: string) => {
-      setSelectedTipoOrigen(tipoOrigen);
-      if (tipoOrigen === "todos") {
-        table.getColumn("tipoOrigen")?.setFilterValue(undefined);
+  const handleMetodoPagoChange = useCallback(
+    (metodoPago: string) => {
+      setSelectedMetodoPago(metodoPago);
+      if (metodoPago === "todos") {
+        table.getColumn("metodoPago")?.setFilterValue(undefined);
       } else {
-        table.getColumn("tipoOrigen")?.setFilterValue(tipoOrigen);
+        table.getColumn("metodoPago")?.setFilterValue(metodoPago);
       }
-      table.setPageIndex(0);
     },
     [table]
   );
 
-  const handleFormaPagoChange = useCallback(
-    (formaPago: string) => {
-      setSelectedFormaPago(formaPago);
-      if (formaPago === "todos") {
-        table.getColumn("formaPago")?.setFilterValue(undefined);
+  const handleMonedaChange = useCallback(
+    (moneda: string) => {
+      setSelectedMoneda(moneda);
+      if (moneda === "todos") {
+        table.getColumn("moneda")?.setFilterValue(undefined);
       } else {
-        table.getColumn("formaPago")?.setFilterValue(formaPago);
+        table.getColumn("moneda")?.setFilterValue(moneda);
       }
-      table.setPageIndex(0);
     },
     [table]
   );
 
-  const handleMontoFilter = useCallback(() => {
-    const min = selectedMontoRange.min
-      ? parseFloat(selectedMontoRange.min)
+  const handleStatusPagoChange = useCallback(
+    (statusPago: string) => {
+      setSelectedStatusPago(statusPago);
+      if (statusPago === "todos") {
+        table.getColumn("statusPago")?.setFilterValue(undefined);
+      } else {
+        table.getColumn("statusPago")?.setFilterValue(statusPago);
+      }
+    },
+    [table]
+  );
+
+  const handleTotalFilter = useCallback(() => {
+    const min = selectedTotalRange.min
+      ? parseFloat(selectedTotalRange.min)
       : undefined;
-    const max = selectedMontoRange.max
-      ? parseFloat(selectedMontoRange.max)
+    const max = selectedTotalRange.max
+      ? parseFloat(selectedTotalRange.max)
       : undefined;
 
     if (min !== undefined || max !== undefined) {
-      table.getColumn("monto")?.setFilterValue({ min, max });
+      table.getColumn("total")?.setFilterValue({ min, max });
     } else {
-      table.getColumn("monto")?.setFilterValue(undefined);
+      table.getColumn("total")?.setFilterValue(undefined);
     }
-    table.setPageIndex(0);
-  }, [table, selectedMontoRange]);
-
-  const handlePeriodoChange = useCallback(
-    (periodo: string) => {
-      setSelectedPeriodo(periodo);
-      if (periodo === "todos") {
-        table.getColumn("periodo")?.setFilterValue(undefined);
-      } else {
-        table.getColumn("periodo")?.setFilterValue(periodo);
-      }
-      table.setPageIndex(0);
-    },
-    [table]
-  );
-
-  const handleClienteProveedorChange = useCallback(
-    (value: string) => {
-      setClienteProveedorFilter(value);
-      table.getColumn("clienteProveedor")?.setFilterValue(value || undefined);
-      table.setPageIndex(0);
-    },
-    [table]
-  );
-
-  const handleRfcEmisorChange = useCallback(
-    (value: string) => {
-      setRfcEmisorFilter(value);
-      table.getColumn("rfcEmisor")?.setFilterValue(value || undefined);
-      table.setPageIndex(0);
-    },
-    [table]
-  );
-
-  const handleCreadoPorChange = useCallback(
-    (value: string) => {
-      setCreadoPorFilter(value);
-      table.getColumn("creadoPorNombre")?.setFilterValue(value || undefined);
-      table.setPageIndex(0);
-    },
-    [table]
-  );
+  }, [table, selectedTotalRange]);
 
   const clearFilters = useCallback(() => {
-    setDateRange(undefined);
-    setSelectedEstado("todos");
-    setSelectedTipoOrigen("todos");
-    setSelectedFormaPago("todos");
-    setMontoRange({ min: "", max: "" });
-    setSelectedPeriodo("todos");
-    setClienteProveedorFilter("");
-    setRfcEmisorFilter("");
-    setCreadoPorFilter("");
-    table.getColumn("fechaEmision")?.setFilterValue(undefined);
-    table.getColumn("estado")?.setFilterValue(undefined);
-    table.getColumn("tipoOrigen")?.setFilterValue(undefined);
-    table.getColumn("formaPago")?.setFilterValue(undefined);
-    table.getColumn("monto")?.setFilterValue(undefined);
-    table.getColumn("periodo")?.setFilterValue(undefined);
-    table.getColumn("clienteProveedor")?.setFilterValue(undefined);
-    table.getColumn("rfcEmisor")?.setFilterValue(undefined);
-    table.getColumn("creadoPorNombre")?.setFilterValue(undefined);
+    setSelectedStatus("todos");
+    setSelectedMetodoPago("todos");
+    setSelectedMoneda("todos");
+    setSelectedStatusPago("todos");
+    setTotalRange({ min: "", max: "" });
+    table.getColumn("status")?.setFilterValue(undefined);
+    table.getColumn("metodoPago")?.setFilterValue(undefined);
+    table.getColumn("moneda")?.setFilterValue(undefined);
+    table.getColumn("statusPago")?.setFilterValue(undefined);
+    table.getColumn("total")?.setFilterValue(undefined);
   }, [table]);
 
   return {
-    //variables
-    selectedEstado,
-    selectedTipoOrigen,
-    selectedFormaPago,
-    selectedMontoRange,
-    selectedDateRange,
-    selectedPeriodo,
-    clienteProveedorFilter,
-    rfcEmisorFilter,
-    creadoPorFilter,
-    //handlers
-    handleDateRangeChange,
-    handleEstadoChange,
-    handleTipoOrigenChange,
-    handleFormaPagoChange,
-    handleMontoFilter,
-    handlePeriodoChange,
-    handleClienteProveedorChange,
-    handleRfcEmisorChange,
-    handleCreadoPorChange,
-    setMontoRange,
+    selectedStatus,
+    selectedMetodoPago,
+    selectedMoneda,
+    selectedStatusPago,
+    selectedTotalRange,
+    handleStatusChange,
+    handleMetodoPagoChange,
+    handleMonedaChange,
+    handleStatusPagoChange,
+    handleTotalFilter,
+    setTotalRange,
     clearFilters,
   };
 };

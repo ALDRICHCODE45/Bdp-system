@@ -5,50 +5,23 @@ import { z } from "zod";
  * Este schema valida los datos crudos extraídos del Excel.
  */
 export const importFacturaExcelRowSchema = z.object({
-  numeroFactura: z
+  uuid: z
     .string()
-    .min(1, "El número de factura es requerido")
+    .min(1, "El UUID es requerido")
     .transform((val) => val.trim()),
-
-  folioFiscal: z
-    .string()
-    .min(1, "El folio fiscal es requerido")
-    .transform((val) => val.trim()),
-
-  clienteProveedor: z
-    .string()
-    .min(1, "El nombre del cliente/proveedor es requerido")
-    .transform((val) => val.trim()),
-
-  rfcClienteProveedor: z
-    .string()
-    .min(12, "El RFC debe tener al menos 12 caracteres")
-    .max(13, "El RFC debe tener máximo 13 caracteres")
-    .transform((val) => val.trim().toUpperCase()),
 
   concepto: z
     .string()
     .min(1, "El concepto es requerido")
     .transform((val) => val.trim()),
 
-  monto: z
-    .number({ message: "El monto debe ser un numero" })
-    .positive("El monto debe ser mayor a 0"),
+  subtotal: z
+    .number({ message: "El subtotal debe ser un número" })
+    .min(0, "El subtotal debe ser mayor o igual a 0"),
 
-  periodo: z
-    .string()
-    .regex(/^\d{4}-\d{2}$/, "El periodo debe tener el formato YYYY-MM"),
-
-  fechaEmision: z
-    .date({ message: "La fecha de emisión no es válida" }),
-
-  fechaVencimiento: z
-    .date({ message: "La fecha de vencimiento no es válida" }),
-
-  formaPago: z
-    .enum(["TRANSFERENCIA", "EFECTIVO", "CHEQUE"], {
-      message: "Forma de pago inválida. Use: TRANSFERENCIA, EFECTIVO o CHEQUE",
-    }),
+  total: z
+    .number({ message: "El total debe ser un número" })
+    .min(0, "El total debe ser mayor o igual a 0"),
 
   rfcEmisor: z
     .string()
@@ -56,42 +29,64 @@ export const importFacturaExcelRowSchema = z.object({
     .max(13, "El RFC emisor debe tener máximo 13 caracteres")
     .transform((val) => val.trim().toUpperCase()),
 
+  nombreReceptor: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val ? val.trim() : null)),
+
   rfcReceptor: z
     .string()
     .min(12, "El RFC receptor debe tener al menos 12 caracteres")
     .max(13, "El RFC receptor debe tener máximo 13 caracteres")
     .transform((val) => val.trim().toUpperCase()),
 
-  direccionEmisor: z
+  serie: z
     .string()
-    .default("")
+    .optional()
+    .nullable()
+    .transform((val) => (val ? val.trim() : null)),
+
+  folio: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val ? val.trim() : null)),
+
+  totalImpuestosTransladados: z
+    .number()
+    .optional()
+    .nullable(),
+
+  totalImpuestosRetenidos: z
+    .number()
+    .optional()
+    .nullable(),
+
+  metodoPago: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val ? val.trim() : null)),
+
+  moneda: z
+    .string()
+    .default("MXN")
     .transform((val) => val.trim()),
 
-  direccionReceptor: z
+  usoCfdi: z
     .string()
-    .default("")
-    .transform((val) => val.trim()),
+    .optional()
+    .nullable()
+    .transform((val) => (val ? val.trim() : null)),
 
-  numeroCuenta: z
+  nombreEmisor: z
     .string()
-    .default("")
-    .transform((val) => val.trim()),
+    .optional()
+    .nullable()
+    .transform((val) => (val ? val.trim() : null)),
 
-  clabe: z
-    .string()
-    .refine(
-      (val) => val === "" || val.length === 18,
-      "La CLABE debe tener exactamente 18 dígitos o estar vacía"
-    )
-    .default("")
-    .transform((val) => val.trim()),
-
-  banco: z
-    .string()
-    .default("")
-    .transform((val) => val.trim()),
-
-  notas: z
+  statusPago: z
     .string()
     .optional()
     .nullable()
@@ -105,16 +100,10 @@ export type ImportFacturaExcelRowInput = z.infer<typeof importFacturaExcelRowSch
  * Verifica que las columnas requeridas estén presentes
  */
 export const excelHeadersSchema = z.object({
-  "Número de Factura": z.string(),
-  "Folio Fiscal": z.string(),
-  "Cliente/Proveedor": z.string(),
-  "RFC Cliente": z.string(),
+  "UUID": z.string(),
   "Concepto": z.string(),
-  "Monto": z.string(),
-  "Periodo": z.string(),
-  "Fecha Emisión": z.string(),
-  "Fecha Vencimiento": z.string(),
-  "Forma de Pago": z.string(),
+  "Subtotal": z.string(),
+  "Total": z.string(),
   "RFC Emisor": z.string(),
   "RFC Receptor": z.string(),
 });
@@ -123,16 +112,10 @@ export const excelHeadersSchema = z.object({
  * Columnas requeridas del Excel
  */
 export const REQUIRED_EXCEL_COLUMNS = [
-  "Número de Factura",
-  "Folio Fiscal",
-  "Cliente/Proveedor",
-  "RFC Cliente",
+  "UUID",
   "Concepto",
-  "Monto",
-  "Periodo",
-  "Fecha Emisión",
-  "Fecha Vencimiento",
-  "Forma de Pago",
+  "Subtotal",
+  "Total",
   "RFC Emisor",
   "RFC Receptor",
 ] as const;
@@ -141,12 +124,16 @@ export const REQUIRED_EXCEL_COLUMNS = [
  * Columnas opcionales del Excel
  */
 export const OPTIONAL_EXCEL_COLUMNS = [
-  "Dirección Emisor",
-  "Dirección Receptor",
-  "Número Cuenta",
-  "CLABE",
-  "Banco",
-  "Notas",
+  "Serie",
+  "Folio",
+  "Impuestos Trasladados",
+  "Impuestos Retenidos",
+  "Método Pago",
+  "Moneda",
+  "Uso CFDI",
+  "Nombre Emisor",
+  "Nombre Receptor",
+  "Status Pago",
 ] as const;
 
 /**
@@ -161,22 +148,20 @@ export const ALL_EXCEL_COLUMNS = [
  * Mapeo de columnas del Excel a campos del DTO
  */
 export const EXCEL_COLUMN_TO_FIELD_MAP: Record<string, string> = {
-  "Número de Factura": "numeroFactura",
-  "Folio Fiscal": "folioFiscal",
-  "Cliente/Proveedor": "clienteProveedor",
-  "RFC Cliente": "rfcClienteProveedor",
+  "UUID": "uuid",
   "Concepto": "concepto",
-  "Monto": "monto",
-  "Periodo": "periodo",
-  "Fecha Emisión": "fechaEmision",
-  "Fecha Vencimiento": "fechaVencimiento",
-  "Forma de Pago": "formaPago",
+  "Subtotal": "subtotal",
+  "Total": "total",
   "RFC Emisor": "rfcEmisor",
   "RFC Receptor": "rfcReceptor",
-  "Dirección Emisor": "direccionEmisor",
-  "Dirección Receptor": "direccionReceptor",
-  "Número Cuenta": "numeroCuenta",
-  "CLABE": "clabe",
-  "Banco": "banco",
-  "Notas": "notas",
+  "Serie": "serie",
+  "Folio": "folio",
+  "Impuestos Trasladados": "totalImpuestosTransladados",
+  "Impuestos Retenidos": "totalImpuestosRetenidos",
+  "Método Pago": "metodoPago",
+  "Moneda": "moneda",
+  "Uso CFDI": "usoCfdi",
+  "Nombre Emisor": "nombreEmisor",
+  "Nombre Receptor": "nombreReceptor",
+  "Status Pago": "statusPago",
 };

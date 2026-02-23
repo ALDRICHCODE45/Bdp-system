@@ -4,24 +4,22 @@
  */
 export type ImportFacturaExcelRowDto = {
   rowNumber: number;
-  numeroFactura: string;
-  folioFiscal: string;
-  clienteProveedor: string;
-  rfcClienteProveedor: string;
+  uuid: string;
   concepto: string;
-  monto: number;
-  periodo: string;
-  fechaEmision: Date;
-  fechaVencimiento: Date;
-  formaPago: "TRANSFERENCIA" | "EFECTIVO" | "CHEQUE";
+  subtotal: number;
+  total: number;
   rfcEmisor: string;
+  nombreReceptor?: string | null;
   rfcReceptor: string;
-  direccionEmisor: string;
-  direccionReceptor: string;
-  numeroCuenta: string;
-  clabe: string;
-  banco: string;
-  notas?: string | null;
+  serie?: string | null;
+  folio?: string | null;
+  totalImpuestosTransladados?: number | null;
+  totalImpuestosRetenidos?: number | null;
+  metodoPago?: string | null;
+  moneda: string;
+  usoCfdi?: string | null;
+  nombreEmisor?: string | null;
+  statusPago?: string | null;
 };
 
 /**
@@ -30,17 +28,4 @@ export type ImportFacturaExcelRowDto = {
 export type ValidatedExcelRowDto = ImportFacturaExcelRowDto & {
   isValid: boolean;
   errors: string[];
-  // Información de vinculación encontrada
-  vinculacion: {
-    tipoOrigen: "INGRESO" | "EGRESO";
-    origenId: string;
-    encontrado: boolean;
-  } | null;
-  // Información del cliente encontrado o a crear
-  clienteInfo: {
-    id: string | null;
-    nombre: string;
-    rfc: string;
-    existe: boolean;
-  };
 };

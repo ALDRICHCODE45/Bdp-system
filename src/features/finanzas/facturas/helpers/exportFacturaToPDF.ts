@@ -32,28 +32,16 @@ const formatDate = (dateString: string | null): string => {
 };
 
 /**
- * Traduce el estado a texto legible
+ * Traduce el status a texto legible
  */
-const getEstadoLabel = (estado: string): string => {
-  const estados: Record<string, string> = {
+const getStatusLabel = (status: string): string => {
+  const statuses: Record<string, string> = {
     borrador: "Borrador",
     enviada: "Enviada",
     pagada: "Pagada",
     cancelada: "Cancelada",
   };
-  return estados[estado] || estado;
-};
-
-/**
- * Traduce la forma de pago a texto legible
- */
-const getFormaPagoLabel = (formaPago: string): string => {
-  const formasPago: Record<string, string> = {
-    transferencia: "Transferencia",
-    efectivo: "Efectivo",
-    cheque: "Cheque",
-  };
-  return formasPago[formaPago] || formaPago;
+  return statuses[status] || status;
 };
 
 /**
@@ -90,114 +78,103 @@ export const exportFacturaToPDF = async (
     yPosition = drawSection(doc, "Información General", yPosition, pageWidth);
     drawField(
       doc,
-      "Núm. Factura",
-      factura.numeroFactura,
+      "UUID",
+      factura.uuid,
       margins.left,
       yPosition,
-      65
-    );
-    drawField(
-      doc,
-      "Monto",
-      formatCurrency(factura.monto),
-      pageWidth / 2,
-      yPosition,
-      65
+      155
     );
     yPosition += 6;
-    drawField(
-      doc,
-      "Estado",
-      getEstadoLabel(factura.estado),
-      margins.left,
-      yPosition,
-      65
-    );
-    drawField(doc, "Periodo", factura.periodo, pageWidth / 2, yPosition, 65);
-    yPosition += 6;
-    drawField(
-      doc,
-      "Forma de Pago",
-      getFormaPagoLabel(factura.formaPago),
-      margins.left,
-      yPosition,
-      65
-    );
-    yPosition += 6;
-    // Concepto y Folio Fiscal ocupan todo el ancho (sin campo al lado)
-    drawField(doc, "Concepto", factura.concepto, margins.left, yPosition, 155);
-    yPosition += 6;
-    drawField(doc, "Folio Fiscal", factura.folioFiscal, margins.left, yPosition, 155);
-    yPosition += 12;
-
-    // Sección: Fechas
-    yPosition = drawSection(doc, "Fechas", yPosition, pageWidth);
-    drawField(
-      doc,
-      "F. Emisión",
-      formatDate(factura.fechaEmision),
-      margins.left,
-      yPosition,
-      65
-    );
-    drawField(
-      doc,
-      "F. Vencimiento",
-      formatDate(factura.fechaVencimiento),
-      pageWidth / 2,
-      yPosition,
-      65
-    );
-    yPosition += 6;
-    drawField(
-      doc,
-      "F. Pago",
-      formatDate(factura.fechaPago),
-      margins.left,
-      yPosition,
-      65
-    );
-    drawField(
-      doc,
-      "F. Registro",
-      formatDate(factura.fechaRegistro),
-      pageWidth / 2,
-      yPosition,
-      65
-    );
-    yPosition += 12;
-
-    // Sección: Cliente/Proveedor
-    yPosition = drawSection(doc, "Cliente/Proveedor", yPosition, pageWidth);
-    drawField(
-      doc,
-      "Nombre",
-      factura.clienteProveedor,
-      margins.left,
-      yPosition,
-      150
-    );
-    yPosition += 6;
-    if (factura.clienteProveedorInfo) {
+    if (factura.serie || factura.folio) {
       drawField(
         doc,
-        "RFC",
-        factura.clienteProveedorInfo.rfc,
+        "Serie",
+        factura.serie || "N/A",
         margins.left,
         yPosition,
         65
       );
       drawField(
         doc,
-        "Dirección",
-        factura.clienteProveedorInfo.direccion,
+        "Folio",
+        factura.folio || "N/A",
         pageWidth / 2,
         yPosition,
         65
       );
       yPosition += 6;
     }
-    yPosition += 10;
+    drawField(
+      doc,
+      "Status",
+      getStatusLabel(factura.status),
+      margins.left,
+      yPosition,
+      65
+    );
+    drawField(
+      doc,
+      "Moneda",
+      factura.moneda,
+      pageWidth / 2,
+      yPosition,
+      65
+    );
+    yPosition += 6;
+    if (factura.metodoPago) {
+      drawField(doc, "Método Pago", factura.metodoPago, margins.left, yPosition, 65);
+      yPosition += 6;
+    }
+    if (factura.usoCfdi) {
+      drawField(doc, "Uso CFDI", factura.usoCfdi, margins.left, yPosition, 65);
+      yPosition += 6;
+    }
+    drawField(doc, "Concepto", factura.concepto, margins.left, yPosition, 155);
+    yPosition += 12;
+
+    // Sección: Montos
+    yPosition = drawSection(doc, "Montos", yPosition, pageWidth);
+    drawField(
+      doc,
+      "Subtotal",
+      formatCurrency(factura.subtotal),
+      margins.left,
+      yPosition,
+      65
+    );
+    drawField(
+      doc,
+      "Total",
+      formatCurrency(factura.total),
+      pageWidth / 2,
+      yPosition,
+      65
+    );
+    yPosition += 6;
+    if (factura.totalImpuestosTransladados !== null) {
+      drawField(
+        doc,
+        "Imp. Trasladados",
+        formatCurrency(factura.totalImpuestosTransladados),
+        margins.left,
+        yPosition,
+        65
+      );
+    }
+    if (factura.totalImpuestosRetenidos !== null) {
+      drawField(
+        doc,
+        "Imp. Retenidos",
+        formatCurrency(factura.totalImpuestosRetenidos),
+        pageWidth / 2,
+        yPosition,
+        65
+      );
+    }
+    if (factura.totalImpuestosTransladados !== null || factura.totalImpuestosRetenidos !== null) {
+      yPosition += 6;
+    }
+    yPosition += 6;
 
     // Sección: Información Fiscal
     yPosition = drawSection(doc, "Información Fiscal", yPosition, pageWidth);
@@ -211,76 +188,36 @@ export const exportFacturaToPDF = async (
       65
     );
     yPosition += 6;
-    drawField(
-      doc,
-      "Dir. Emisor",
-      factura.direccionEmisor,
-      margins.left,
-      yPosition,
-      150
-    );
+    if (factura.nombreEmisor) {
+      drawField(doc, "Nombre Emisor", factura.nombreEmisor, margins.left, yPosition, 155);
+      yPosition += 6;
+    }
+    if (factura.nombreReceptor) {
+      drawField(doc, "Nombre Receptor", factura.nombreReceptor, margins.left, yPosition, 155);
+      yPosition += 6;
+    }
     yPosition += 6;
-    drawField(
-      doc,
-      "Dir. Receptor",
-      factura.direccionReceptor,
-      margins.left,
-      yPosition,
-      150
-    );
-    yPosition += 12;
 
-    // Verificar si hay espacio suficiente para la última sección (mínimo 30mm desde el footer)
-    const minSpaceNeeded = 35;
-    const availableSpace = pageHeight - margins.bottom - yPosition;
-    
-    if (availableSpace < minSpaceNeeded) {
-      // No hay suficiente espacio, omitir sección adicional o agregar nota
-      doc.setFontSize(PDF_CONFIG.fonts.small);
-      doc.setTextColor(PDF_CONFIG.colors.secondary);
-      doc.setFont("helvetica", "italic");
-      doc.text(
-        "Para más información contacte al emisor",
-        margins.left,
-        yPosition
-      );
-    } else {
-      // Sección: Información Adicional
-      yPosition = drawSection(doc, "Información Adicional", yPosition, pageWidth);
-      drawField(
-        doc,
-        "Tipo",
-        factura.tipoOrigen === "ingreso" ? "Ingreso" : "Egreso",
-        margins.left,
-        yPosition,
-        65
-      );
-      yPosition += 6;
-      drawField(doc, "Creado Por", factura.creadoPorNombre || "N/A", margins.left, yPosition, 65);
-      drawField(
-        doc,
-        "Autorizado Por",
-        factura.autorizadoPorNombre || "N/A",
-        pageWidth / 2,
-        yPosition,
-        65
-      );
-      yPosition += 6;
-      if (factura.notas) {
-        drawField(doc, "Notas", factura.notas, margins.left, yPosition, 150);
-        yPosition += 6;
+    // Sección: Fechas y Pago
+    if (factura.fechaPago || factura.statusPago) {
+      yPosition = drawSection(doc, "Pago", yPosition, pageWidth);
+      if (factura.fechaPago) {
+        drawField(doc, "Fecha Pago", formatDate(factura.fechaPago), margins.left, yPosition, 65);
       }
+      if (factura.statusPago) {
+        drawField(doc, "Status Pago", factura.statusPago, pageWidth / 2, yPosition, 65);
+      }
+      yPosition += 12;
     }
 
     // Dibujar pie de página
     drawFooter(doc, pageWidth, pageHeight);
 
     // Descargar PDF
-    const fileName = `Factura_${factura.numeroFactura}_${new Date().getTime()}.pdf`;
+    const fileName = `Factura_${factura.uuid.substring(0, 8)}_${new Date().getTime()}.pdf`;
     doc.save(fileName);
   } catch (error) {
     console.error("Error al exportar factura a PDF:", error);
     throw new Error("No se pudo generar el PDF de la factura");
   }
 };
-

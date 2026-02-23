@@ -13,6 +13,7 @@ import {
   updateFacturaSchema,
 } from "../validators/updateFacturaSchema";
 import { FacturaHistorialService } from "./FacturaHistorialService.service";
+import { FacturasFilterParams } from "../../types/FacturasFilterParams";
 
 type CreateFacturaInputWithUsuario = CreateFacturaInput & {
   usuarioId?: string | null;
@@ -38,56 +39,13 @@ export class FacturaService {
       return Err(new Error(validationResult.error.message));
     }
 
-    // 1. Validar folio fiscal único
-    const folioExists = await this.facturaRepository.findByFolioFiscal(
-      input.folioFiscal
-    );
-    if (folioExists) {
-      return Err(new Error("Ya existe una factura con ese folio fiscal"));
+    // 1. Validar uuid unico
+    const uuidExists = await this.facturaRepository.findByUuid(input.uuid);
+    if (uuidExists) {
+      return Err(new Error("Ya existe una factura con ese UUID"));
     }
 
-    // 2. Validar que el origen existe (Ingreso o Egreso)
-    if (input.tipoOrigen === "INGRESO") {
-      const ingreso = await this.prisma.ingreso.findUnique({
-        where: { id: input.origenId },
-      });
-      if (!ingreso) {
-        return Err(new Error("El ingreso especificado no existe"));
-      }
-    } else {
-      const egreso = await this.prisma.egreso.findUnique({
-        where: { id: input.origenId },
-      });
-      if (!egreso) {
-        return Err(new Error("El egreso especificado no existe"));
-      }
-    }
-
-    // 3. Validar que clienteProveedor existe
-    const clienteProveedor = await this.prisma.clienteProveedor.findUnique({
-      where: { id: input.clienteProveedorId },
-    });
-    if (!clienteProveedor) {
-      return Err(new Error("El cliente/proveedor no existe"));
-    }
-
-    // 3.5. Validar creador
-    const creador = await this.prisma.socio.findUnique({
-      where: { id: input.creadoPorId },
-    });
-    if (!creador) {
-      return Err(new Error("El creador no existe"));
-    }
-
-    // 3.6. Validar autorizador
-    const autorizador = await this.prisma.socio.findUnique({
-      where: { id: input.autorizadoPorId },
-    });
-    if (!autorizador) {
-      return Err(new Error("El autorizador no existe"));
-    }
-
-    // 4. Crear factura con historial usando transacción
+    // 2. Crear factura con historial usando transaccion
     try {
       const factura = await this.prisma.$transaction(async (tx) => {
         const { PrismaFacturaRepository } = await import(
@@ -140,41 +98,15 @@ export class FacturaService {
       return Err(new Error("Factura no encontrada"));
     }
 
-    // Solo permitir editar si está en BORRADOR
-    // if (existing.estado !== "BORRADOR") {
-    //   return Err(
-    //     new Error("Solo se pueden editar facturas en estado BORRADOR")
-    //   );
-    // }
-
-    // Validar folio fiscal si cambió
-    if (input.folioFiscal !== existing.folioFiscal) {
-      const folioExists = await this.facturaRepository.findByFolioFiscal(
-        input.folioFiscal
-      );
-      if (folioExists) {
-        return Err(new Error("Ya existe una factura con ese folio fiscal"));
+    // Validar uuid unico si cambio
+    if (input.uuid !== existing.uuid) {
+      const uuidExists = await this.facturaRepository.findByUuid(input.uuid);
+      if (uuidExists) {
+        return Err(new Error("Ya existe una factura con ese UUID"));
       }
     }
 
-    // Validar creador
-    const creador = await this.prisma.socio.findUnique({
-      where: { id: input.creadoPorId },
-    });
-    if (!creador) {
-      return Err(new Error("El creador no existe"));
-    }
-
-    // Validar autorizador
-    const autorizador = await this.prisma.socio.findUnique({
-      where: { id: input.autorizadoPorId },
-    });
-    if (!autorizador) {
-      return Err(new Error("El autorizador no existe"));
-    }
-
     try {
-      // Usar transacción para actualizar factura y crear historial de forma atómica
       const result = await this.prisma.$transaction(async (tx) => {
         const { PrismaFacturaRepository } = await import(
           "../repositories/PrismaFacturaRepository.repository"
@@ -192,7 +124,9 @@ export class FacturaService {
           tempHistorialRepository
         );
 
-        const updatedFactura = await tempFacturaRepository.update(input);
+        const updatedFactura = await tempFacturaRepository.update({
+          ...input,
+        });
 
         await tempHistorialService.createHistorialForUpdate(
           existing,
@@ -218,8 +152,8 @@ export class FacturaService {
       return Err(new Error("Factura no encontrada"));
     }
 
-    // Solo permitir eliminar si está en BORRADOR
-    if (existing.estado !== "BORRADOR") {
+    // Solo permitir eliminar si esta en BORRADOR
+    if (existing.status !== "BORRADOR") {
       return Err(
         new Error("Solo se pueden eliminar facturas en estado BORRADOR")
       );
@@ -253,21 +187,6 @@ export class FacturaService {
     }
   }
 
-  async getByOrigenId(
-    origenId: string
-  ): Promise<Result<FacturaEntity[], Error>> {
-    try {
-      const facturas = await this.facturaRepository.findByOrigenId(origenId);
-      return Ok(facturas);
-    } catch (error) {
-      return Err(
-        error instanceof Error
-          ? error
-          : new Error("Error al obtener las facturas por origen")
-      );
-    }
-  }
-
   async getAll(): Promise<Result<FacturaEntity[], Error>> {
     try {
       const facturas = await this.facturaRepository.getAll();
@@ -281,7 +200,7 @@ export class FacturaService {
     }
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: FacturaEntity[]; totalCount: number }, Error>> {
+  async getPaginated(params: FacturasFilterParams): Promise<Result<{ data: FacturaEntity[]; totalCount: number }, Error>> {
     try {
       const result = await this.facturaRepository.getPaginated(params);
       return Ok(result);

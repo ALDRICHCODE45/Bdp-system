@@ -84,8 +84,6 @@ model Socio {
   egresosComoAutorizador  Egreso[]           @relation("EgresoAutorizador")
   ingresosComSolicitante  Ingreso[]          @relation("IngresoSolicitante")
   ingresosComoAutorizador Ingreso[]          @relation("IngresoAutorizador")
-  facturasComoCreador     Factura[]          @relation("FacturaCreador")
-  facturasComoAutorizador Factura[]          @relation("FacturaAutorizador")
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
 
@@ -274,7 +272,6 @@ model ClienteProveedor {
   egresosComoProveedor    Egreso[]                    @relation("EgresoProveedor")
   egresosComoClienteProye Egreso[]                    @relation("EgresoClienteProyecto")
   ingresosComoCliente     Ingreso[]                   @relation("IngresoCliente")
-  facturas                Factura[]
   historial               ClienteProveedorHistorial[]
   createdAt               DateTime                    @default(now())
   updatedAt               DateTime                    @updatedAt
@@ -375,22 +372,11 @@ enum IngresoFacturadoPor {
   APP
 }
 
-enum FacturaTipoOrigen {
-  INGRESO
-  EGRESO
-}
-
 enum FacturaEstado {
   BORRADOR
   ENVIADA
   PAGADA
   CANCELADA
-}
-
-enum FacturaFormaPago {
-  TRANSFERENCIA
-  EFECTIVO
-  CHEQUE
 }
 
 enum FileAttachmentEntityType {
@@ -461,51 +447,45 @@ model IngresoHistorial {
 }
 
 model Factura {
-  id                  String             @id @default(uuid())
-  tipoOrigen          FacturaTipoOrigen?
-  origenId            String?
-  clienteProveedorId  String
-  clienteProveedorRef ClienteProveedor   @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
-  clienteProveedor    String
-  concepto            String
-  monto               Decimal            @db.Decimal(15, 2)
-  periodo             String
-  numeroFactura       String
-  folioFiscal         String             @unique
-  fechaEmision        DateTime
-  fechaVencimiento    DateTime
-  estado              FacturaEstado      @default(BORRADOR)
-  formaPago           FacturaFormaPago
-  rfcEmisor           String
-  rfcReceptor         String
-  direccionEmisor     String
-  direccionReceptor   String
-  numeroCuenta        String
-  clabe               String
-  banco               String
-  fechaPago           DateTime?
-  fechaRegistro       DateTime           @default(now())
-  creadoPorId         String?
-  creadoPorRef        Socio?             @relation("FacturaCreador", fields: [creadoPorId], references: [id], onDelete: Restrict)
-  autorizadoPorId     String?
-  autorizadoPorRef    Socio?             @relation("FacturaAutorizador", fields: [autorizadoPorId], references: [id], onDelete: Restrict)
-  notas               String?
-  ingresadoPor        String?
-  ingresadoPorRef     User?              @relation("FacturaIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
-  historial           FacturaHistorial[]
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  id String @id @default(uuid())
 
-  @@index([tipoOrigen])
-  @@index([origenId])
-  @@index([estado])
-  @@index([clienteProveedorId])
-  @@index([fechaEmision])
+  // Datos CFDI
+  concepto                   String
+  serie                      String?
+  folio                      String?
+  subtotal                   Decimal          @db.Decimal(15, 2)
+  totalImpuestosTransladados Decimal?         @db.Decimal(15, 2)
+  totalImpuestosRetenidos    Decimal?         @db.Decimal(15, 2)
+  total                      Decimal          @db.Decimal(15, 2)
+  uuid                       String           @unique
+  rfcEmisor                  String
+  nombreReceptor             String?
+  rfcReceptor                String
+  metodoPago                 String?
+  moneda                     String           @default("MXN")
+  usoCfdi                    String?
+  status                     FacturaEstado    @default(BORRADOR)
+  nombreEmisor               String?
+  statusPago                 String?
+  fechaPago                  DateTime?
+
+  // Auditoria
+  ingresadoPor    String?
+  ingresadoPorRef User?              @relation("FacturaIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
+  historial       FacturaHistorial[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([status])
   @@index([ingresadoPor])
-  @@index([creadoPorId])
-  @@index([autorizadoPorId])
-  @@index([estado, createdAt])
-  @@index([periodo, fechaEmision])
+  @@index([status, createdAt])
+  @@index([moneda])
+  @@index([rfcEmisor])
+  @@index([rfcReceptor])
+  @@index([metodoPago])
+  @@index([statusPago])
+  @@index([total])
+  @@index([fechaPago])
 }
 
 model FacturaHistorial {

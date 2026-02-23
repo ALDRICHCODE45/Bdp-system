@@ -63,30 +63,22 @@ export function ImportFacturasDialog({
     generateExcelTemplate();
   };
 
-  // Contar facturas sin vinculación con acción seleccionada
-  const sinVinculacionConAccion = state.preview?.sinVinculacion.filter(
-    (item) => state.options.accionesSinVinculacion[item.row.rowNumber]
-  ).length || 0;
-
   const canExecute =
     state.preview &&
     (state.preview.nuevas.length > 0 ||
       state.options.actualizarTodasDuplicadas ||
-      state.options.duplicadasAActualizar.length > 0 ||
-      sinVinculacionConAccion > 0);
+      state.options.duplicadasAActualizar.length > 0);
 
   const getTotalToImport = () => {
     if (!state.preview) return 0;
 
-    // Facturas nuevas (ya tienen vinculación)
-    const nuevasConVinculacion = state.preview.nuevas.length;
+    const nuevas = state.preview.nuevas.length;
 
-    // Duplicadas a actualizar
     const duplicadasAActualizar = state.options.actualizarTodasDuplicadas
       ? state.preview.duplicadas.length
       : state.options.duplicadasAActualizar.length;
 
-    return nuevasConVinculacion + duplicadasAActualizar + sinVinculacionConAccion;
+    return nuevas + duplicadasAActualizar;
   };
 
   return (
@@ -136,10 +128,8 @@ export function ImportFacturasDialog({
               preview={state.preview}
               duplicadasAActualizar={state.options.duplicadasAActualizar}
               actualizarTodasDuplicadas={state.options.actualizarTodasDuplicadas}
-              accionesSinVinculacion={state.options.accionesSinVinculacion}
               onToggleDuplicada={state.toggleDuplicadaUpdate}
               onToggleActualizarTodas={state.toggleActualizarTodas}
-              onSetAccionSinVinculacion={state.setAccionSinVinculacion}
             />
           )}
 

@@ -8,10 +8,8 @@ import {
 import {
   ImportExcelPreviewDto,
   DuplicadaDto,
-  ClienteNuevoDto,
   ErrorValidacionDto,
   ImportOptionsDto,
-  SinVinculacionDto,
 } from "../dtos/ImportExcelPreviewDto.dto";
 import {
   ImportFacturaResultDto,
@@ -100,37 +98,19 @@ export class FacturaExcelImportService {
     )) {
       const value = rawRow[excelColumn];
 
-      if (fieldName === "monto" && value !== undefined) {
-        // Convertir monto a número
+      if (
+        (fieldName === "subtotal" ||
+          fieldName === "total" ||
+          fieldName === "totalImpuestosTransladados" ||
+          fieldName === "totalImpuestosRetenidos") &&
+        value !== undefined
+      ) {
+        // Convertir montos a número
         const numValue =
           typeof value === "string"
             ? parseFloat(value.replace(/[,$]/g, ""))
             : Number(value);
         mapped[fieldName] = isNaN(numValue) ? value : numValue;
-      } else if (
-        (fieldName === "fechaEmision" || fieldName === "fechaVencimiento") &&
-        value !== undefined
-      ) {
-        // Convertir fechas
-        if (value instanceof Date) {
-          mapped[fieldName] = value;
-        } else if (typeof value === "string") {
-          const dateValue = new Date(value);
-          mapped[fieldName] = isNaN(dateValue.getTime()) ? value : dateValue;
-        } else if (typeof value === "number") {
-          // Excel serial date
-          const dateValue = XLSX.SSF.parse_date_code(value);
-          if (dateValue) {
-            mapped[fieldName] = new Date(
-              dateValue.y,
-              dateValue.m - 1,
-              dateValue.d,
-            );
-          }
-        }
-      } else if (fieldName === "formaPago" && typeof value === "string") {
-        // Normalizar forma de pago
-        mapped[fieldName] = value.toUpperCase().trim();
       } else {
         mapped[fieldName] = value;
       }
@@ -172,7 +152,7 @@ export class FacturaExcelImportService {
   }
 
   /**
-   * Busca facturas duplicadas por folioFiscal
+   * Busca facturas duplicadas por uuid
    */
   async checkDuplicates(rows: Partial<ImportFacturaExcelRowDto>[]): Promise<{
     nuevas: Partial<ImportFacturaExcelRowDto>[];
@@ -181,29 +161,26 @@ export class FacturaExcelImportService {
     const nuevas: Partial<ImportFacturaExcelRowDto>[] = [];
     const duplicadas: DuplicadaDto[] = [];
 
-    const foliosFiscales = rows
-      .map((r) => r.folioFiscal)
-      .filter((f): f is string => !!f);
+    const uuids = rows
+      .map((r) => r.uuid)
+      .filter((u): u is string => !!u);
 
-    // Buscar todas las facturas existentes con esos folios fiscales
+    // Buscar todas las facturas existentes con esos UUIDs
     const existingFacturas = await this.prisma.factura.findMany({
       where: {
-        folioFiscal: { in: foliosFiscales },
+        uuid: { in: uuids },
       },
       include: {
-        clienteProveedorRef: true,
         ingresadoPorRef: true,
-        creadoPorRef: true,
-        autorizadoPorRef: true,
       },
     });
 
     const existingMap = new Map(
-      existingFacturas.map((f) => [f.folioFiscal, f]),
+      existingFacturas.map((f) => [f.uuid, f]),
     );
 
     for (const row of rows) {
-      const existing = existingMap.get(row.folioFiscal!);
+      const existing = existingMap.get(row.uuid!);
       if (existing) {
         duplicadas.push({
           row: row as ValidatedExcelRowDto,
@@ -216,90 +193,6 @@ export class FacturaExcelImportService {
     }
 
     return { nuevas, duplicadas };
-  }
-
-  /**
-   * Busca clientes existentes por RFC y determina cuáles son nuevos
-   */
-  async checkClientes(rows: Partial<ImportFacturaExcelRowDto>[]): Promise<{
-    clientesExistentes: Map<
-      string,
-      { id: string; nombre: string; rfc: string }
-    >;
-    clientesNuevos: ClienteNuevoDto[];
-  }> {
-    const rfcSet = new Set(
-      rows
-        .map((r) => r.rfcClienteProveedor)
-        .filter((rfc): rfc is string => !!rfc),
-    );
-
-    // Buscar clientes existentes
-    const existingClientes = await this.prisma.clienteProveedor.findMany({
-      where: {
-        rfc: { in: Array.from(rfcSet) },
-      },
-      select: {
-        id: true,
-        nombre: true,
-        rfc: true,
-      },
-    });
-
-    const clientesExistentes = new Map(existingClientes.map((c) => [c.rfc, c]));
-
-    // Determinar clientes nuevos
-    const clientesNuevosMap = new Map<string, ClienteNuevoDto>();
-
-    for (const row of rows) {
-      const rfc = row.rfcClienteProveedor;
-      if (rfc && !clientesExistentes.has(rfc)) {
-        const existing = clientesNuevosMap.get(rfc);
-        if (existing) {
-          existing.rowNumbers.push(row.rowNumber!);
-        } else {
-          clientesNuevosMap.set(rfc, {
-            nombre: row.clienteProveedor || "",
-            rfc,
-            rowNumbers: [row.rowNumber!],
-          });
-        }
-      }
-    }
-
-    return {
-      clientesExistentes,
-      clientesNuevos: Array.from(clientesNuevosMap.values()),
-    };
-  }
-
-  /**
-   * Busca Ingreso o Egreso por folioFiscal para vinculación automática
-   */
-  async findOrigenByFolioFiscal(
-    folioFiscal: string,
-  ): Promise<{ tipoOrigen: "INGRESO" | "EGRESO"; origenId: string } | null> {
-    // Buscar primero en Ingresos
-    const ingreso = await this.prisma.ingreso.findFirst({
-      where: { folioFiscal },
-      select: { id: true },
-    });
-
-    if (ingreso) {
-      return { tipoOrigen: "INGRESO", origenId: ingreso.id };
-    }
-
-    // Buscar en Egresos
-    const egreso = await this.prisma.egreso.findFirst({
-      where: { folioFiscal },
-      select: { id: true },
-    });
-
-    if (egreso) {
-      return { tipoOrigen: "EGRESO", origenId: egreso.id };
-    }
-
-    return null;
   }
 
   /**
@@ -323,70 +216,19 @@ export class FacturaExcelImportService {
     // 3. Verificar duplicados
     const { nuevas, duplicadas } = await this.checkDuplicates(valid);
 
-    // 4. Verificar clientes
-    const { clientesExistentes, clientesNuevos } = await this.checkClientes([
-      ...nuevas,
-      ...duplicadas.map((d) => d.row),
-    ]);
+    // 4. Construir filas validadas
+    const validatedNuevas: ValidatedExcelRowDto[] = nuevas.map((row) => ({
+      ...(row as ImportFacturaExcelRowDto),
+      isValid: true,
+      errors: [],
+    }));
 
-    // 5. Buscar vinculación con I/E para cada fila
-    // Separar en dos arrays: con vinculación y sin vinculación
-    const validatedNuevas: ValidatedExcelRowDto[] = [];
-    const sinVinculacion: SinVinculacionDto[] = [];
-
-    for (const row of nuevas) {
-      const vinculacion = await this.findOrigenByFolioFiscal(row.folioFiscal!);
-      const clienteInfo = clientesExistentes.get(row.rfcClienteProveedor!) || {
-        id: null,
-        nombre: row.clienteProveedor!,
-        rfc: row.rfcClienteProveedor!,
-      };
-
-      const validated: ValidatedExcelRowDto = {
-        ...(row as ImportFacturaExcelRowDto),
-        isValid: true,
-        errors: [],
-        vinculacion: vinculacion ? { ...vinculacion, encontrado: true } : null,
-        clienteInfo: {
-          ...clienteInfo,
-          existe: clientesExistentes.has(row.rfcClienteProveedor!),
-        },
-      };
-
-      if (vinculacion) {
-        // Factura con vinculación existente - va a nuevas
-        validatedNuevas.push(validated);
-      } else {
-        // Factura sin vinculación - el usuario decidirá qué hacer
-        sinVinculacion.push({
-          row: validated,
-          accionSeleccionada: null,
-        });
-      }
-    }
-
-    // Actualizar también las duplicadas con info de vinculación
+    // Actualizar duplicadas con info validada
     for (const dup of duplicadas) {
-      const vinculacion = await this.findOrigenByFolioFiscal(
-        dup.row.folioFiscal!,
-      );
-      const clienteInfo = clientesExistentes.get(
-        dup.row.rfcClienteProveedor!,
-      ) || {
-        id: null,
-        nombre: dup.row.clienteProveedor!,
-        rfc: dup.row.rfcClienteProveedor!,
-      };
-
       dup.row = {
         ...(dup.row as ImportFacturaExcelRowDto),
         isValid: true,
         errors: [],
-        vinculacion: vinculacion ? { ...vinculacion, encontrado: true } : null,
-        clienteInfo: {
-          ...clienteInfo,
-          existe: clientesExistentes.has(dup.row.rfcClienteProveedor!),
-        },
       };
     }
 
@@ -395,89 +237,15 @@ export class FacturaExcelImportService {
       totalRows: rawRows.length,
       nuevas: validatedNuevas,
       duplicadas,
-      sinVinculacion,
-      clientesNuevos,
       errores: errors,
       resumen: {
         totalNuevas: validatedNuevas.length,
         totalDuplicadas: duplicadas.length,
-        totalSinVinculacion: sinVinculacion.length,
-        totalClientesNuevos: clientesNuevos.length,
         totalErrores: errors.length,
-        totalConVinculacion: validatedNuevas.length,
       },
     };
 
     return Ok(preview);
-  }
-
-  /**
-   * Crea un Ingreso a partir de los datos de una factura del Excel
-   * Usa valores por defecto para campos no disponibles
-   */
-  private async createIngresoFromFactura(
-    tx: Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0],
-    row: ValidatedExcelRowDto,
-    clienteId: string,
-    usuarioId: string | null,
-  ): Promise<{ id: string; folioFiscal: string }> {
-    const ingreso = await tx.ingreso.create({
-      data: {
-        concepto: row.concepto,
-        cliente: row.clienteProveedor,
-        clienteId: clienteId,
-        numeroFactura: row.numeroFactura,
-        folioFiscal: row.folioFiscal,
-        periodo: row.periodo,
-        formaPago: row.formaPago,
-        origen: "IMPORTACION_EXCEL",
-        numeroCuenta: row.numeroCuenta || "",
-        clabe: row.clabe || "",
-        cargoAbono: "BDP",
-        cantidad: row.monto,
-        estado: "PENDIENTE",
-        facturadoPor: "BDP",
-        clienteProyecto: row.clienteProveedor,
-        ingresadoPor: usuarioId,
-        notas: `Creado automáticamente desde importación de factura`,
-      },
-    });
-    return { id: ingreso.id, folioFiscal: ingreso.folioFiscal };
-  }
-
-  /**
-   * Crea un Egreso a partir de los datos de una factura del Excel
-   * Usa valores por defecto para campos no disponibles
-   */
-  private async createEgresoFromFactura(
-    tx: Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0],
-    row: ValidatedExcelRowDto,
-    proveedorId: string,
-    usuarioId: string | null,
-  ): Promise<{ id: string; folioFiscal: string }> {
-    const egreso = await tx.egreso.create({
-      data: {
-        concepto: row.concepto,
-        clasificacion: "SERVICIOS",
-        categoria: "FACTURACION",
-        proveedor: row.clienteProveedor,
-        proveedorId: proveedorId,
-        numeroFactura: row.numeroFactura,
-        folioFiscal: row.folioFiscal,
-        periodo: row.periodo,
-        formaPago: row.formaPago,
-        origen: "IMPORTACION_EXCEL",
-        numeroCuenta: row.numeroCuenta || "",
-        clabe: row.clabe || "",
-        cargoAbono: "BDP",
-        cantidad: row.monto,
-        estado: "PENDIENTE",
-        facturadoPor: "BDP",
-        ingresadoPor: usuarioId,
-        notas: `Creado automáticamente desde importación de factura`,
-      },
-    });
-    return { id: egreso.id, folioFiscal: egreso.folioFiscal };
   }
 
   /**
@@ -493,9 +261,6 @@ export class FacturaExcelImportService {
     let actualizadas = 0;
     let omitidas = 0;
     let errores = 0;
-    let clientesCreados = 0;
-    let ingresosCreados = 0;
-    let egresosCreados = 0;
 
     try {
       await this.prisma.$transaction(async (tx) => {
@@ -515,102 +280,26 @@ export class FacturaExcelImportService {
           tempHistorialRepository,
         );
 
-        // Mapa para almacenar clientes creados (RFC -> ID)
-        const clientesCreatedMap = new Map<string, string>();
-
-        // 1. Crear clientes nuevos primero
-        for (const clienteNuevo of preview.clientesNuevos) {
-          const newCliente = await tx.clienteProveedor.create({
-            data: {
-              nombre: clienteNuevo.nombre,
-              rfc: clienteNuevo.rfc,
-              tipo: "CLIENTE",
-              direccion: "",
-              telefono: "",
-              email: "",
-              contacto: "",
-              activo: true,
-              ingresadoPor: usuarioId,
-            },
-          });
-          clientesCreatedMap.set(clienteNuevo.rfc, newCliente.id);
-          clientesCreados++;
-        }
-
-        // 2. Obtener primer socio para creadoPor y autorizadoPor (valor por defecto)
-        const defaultSocio = await tx.socio.findFirst({
-          where: { activo: true },
-          select: { id: true, nombre: true },
-        });
-
-        if (!defaultSocio) {
-          throw new Error(
-            "No se encontró un socio activo para asignar como creador",
-          );
-        }
-
-        // 3. Procesar facturas nuevas (con vinculación existente)
+        // 1. Procesar facturas nuevas
         for (const row of preview.nuevas) {
           try {
-            // Obtener cliente ID
-            let clienteProveedorId = row.clienteInfo.id;
-            if (!clienteProveedorId) {
-              clienteProveedorId =
-                clientesCreatedMap.get(row.rfcClienteProveedor) || null;
-            }
-
-            if (!clienteProveedorId) {
-              // Buscar por RFC en la base de datos
-              const cliente = await tx.clienteProveedor.findFirst({
-                where: { rfc: row.rfcClienteProveedor },
-                select: { id: true },
-              });
-              clienteProveedorId = cliente?.id || null;
-            }
-
-            if (!clienteProveedorId) {
-              resultados.push({
-                rowNumber: row.rowNumber,
-                folioFiscal: row.folioFiscal,
-                status: "error",
-                message: `No se encontró el cliente con RFC: ${row.rfcClienteProveedor}`,
-              });
-              errores++;
-              continue;
-            }
-
-            // Estas facturas siempre tienen vinculación (las sin vinculación están en otro array)
-            const tipoOrigen = row.vinculacion!.tipoOrigen;
-            const origenId = row.vinculacion!.origenId;
-
             const newFactura = await tempFacturaRepository.create({
-              tipoOrigen,
-              origenId,
-              clienteProveedorId,
-              clienteProveedor: row.clienteProveedor,
               concepto: row.concepto,
-              monto: row.monto,
-              periodo: row.periodo,
-              numeroFactura: row.numeroFactura,
-              folioFiscal: row.folioFiscal,
-              fechaEmision: row.fechaEmision,
-              fechaVencimiento: row.fechaVencimiento,
-              estado: "BORRADOR",
-              formaPago: row.formaPago,
+              subtotal: row.subtotal,
+              totalImpuestosTransladados: row.totalImpuestosTransladados ?? null,
+              totalImpuestosRetenidos: row.totalImpuestosRetenidos ?? null,
+              total: row.total,
+              uuid: row.uuid,
               rfcEmisor: row.rfcEmisor,
+              nombreReceptor: row.nombreReceptor ?? null,
               rfcReceptor: row.rfcReceptor,
-              direccionEmisor: row.direccionEmisor || "",
-              direccionReceptor: row.direccionReceptor || "",
-              numeroCuenta: row.numeroCuenta || "",
-              clabe: row.clabe || "",
-              banco: row.banco || "",
+              metodoPago: row.metodoPago ?? null,
+              moneda: row.moneda || "MXN",
+              usoCfdi: row.usoCfdi ?? null,
+              status: "BORRADOR",
+              nombreEmisor: row.nombreEmisor ?? null,
+              statusPago: row.statusPago ?? null,
               fechaPago: null,
-              fechaRegistro: new Date(),
-              creadoPor: defaultSocio.nombre,
-              creadoPorId: defaultSocio.id,
-              autorizadoPor: defaultSocio.nombre,
-              autorizadoPorId: defaultSocio.id,
-              notas: row.notas || `Importado desde Excel: ${preview.fileName}`,
               ingresadoPor: usuarioId,
             });
 
@@ -622,23 +311,16 @@ export class FacturaExcelImportService {
 
             resultados.push({
               rowNumber: row.rowNumber,
-              folioFiscal: row.folioFiscal,
+              uuid: row.uuid,
               status: "created",
               message: "Factura creada exitosamente",
               facturaId: newFactura.id,
-              clienteCreado: clientesCreatedMap.has(row.rfcClienteProveedor)
-                ? {
-                  id: clientesCreatedMap.get(row.rfcClienteProveedor)!,
-                  nombre: row.clienteProveedor,
-                  rfc: row.rfcClienteProveedor,
-                }
-                : undefined,
             });
             creadas++;
           } catch (error) {
             resultados.push({
               rowNumber: row.rowNumber,
-              folioFiscal: row.folioFiscal,
+              uuid: row.uuid,
               status: "error",
               message:
                 error instanceof Error ? error.message : "Error desconocido",
@@ -647,7 +329,7 @@ export class FacturaExcelImportService {
           }
         }
 
-        // 4. Procesar duplicadas que el usuario quiere actualizar
+        // 2. Procesar duplicadas que el usuario quiere actualizar
         const duplicadasAActualizar = options.actualizarTodasDuplicadas
           ? preview.duplicadas
           : preview.duplicadas.filter((d) =>
@@ -659,17 +341,14 @@ export class FacturaExcelImportService {
             const existingFactura = await tx.factura.findUnique({
               where: { id: dup.existing.id },
               include: {
-                clienteProveedorRef: true,
                 ingresadoPorRef: true,
-                creadoPorRef: true,
-                autorizadoPorRef: true,
               },
             });
 
             if (!existingFactura) {
               resultados.push({
                 rowNumber: dup.row.rowNumber,
-                folioFiscal: dup.row.folioFiscal,
+                uuid: dup.row.uuid,
                 status: "error",
                 message: "Factura existente no encontrada",
               });
@@ -677,56 +356,24 @@ export class FacturaExcelImportService {
               continue;
             }
 
-            // Obtener cliente ID para la actualización
-            let clienteProveedorId = dup.row.clienteInfo.id;
-            if (!clienteProveedorId) {
-              clienteProveedorId =
-                clientesCreatedMap.get(dup.row.rfcClienteProveedor) || null;
-            }
-            if (!clienteProveedorId) {
-              const cliente = await tx.clienteProveedor.findFirst({
-                where: { rfc: dup.row.rfcClienteProveedor },
-                select: { id: true },
-              });
-              clienteProveedorId =
-                cliente?.id || existingFactura.clienteProveedorId;
-            }
-
             const updatedFactura = await tempFacturaRepository.update({
               id: dup.existing.id,
-              tipoOrigen: existingFactura.tipoOrigen,
-              origenId: existingFactura.origenId,
-              clienteProveedorId: clienteProveedorId!,
-              clienteProveedor: dup.row.clienteProveedor,
               concepto: dup.row.concepto,
-              monto: dup.row.monto,
-              periodo: dup.row.periodo,
-              numeroFactura: dup.row.numeroFactura,
-              folioFiscal: dup.row.folioFiscal,
-              fechaEmision: dup.row.fechaEmision,
-              fechaVencimiento: dup.row.fechaVencimiento,
-              estado: existingFactura.estado,
-              formaPago: dup.row.formaPago,
+              subtotal: dup.row.subtotal,
+              totalImpuestosTransladados: dup.row.totalImpuestosTransladados ?? null,
+              totalImpuestosRetenidos: dup.row.totalImpuestosRetenidos ?? null,
+              total: dup.row.total,
+              uuid: dup.row.uuid,
               rfcEmisor: dup.row.rfcEmisor,
+              nombreReceptor: dup.row.nombreReceptor ?? existingFactura.nombreReceptor,
               rfcReceptor: dup.row.rfcReceptor,
-              direccionEmisor:
-                dup.row.direccionEmisor || existingFactura.direccionEmisor,
-              direccionReceptor:
-                dup.row.direccionReceptor || existingFactura.direccionReceptor,
-              numeroCuenta:
-                dup.row.numeroCuenta || existingFactura.numeroCuenta,
-              clabe: dup.row.clabe || existingFactura.clabe,
-              banco: dup.row.banco || existingFactura.banco,
+              metodoPago: dup.row.metodoPago ?? existingFactura.metodoPago,
+              moneda: dup.row.moneda || String(existingFactura.moneda),
+              usoCfdi: dup.row.usoCfdi ?? existingFactura.usoCfdi,
+              status: existingFactura.status,
+              nombreEmisor: dup.row.nombreEmisor ?? existingFactura.nombreEmisor,
+              statusPago: dup.row.statusPago ?? existingFactura.statusPago,
               fechaPago: existingFactura.fechaPago,
-              fechaRegistro: existingFactura.fechaRegistro,
-              creadoPor:
-                existingFactura.creadoPorRef?.nombre || defaultSocio.nombre,
-              creadoPorId: existingFactura.creadoPorId || defaultSocio.id,
-              autorizadoPor:
-                existingFactura.autorizadoPorRef?.nombre || defaultSocio.nombre,
-              autorizadoPorId:
-                existingFactura.autorizadoPorId || defaultSocio.id,
-              notas: dup.row.notas || existingFactura.notas,
             });
 
             // Crear historial de actualización
@@ -738,7 +385,7 @@ export class FacturaExcelImportService {
 
             resultados.push({
               rowNumber: dup.row.rowNumber,
-              folioFiscal: dup.row.folioFiscal,
+              uuid: dup.row.uuid,
               status: "updated",
               message: "Factura actualizada exitosamente",
               facturaId: updatedFactura.id,
@@ -747,7 +394,7 @@ export class FacturaExcelImportService {
           } catch (error) {
             resultados.push({
               rowNumber: dup.row.rowNumber,
-              folioFiscal: dup.row.folioFiscal,
+              uuid: dup.row.uuid,
               status: "error",
               message:
                 error instanceof Error ? error.message : "Error desconocido",
@@ -766,170 +413,11 @@ export class FacturaExcelImportService {
         for (const dup of duplicadasOmitidas) {
           resultados.push({
             rowNumber: dup.row.rowNumber,
-            folioFiscal: dup.row.folioFiscal,
+            uuid: dup.row.uuid,
             status: "skipped",
             message: "Factura duplicada - no seleccionada para actualizar",
           });
           omitidas++;
-        }
-
-        // 5. Procesar facturas sin vinculación según la decisión del usuario
-        for (const sinVinc of preview.sinVinculacion) {
-          const accion =
-            options.accionesSinVinculacion?.[sinVinc.row.rowNumber];
-
-          // Si no hay acción seleccionada, omitir
-          if (!accion) {
-            resultados.push({
-              rowNumber: sinVinc.row.rowNumber,
-              folioFiscal: sinVinc.row.folioFiscal,
-              status: "skipped",
-              message: "Sin acción seleccionada - factura omitida",
-            });
-            omitidas++;
-            continue;
-          }
-
-          try {
-            // Obtener cliente ID
-            let clienteProveedorId = sinVinc.row.clienteInfo.id;
-            if (!clienteProveedorId) {
-              clienteProveedorId =
-                clientesCreatedMap.get(sinVinc.row.rfcClienteProveedor) || null;
-            }
-            if (!clienteProveedorId) {
-              const cliente = await tx.clienteProveedor.findFirst({
-                where: { rfc: sinVinc.row.rfcClienteProveedor },
-                select: { id: true },
-              });
-              clienteProveedorId = cliente?.id || null;
-            }
-
-            if (!clienteProveedorId) {
-              resultados.push({
-                rowNumber: sinVinc.row.rowNumber,
-                folioFiscal: sinVinc.row.folioFiscal,
-                status: "error",
-                message: `No se encontró el cliente con RFC: ${sinVinc.row.rfcClienteProveedor}`,
-              });
-              errores++;
-              continue;
-            }
-
-            let tipoOrigen: "INGRESO" | "EGRESO" | null = null;
-            let origenId: string | null = null;
-            let ingresoCreado: { id: string; folioFiscal: string } | undefined;
-            let egresoCreado: { id: string; folioFiscal: string } | undefined;
-
-            if (accion === "crear_ingreso") {
-              // Crear un nuevo Ingreso con los datos de la factura
-              console.log("No paso la creacion del ingreso");
-              const nuevoIngreso = await this.createIngresoFromFactura(
-                tx,
-                sinVinc.row,
-                clienteProveedorId,
-                usuarioId,
-              );
-              console.log("paso la creacion del ingreos", { nuevoIngreso });
-              tipoOrigen = "INGRESO";
-              origenId = nuevoIngreso.id;
-              ingresoCreado = nuevoIngreso;
-              ingresosCreados++;
-            } else if (accion === "crear_egreso") {
-              // Crear un nuevo Egreso con los datos de la factura
-              const nuevoEgreso = await this.createEgresoFromFactura(
-                tx,
-                sinVinc.row,
-                clienteProveedorId,
-                usuarioId,
-              );
-              tipoOrigen = "EGRESO";
-              origenId = nuevoEgreso.id;
-              egresoCreado = nuevoEgreso;
-              egresosCreados++;
-            }
-            // Si accion === "sin_vincular", tipoOrigen y origenId quedan null
-
-            const newFactura = await tempFacturaRepository.create({
-              tipoOrigen,
-              origenId,
-              clienteProveedorId,
-              clienteProveedor: sinVinc.row.clienteProveedor,
-              concepto: sinVinc.row.concepto,
-              monto: sinVinc.row.monto,
-              periodo: sinVinc.row.periodo,
-              numeroFactura: sinVinc.row.numeroFactura,
-              folioFiscal: sinVinc.row.folioFiscal,
-              fechaEmision: sinVinc.row.fechaEmision,
-              fechaVencimiento: sinVinc.row.fechaVencimiento,
-              estado: "BORRADOR",
-              formaPago: sinVinc.row.formaPago,
-              rfcEmisor: sinVinc.row.rfcEmisor,
-              rfcReceptor: sinVinc.row.rfcReceptor,
-              direccionEmisor: sinVinc.row.direccionEmisor || "",
-              direccionReceptor: sinVinc.row.direccionReceptor || "",
-              numeroCuenta: sinVinc.row.numeroCuenta || "",
-              clabe: sinVinc.row.clabe || "",
-              banco: sinVinc.row.banco || "",
-              fechaPago: null,
-              fechaRegistro: new Date(),
-              creadoPor: defaultSocio.nombre,
-              creadoPorId: defaultSocio.id,
-              autorizadoPor: defaultSocio.nombre,
-              autorizadoPorId: defaultSocio.id,
-              notas:
-                sinVinc.row.notas ||
-                `Importado desde Excel: ${preview.fileName}`,
-              ingresadoPor: usuarioId,
-            });
-
-            // Crear historial
-            await tempHistorialService.createHistorialForNewFactura(
-              newFactura,
-              usuarioId,
-            );
-
-            // Mensaje según la acción
-            let message = "Factura creada exitosamente";
-            if (accion === "crear_ingreso") {
-              message = "Factura creada con nuevo Ingreso";
-            } else if (accion === "crear_egreso") {
-              message = "Factura creada con nuevo Egreso";
-            } else if (accion === "sin_vincular") {
-              message = "Factura creada sin vinculación a I/E";
-            }
-
-            resultados.push({
-              rowNumber: sinVinc.row.rowNumber,
-              folioFiscal: sinVinc.row.folioFiscal,
-              status: "created",
-              message,
-              facturaId: newFactura.id,
-              clienteCreado: clientesCreatedMap.has(
-                sinVinc.row.rfcClienteProveedor,
-              )
-                ? {
-                  id: clientesCreatedMap.get(
-                    sinVinc.row.rfcClienteProveedor,
-                  )!,
-                  nombre: sinVinc.row.clienteProveedor,
-                  rfc: sinVinc.row.rfcClienteProveedor,
-                }
-                : undefined,
-              ingresoCreado,
-              egresoCreado,
-            });
-            creadas++;
-          } catch (error) {
-            resultados.push({
-              rowNumber: sinVinc.row.rowNumber,
-              folioFiscal: sinVinc.row.folioFiscal,
-              status: "error",
-              message:
-                error instanceof Error ? error.message : "Error desconocido",
-            });
-            errores++;
-          }
         }
       });
 
@@ -940,9 +428,6 @@ export class FacturaExcelImportService {
         actualizadas,
         omitidas,
         errores,
-        clientesCreados,
-        ingresosCreados,
-        egresosCreados,
         resultados,
       });
     } catch (error) {

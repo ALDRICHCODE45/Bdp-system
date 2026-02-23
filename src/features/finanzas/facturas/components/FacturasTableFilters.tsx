@@ -11,49 +11,34 @@ import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
 
-const estadosFacturaOptions = [
+const statusOptions = [
   { label: "Todos", value: "todos" },
-  { label: "Borrador", value: "borrador" },
-  { label: "Enviada", value: "enviada" },
-  { label: "Pagada", value: "pagada" },
-  { label: "Cancelada", value: "cancelada" },
+  { label: "BORRADOR", value: "borrador" },
+  { label: "ENVIADA", value: "enviada" },
+  { label: "PAGADA", value: "pagada" },
+  { label: "CANCELADA", value: "cancelada" },
 ];
 
-const tipoOrigenOptions = [
+const metodoPagoOptions = [
   { label: "Todos", value: "todos" },
-  { label: "Ingreso", value: "ingreso" },
-  { label: "Egreso", value: "egreso" },
+  { label: "CHEQUE", value: "CHEQUE" },
+  { label: "TRANSFERENCIA", value: "TRANSFERENCIA" },
+  { label: "EFECTIVO", value: "EFECTIVO" },
 ];
 
-const formaPagoOptions = [
+const monedaOptions = [
   { label: "Todos", value: "todos" },
-  { label: "Transferencia", value: "transferencia" },
-  { label: "Efectivo", value: "efectivo" },
-  { label: "Cheque", value: "cheque" },
+  { label: "MXN", value: "MXN" },
+  { label: "USD", value: "USD" },
+  { label: "EUR", value: "EUR" },
 ];
 
-// Genera opciones de periodo para los ultimos 24 meses
-const generatePeriodoOptions = () => {
-  const options = [{ label: "Todos", value: "todos" }];
-  const now = new Date();
-  for (let i = 0; i < 24; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const value = `${year}-${month}`;
-    const label = date.toLocaleDateString("es-MX", {
-      year: "numeric",
-      month: "long",
-    });
-    options.push({
-      label: label.charAt(0).toUpperCase() + label.slice(1),
-      value,
-    });
-  }
-  return options;
-};
-
-const periodoOptions = generatePeriodoOptions();
+const statusPagoOptions = [
+  { label: "Todos", value: "todos" },
+  { label: "Vigente", value: "Vigente" },
+  { label: "Cancelado", value: "Cancelado" },
+  { label: "No Pagado", value: "NoPagado" },
+];
 
 interface FacturasFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
@@ -75,23 +60,17 @@ export function FacturasFilters({
 }: FacturasFiltersProps) {
   const {
     clearFilters,
-    handleEstadoChange,
-    handleTipoOrigenChange,
-    handleFormaPagoChange,
-    handleMontoFilter,
-    handlePeriodoChange,
-    handleClienteProveedorChange,
-    handleRfcEmisorChange,
-    handleCreadoPorChange,
-    selectedEstado,
-    selectedTipoOrigen,
-    selectedFormaPago,
-    selectedMontoRange,
-    selectedPeriodo,
-    clienteProveedorFilter,
-    rfcEmisorFilter,
-    creadoPorFilter,
-    setMontoRange,
+    handleStatusChange,
+    handleMetodoPagoChange,
+    handleMonedaChange,
+    handleStatusPagoChange,
+    handleTotalFilter,
+    selectedStatus,
+    selectedMetodoPago,
+    selectedMoneda,
+    selectedStatusPago,
+    selectedTotalRange,
+    setTotalRange,
   } = useFacturasTableFilters(table);
 
   return (
@@ -135,91 +114,58 @@ export function FacturasFilters({
       <CardContent className="space-y-4 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <FilterSelect
-            label="Estado"
-            options={estadosFacturaOptions}
-            value={selectedEstado}
-            onValueChange={handleEstadoChange}
+            label="Status"
+            options={statusOptions}
+            value={selectedStatus}
+            onValueChange={handleStatusChange}
           />
 
           <FilterSelect
-            label="Tipo de Origen"
-            options={tipoOrigenOptions}
-            value={selectedTipoOrigen}
-            onValueChange={handleTipoOrigenChange}
+            label="Método de Pago"
+            options={metodoPagoOptions}
+            value={selectedMetodoPago}
+            onValueChange={handleMetodoPagoChange}
           />
 
           <FilterSelect
-            label="Forma de Pago"
-            options={formaPagoOptions}
-            value={selectedFormaPago}
-            onValueChange={handleFormaPagoChange}
+            label="Moneda"
+            options={monedaOptions}
+            value={selectedMoneda}
+            onValueChange={handleMonedaChange}
           />
 
           <FilterSelect
-            label="Período"
-            options={periodoOptions}
-            value={selectedPeriodo}
-            onValueChange={handlePeriodoChange}
+            label="Status de Pago"
+            options={statusPagoOptions}
+            value={selectedStatusPago}
+            onValueChange={handleStatusPagoChange}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="clienteProveedor">Cliente/Proveedor</Label>
-            <Input
-              id="clienteProveedor"
-              type="text"
-              placeholder="Buscar cliente/proveedor..."
-              value={clienteProveedorFilter}
-              onChange={(e) => handleClienteProveedorChange(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="rfcEmisor">RFC Emisor</Label>
-            <Input
-              id="rfcEmisor"
-              type="text"
-              placeholder="Buscar RFC..."
-              value={rfcEmisorFilter}
-              onChange={(e) => handleRfcEmisorChange(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="creadoPor">Creado Por</Label>
-            <Input
-              id="creadoPor"
-              type="text"
-              placeholder="Buscar creador..."
-              value={creadoPorFilter}
-              onChange={(e) => handleCreadoPorChange(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="montoMin">Rango de Monto</Label>
+            <Label htmlFor="totalMin">Rango de Total</Label>
             <div className="flex gap-2">
               <Input
-                id="montoMin"
+                id="totalMin"
                 type="number"
                 placeholder="Mínimo"
-                value={selectedMontoRange.min}
+                value={selectedTotalRange.min}
                 onChange={(e) =>
-                  setMontoRange({
-                    ...selectedMontoRange,
+                  setTotalRange({
+                    ...selectedTotalRange,
                     min: e.target.value,
                   })
                 }
               />
               <Input
-                id="montoMax"
+                id="totalMax"
                 type="number"
                 placeholder="Máximo"
-                value={selectedMontoRange.max}
+                value={selectedTotalRange.max}
                 onChange={(e) =>
-                  setMontoRange({
-                    ...selectedMontoRange,
+                  setTotalRange({
+                    ...selectedTotalRange,
                     max: e.target.value,
                   })
                 }
@@ -228,7 +174,7 @@ export function FacturasFilters({
             <Button
               size="sm"
               variant="outline"
-              onClick={handleMontoFilter}
+              onClick={handleTotalFilter}
               className="w-full"
             >
               Aplicar

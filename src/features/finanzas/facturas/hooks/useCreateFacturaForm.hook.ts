@@ -8,33 +8,24 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
 
   const form = useForm({
     defaultValues: {
-      tipoOrigen: "ingreso" as "ingreso" | "egreso",
-      origenId: "",
-      clienteProveedorId: "",
-      clienteProveedor: "",
       concepto: "",
-      monto: 0,
-      periodo: new Date().toISOString().slice(0, 7), // YYYY-MM
-      numeroFactura: "",
-      folioFiscal: "",
-      fechaEmision: new Date().toISOString().split("T")[0],
-      fechaVencimiento: new Date().toISOString().split("T")[0],
-      estado: "borrador" as "borrador" | "enviada" | "pagada" | "cancelada",
-      formaPago: "transferencia" as "transferencia" | "efectivo" | "cheque",
+      serie: "",
+      folio: "",
+      subtotal: 0,
+      totalImpuestosTransladados: 0,
+      totalImpuestosRetenidos: 0,
+      total: 0,
+      uuid: "",
       rfcEmisor: "",
+      nombreReceptor: "",
       rfcReceptor: "",
-      direccionEmisor: "",
-      direccionReceptor: "",
-      numeroCuenta: "",
-      clabe: "",
-      banco: "",
+      metodoPago: "",
+      moneda: "MXN",
+      usoCfdi: "",
+      status: "borrador" as "borrador" | "enviada" | "pagada" | "cancelada",
+      nombreEmisor: "",
+      statusPago: "",
       fechaPago: "",
-      fechaRegistro: new Date().toISOString().split("T")[0],
-      creadoPor: "",
-      creadoPorId: "",
-      autorizadoPor: "",
-      autorizadoPorId: "",
-      notas: "",
     },
     validators: {
       // @ts-expect-error - Zod schema validation types are complex
@@ -42,37 +33,30 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
     },
     onSubmit: async ({ value }) => {
       const formData = new FormData();
-      if (value.tipoOrigen) {
-        formData.append("tipoOrigen", value.tipoOrigen.toUpperCase());
-      }
-      if (value.origenId) {
-        formData.append("origenId", value.origenId);
-      }
-      formData.append("clienteProveedorId", value.clienteProveedorId);
-      formData.append("clienteProveedor", value.clienteProveedor);
       formData.append("concepto", value.concepto);
-      formData.append("monto", String(value.monto));
-      formData.append("periodo", value.periodo);
-      formData.append("numeroFactura", value.numeroFactura);
-      formData.append("folioFiscal", value.folioFiscal);
-      formData.append("fechaEmision", value.fechaEmision);
-      formData.append("fechaVencimiento", value.fechaVencimiento);
-      formData.append("estado", value.estado.toUpperCase());
-      formData.append("formaPago", value.formaPago.toUpperCase());
+      formData.append("serie", value.serie || "");
+      formData.append("folio", value.folio || "");
+      formData.append("subtotal", String(value.subtotal));
+      formData.append(
+        "totalImpuestosTransladados",
+        String(value.totalImpuestosTransladados || "")
+      );
+      formData.append(
+        "totalImpuestosRetenidos",
+        String(value.totalImpuestosRetenidos || "")
+      );
+      formData.append("total", String(value.total));
+      formData.append("uuid", value.uuid);
       formData.append("rfcEmisor", value.rfcEmisor);
+      formData.append("nombreReceptor", value.nombreReceptor || "");
       formData.append("rfcReceptor", value.rfcReceptor);
-      formData.append("direccionEmisor", value.direccionEmisor);
-      formData.append("direccionReceptor", value.direccionReceptor);
-      formData.append("numeroCuenta", value.numeroCuenta);
-      formData.append("clabe", value.clabe);
-      formData.append("banco", value.banco);
+      formData.append("metodoPago", value.metodoPago || "");
+      formData.append("moneda", value.moneda);
+      formData.append("usoCfdi", value.usoCfdi || "");
+      formData.append("status", value.status.toUpperCase());
+      formData.append("nombreEmisor", value.nombreEmisor || "");
+      formData.append("statusPago", value.statusPago || "");
       formData.append("fechaPago", value.fechaPago || "");
-      formData.append("fechaRegistro", value.fechaRegistro);
-      formData.append("creadoPor", value.creadoPor);
-      formData.append("creadoPorId", value.creadoPorId);
-      formData.append("autorizadoPor", value.autorizadoPor);
-      formData.append("autorizadoPorId", value.autorizadoPorId);
-      formData.append("notas", value.notas || "");
 
       await createFacturaMutation.mutateAsync(formData);
       onSuccess?.();
@@ -81,4 +65,3 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
 
   return form;
 };
-

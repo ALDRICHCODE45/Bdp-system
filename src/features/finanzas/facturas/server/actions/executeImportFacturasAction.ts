@@ -29,14 +29,9 @@ export async function executeImportFacturasAction(
     const usuarioId = session.user.id || null;
 
     // Validar que hay datos para importar
-    const hasSinVinculacionConAccion = preview.sinVinculacion?.some(
-      (item) => options.accionesSinVinculacion?.[item.row.rowNumber]
-    );
-    
     if (
       preview.nuevas.length === 0 &&
-      preview.duplicadas.length === 0 &&
-      !hasSinVinculacionConAccion
+      preview.duplicadas.length === 0
     ) {
       return { ok: false, error: "No hay facturas para importar" };
     }
@@ -51,9 +46,6 @@ export async function executeImportFacturasAction(
 
     // Revalidar las rutas afectadas por la importación
     revalidatePath("/facturas");
-    revalidatePath("/ingresos");
-    revalidatePath("/egresos");
-    revalidatePath("/clientes-proovedores");
 
     return { ok: true, data: result.value };
   } catch (error) {

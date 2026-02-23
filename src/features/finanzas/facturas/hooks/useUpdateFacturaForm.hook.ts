@@ -13,33 +13,24 @@ export const useUpdateFacturaForm = (
   const form = useForm({
     defaultValues: {
       id: factura.id,
-      tipoOrigen: factura.tipoOrigen,
-      origenId: factura.origenId,
-      clienteProveedorId: factura.clienteProveedorId,
-      clienteProveedor: factura.clienteProveedor,
       concepto: factura.concepto,
-      monto: factura.monto,
-      periodo: factura.periodo,
-      numeroFactura: factura.numeroFactura,
-      folioFiscal: factura.folioFiscal,
-      fechaEmision: factura.fechaEmision.split("T")[0],
-      fechaVencimiento: factura.fechaVencimiento.split("T")[0],
-      estado: factura.estado,
-      formaPago: factura.formaPago,
+      serie: factura.serie || "",
+      folio: factura.folio || "",
+      subtotal: factura.subtotal,
+      totalImpuestosTransladados: factura.totalImpuestosTransladados || 0,
+      totalImpuestosRetenidos: factura.totalImpuestosRetenidos || 0,
+      total: factura.total,
+      uuid: factura.uuid,
       rfcEmisor: factura.rfcEmisor,
+      nombreReceptor: factura.nombreReceptor || "",
       rfcReceptor: factura.rfcReceptor,
-      direccionEmisor: factura.direccionEmisor,
-      direccionReceptor: factura.direccionReceptor,
-      numeroCuenta: factura.numeroCuenta,
-      clabe: factura.clabe,
-      banco: factura.banco,
+      metodoPago: factura.metodoPago || "",
+      moneda: factura.moneda,
+      usoCfdi: factura.usoCfdi || "",
+      status: factura.status,
+      nombreEmisor: factura.nombreEmisor || "",
+      statusPago: factura.statusPago || "",
       fechaPago: factura.fechaPago ? factura.fechaPago.split("T")[0] : "",
-      fechaRegistro: factura.fechaRegistro.split("T")[0],
-      creadoPor: factura.creadoPorNombre || "",
-      creadoPorId: factura.creadoPorId || "",
-      autorizadoPor: factura.autorizadoPorNombre || "",
-      autorizadoPorId: factura.autorizadoPorId || "",
-      notas: factura.notas || "",
     },
     validators: {
       // @ts-expect-error - Zod schema validation types are complex
@@ -48,37 +39,30 @@ export const useUpdateFacturaForm = (
     onSubmit: async ({ value }) => {
       const formData = new FormData();
       formData.append("id", value.id);
-      if (value.tipoOrigen) {
-        formData.append("tipoOrigen", value.tipoOrigen.toUpperCase());
-      }
-      if (value.origenId) {
-        formData.append("origenId", value.origenId);
-      }
-      formData.append("clienteProveedorId", value.clienteProveedorId);
-      formData.append("clienteProveedor", value.clienteProveedor);
       formData.append("concepto", value.concepto);
-      formData.append("monto", String(value.monto));
-      formData.append("periodo", value.periodo);
-      formData.append("numeroFactura", value.numeroFactura);
-      formData.append("folioFiscal", value.folioFiscal);
-      formData.append("fechaEmision", value.fechaEmision);
-      formData.append("fechaVencimiento", value.fechaVencimiento);
-      formData.append("estado", value.estado.toUpperCase());
-      formData.append("formaPago", value.formaPago.toUpperCase());
+      formData.append("serie", value.serie || "");
+      formData.append("folio", value.folio || "");
+      formData.append("subtotal", String(value.subtotal));
+      formData.append(
+        "totalImpuestosTransladados",
+        String(value.totalImpuestosTransladados || "")
+      );
+      formData.append(
+        "totalImpuestosRetenidos",
+        String(value.totalImpuestosRetenidos || "")
+      );
+      formData.append("total", String(value.total));
+      formData.append("uuid", value.uuid);
       formData.append("rfcEmisor", value.rfcEmisor);
+      formData.append("nombreReceptor", value.nombreReceptor || "");
       formData.append("rfcReceptor", value.rfcReceptor);
-      formData.append("direccionEmisor", value.direccionEmisor);
-      formData.append("direccionReceptor", value.direccionReceptor);
-      formData.append("numeroCuenta", value.numeroCuenta);
-      formData.append("clabe", value.clabe);
-      formData.append("banco", value.banco);
+      formData.append("metodoPago", value.metodoPago || "");
+      formData.append("moneda", value.moneda);
+      formData.append("usoCfdi", value.usoCfdi || "");
+      formData.append("status", value.status.toUpperCase());
+      formData.append("nombreEmisor", value.nombreEmisor || "");
+      formData.append("statusPago", value.statusPago || "");
       formData.append("fechaPago", value.fechaPago || "");
-      formData.append("fechaRegistro", value.fechaRegistro);
-      formData.append("creadoPor", value.creadoPor);
-      formData.append("creadoPorId", value.creadoPorId);
-      formData.append("autorizadoPor", value.autorizadoPor);
-      formData.append("autorizadoPorId", value.autorizadoPorId);
-      formData.append("notas", value.notas || "");
 
       await updateFacturaMutation.mutateAsync(formData);
       onSuccess?.();
@@ -87,4 +71,3 @@ export const useUpdateFacturaForm = (
 
   return form;
 };
-

@@ -1,72 +1,52 @@
-import { Factura, ClienteProveedor, User, Socio } from "@prisma/client";
+import { Factura, User } from "@prisma/client";
+import { FacturasFilterParams } from "../../types/FacturasFilterParams";
 
 export type FacturaEntity = Factura & {
-  clienteProveedorRef?: Pick<ClienteProveedor, 'id' | 'nombre' | 'rfc' | 'direccion'> | null;
   ingresadoPorRef?: Pick<User, 'name'> | null;
-  creadoPorRef?: Pick<Socio, 'nombre'> | null;
-  autorizadoPorRef?: Pick<Socio, 'nombre'> | null;
 };
 
 export type CreateFacturaArgs = {
-  tipoOrigen: "INGRESO" | "EGRESO" | null;
-  origenId: string | null;
-  clienteProveedorId: string;
-  clienteProveedor: string;
   concepto: string;
-  monto: number;
-  periodo: string;
-  numeroFactura: string;
-  folioFiscal: string;
-  fechaEmision: Date;
-  fechaVencimiento: Date;
-  estado: "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
-  formaPago: "TRANSFERENCIA" | "EFECTIVO" | "CHEQUE";
+  serie?: string | null;
+  folio?: string | null;
+  subtotal: number;
+  totalImpuestosTransladados?: number | null;
+  totalImpuestosRetenidos?: number | null;
+  total: number;
+  uuid: string;
   rfcEmisor: string;
+  nombreReceptor?: string | null;
   rfcReceptor: string;
-  direccionEmisor: string;
-  direccionReceptor: string;
-  numeroCuenta: string;
-  clabe: string;
-  banco: string;
+  metodoPago?: string | null;
+  moneda?: string;
+  usoCfdi?: string | null;
+  status: "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
+  nombreEmisor?: string | null;
+  statusPago?: string | null;
   fechaPago?: Date | null;
-  fechaRegistro: Date;
-  creadoPor: string;
-  creadoPorId: string;
-  autorizadoPor: string;
-  autorizadoPorId: string;
-  notas?: string | null;
   ingresadoPor?: string | null;
 };
 
 export type UpdateFacturaArgs = {
   id: string;
-  tipoOrigen: "INGRESO" | "EGRESO" | null;
-  origenId: string | null;
-  clienteProveedorId: string;
-  clienteProveedor: string;
   concepto: string;
-  monto: number;
-  periodo: string;
-  numeroFactura: string;
-  folioFiscal: string;
-  fechaEmision: Date;
-  fechaVencimiento: Date;
-  estado: "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
-  formaPago: "TRANSFERENCIA" | "EFECTIVO" | "CHEQUE";
+  serie?: string | null;
+  folio?: string | null;
+  subtotal: number;
+  totalImpuestosTransladados?: number | null;
+  totalImpuestosRetenidos?: number | null;
+  total: number;
+  uuid: string;
   rfcEmisor: string;
+  nombreReceptor?: string | null;
   rfcReceptor: string;
-  direccionEmisor: string;
-  direccionReceptor: string;
-  numeroCuenta: string;
-  clabe: string;
-  banco: string;
+  metodoPago?: string | null;
+  moneda?: string;
+  usoCfdi?: string | null;
+  status: "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
+  nombreEmisor?: string | null;
+  statusPago?: string | null;
   fechaPago?: Date | null;
-  fechaRegistro: Date;
-  creadoPor: string;
-  creadoPorId: string;
-  autorizadoPor: string;
-  autorizadoPorId: string;
-  notas?: string | null;
 };
 
 export interface FacturaRepository {
@@ -74,9 +54,7 @@ export interface FacturaRepository {
   update(data: UpdateFacturaArgs): Promise<FacturaEntity>;
   delete(data: { id: string }): Promise<void>;
   findById(data: { id: string }): Promise<FacturaEntity | null>;
-  findByFolioFiscal(folioFiscal: string): Promise<boolean>;
-  findByOrigenId(origenId: string): Promise<FacturaEntity[]>;
+  findByUuid(uuid: string): Promise<boolean>;
   getAll(): Promise<FacturaEntity[]>;
-  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: FacturaEntity[]; totalCount: number }>;
+  getPaginated(params: FacturasFilterParams): Promise<{ data: FacturaEntity[]; totalCount: number }>;
 }
-

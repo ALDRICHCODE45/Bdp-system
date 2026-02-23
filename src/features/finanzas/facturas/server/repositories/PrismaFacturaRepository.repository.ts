@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, FacturaEstado } from "@prisma/client";
 import {
   FacturaRepository,
   FacturaEntity,
@@ -6,6 +6,7 @@ import {
   UpdateFacturaArgs,
 } from "./FacturaRepository.repository";
 import { Decimal } from "@prisma/client/runtime/library";
+import { FacturasFilterParams } from "../../types/FacturasFilterParams";
 
 type PrismaTransactionClient = Omit<
   PrismaClient,
@@ -13,11 +14,30 @@ type PrismaTransactionClient = Omit<
 >;
 
 const facturaIncludes = {
-  clienteProveedorRef: { select: { id: true, nombre: true, rfc: true, direccion: true } },
   ingresadoPorRef: { select: { name: true } },
-  creadoPorRef: { select: { nombre: true } },
-  autorizadoPorRef: { select: { nombre: true } },
 } as const;
+
+const VALID_ESTADOS = new Set<string>(["BORRADOR", "ENVIADA", "PAGADA", "CANCELADA"]);
+
+const ALLOWED_SORT_COLUMNS = new Set([
+  "concepto",
+  "subtotal",
+  "total",
+  "uuid",
+  "rfcEmisor",
+  "rfcReceptor",
+  "moneda",
+  "status",
+  "createdAt",
+  "updatedAt",
+  "fechaPago",
+  "metodoPago",
+  "serie",
+  "folio",
+  "nombreEmisor",
+  "nombreReceptor",
+  "statusPago",
+]);
 
 export class PrismaFacturaRepository implements FacturaRepository {
   constructor(
@@ -27,31 +47,24 @@ export class PrismaFacturaRepository implements FacturaRepository {
   async create(data: CreateFacturaArgs): Promise<FacturaEntity> {
     const factura = await this.prisma.factura.create({
       data: {
-        tipoOrigen: data.tipoOrigen,
-        origenId: data.origenId,
-        clienteProveedorId: data.clienteProveedorId,
-        clienteProveedor: data.clienteProveedor,
         concepto: data.concepto,
-        monto: new Decimal(data.monto),
-        periodo: data.periodo,
-        numeroFactura: data.numeroFactura,
-        folioFiscal: data.folioFiscal,
-        fechaEmision: data.fechaEmision,
-        fechaVencimiento: data.fechaVencimiento,
-        estado: data.estado,
-        formaPago: data.formaPago,
+        serie: data.serie ?? null,
+        folio: data.folio ?? null,
+        subtotal: new Decimal(data.subtotal),
+        totalImpuestosTransladados: data.totalImpuestosTransladados != null ? new Decimal(data.totalImpuestosTransladados) : null,
+        totalImpuestosRetenidos: data.totalImpuestosRetenidos != null ? new Decimal(data.totalImpuestosRetenidos) : null,
+        total: new Decimal(data.total),
+        uuid: data.uuid,
         rfcEmisor: data.rfcEmisor,
+        nombreReceptor: data.nombreReceptor ?? null,
         rfcReceptor: data.rfcReceptor,
-        direccionEmisor: data.direccionEmisor,
-        direccionReceptor: data.direccionReceptor,
-        numeroCuenta: data.numeroCuenta,
-        clabe: data.clabe,
-        banco: data.banco,
+        metodoPago: data.metodoPago ?? null,
+        moneda: data.moneda ?? "MXN",
+        usoCfdi: data.usoCfdi ?? null,
+        status: data.status,
+        nombreEmisor: data.nombreEmisor ?? null,
+        statusPago: data.statusPago ?? null,
         fechaPago: data.fechaPago,
-        fechaRegistro: data.fechaRegistro,
-        creadoPorId: data.creadoPorId,
-        autorizadoPorId: data.autorizadoPorId,
-        notas: data.notas,
         ingresadoPor: data.ingresadoPor,
       },
       include: facturaIncludes,
@@ -64,31 +77,24 @@ export class PrismaFacturaRepository implements FacturaRepository {
     const factura = await this.prisma.factura.update({
       where: { id: data.id },
       data: {
-        tipoOrigen: data.tipoOrigen,
-        origenId: data.origenId,
-        clienteProveedorId: data.clienteProveedorId,
-        clienteProveedor: data.clienteProveedor,
         concepto: data.concepto,
-        monto: new Decimal(data.monto),
-        periodo: data.periodo,
-        numeroFactura: data.numeroFactura,
-        folioFiscal: data.folioFiscal,
-        fechaEmision: data.fechaEmision,
-        fechaVencimiento: data.fechaVencimiento,
-        estado: data.estado,
-        formaPago: data.formaPago,
+        serie: data.serie ?? null,
+        folio: data.folio ?? null,
+        subtotal: new Decimal(data.subtotal),
+        totalImpuestosTransladados: data.totalImpuestosTransladados != null ? new Decimal(data.totalImpuestosTransladados) : null,
+        totalImpuestosRetenidos: data.totalImpuestosRetenidos != null ? new Decimal(data.totalImpuestosRetenidos) : null,
+        total: new Decimal(data.total),
+        uuid: data.uuid,
         rfcEmisor: data.rfcEmisor,
+        nombreReceptor: data.nombreReceptor ?? null,
         rfcReceptor: data.rfcReceptor,
-        direccionEmisor: data.direccionEmisor,
-        direccionReceptor: data.direccionReceptor,
-        numeroCuenta: data.numeroCuenta,
-        clabe: data.clabe,
-        banco: data.banco,
+        metodoPago: data.metodoPago ?? null,
+        moneda: data.moneda ?? "MXN",
+        usoCfdi: data.usoCfdi ?? null,
+        status: data.status,
+        nombreEmisor: data.nombreEmisor ?? null,
+        statusPago: data.statusPago ?? null,
         fechaPago: data.fechaPago,
-        fechaRegistro: data.fechaRegistro,
-        creadoPorId: data.creadoPorId,
-        autorizadoPorId: data.autorizadoPorId,
-        notas: data.notas,
       },
       include: facturaIncludes,
     });
@@ -111,24 +117,12 @@ export class PrismaFacturaRepository implements FacturaRepository {
     return factura;
   }
 
-  async findByFolioFiscal(folioFiscal: string): Promise<boolean> {
+  async findByUuid(uuid: string): Promise<boolean> {
     const factura = await this.prisma.factura.findUnique({
-      where: { folioFiscal },
+      where: { uuid },
     });
 
     return factura !== null;
-  }
-
-  async findByOrigenId(origenId: string): Promise<FacturaEntity[]> {
-    const facturas = await this.prisma.factura.findMany({
-      where: { origenId },
-      include: facturaIncludes,
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    return facturas;
   }
 
   async getAll(): Promise<FacturaEntity[]> {
@@ -142,28 +136,91 @@ export class PrismaFacturaRepository implements FacturaRepository {
     return facturas;
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: FacturaEntity[]; totalCount: number }> {
+  async getPaginated(params: FacturasFilterParams): Promise<{ data: FacturaEntity[]; totalCount: number }> {
     const skip = (params.page - 1) * params.pageSize;
-    const orderBy = params.sortBy
-      ? { [params.sortBy]: params.sortOrder || "desc" }
+
+    const sortColumn = params.sortBy && ALLOWED_SORT_COLUMNS.has(params.sortBy)
+      ? params.sortBy
+      : undefined;
+
+    const orderBy = sortColumn
+      ? { [sortColumn]: params.sortOrder || "desc" }
       : { createdAt: "desc" as const };
+
+    // Build WHERE clause
+    const where: Prisma.FacturaWhereInput = {};
+    const andConditions: Prisma.FacturaWhereInput[] = [];
+
+    // Text search across multiple fields
+    if (params.search) {
+      andConditions.push({
+        OR: [
+          { concepto: { contains: params.search, mode: "insensitive" } },
+          { uuid: { contains: params.search, mode: "insensitive" } },
+          { rfcEmisor: { contains: params.search, mode: "insensitive" } },
+          { rfcReceptor: { contains: params.search, mode: "insensitive" } },
+          { nombreEmisor: { contains: params.search, mode: "insensitive" } },
+          { nombreReceptor: { contains: params.search, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    // Filter by status (UI sends lowercase, Prisma enum expects UPPERCASE)
+    if (params.status) {
+      const upper = params.status.toUpperCase();
+      if (VALID_ESTADOS.has(upper)) {
+        andConditions.push({ status: upper as FacturaEstado });
+      }
+    }
+
+    // Filter by metodoPago
+    if (params.metodoPago) {
+      andConditions.push({
+        metodoPago: params.metodoPago,
+      });
+    }
+
+    // Filter by moneda
+    if (params.moneda) {
+      andConditions.push({
+        moneda: params.moneda,
+      });
+    }
+
+    // Filter by statusPago
+    if (params.statusPago) {
+      andConditions.push({
+        statusPago: params.statusPago,
+      });
+    }
+
+    // Filter by total range
+    if (params.totalMin !== undefined) {
+      andConditions.push({
+        total: { gte: new Decimal(params.totalMin) },
+      });
+    }
+    if (params.totalMax !== undefined) {
+      andConditions.push({
+        total: { lte: new Decimal(params.totalMax) },
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
 
     const [data, totalCount] = await Promise.all([
       this.prisma.factura.findMany({
         skip,
         take: params.pageSize,
         orderBy,
-        include: {
-          clienteProveedorRef: true,
-          ingresadoPorRef: true,
-          creadoPorRef: true,
-          autorizadoPorRef: true,
-        },
+        where,
+        include: facturaIncludes,
       }),
-      this.prisma.factura.count(),
+      this.prisma.factura.count({ where }),
     ]);
 
     return { data, totalCount };
   }
 }
-

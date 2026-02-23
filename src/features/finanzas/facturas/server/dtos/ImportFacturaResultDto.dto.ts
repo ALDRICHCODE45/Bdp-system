@@ -3,24 +3,10 @@
  */
 export type ImportFacturaResultDto = {
   rowNumber: number;
-  folioFiscal: string;
+  uuid: string;
   status: "created" | "updated" | "skipped" | "error";
   message: string;
   facturaId?: string;
-  clienteCreado?: {
-    id: string;
-    nombre: string;
-    rfc: string;
-  };
-  // Para facturas que crearon un I/E automáticamente
-  ingresoCreado?: {
-    id: string;
-    folioFiscal: string;
-  };
-  egresoCreado?: {
-    id: string;
-    folioFiscal: string;
-  };
 };
 
 /**
@@ -33,8 +19,5 @@ export type ImportExecutionResultDto = {
   actualizadas: number;
   omitidas: number;
   errores: number;
-  clientesCreados: number;
-  ingresosCreados: number;
-  egresosCreados: number;
   resultados: ImportFacturaResultDto[];
 };
