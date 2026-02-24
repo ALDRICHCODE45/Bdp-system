@@ -15,8 +15,6 @@ export const useFacturas = (params: FacturasFilterParams) => {
       params.status,
       params.metodoPago,
       params.moneda,
-      params.totalMin,
-      params.totalMax,
       params.statusPago,
     ],
     queryFn: async () => {

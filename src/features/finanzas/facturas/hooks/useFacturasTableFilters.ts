@@ -6,8 +6,6 @@ export const useFacturasTableFilters = (table: Table<unknown>) => {
   const [selectedMetodoPago, setSelectedMetodoPago] = useState<string>("todos");
   const [selectedMoneda, setSelectedMoneda] = useState<string>("todos");
   const [selectedStatusPago, setSelectedStatusPago] = useState<string>("todos");
-  const [selectedTotalRange, setTotalRange] = useState({ min: "", max: "" });
-
   const handleStatusChange = useCallback(
     (status: string) => {
       setSelectedStatus(status);
@@ -56,32 +54,15 @@ export const useFacturasTableFilters = (table: Table<unknown>) => {
     [table]
   );
 
-  const handleTotalFilter = useCallback(() => {
-    const min = selectedTotalRange.min
-      ? parseFloat(selectedTotalRange.min)
-      : undefined;
-    const max = selectedTotalRange.max
-      ? parseFloat(selectedTotalRange.max)
-      : undefined;
-
-    if (min !== undefined || max !== undefined) {
-      table.getColumn("total")?.setFilterValue({ min, max });
-    } else {
-      table.getColumn("total")?.setFilterValue(undefined);
-    }
-  }, [table, selectedTotalRange]);
-
   const clearFilters = useCallback(() => {
     setSelectedStatus("todos");
     setSelectedMetodoPago("todos");
     setSelectedMoneda("todos");
     setSelectedStatusPago("todos");
-    setTotalRange({ min: "", max: "" });
     table.getColumn("status")?.setFilterValue(undefined);
     table.getColumn("metodoPago")?.setFilterValue(undefined);
     table.getColumn("moneda")?.setFilterValue(undefined);
     table.getColumn("statusPago")?.setFilterValue(undefined);
-    table.getColumn("total")?.setFilterValue(undefined);
   }, [table]);
 
   return {
@@ -89,13 +70,10 @@ export const useFacturasTableFilters = (table: Table<unknown>) => {
     selectedMetodoPago,
     selectedMoneda,
     selectedStatusPago,
-    selectedTotalRange,
     handleStatusChange,
     handleMetodoPagoChange,
     handleMonedaChange,
     handleStatusPagoChange,
-    handleTotalFilter,
-    setTotalRange,
     clearFilters,
   };
 };

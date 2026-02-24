@@ -60,13 +60,10 @@ export function FacturasTablePage() {
     (columnFilters.find((f) => f.id === "moneda")?.value as string) ?? undefined;
   const statusPagoFilter =
     (columnFilters.find((f) => f.id === "statusPago")?.value as string) ?? undefined;
-  const totalRange =
-    (columnFilters.find((f) => f.id === "total")?.value as { min?: number; max?: number }) ?? undefined;
-
   // Reset pagination when filters change
   useEffect(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, [debouncedSearch, statusFilter, metodoPagoFilter, monedaFilter, statusPagoFilter, totalRange]);
+  }, [debouncedSearch, statusFilter, metodoPagoFilter, monedaFilter, statusPagoFilter]);
 
   const { data, isPending, isFetching } = useFacturas({
     page: pagination.pageIndex + 1,
@@ -78,8 +75,6 @@ export function FacturasTablePage() {
     metodoPago: metodoPagoFilter,
     moneda: monedaFilter,
     statusPago: statusPagoFilter,
-    totalMin: totalRange?.min,
-    totalMax: totalRange?.max,
   });
 
   const serverConfig = useMemo(

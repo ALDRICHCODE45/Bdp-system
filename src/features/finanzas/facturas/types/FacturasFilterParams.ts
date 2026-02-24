@@ -7,7 +7,5 @@ export interface FacturasFilterParams {
   status?: string;
   metodoPago?: string;
   moneda?: string;
-  totalMin?: number;
-  totalMax?: number;
   statusPago?: string;
 }

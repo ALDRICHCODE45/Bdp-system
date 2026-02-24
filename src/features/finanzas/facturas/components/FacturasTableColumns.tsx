@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/core/shared/ui/tooltip";
+import { cn } from "@/core/lib/utils";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { FacturaRowActions } from "./forms/FacturaRowActions";
 import { UploadFacturaColumn } from "./columns/UploadFacturaColumn";
@@ -22,6 +23,25 @@ const dateFormatter = new Intl.DateTimeFormat("es-MX", {
   month: "short",
   day: "numeric",
 });
+
+const statusColors: Record<string, string> = {
+  borrador: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  enviada: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  pagada: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  cancelada: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+};
+
+const statusPagoColors: Record<string, string> = {
+  Vigente:
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+  Cancelado: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  NoPagado:
+    "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+};
+
+const statusPagoLabels: Record<string, string> = {
+  NoPagado: "No Pagado",
+};
 
 export const columns: ColumnDef<FacturaDto>[] = [
   {
@@ -133,7 +153,9 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const subtotal = row.getValue("subtotal") as number;
       return (
-        <div className="font-medium">{currencyFormatter.format(subtotal)}</div>
+        <div className="text-sm text-muted-foreground">
+          {currencyFormatter.format(subtotal)}
+        </div>
       );
     },
     size: 10,
@@ -146,7 +168,9 @@ export const columns: ColumnDef<FacturaDto>[] = [
       if (value === null)
         return <div className="text-xs text-muted-foreground">-</div>;
       return (
-        <div className="font-medium">{currencyFormatter.format(value)}</div>
+        <div className="text-sm text-muted-foreground">
+          {currencyFormatter.format(value)}
+        </div>
       );
     },
     size: 10,
@@ -160,7 +184,9 @@ export const columns: ColumnDef<FacturaDto>[] = [
       if (value === null)
         return <div className="text-xs text-muted-foreground">-</div>;
       return (
-        <div className="font-medium">{currencyFormatter.format(value)}</div>
+        <div className="text-sm text-muted-foreground">
+          {currencyFormatter.format(value)}
+        </div>
       );
     },
     size: 10,
@@ -172,7 +198,9 @@ export const columns: ColumnDef<FacturaDto>[] = [
     cell: ({ row }) => {
       const total = row.getValue("total") as number;
       return (
-        <div className="font-medium">{currencyFormatter.format(total)}</div>
+        <div className="font-semibold text-foreground">
+          {currencyFormatter.format(total)}
+        </div>
       );
     },
     size: 10,
@@ -185,7 +213,7 @@ export const columns: ColumnDef<FacturaDto>[] = [
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="max-w-[120px] truncate font-mono text-sm">
+            <div className="max-w-[120px] truncate font-mono text-xs">
               {uuid}
             </div>
           </TooltipTrigger>
@@ -204,7 +232,11 @@ export const columns: ColumnDef<FacturaDto>[] = [
       const metodoPago = row.getValue("metodoPago") as string | null;
       if (!metodoPago)
         return <div className="text-xs text-muted-foreground">-</div>;
-      return <div className="text-xs">{metodoPago}</div>;
+      return (
+        <Badge variant="outline" className="text-xs font-normal capitalize">
+          {metodoPago.toLowerCase()}
+        </Badge>
+      );
     },
     size: 8,
   },
@@ -213,7 +245,11 @@ export const columns: ColumnDef<FacturaDto>[] = [
     header: "Moneda",
     cell: ({ row }) => {
       const moneda = row.getValue("moneda") as string;
-      return <div className="font-mono text-xs">{moneda}</div>;
+      return (
+        <Badge variant="outline" className="font-mono text-xs">
+          {moneda}
+        </Badge>
+      );
     },
     size: 6,
   },
@@ -225,7 +261,11 @@ export const columns: ColumnDef<FacturaDto>[] = [
       const usoCfdi = row.getValue("usoCfdi") as string | null;
       if (!usoCfdi)
         return <div className="text-xs text-muted-foreground">-</div>;
-      return <div className="text-xs">{usoCfdi}</div>;
+      return (
+        <Badge variant="outline" className="font-mono text-xs">
+          {usoCfdi}
+        </Badge>
+      );
     },
     size: 7,
   },
@@ -233,22 +273,12 @@ export const columns: ColumnDef<FacturaDto>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as
-        | "borrador"
-        | "enviada"
-        | "pagada"
-        | "cancelada";
-      const variants: Record<
-        typeof status,
-        "default" | "secondary" | "destructive" | "outline"
-      > = {
-        borrador: "secondary",
-        enviada: "default",
-        pagada: "outline",
-        cancelada: "destructive",
-      };
+      const status = row.getValue("status") as string;
       return (
-        <Badge variant={variants[status]}>
+        <Badge
+          variant="secondary"
+          className={cn("border-0", statusColors[status])}
+        >
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </Badge>
       );
@@ -302,7 +332,14 @@ export const columns: ColumnDef<FacturaDto>[] = [
       const statusPago = row.getValue("statusPago") as string | null;
       if (!statusPago)
         return <div className="text-xs text-muted-foreground">-</div>;
-      return <div className="text-xs">{statusPago}</div>;
+      return (
+        <Badge
+          variant="secondary"
+          className={cn("border-0", statusPagoColors[statusPago])}
+        >
+          {statusPagoLabels[statusPago] || statusPago}
+        </Badge>
+      );
     },
     size: 8,
   },
@@ -317,6 +354,19 @@ export const columns: ColumnDef<FacturaDto>[] = [
     },
     size: 9,
   },
+  {
+    accessorKey: "createdAt",
+    header: "Fecha Registro",
+    cell: ({ row }) => {
+      const fecha = row.getValue("createdAt") as string;
+      return (
+        <div className="text-xs">
+          {dateFormatter.format(new Date(fecha))}
+        </div>
+      );
+    },
+    size: 9,
+  },
 
   {
     header: "Ingresado Por",
@@ -327,7 +377,9 @@ export const columns: ColumnDef<FacturaDto>[] = [
         | null;
       return (
         <div className="text-sm truncate">
-          {ingresadoPorNombre || <span className="text-gray-400">N/A</span>}
+          {ingresadoPorNombre || (
+            <span className="text-muted-foreground">-</span>
+          )}
         </div>
       );
     },

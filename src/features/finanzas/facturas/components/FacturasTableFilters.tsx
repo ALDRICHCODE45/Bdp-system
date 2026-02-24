@@ -1,8 +1,7 @@
 "use client";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/core/shared/ui/button";
-import { Input } from "@/core/shared/ui/input";
-import { Label } from "@/core/shared/ui/label";
+
 import { Badge } from "@/core/shared/ui/badge";
 import { Card, CardContent, CardHeader } from "@/core/shared/ui/card";
 import { Filter, FileSpreadsheet } from "lucide-react";
@@ -64,13 +63,10 @@ export function FacturasFilters({
     handleMetodoPagoChange,
     handleMonedaChange,
     handleStatusPagoChange,
-    handleTotalFilter,
     selectedStatus,
     selectedMetodoPago,
     selectedMoneda,
     selectedStatusPago,
-    selectedTotalRange,
-    setTotalRange,
   } = useFacturasTableFilters(table);
 
   return (
@@ -140,46 +136,6 @@ export function FacturasFilters({
             value={selectedStatusPago}
             onValueChange={handleStatusPagoChange}
           />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="totalMin">Rango de Total</Label>
-            <div className="flex gap-2">
-              <Input
-                id="totalMin"
-                type="number"
-                placeholder="Mínimo"
-                value={selectedTotalRange.min}
-                onChange={(e) =>
-                  setTotalRange({
-                    ...selectedTotalRange,
-                    min: e.target.value,
-                  })
-                }
-              />
-              <Input
-                id="totalMax"
-                type="number"
-                placeholder="Máximo"
-                value={selectedTotalRange.max}
-                onChange={(e) =>
-                  setTotalRange({
-                    ...selectedTotalRange,
-                    max: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleTotalFilter}
-              className="w-full"
-            >
-              Aplicar
-            </Button>
-          </div>
         </div>
       </CardContent>
     </Card>

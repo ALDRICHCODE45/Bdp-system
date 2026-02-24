@@ -1,6 +1,6 @@
 "use no memo";
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -99,6 +99,11 @@ export function DataTable<TData, TValue>({
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  // Refs to track current state for resolving functional updaters outside setState
+  const columnFiltersRef = useRef<ColumnFiltersState>([]);
+  const sortingRef = useRef<SortingState>([]);
+  const paginationRef = useRef<PaginationState>(pagination);
+
   const table = useReactTable({
     data,
     columns,
@@ -106,12 +111,11 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: isManualSorting ? undefined : getSortedRowModel(),
     manualSorting: isManualSorting,
     onSortingChange: (updater) => {
-      setSorting(updater);
-      if (finalConfig.onSortingChange) {
-        const newSorting =
-          typeof updater === "function" ? updater(sorting) : updater;
-        finalConfig.onSortingChange(newSorting);
-      }
+      const newSorting =
+        typeof updater === "function" ? updater(sortingRef.current) : updater;
+      sortingRef.current = newSorting;
+      setSorting(newSorting);
+      finalConfig.onSortingChange?.(newSorting);
     },
     enableSortingRemoval: false,
     getPaginationRowModel: isManualPagination
@@ -125,20 +129,22 @@ export function DataTable<TData, TValue>({
       ? (finalConfig.pagination.totalCount ?? undefined)
       : undefined,
     onPaginationChange: (updater) => {
-      setPagination(updater);
-      if (finalConfig.pagination.onPaginationChange) {
-        const newPagination =
-          typeof updater === "function" ? updater(pagination) : updater;
-        finalConfig.pagination.onPaginationChange(newPagination);
-      }
+      const newPagination =
+        typeof updater === "function"
+          ? updater(paginationRef.current)
+          : updater;
+      paginationRef.current = newPagination;
+      setPagination(newPagination);
+      finalConfig.pagination.onPaginationChange?.(newPagination);
     },
     onColumnFiltersChange: (updater) => {
-      setColumnFilters(updater);
-      if (finalConfig.onColumnFiltersChange) {
-        const newFilters =
-          typeof updater === "function" ? updater(columnFilters) : updater;
-        finalConfig.onColumnFiltersChange(newFilters);
-      }
+      const newFilters =
+        typeof updater === "function"
+          ? updater(columnFiltersRef.current)
+          : updater;
+      columnFiltersRef.current = newFilters;
+      setColumnFilters(newFilters);
+      finalConfig.onColumnFiltersChange?.(newFilters);
     },
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,

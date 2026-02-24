@@ -194,18 +194,6 @@ export class PrismaFacturaRepository implements FacturaRepository {
       });
     }
 
-    // Filter by total range
-    if (params.totalMin !== undefined) {
-      andConditions.push({
-        total: { gte: new Decimal(params.totalMin) },
-      });
-    }
-    if (params.totalMax !== undefined) {
-      andConditions.push({
-        total: { lte: new Decimal(params.totalMax) },
-      });
-    }
-
     if (andConditions.length > 0) {
       where.AND = andConditions;
     }
