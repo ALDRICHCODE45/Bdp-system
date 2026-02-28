@@ -304,7 +304,7 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
                   <SelectContent position="item-aligned">
                     <SelectItem value="CHEQUE">Cheque</SelectItem>
                     <SelectItem value="EFECTIVO">Efectivo</SelectItem>
-                    <SelectItem value="TRANSFERENCI">Transferencia</SelectItem>
+                    <SelectItem value="TRANSFERENCIA">Transferencia</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>

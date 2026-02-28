@@ -14,6 +14,11 @@ import {
 } from "../validators/updateFacturaSchema";
 import { FacturaHistorialService } from "./FacturaHistorialService.service";
 import { FacturasFilterParams } from "../../types/FacturasFilterParams";
+// Concrete repos needed for transaction-scoped instances.
+// Trade-off: coupling service to implementation for Prisma $transaction support
+// without introducing a full Unit-of-Work abstraction.
+import { PrismaFacturaRepository } from "../repositories/PrismaFacturaRepository.repository";
+import { PrismaFacturaHistorialRepository } from "../repositories/PrismaFacturaHistorialRepository.repository";
 
 type CreateFacturaInputWithUsuario = CreateFacturaInput & {
   usuarioId?: string | null;
@@ -33,46 +38,33 @@ export class FacturaService {
   async create(
     input: CreateFacturaInputWithUsuario
   ): Promise<Result<FacturaEntity, Error>> {
-    // Validar entrada
     const validationResult = createFacturaSchema.safeParse(input);
     if (!validationResult.success) {
       return Err(new Error(validationResult.error.message));
     }
 
-    // 1. Validar uuid unico
     const uuidExists = await this.facturaRepository.findByUuid(input.uuid);
     if (uuidExists) {
       return Err(new Error("Ya existe una factura con ese UUID"));
     }
 
-    // 2. Crear factura con historial usando transaccion
     try {
       const factura = await this.prisma.$transaction(async (tx) => {
-        const { PrismaFacturaRepository } = await import(
-          "../repositories/PrismaFacturaRepository.repository"
-        );
-        const { PrismaFacturaHistorialRepository } = await import(
-          "../repositories/PrismaFacturaHistorialRepository.repository"
-        );
-        const { FacturaHistorialService } = await import(
-          "./FacturaHistorialService.service"
-        );
+        // Create transaction-scoped repositories (static imports, no dynamic import anti-pattern).
+        const txFacturaRepo = new PrismaFacturaRepository(tx);
+        const txHistorialRepo = new PrismaFacturaHistorialRepository(tx);
+        const txHistorialService = new FacturaHistorialService(txHistorialRepo);
 
-        const tempFacturaRepository = new PrismaFacturaRepository(tx);
-        const tempHistorialRepository = new PrismaFacturaHistorialRepository(tx);
-        const tempHistorialService = new FacturaHistorialService(
-          tempHistorialRepository
-        );
-
-        const newFactura = await tempFacturaRepository.create({
+        const newFactura = await txFacturaRepo.create({
           ...input,
           ingresadoPor: input.usuarioId || null,
         });
 
-        await tempHistorialService.createHistorialForNewFactura(
+        await txHistorialService.createHistorialForNewFactura(
           newFactura,
           input.usuarioId
         );
+
         return newFactura;
       });
 
@@ -87,7 +79,6 @@ export class FacturaService {
   async update(
     input: UpdateFacturaInputWithUsuario
   ): Promise<Result<FacturaEntity, Error>> {
-    // Validar entrada
     const validationResult = updateFacturaSchema.safeParse(input);
     if (!validationResult.success) {
       return Err(new Error(validationResult.error.message));
@@ -98,7 +89,6 @@ export class FacturaService {
       return Err(new Error("Factura no encontrada"));
     }
 
-    // Validar uuid unico si cambio
     if (input.uuid !== existing.uuid) {
       const uuidExists = await this.facturaRepository.findByUuid(input.uuid);
       if (uuidExists) {
@@ -108,31 +98,18 @@ export class FacturaService {
 
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-        const { PrismaFacturaRepository } = await import(
-          "../repositories/PrismaFacturaRepository.repository"
-        );
-        const { PrismaFacturaHistorialRepository } = await import(
-          "../repositories/PrismaFacturaHistorialRepository.repository"
-        );
-        const { FacturaHistorialService } = await import(
-          "./FacturaHistorialService.service"
-        );
+        const txFacturaRepo = new PrismaFacturaRepository(tx);
+        const txHistorialRepo = new PrismaFacturaHistorialRepository(tx);
+        const txHistorialService = new FacturaHistorialService(txHistorialRepo);
 
-        const tempFacturaRepository = new PrismaFacturaRepository(tx);
-        const tempHistorialRepository = new PrismaFacturaHistorialRepository(tx);
-        const tempHistorialService = new FacturaHistorialService(
-          tempHistorialRepository
-        );
+        const updatedFactura = await txFacturaRepo.update({ ...input });
 
-        const updatedFactura = await tempFacturaRepository.update({
-          ...input,
-        });
-
-        await tempHistorialService.createHistorialForUpdate(
+        await txHistorialService.createHistorialForUpdate(
           existing,
           updatedFactura,
           input.usuarioId
         );
+
         return updatedFactura;
       });
 
@@ -152,7 +129,6 @@ export class FacturaService {
       return Err(new Error("Factura no encontrada"));
     }
 
-    // Solo permitir eliminar si esta en BORRADOR
     if (existing.status !== "BORRADOR") {
       return Err(
         new Error("Solo se pueden eliminar facturas en estado BORRADOR")
@@ -200,12 +176,18 @@ export class FacturaService {
     }
   }
 
-  async getPaginated(params: FacturasFilterParams): Promise<Result<{ data: FacturaEntity[]; totalCount: number }, Error>> {
+  async getPaginated(
+    params: FacturasFilterParams
+  ): Promise<Result<{ data: FacturaEntity[]; totalCount: number }, Error>> {
     try {
       const result = await this.facturaRepository.getPaginated(params);
       return Ok(result);
     } catch (error) {
-      return Err(error instanceof Error ? error : new Error("Error al obtener facturas paginadas"));
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener facturas paginadas")
+      );
     }
   }
 }

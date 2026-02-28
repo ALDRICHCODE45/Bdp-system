@@ -1,22 +1,15 @@
 "use client";
+import { useState } from "react";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/core/shared/ui/button";
+import { LucideIcon } from "lucide-react";
 
 import { Badge } from "@/core/shared/ui/badge";
 import { Card, CardContent, CardHeader } from "@/core/shared/ui/card";
 import { Filter, FileSpreadsheet } from "lucide-react";
-import { useFacturasTableFilters } from "../hooks/useFacturasTableFilters";
 import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
-
-const statusOptions = [
-  { label: "Todos", value: "todos" },
-  { label: "BORRADOR", value: "borrador" },
-  { label: "ENVIADA", value: "enviada" },
-  { label: "PAGADA", value: "pagada" },
-  { label: "CANCELADA", value: "cancelada" },
-];
 
 const metodoPagoOptions = [
   { label: "Todos", value: "todos" },
@@ -42,9 +35,20 @@ const statusPagoOptions = [
 interface FacturasFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
+  addButtonText?: string;
+  addButtonIcon?: LucideIcon;
+  showAddButton?: boolean;
   onAdd?: () => void;
   onExport?: (table: Table<unknown>) => void;
   onImport?: () => void;
+  // Direct filter control (server-side)
+  metodoPago?: string;
+  onMetodoPagoChange?: (value: string) => void;
+  moneda?: string;
+  onMonedaChange?: (value: string) => void;
+  statusPago?: string;
+  onStatusPagoChange?: (value: string) => void;
+  onClearFilters?: () => void;
 }
 
 export function FacturasFilters({
@@ -56,18 +60,67 @@ export function FacturasFilters({
   onAdd,
   onExport,
   onImport,
+  metodoPago,
+  onMetodoPagoChange,
+  moneda,
+  onMonedaChange,
+  statusPago,
+  onStatusPagoChange,
+  onClearFilters,
 }: FacturasFiltersProps) {
-  const {
-    clearFilters,
-    handleStatusChange,
-    handleMetodoPagoChange,
-    handleMonedaChange,
-    handleStatusPagoChange,
-    selectedStatus,
-    selectedMetodoPago,
-    selectedMoneda,
-    selectedStatusPago,
-  } = useFacturasTableFilters(table);
+  // Support both controlled (server-side) and uncontrolled (client-side) modes
+  const isControlled = onMetodoPagoChange !== undefined;
+
+  // Uncontrolled: local state managed through table column filters
+  const [localMetodoPago, setLocalMetodoPago] = useState("todos");
+  const [localMoneda, setLocalMoneda] = useState("todos");
+  const [localStatusPago, setLocalStatusPago] = useState("todos");
+
+  const handleMetodoPagoChange = (value: string) => {
+    if (isControlled) {
+      onMetodoPagoChange?.(value === "todos" ? "" : value);
+    } else {
+      setLocalMetodoPago(value);
+      table.getColumn("metodoPago")?.setFilterValue(value === "todos" ? undefined : value);
+    }
+  };
+
+  const handleMonedaChange = (value: string) => {
+    if (isControlled) {
+      onMonedaChange?.(value === "todos" ? "" : value);
+    } else {
+      setLocalMoneda(value);
+      table.getColumn("moneda")?.setFilterValue(value === "todos" ? undefined : value);
+    }
+  };
+
+  const handleStatusPagoChange = (value: string) => {
+    if (isControlled) {
+      onStatusPagoChange?.(value === "todos" ? "" : value);
+    } else {
+      setLocalStatusPago(value);
+      table.getColumn("statusPago")?.setFilterValue(value === "todos" ? undefined : value);
+    }
+  };
+
+  const handleClearFilters = () => {
+    if (isControlled) {
+      onClearFilters?.();
+      onGlobalFilterChange?.("");
+    } else {
+      setLocalMetodoPago("todos");
+      setLocalMoneda("todos");
+      setLocalStatusPago("todos");
+      table.getColumn("metodoPago")?.setFilterValue(undefined);
+      table.getColumn("moneda")?.setFilterValue(undefined);
+      table.getColumn("statusPago")?.setFilterValue(undefined);
+      onGlobalFilterChange?.("");
+    }
+  };
+
+  const selectedMetodoPago = isControlled ? (metodoPago || "todos") : localMetodoPago;
+  const selectedMoneda = isControlled ? (moneda || "todos") : localMoneda;
+  const selectedStatusPago = isControlled ? (statusPago || "todos") : localStatusPago;
 
   return (
     <Card className="mb-6 w-full min-w-0">
@@ -96,10 +149,7 @@ export function FacturasFilters({
             addButtonText={addButtonText}
             buttonTooltipText="Agregar Factura"
             onAdd={onAdd}
-            onClearFilters={() => {
-              clearFilters();
-              onGlobalFilterChange?.("");
-            }}
+            onClearFilters={handleClearFilters}
             onExport={onExport}
             table={table}
             exportFileName="facturas"
@@ -108,14 +158,7 @@ export function FacturasFilters({
       </CardHeader>
 
       <CardContent className="space-y-4 pt-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <FilterSelect
-            label="Status"
-            options={statusOptions}
-            value={selectedStatus}
-            onValueChange={handleStatusChange}
-          />
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <FilterSelect
             label="Método de Pago"
             options={metodoPagoOptions}

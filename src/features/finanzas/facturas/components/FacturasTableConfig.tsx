@@ -1,9 +1,7 @@
-import { Plus, PlusCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { TableConfig } from "@/core/shared/components/DataTable/types";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { FacturasFilters } from "./FacturasTableFilters";
-import { Table } from "@tanstack/react-table";
-import { exportToExcel } from "@/core/shared/helpers/exportToExcel";
 
 // Configuración personalizada para el DataTable
 export const FacturasTableConfig: TableConfig<FacturaDto> = {
@@ -18,16 +16,11 @@ export const FacturasTableConfig: TableConfig<FacturaDto> = {
     },
   },
   actions: {
-    showExportButton: true,
-    onExport: (table: Table<unknown>) => {
-      exportToExcel(table as Table<FacturaDto>, "facturas");
-    },
+    showExportButton: false,
     showAddButton: true,
-    addButtonIcon: <PlusCircle />,
-    addButtonText: "Agregar Factura",
-    onAdd: () => {
-      console.log("Agregando Factura");
-    },
+    addButtonText: "Nueva Factura",
+    showBulkActions: true,
+    onBulkDelete: undefined, // set at runtime
   },
   pagination: {
     defaultPageSize: 10,
@@ -39,4 +32,11 @@ export const FacturasTableConfig: TableConfig<FacturaDto> = {
   enableSorting: true,
   enableColumnVisibility: true,
   enableRowSelection: true,
+  columnPinning: {
+    enabled: false,
+  },
+  columnOrder: {
+    enabled: true,
+    persistKey: "facturas-table",
+  },
 };

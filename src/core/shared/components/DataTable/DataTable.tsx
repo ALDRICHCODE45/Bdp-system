@@ -1,9 +1,11 @@
-"use no memo";
 "use client";
-import { useMemo, useRef, useState } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { Spinner } from "@/core/shared/ui/spinner";
 import {
   ColumnDef,
   ColumnFiltersState,
+  ColumnOrderState,
+  ColumnPinningState,
   getCoreRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
@@ -14,42 +16,42 @@ import {
   useReactTable,
   VisibilityState,
   RowSelectionState,
+  Updater,
 } from "@tanstack/react-table";
-import { UserPlus } from "lucide-react";
-import { TooltipProvider } from "@/core/shared/ui/tooltip";
+import { Trash2 } from "lucide-react";
 
-import { TableConfig } from "./types";
 import { TableBodyDataTable } from "./DataTableBody";
 import { DataTablePagination } from "./DataTablePagination";
-import { DataTableFilters } from "./DataTableFilters";
+import { TableConfig } from "./types";
 import { TableSkeleton } from "./TableSkeleton";
-
-// Default config values (static, defined outside component to avoid re-creation)
-const DEFAULT_FILTERS = {
-  searchColumn: "nombre",
-  searchPlaceholder: "Buscar...",
-  showSearch: true,
-} as const;
-
-const DEFAULT_ACTIONS = {
-  showAddButton: true,
-  addButtonText: "Agregar",
-  showExportButton: false,
-  showRefreshButton: false,
-} as const;
-
-const DEFAULT_PAGINATION = {
-  defaultPageSize: 5,
-  pageSizeOptions: [5, 10, 20, 50] as number[],
-  showPageSizeSelector: true,
-  showPaginationInfo: true,
-} as const;
+import { DataTableFilters } from "./DataTableFilters";
+import { DataTableBulkActionsBar, BulkAction } from "./DataTableBulkActionsBar";
+import { useTablePreferences } from "@/core/shared/hooks/useTablePreferences";
+import { TooltipProvider } from "@/core/shared/ui/tooltip";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   config?: TableConfig<TData>;
   isLoading?: boolean;
+  /** Indica si se está haciendo fetch de nuevos datos (para overlay sutil durante refetch) */
+  isFetching?: boolean;
+  // Callbacks para server-side (cuando config.serverSide.enabled = true)
+  onPaginationChange?: (pagination: PaginationState) => void;
+  onSortingChange?: (sorting: SortingState) => void;
+  onGlobalFilterChange?: (filter: string) => void;
+  // Estado controlado desde el padre (server-side)
+  pagination?: PaginationState;
+  sorting?: SortingState;
+}
+
+/** Componente de overlay de carga sutil para refetches */
+function LoadingOverlay() {
+  return (
+    <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-md">
+      <Spinner className="size-6 text-muted-foreground" />
+    </div>
+  );
 }
 
 export function DataTable<TData, TValue>({
@@ -57,108 +59,280 @@ export function DataTable<TData, TValue>({
   data,
   config = {},
   isLoading: isLoadingProp,
+  isFetching: isFetchingProp,
+  // Server-side callbacks
+  onPaginationChange: onPaginationChangeProp,
+  onSortingChange: onSortingChangeProp,
+  onGlobalFilterChange: onGlobalFilterChangeProp,
+  // Estado controlado (server-side)
+  pagination: paginationProp,
+  sorting: sortingProp,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState<string>("");
+  const [globalFilter, setGlobalFilterState] = useState<string>("");
 
-  // Combinar configuración por defecto con la proporcionada
+  // Determinar si es server-side
+  const isServerSide = config.serverSide?.enabled ?? false;
+
+  // Combinar configuración por defecto con la proporcionada (memoizado)
   const finalConfig = useMemo(
     () => ({
-      filters: { ...DEFAULT_FILTERS, ...config.filters },
+      filters: {
+        searchColumn: "nombre",
+        searchPlaceholder: "Buscar...",
+        showSearch: true,
+        ...config.filters,
+      },
       actions: {
-        addButtonIcon: <UserPlus />,
-        ...DEFAULT_ACTIONS,
+        showAddButton: true,
+        addButtonText: "Agregar",
+        showExportButton: false,
+        showRefreshButton: false,
         ...config.actions,
       },
-      pagination: { ...DEFAULT_PAGINATION, ...config.pagination },
+      pagination: {
+        defaultPageSize: 5,
+        pageSizeOptions: [5, 10, 20, 50],
+        showPageSizeSelector: true,
+        showPaginationInfo: true,
+        ...config.pagination,
+      },
       emptyStateMessage:
         config.emptyStateMessage || "No se encontraron resultados.",
       enableSorting: config.enableSorting ?? true,
-      enableColumnVisibility: config.enableColumnVisibility ?? false,
+      enableColumnVisibility: config.enableColumnVisibility ?? true,
       enableRowSelection: config.enableRowSelection ?? false,
-      isLoading: isLoadingProp ?? config.isLoading ?? false,
       skeletonRows: config.skeletonRows ?? 5,
+      serverSide: {
+        enabled: false,
+        totalCount: 0,
+        pageCount: 0,
+        isLoading: false,
+        isFetching: false,
+        ...config.serverSide,
+      },
+      columnPinning: {
+        enabled: false,
+        ...config.columnPinning,
+      },
+      columnOrder: {
+        enabled: false,
+        ...config.columnOrder,
+      },
       manualSorting: config.manualSorting,
       onSortingChange: config.onSortingChange,
       manualFiltering: config.manualFiltering,
       onColumnFiltersChange: config.onColumnFiltersChange,
     }),
-    [config, isLoadingProp],
+    [config],
   );
 
-  const isManualPagination = !!finalConfig.pagination.manualPagination;
-  const isManualSorting = !!finalConfig.manualSorting;
-  const isManualFiltering = !!finalConfig.manualFiltering;
+  // Calcular estados de carga fuera del useMemo para evitar re-renders innecesarios del config
+  const isLoading =
+    isLoadingProp ?? config.isLoading ?? config.serverSide?.isLoading ?? false;
+  const isFetching = isFetchingProp ?? config.isFetching ?? config.serverSide?.isFetching ?? false;
 
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: finalConfig.pagination.defaultPageSize || 10,
+  // Mostrar skeleton solo en carga inicial sin datos
+  const showSkeleton = isLoading && data.length === 0;
+  // Mostrar overlay sutil cuando hay datos previos y se está haciendo refetch
+  const showLoadingOverlay = isFetching && !isLoading && data.length > 0;
+
+  // Estado interno para client-side
+  const [internalPagination, setInternalPagination] = useState<PaginationState>(
+    {
+      pageIndex: 0,
+      pageSize: finalConfig.pagination.defaultPageSize || 10,
+    },
+  );
+  const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+
+  // Determinar persistKey para column pinning y order
+  const columnPinningPersistKey = finalConfig.columnPinning?.persistKey;
+  const columnOrderPersistKey = finalConfig.columnOrder?.persistKey;
+
+  // Hook para persistir preferencias de columnas (pinning y orden)
+  const {
+    columnPinning,
+    columnOrder: storedColumnOrder,
+    columnVisibility,
+    setColumnPinning,
+    setColumnOrder,
+    setColumnVisibility,
+  } = useTablePreferences({
+    persistKey: columnPinningPersistKey || columnOrderPersistKey,
+    defaultPinning: finalConfig.columnPinning?.defaultPinning ?? {
+      left: [],
+      right: [],
+    },
+    defaultOrder: finalConfig.columnOrder?.defaultOrder ?? [],
   });
 
-  const [sorting, setSorting] = useState<SortingState>([]);
+  // Sincronizar columnOrder con las columnas actuales
+  const columnOrder = useMemo(() => {
+    const currentColumnIds = columns
+      .map((col) =>
+        "accessorKey" in col ? String(col.accessorKey) : (col.id ?? ""),
+      )
+      .filter(Boolean);
 
-  // Refs to track current state for resolving functional updaters outside setState
-  const columnFiltersRef = useRef<ColumnFiltersState>([]);
-  const sortingRef = useRef<SortingState>([]);
-  const paginationRef = useRef<PaginationState>(pagination);
+    // Si no hay orden guardado, usar el orden de las columnas definidas
+    if (storedColumnOrder.length === 0) {
+      return currentColumnIds;
+    }
+
+    // Encontrar columnas que no están en el orden guardado
+    const storedSet = new Set(storedColumnOrder);
+    const newColumns = currentColumnIds.filter((id) => !storedSet.has(id));
+
+    // Si no hay columnas nuevas, usar el orden guardado
+    if (newColumns.length === 0) {
+      return storedColumnOrder;
+    }
+
+    // Agregar columnas nuevas: "select" al principio, otras al final
+    const selectColumn = newColumns.find((id) => id === "select");
+    const otherNewColumns = newColumns.filter((id) => id !== "select");
+
+    let result = [...storedColumnOrder];
+    if (selectColumn) {
+      result = [selectColumn, ...result];
+    }
+    result = [...result, ...otherNewColumns];
+
+    return result;
+  }, [columns, storedColumnOrder]);
+
+  // Usar estado del padre si es server-side, sino usar estado interno
+  const pagination =
+    isServerSide && paginationProp ? paginationProp : internalPagination;
+  const sorting = isServerSide && sortingProp ? sortingProp : internalSorting;
+
+  // Wrapper para setGlobalFilter que notifica al padre en server-side
+  const setGlobalFilter = (value: string) => {
+    setGlobalFilterState(value);
+    if (isServerSide && onGlobalFilterChangeProp) {
+      onGlobalFilterChangeProp(value);
+    }
+  };
+
+  // Handler para cambios de paginación
+  const handlePaginationChange = (updater: Updater<PaginationState>) => {
+    const newPagination =
+      typeof updater === "function" ? updater(pagination) : updater;
+
+    if (isServerSide) {
+      onPaginationChangeProp?.(newPagination);
+    } else {
+      setInternalPagination(newPagination);
+    }
+  };
+
+  // Handler para cambios de sorting
+  const handleSortingChange = useCallback(
+    (updater: Updater<SortingState>) => {
+      const newSorting =
+        typeof updater === "function" ? updater(sorting) : updater;
+
+      if (isServerSide) {
+        onSortingChangeProp?.(newSorting);
+        onPaginationChangeProp?.({ ...pagination, pageIndex: 0 });
+      } else {
+        setInternalSorting(newSorting);
+      }
+    },
+    [
+      isServerSide,
+      onSortingChangeProp,
+      onPaginationChangeProp,
+      pagination,
+      sorting,
+    ],
+  );
+
+  // Handler para cambios de column pinning
+  const handleColumnPinningChange = useCallback(
+    (updater: Updater<ColumnPinningState>) => {
+      if (typeof updater === "function") {
+        setColumnPinning((prev) => updater(prev));
+      } else {
+        setColumnPinning(updater);
+      }
+    },
+    [setColumnPinning],
+  );
+
+  // Handler para cambios de column order
+  const handleColumnOrderChange = useCallback(
+    (updater: Updater<ColumnOrderState>) => {
+      if (typeof updater === "function") {
+        setColumnOrder((prev) => updater(prev));
+      } else {
+        setColumnOrder(updater);
+      }
+    },
+    [setColumnOrder],
+  );
+
+  // Handler para cambios de visibilidad de columnas
+  const handleColumnVisibilityChange = useCallback(
+    (updater: Updater<VisibilityState>) => {
+      if (typeof updater === "function") {
+        setColumnVisibility((prev) => updater(prev));
+      } else {
+        setColumnVisibility(updater);
+      }
+    },
+    [setColumnVisibility],
+  );
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: isManualSorting ? undefined : getSortedRowModel(),
-    manualSorting: isManualSorting,
-    onSortingChange: (updater) => {
-      const newSorting =
-        typeof updater === "function" ? updater(sortingRef.current) : updater;
-      sortingRef.current = newSorting;
-      setSorting(newSorting);
-      finalConfig.onSortingChange?.(newSorting);
-    },
+
+    // Row models condicionales: solo para client-side
+    ...(isServerSide
+      ? {}
+      : {
+          getSortedRowModel: getSortedRowModel(),
+          getPaginationRowModel: getPaginationRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+        }),
+
+    // Flags manuales para server-side
+    manualPagination: isServerSide,
+    manualSorting: isServerSide,
+    manualFiltering: isServerSide,
+
+    // pageCount y rowCount del servidor (solo en server-side)
+    ...(isServerSide
+      ? {
+          pageCount: finalConfig.serverSide?.pageCount ?? -1,
+          rowCount: finalConfig.serverSide?.totalCount ?? 0,
+        }
+      : {}),
+
+    // Handlers
+    onSortingChange: handleSortingChange,
     enableSortingRemoval: false,
-    getPaginationRowModel: isManualPagination
-      ? undefined
-      : getPaginationRowModel(),
-    manualPagination: isManualPagination,
-    pageCount: isManualPagination
-      ? (finalConfig.pagination.pageCount ?? -1)
-      : undefined,
-    rowCount: isManualPagination
-      ? (finalConfig.pagination.totalCount ?? undefined)
-      : undefined,
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater(paginationRef.current)
-          : updater;
-      paginationRef.current = newPagination;
-      setPagination(newPagination);
-      finalConfig.pagination.onPaginationChange?.(newPagination);
-    },
-    onColumnFiltersChange: (updater) => {
-      const newFilters =
-        typeof updater === "function"
-          ? updater(columnFiltersRef.current)
-          : updater;
-      columnFiltersRef.current = newFilters;
-      setColumnFilters(newFilters);
-      finalConfig.onColumnFiltersChange?.(newFilters);
-    },
-    onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: handlePaginationChange,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-    manualFiltering: isManualFiltering,
-    getFilteredRowModel:
-      isManualPagination || isManualFiltering
-        ? undefined
-        : getFilteredRowModel(),
-    getFacetedUniqueValues:
-      isManualPagination || isManualFiltering
-        ? undefined
-        : getFacetedUniqueValues(),
+
+    // Faceted values (siempre disponible)
+    getFacetedUniqueValues: getFacetedUniqueValues(),
     enableRowSelection: finalConfig.enableRowSelection,
+
+    // Column pinning
+    enableColumnPinning: finalConfig.columnPinning?.enabled ?? false,
+    onColumnPinningChange: handleColumnPinningChange,
+
+    // Column order (drag & drop)
+    onColumnOrderChange: handleColumnOrderChange,
+
     state: {
       sorting,
       pagination,
@@ -166,6 +340,8 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       globalFilter,
+      columnPinning,
+      columnOrder,
     },
   });
 
@@ -178,7 +354,7 @@ export function DataTable<TData, TValue>({
       >
         {/* Filtros personalizados o por defecto */}
         <div
-          className="w-full min-w-0"
+          className="w-full min-w-0 pr-2"
           role="search"
           aria-label="Filtros de búsqueda"
         >
@@ -191,19 +367,53 @@ export function DataTable<TData, TValue>({
 
         {/* Cuerpo de la tabla*/}
         <div className="w-full min-w-0">
-          {finalConfig.isLoading ? (
+          {showSkeleton ? (
             <TableSkeleton
               columns={columns.length}
               rows={finalConfig.skeletonRows}
             />
           ) : (
-            <TableBodyDataTable<TData, TValue>
-              columns={columns}
-              config={finalConfig}
-              table={table}
-            />
+            <div className="relative">
+              {showLoadingOverlay && <LoadingOverlay />}
+              <TableBodyDataTable<TData, TValue>
+                columns={columns}
+                config={finalConfig}
+                table={table}
+                columnPinning={columnPinning}
+                columnOrder={columnOrder}
+                rowSelection={rowSelection}
+                columnVisibility={columnVisibility}
+              />
+            </div>
           )}
         </div>
+
+        {/* Bulk Actions Bar (aparece en el fondo cuando hay seleccion) */}
+        {finalConfig.enableRowSelection &&
+          finalConfig.actions?.showBulkActions &&
+          table.getSelectedRowModel().rows.length > 0 && (
+            <DataTableBulkActionsBar
+              selectedCount={table.getSelectedRowModel().rows.length}
+              onClearSelection={() => table.toggleAllRowsSelected(false)}
+              actions={(() => {
+                const getSelectedRows = () =>
+                  table.getSelectedRowModel().rows.map((row) => row.original);
+                const actions: BulkAction[] = [];
+
+                if (finalConfig.actions?.onBulkDelete) {
+                  actions.push({
+                    id: "delete",
+                    label: "Eliminar",
+                    icon: <Trash2 className="h-4 w-4" />,
+                    onClick: () => finalConfig.actions?.onBulkDelete?.(getSelectedRows()),
+                    variant: "destructive",
+                  });
+                }
+
+                return actions;
+              })()}
+            />
+          )}
 
         {/* Pagination */}
         <nav className="w-full min-w-0" aria-label="Navegación de paginación">

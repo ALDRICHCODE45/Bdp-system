@@ -11,10 +11,10 @@ import {
 } from "@/core/shared/ui/dialog";
 import { FolderUp } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFilesByEntityAction } from "@/features/Files/server/actions/getFilesByEntityAction";
 import { FileList } from "@/core/shared/components/Files/FileList";
-import { FileEntity } from "@/features/Files/server/entities/File.entity";
 
 const FileUploadDropZone = dynamic(
   () =>
@@ -34,33 +34,25 @@ interface UploadFacturaColumnProps {
 export const UploadFacturaColumn = ({
   facturaId,
 }: UploadFacturaColumnProps) => {
-  const [files, setFiles] = useState<FileEntity[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const loadFiles = async () => {
-    setLoading(true);
-    try {
+  // Only fetch when the dialog is open — enabled: isOpen.
+  // TanStack Query handles caching, deduplication, and re-fetching automatically.
+  const { data: files = [], isLoading } = useQuery({
+    queryKey: ["factura-files", facturaId],
+    queryFn: async () => {
       const result = await getFilesByEntityAction("FACTURA", facturaId);
-      if (result.ok && result.data) {
-        setFiles(result.data);
-      }
-    } catch (error) {
-      console.error("Error al cargar archivos:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      loadFiles();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, facturaId]);
+      if (result.ok && result.data) return result.data;
+      return [];
+    },
+    enabled: isOpen,
+    staleTime: 30_000,
+  });
 
   const handleUploadSuccess = () => {
-    loadFiles();
+    // Invalidate to refresh the file list after a successful upload/delete.
+    queryClient.invalidateQueries({ queryKey: ["factura-files", facturaId] });
   };
 
   return (
@@ -89,7 +81,7 @@ export const UploadFacturaColumn = ({
             entityId={facturaId}
             onUploadSuccess={handleUploadSuccess}
           />
-          {loading ? (
+          {isLoading ? (
             <LoadingModalState />
           ) : (
             <FileList

@@ -1,23 +1,32 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/core/shared/ui/sheet";
-import { Button } from "@/core/shared/ui/button";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/core/shared/ui/tabs";
+import { Spinner } from "@/core/shared/ui/spinner";
+import { Paperclip } from "lucide-react";
+
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
-import { EditFacturaForm } from "./forms/EditFacturaForm";
-import { FacturaDto } from "../server/dtos/FacturaDto.dto";
-import { Separator } from "@/core/shared/ui/separator";
-import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
-import { useState, useEffect } from "react";
-import { getFilesByEntityAction } from "@/features/Files/server/actions/getFilesByEntityAction";
 import { FileList } from "@/core/shared/components/Files/FileList";
-import { FileEntity } from "@/features/Files/server/entities/File.entity";
+import { getFilesByEntityAction } from "@/features/Files/server/actions/getFilesByEntityAction";
+
+import { EditFacturaForm } from "./forms/EditFacturaForm";
+import { FacturaStatusBadge } from "./FacturaStatusBadge";
+import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 
 const FileUploadDropZone = dynamic(
   () =>
@@ -27,7 +36,7 @@ const FileUploadDropZone = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 interface EditFacturaSheetProps {
@@ -36,80 +45,129 @@ interface EditFacturaSheetProps {
   factura: FacturaDto | null;
 }
 
+// ─── Files Tab ───────────────────────────────────────────────────────────────
+function FilesTab({
+  facturaId,
+  isActive,
+}: {
+  facturaId: string;
+  isActive: boolean;
+}) {
+  const queryClient = useQueryClient();
+
+  const { data: files = [], isLoading } = useQuery({
+    queryKey: ["factura-files", facturaId],
+    queryFn: async () => {
+      const result = await getFilesByEntityAction("FACTURA", facturaId);
+      if (result.ok && result.data) return result.data;
+      return [];
+    },
+    enabled: isActive,
+    staleTime: 30_000,
+  });
+
+  const handleUploadSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["factura-files", facturaId] });
+  };
+
+  return (
+    <div className="space-y-4">
+      <FileUploadDropZone
+        entityType="FACTURA"
+        entityId={facturaId}
+        onUploadSuccess={handleUploadSuccess}
+      />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Spinner className="size-6" />
+        </div>
+      ) : (
+        <FileList
+          files={files}
+          entityType="FACTURA"
+          onFileDeleted={handleUploadSuccess}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 export function EditFacturaSheet({
   isOpen,
   onClose,
   factura,
 }: EditFacturaSheetProps) {
   const isMobile = useIsMobile();
-  const sheetSide = isMobile ? "bottom" : "right";
-  const [files, setFiles] = useState<FileEntity[]>([]);
-  const [loadingFiles, setLoadingFiles] = useState(false);
+  const [activeTab, setActiveTab] = useState("datos");
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
+    new Set(["datos"]),
+  );
 
-  const loadFiles = async () => {
-    if (!factura) return;
-    setLoadingFiles(true);
-    try {
-      const result = await getFilesByEntityAction("FACTURA", factura.id);
-      if (result.ok && result.data) {
-        setFiles(result.data);
-      }
-    } catch (error) {
-      console.error("Error al cargar archivos:", error);
-    } finally {
-      setLoadingFiles(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen && factura) {
-      loadFiles();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, factura?.id]);
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab);
+    setVisitedTabs((prev) => new Set([...prev, tab]));
+  }, []);
 
   if (!factura) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side={sheetSide} className="w-full sm:max-w-2xl">
-        <SheetHeader>
-          <SheetTitle>Editar Factura</SheetTitle>
-          <SheetDescription>
-            Modifica la información de la factura y gestiona sus archivos:
-          </SheetDescription>
-        </SheetHeader>
-        <div className="h-[80vh] overflow-y-auto space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Datos de la Factura</h3>
-            <EditFacturaForm factura={factura} onSuccess={onClose} />
-          </div>
-          <Separator />
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Archivos Adjuntos</h3>
-            <FileUploadDropZone
-              entityType="FACTURA"
-              entityId={factura.id}
-              onUploadSuccess={loadFiles}
-            />
-            {loadingFiles ? (
-              <LoadingModalState />
-            ) : (
-              <div className="mt-4">
-                <FileList
-                  files={files}
-                  entityType="FACTURA"
-                  onFileDeleted={loadFiles}
-                />
+      <SheetContent
+        side={isMobile ? "bottom" : "right"}
+        className=" ml-0 rounded-2xl overflow-y-auto p-0 w-full sm:max-w-2xl"
+      >
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <SheetHeader className="px-6 pt-6 pb-4 border-b">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground font-medium mb-1">
+                Editar factura
+              </p>
+              <SheetTitle className="text-lg font-semibold truncate leading-tight">
+                {factura.concepto}
+              </SheetTitle>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <FacturaStatusBadge status={factura.status} />
+                <span className="font-mono text-xs text-muted-foreground border rounded px-1.5 py-0.5">
+                  {factura.moneda}
+                </span>
               </div>
-            )}
+            </div>
           </div>
+        </SheetHeader>
+
+        {/* ── Tabs ────────────────────────────────────────────────────────── */}
+        <div className="px-6 py-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="w-full">
+              <TabsTrigger value="datos" className="flex-1">
+                Datos
+              </TabsTrigger>
+              <TabsTrigger value="archivos" className="flex-1">
+                <span className="flex items-center gap-1.5">
+                  <Paperclip className="size-3" />
+                  Archivos
+                </span>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Datos */}
+            <TabsContent value="datos" className="mt-5">
+              <EditFacturaForm factura={factura} onSuccess={onClose} />
+            </TabsContent>
+
+            {/* Archivos — lazy */}
+            <TabsContent value="archivos" className="mt-5">
+              {(activeTab === "archivos" || visitedTabs.has("archivos")) && (
+                <FilesTab
+                  facturaId={factura.id}
+                  isActive={activeTab === "archivos"}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button variant="outline">Cerrar</Button>
-          </SheetClose>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

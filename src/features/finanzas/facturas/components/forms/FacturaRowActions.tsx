@@ -1,6 +1,6 @@
 "use client";
 import { Row } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Trash2, History, FileText } from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/core/shared/ui/dropdown-menu";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
-import { FacturaActionsConfig } from "./FacturaActions.config";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { useModalState } from "@/core/shared/hooks/useModalState";
@@ -58,9 +57,10 @@ const FacturaHistorySheet = dynamic(
 
 interface FacturaRowActionsProps {
   row: Row<FacturaDto>;
+  onViewDetail?: (factura: FacturaDto) => void;
 }
 
-export function FacturaRowActions({ row }: FacturaRowActionsProps) {
+export function FacturaRowActions({ row, onViewDetail }: FacturaRowActionsProps) {
   const { isOpen, openModal, closeModal } = useModalState();
   const {
     isOpen: isDeleteOpen,
@@ -74,13 +74,6 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
   } = useModalState();
   const factura = row.original;
 
-  const actions = FacturaActionsConfig(
-    openModal,
-    openDeleteModal,
-    openHistory,
-    () => exportFacturaToPDF(factura)
-  );
-
   return (
     <>
       <DropdownMenu>
@@ -90,39 +83,82 @@ export function FacturaRowActions({ row }: FacturaRowActionsProps) {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+            {factura.concepto.length > 24
+              ? factura.concepto.slice(0, 24) + "…"
+              : factura.concepto}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {actions.map((action) =>
-            action.subItems ? (
-              <DropdownMenuSub key={action.id}>
-                <DropdownMenuSubTrigger>{action.label}</DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    {action.subItems.map((subItem) => (
-                      <DropdownMenuItem
-                        key={subItem.id}
-                        onClick={subItem.onClick}
-                      >
-                        {subItem.icon && <subItem.icon />}
-                        {subItem.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            ) : (
-              <DropdownMenuItem
-                key={action.id}
-                onClick={action.onClick}
-                className={
-                  action.variant === "destructive" ? "text-destructive" : ""
-                }
-              >
-                {action.label}
-              </DropdownMenuItem>
-            )
+
+          {/* Ver detalles */}
+          {onViewDetail && (
+            <DropdownMenuItem
+              onClick={() => onViewDetail(factura)}
+              className="gap-2"
+            >
+              <Eye className="size-4 text-muted-foreground" />
+              Ver detalles
+            </DropdownMenuItem>
           )}
+
+          <DropdownMenuSeparator />
+
+          {/* Editar */}
+          <PermissionGuard
+            permissions={[
+              PermissionActions.facturas.editar,
+              PermissionActions.facturas.gestionar,
+            ]}
+          >
+            <DropdownMenuItem onClick={openModal} className="gap-2">
+              <Pencil className="size-4 text-muted-foreground" />
+              Editar
+            </DropdownMenuItem>
+          </PermissionGuard>
+
+          {/* Historial */}
+          <DropdownMenuItem onClick={openHistory} className="gap-2">
+            <History className="size-4 text-muted-foreground" />
+            Historial
+          </DropdownMenuItem>
+
+          {/* Exportar PDF */}
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="gap-2">
+              <FileText className="size-4 text-muted-foreground" />
+              Exportar
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  onClick={() => exportFacturaToPDF(factura)}
+                  className="gap-2"
+                >
+                  <FileText className="size-4" />
+                  PDF
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+
+          <DropdownMenuSeparator />
+
+          {/* Eliminar — destructive al final */}
+          <PermissionGuard
+            permissions={[
+              PermissionActions.facturas.eliminar,
+              PermissionActions.facturas.gestionar,
+            ]}
+          >
+            <DropdownMenuItem
+              onClick={openDeleteModal}
+              className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+            >
+              <Trash2 className="size-4" />
+              Eliminar
+            </DropdownMenuItem>
+          </PermissionGuard>
         </DropdownMenuContent>
       </DropdownMenu>
 

@@ -88,6 +88,29 @@ export interface PaginationConfig {
   }) => void;
 }
 
+// Column pinning config
+export interface ColumnPinningConfig {
+  enabled: boolean;
+  persistKey?: string;
+  defaultPinning?: import("@tanstack/react-table").ColumnPinningState;
+}
+
+// Column order / DnD config
+export interface ColumnOrderConfig {
+  enabled: boolean;
+  persistKey?: string;
+  defaultOrder?: import("@tanstack/react-table").ColumnOrderState;
+}
+
+// Server-side config
+export interface ServerSideConfig {
+  enabled: boolean;
+  totalCount?: number;
+  pageCount?: number;
+  isLoading?: boolean;
+  isFetching?: boolean;
+}
+
 // Configuración de la tabla
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface TableConfig<TData> {
@@ -110,4 +133,11 @@ export interface TableConfig<TData> {
   onColumnFiltersChange?: (
     filters: import("@tanstack/react-table").ColumnFiltersState
   ) => void;
+  // Column pinning
+  columnPinning?: ColumnPinningConfig;
+  // Column order / DnD
+  columnOrder?: ColumnOrderConfig;
+  // Server-side config
+  serverSide?: ServerSideConfig;
+  isFetching?: boolean;
 }
