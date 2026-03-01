@@ -30,15 +30,34 @@ export class FacturaHistorialService {
   ) {}
 
   /**
+   * Normaliza una fecha a formato yyyy-MM-dd (solo fecha, sin hora/timezone)
+   * para evitar falsos positivos al comparar fechas que llegaron como string vs Date
+   */
+  private normalizeDateToString(value: Date | string): string {
+    try {
+      const d = value instanceof Date ? value : new Date(value);
+      const year = d.getUTCFullYear();
+      const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    } catch {
+      return String(value);
+    }
+  }
+
+  /**
    * Formatea un valor a string para almacenamiento en el historial
    */
-  private formatValue(value: unknown): string {
+  private formatValue(value: unknown, campo?: string): string {
     if (value === null || value === undefined) {
       return "";
     }
 
-    // Date
+    // Date — para fechaPago solo guardamos yyyy-MM-dd para evitar phantom diffs por timezone
     if (value instanceof Date) {
+      if (campo === "fechaPago") {
+        return this.normalizeDateToString(value);
+      }
       return value.toISOString();
     }
 
@@ -134,9 +153,9 @@ export class FacturaHistorialService {
       const oldValue = oldData[field];
       const newValue = newData[field];
 
-      // Comparar valores formateados
-      const oldFormatted = this.formatValue(oldValue);
-      const newFormatted = this.formatValue(newValue);
+      // Comparar valores formateados (pasamos el campo para manejo especial de fechas)
+      const oldFormatted = this.formatValue(oldValue, field);
+      const newFormatted = this.formatValue(newValue, field);
 
       if (oldFormatted !== newFormatted) {
         changes.push({
@@ -166,7 +185,8 @@ export class FacturaHistorialService {
         campo: field,
         valorAnterior: null,
         valorNuevo: this.formatValue(
-          facturaData[field as keyof FacturaData]
+          facturaData[field as keyof FacturaData],
+          field
         ),
         usuarioId: usuarioId || null,
         motivo: null,

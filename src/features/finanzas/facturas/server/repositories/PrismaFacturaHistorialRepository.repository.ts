@@ -48,7 +48,12 @@ export class PrismaFacturaHistorialRepository
 
   async findByFacturaId(data: { facturaId: string }) {
     return await this.prisma.facturaHistorial.findMany({
-      where: { facturaId: data.facturaId },
+      where: {
+        facturaId: data.facturaId,
+        // Excluir registros de creación inicial (valorAnterior === null)
+        // Solo mostrar cambios reales donde había un valor previo
+        valorAnterior: { not: null },
+      },
       orderBy: {
         fechaCambio: "desc",
       },
