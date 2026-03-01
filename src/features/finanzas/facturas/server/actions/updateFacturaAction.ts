@@ -6,6 +6,7 @@ import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
 import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { parseISO } from "date-fns";
 
 export const updateFacturaAction = async (input: FormData) => {
   await requireAnyPermission(
@@ -49,7 +50,7 @@ export const updateFacturaAction = async (input: FormData) => {
     : null;
   const total = totalString ? parseFloat(totalString as string) : 0;
   const fechaPago = fechaPagoString
-    ? new Date(fechaPagoString as string)
+    ? parseISO(fechaPagoString as string)
     : null;
 
   const facturaService = makeFacturaService({ prisma });

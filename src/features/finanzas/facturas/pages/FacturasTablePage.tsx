@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useCallback, useState } from "react";
-import { PaginationState, SortingState } from "@tanstack/react-table";
+import { PaginationState, SortingState, Table } from "@tanstack/react-table";
+import { toast } from "sonner";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { DataTableMultiTabs } from "@/core/shared/components/DataTable/DataTableMultiTabs";
@@ -29,18 +30,23 @@ import { enrichFacturaTabsWithCounts } from "../config/facturaTabsConfig";
 import { ImportFacturasDialog } from "../components/import";
 import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
-import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import type { PaginatedResult } from "@/core/shared/types/pagination.types";
+import {
+  FacturasAdvancedFilters,
+  EMPTY_ADVANCED_FILTERS,
+} from "../types/FacturasAdvancedFilters.type";
+import { getFacturasForExportAction } from "../server/actions/getFacturasForExportAction";
+import { exportFacturasToExcel } from "../helpers/exportFacturasToExcel";
+import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
+import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
+import { useFacturaStatusCounts } from "../hooks/useFacturaStatusCounts.hook";
 
 const CreateFacturaSheet = dynamic(
   () =>
     import("../components/CreateFacturaSheet").then((mod) => ({
       default: mod.CreateFacturaSheet,
     })),
-  {
-    ssr: false,
-    loading: () => <LoadingModalState />,
-  }
+  { ssr: false, loading: () => <LoadingModalState /> }
 );
 
 interface FacturasTablePageProps {
@@ -48,21 +54,21 @@ interface FacturasTablePageProps {
 }
 
 export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
-  // ── modal state ──────────────────────────────────────────────────────────
+  // ── Modal / sheet state ──────────────────────────────────────────────────
   const { isOpen, openModal, closeModal } = useModalState();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
-  // ── detail sheet state ───────────────────────────────────────────────────
+  // ── Detail sheet ─────────────────────────────────────────────────────────
   const [selectedFactura, setSelectedFactura] = useState<FacturaDto | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
-  // ── bulk delete state ────────────────────────────────────────────────────
-  const [bulkDeleteState, setBulkDeleteState] = useState<{ open: boolean; ids: string[] }>({
-    open: false,
-    ids: [],
-  });
+  // ── Bulk delete ──────────────────────────────────────────────────────────
+  const [bulkDeleteState, setBulkDeleteState] = useState<{
+    open: boolean;
+    ids: string[];
+  }>({ open: false, ids: [] });
 
-  // ── table state ──────────────────────────────────────────────────────────
+  // ── Pagination / sorting / search ────────────────────────────────────────
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -71,69 +77,165 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
 
-  // ── tab / filter state ───────────────────────────────────────────────────
+  // ── Tab state ─────────────────────────────────────────────────────────────
   const [activeTabs, setActiveTabs] = useState<string[]>([]);
-  // Filter values controlled by FacturasFilters component (server-side mode)
-  const [metodoPagoFilter, setMetodoPagoFilter] = useState<string | undefined>();
-  const [monedaFilter, setMonedaFilter] = useState<string | undefined>();
-  const [statusPagoFilter, setStatusPagoFilter] = useState<string | undefined>();
+  // Pasar todos los tabs activos como array; el repositorio hace `status IN [...]`
+  const status = activeTabs.length > 0 ? activeTabs : undefined;
 
-  // ── derived filter values ─────────────────────────────────────────────────
-  const status = activeTabs.length === 1 ? activeTabs[0] : undefined;
+  // ── Quick filters (multi-select, apply immediately) ───────────────────────
+  const [metodoPagoFilter, setMetodoPagoFilter] = useState<string[]>([]);
+  const [monedaFilter, setMonedaFilter] = useState<string[]>([]);
+  const [statusPagoFilter, setStatusPagoFilter] = useState<string[]>([]);
 
-  // ── handlers ──────────────────────────────────────────────────────────────
-  const handleMultiTabChange = useCallback((tabs: string[]) => {
-    setActiveTabs(tabs);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, []);
+  // ── Advanced filters (apply only on sheet "Aplicar") ─────────────────────
+  const [advancedFilters, setAdvancedFilters] =
+    useState<FacturasAdvancedFilters>(EMPTY_ADVANCED_FILTERS);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const resetPage = useCallback(
+    () => setPagination((prev) => ({ ...prev, pageIndex: 0 })),
+    []
+  );
+
+  const handleMultiTabChange = useCallback(
+    (tabs: string[]) => { setActiveTabs(tabs); resetPage(); },
+    [resetPage]
+  );
 
   const handleViewDetail = useCallback((factura: FacturaDto) => {
     setSelectedFactura(factura);
     setDetailSheetOpen(true);
   }, []);
 
-  const handlePaginationChange = useCallback((newPagination: PaginationState) => {
-    setPagination(newPagination);
-  }, []);
+  const handlePaginationChange = useCallback(
+    (p: PaginationState) => setPagination(p),
+    []
+  );
 
-  const handleSortingChange = useCallback((newSorting: SortingState) => {
-    setSorting(newSorting);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, []);
+  const handleSortingChange = useCallback(
+    (s: SortingState) => { setSorting(s); resetPage(); },
+    [resetPage]
+  );
 
-  const handleGlobalFilterChange = useCallback((value: string) => {
-    setSearch(value);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, []);
+  const handleGlobalFilterChange = useCallback(
+    (value: string) => { setSearch(value); resetPage(); },
+    [resetPage]
+  );
 
   const handleBulkDelete = useCallback((rows: FacturaDto[]) => {
     setBulkDeleteState({ open: true, ids: rows.map((r) => r.id) });
   }, []);
 
-  const handleMetodoPagoChange = useCallback((value: string) => {
-    setMetodoPagoFilter(value || undefined);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, []);
+  // Quick filter handlers
+  const handleMetodoPagoChange = useCallback(
+    (v: string[]) => { setMetodoPagoFilter(v); resetPage(); },
+    [resetPage]
+  );
+  const handleMonedaChange = useCallback(
+    (v: string[]) => { setMonedaFilter(v); resetPage(); },
+    [resetPage]
+  );
+  const handleStatusPagoChange = useCallback(
+    (v: string[]) => { setStatusPagoFilter(v); resetPage(); },
+    [resetPage]
+  );
 
-  const handleMonedaChange = useCallback((value: string) => {
-    setMonedaFilter(value || undefined);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, []);
+  // Advanced filters — solo aplican cuando el usuario presiona "Aplicar" en el sheet
+  const handleApplyAdvancedFilters = useCallback(
+    (filters: FacturasAdvancedFilters) => {
+      setAdvancedFilters(filters);
+      resetPage();
+    },
+    [resetPage]
+  );
 
-  const handleStatusPagoChange = useCallback((value: string) => {
-    setStatusPagoFilter(value || undefined);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, []);
-
+  // Limpiar TODO
   const handleClearFilters = useCallback(() => {
-    setMetodoPagoFilter(undefined);
-    setMonedaFilter(undefined);
-    setStatusPagoFilter(undefined);
+    setMetodoPagoFilter([]);
+    setMonedaFilter([]);
+    setStatusPagoFilter([]);
+    setAdvancedFilters(EMPTY_ADVANCED_FILTERS);
     setSearch("");
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, []);
+    resetPage();
+  }, [resetPage]);
 
-  // ── data fetching ─────────────────────────────────────────────────────────
+  // ── Export ────────────────────────────────────────────────────────────────
+  const handleExportFacturas = useCallback(
+    async (table: Table<unknown>, options?: ExportOptions) => {
+      if (options?.selectedOnly) {
+        // Filas ya cargadas en memoria → exportar directamente
+        const selected = table
+          .getSelectedRowModel()
+          .rows.map((r) => r.original as FacturaDto);
+
+        if (selected.length === 0) {
+          toast.error("No hay filas seleccionadas para exportar.");
+          return;
+        }
+
+        exportFacturasToExcel(selected, "facturas_seleccionadas");
+        toast.success(`${selected.length} facturas exportadas correctamente.`);
+        return;
+      }
+
+      // Exportar todas / filtradas → traer del servidor con filtros activos
+      const toastId = toast.loading("Preparando exportación...");
+
+      const result = await getFacturasForExportAction({
+        sortBy: sorting[0]?.id,
+        sortOrder: sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined,
+        search: debouncedSearch || undefined,
+        status,
+        // Quick filters
+        metodoPago: metodoPagoFilter.length ? metodoPagoFilter : undefined,
+        moneda: monedaFilter.length ? monedaFilter : undefined,
+        statusPago: statusPagoFilter.length ? statusPagoFilter : undefined,
+        // Advanced filters
+        uuid: advancedFilters.uuid.length ? advancedFilters.uuid : undefined,
+        usoCfdi: advancedFilters.usoCfdi.length ? advancedFilters.usoCfdi : undefined,
+        rfcEmisor: advancedFilters.rfcEmisor.length ? advancedFilters.rfcEmisor : undefined,
+        nombreEmisor: advancedFilters.nombreEmisor.length ? advancedFilters.nombreEmisor : undefined,
+        rfcReceptor: advancedFilters.rfcReceptor.length ? advancedFilters.rfcReceptor : undefined,
+        nombreReceptor: advancedFilters.nombreReceptor.length ? advancedFilters.nombreReceptor : undefined,
+        subtotalMin: advancedFilters.subtotalMin ? parseFloat(advancedFilters.subtotalMin) : undefined,
+        subtotalMax: advancedFilters.subtotalMax ? parseFloat(advancedFilters.subtotalMax) : undefined,
+        totalMin: advancedFilters.totalMin ? parseFloat(advancedFilters.totalMin) : undefined,
+        totalMax: advancedFilters.totalMax ? parseFloat(advancedFilters.totalMax) : undefined,
+        impTrasladosMin: advancedFilters.impTrasladosMin ? parseFloat(advancedFilters.impTrasladosMin) : undefined,
+        impTrasladosMax: advancedFilters.impTrasladosMax ? parseFloat(advancedFilters.impTrasladosMax) : undefined,
+        impRetenidosMin: advancedFilters.impRetenidosMin ? parseFloat(advancedFilters.impRetenidosMin) : undefined,
+        impRetenidosMax: advancedFilters.impRetenidosMax ? parseFloat(advancedFilters.impRetenidosMax) : undefined,
+        fechaPagoFrom: advancedFilters.fechaPagoFrom || undefined,
+        fechaPagoTo: advancedFilters.fechaPagoTo || undefined,
+        ingresadoPor: advancedFilters.ingresadoPor.length ? advancedFilters.ingresadoPor : undefined,
+        createdAtFrom: advancedFilters.createdAtFrom || undefined,
+        createdAtTo: advancedFilters.createdAtTo || undefined,
+        updatedAtFrom: advancedFilters.updatedAtFrom || undefined,
+        updatedAtTo: advancedFilters.updatedAtTo || undefined,
+      });
+
+      if (!result.ok) {
+        toast.dismiss(toastId);
+        toast.error("Error al exportar las facturas.");
+        return;
+      }
+
+      exportFacturasToExcel(result.data, "facturas");
+      toast.dismiss(toastId);
+      toast.success(`${result.data.length} facturas exportadas correctamente.`);
+    },
+    [
+      sorting,
+      debouncedSearch,
+      status,
+      metodoPagoFilter,
+      monedaFilter,
+      statusPagoFilter,
+      advancedFilters,
+    ]
+  );
+
+  // ── Data fetching ─────────────────────────────────────────────────────────
   const { data, isPending, isFetching } = useFacturas(
     {
       page: pagination.pageIndex + 1,
@@ -142,24 +244,80 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
       sortOrder: sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined,
       search: debouncedSearch || undefined,
       status,
-      metodoPago: metodoPagoFilter,
-      moneda: monedaFilter,
-      statusPago: statusPagoFilter,
+      // Quick filters
+      metodoPago: metodoPagoFilter.length ? metodoPagoFilter : undefined,
+      moneda: monedaFilter.length ? monedaFilter : undefined,
+      statusPago: statusPagoFilter.length ? statusPagoFilter : undefined,
+      // Advanced filters
+      uuid: advancedFilters.uuid.length ? advancedFilters.uuid : undefined,
+      usoCfdi: advancedFilters.usoCfdi.length ? advancedFilters.usoCfdi : undefined,
+      rfcEmisor: advancedFilters.rfcEmisor.length ? advancedFilters.rfcEmisor : undefined,
+      nombreEmisor: advancedFilters.nombreEmisor.length ? advancedFilters.nombreEmisor : undefined,
+      rfcReceptor: advancedFilters.rfcReceptor.length ? advancedFilters.rfcReceptor : undefined,
+      nombreReceptor: advancedFilters.nombreReceptor.length ? advancedFilters.nombreReceptor : undefined,
+      subtotalMin: advancedFilters.subtotalMin ? parseFloat(advancedFilters.subtotalMin) : undefined,
+      subtotalMax: advancedFilters.subtotalMax ? parseFloat(advancedFilters.subtotalMax) : undefined,
+      totalMin: advancedFilters.totalMin ? parseFloat(advancedFilters.totalMin) : undefined,
+      totalMax: advancedFilters.totalMax ? parseFloat(advancedFilters.totalMax) : undefined,
+      impTrasladosMin: advancedFilters.impTrasladosMin ? parseFloat(advancedFilters.impTrasladosMin) : undefined,
+      impTrasladosMax: advancedFilters.impTrasladosMax ? parseFloat(advancedFilters.impTrasladosMax) : undefined,
+      impRetenidosMin: advancedFilters.impRetenidosMin ? parseFloat(advancedFilters.impRetenidosMin) : undefined,
+      impRetenidosMax: advancedFilters.impRetenidosMax ? parseFloat(advancedFilters.impRetenidosMax) : undefined,
+      fechaPagoFrom: advancedFilters.fechaPagoFrom || undefined,
+      fechaPagoTo: advancedFilters.fechaPagoTo || undefined,
+      ingresadoPor: advancedFilters.ingresadoPor.length ? advancedFilters.ingresadoPor : undefined,
+      createdAtFrom: advancedFilters.createdAtFrom || undefined,
+      createdAtTo: advancedFilters.createdAtTo || undefined,
+      updatedAtFrom: advancedFilters.updatedAtFrom || undefined,
+      updatedAtTo: advancedFilters.updatedAtTo || undefined,
     },
     initialData
   );
 
-  // ── columns (memoized) ────────────────────────────────────────────────────
-  const columns = useMemo(() => createFacturasColumns(handleViewDetail), [handleViewDetail]);
-
-  // ── tabs config ───────────────────────────────────────────────────────────
-  const totalCount = data?.totalCount ?? 0;
-  const tabsConfig = useMemo(
-    () => enrichFacturaTabsWithCounts(activeTabs, totalCount),
-    [activeTabs, totalCount]
+  // ── Columns ───────────────────────────────────────────────────────────────
+  const columns = useMemo(
+    () => createFacturasColumns(handleViewDetail),
+    [handleViewDetail]
   );
 
-  // ── table config ──────────────────────────────────────────────────────────
+  // ── Status counts (filtros activos sin status) ─────────────────────────────
+  const countFilters = useMemo(() => ({
+    search: debouncedSearch || undefined,
+    metodoPago: metodoPagoFilter.length ? metodoPagoFilter : undefined,
+    moneda: monedaFilter.length ? monedaFilter : undefined,
+    statusPago: statusPagoFilter.length ? statusPagoFilter : undefined,
+    uuid: advancedFilters.uuid.length ? advancedFilters.uuid : undefined,
+    usoCfdi: advancedFilters.usoCfdi.length ? advancedFilters.usoCfdi : undefined,
+    rfcEmisor: advancedFilters.rfcEmisor.length ? advancedFilters.rfcEmisor : undefined,
+    nombreEmisor: advancedFilters.nombreEmisor.length ? advancedFilters.nombreEmisor : undefined,
+    rfcReceptor: advancedFilters.rfcReceptor.length ? advancedFilters.rfcReceptor : undefined,
+    nombreReceptor: advancedFilters.nombreReceptor.length ? advancedFilters.nombreReceptor : undefined,
+    subtotalMin: advancedFilters.subtotalMin ? parseFloat(advancedFilters.subtotalMin) : undefined,
+    subtotalMax: advancedFilters.subtotalMax ? parseFloat(advancedFilters.subtotalMax) : undefined,
+    totalMin: advancedFilters.totalMin ? parseFloat(advancedFilters.totalMin) : undefined,
+    totalMax: advancedFilters.totalMax ? parseFloat(advancedFilters.totalMax) : undefined,
+    impTrasladosMin: advancedFilters.impTrasladosMin ? parseFloat(advancedFilters.impTrasladosMin) : undefined,
+    impTrasladosMax: advancedFilters.impTrasladosMax ? parseFloat(advancedFilters.impTrasladosMax) : undefined,
+    impRetenidosMin: advancedFilters.impRetenidosMin ? parseFloat(advancedFilters.impRetenidosMin) : undefined,
+    impRetenidosMax: advancedFilters.impRetenidosMax ? parseFloat(advancedFilters.impRetenidosMax) : undefined,
+    fechaPagoFrom: advancedFilters.fechaPagoFrom || undefined,
+    fechaPagoTo: advancedFilters.fechaPagoTo || undefined,
+    ingresadoPor: advancedFilters.ingresadoPor.length ? advancedFilters.ingresadoPor : undefined,
+    createdAtFrom: advancedFilters.createdAtFrom || undefined,
+    createdAtTo: advancedFilters.createdAtTo || undefined,
+    updatedAtFrom: advancedFilters.updatedAtFrom || undefined,
+    updatedAtTo: advancedFilters.updatedAtTo || undefined,
+  }), [debouncedSearch, metodoPagoFilter, monedaFilter, statusPagoFilter, advancedFilters]);
+
+  const { data: statusCounts } = useFacturaStatusCounts(countFilters);
+
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  const tabsConfig = useMemo(
+    () => enrichFacturaTabsWithCounts(activeTabs, statusCounts),
+    [activeTabs, statusCounts]
+  );
+
+  // ── Table config ──────────────────────────────────────────────────────────
   const tableConfig = useMemo(
     () =>
       createTableConfig(FacturasTableConfig, {
@@ -171,7 +329,6 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
           totalCount: data?.totalCount ?? 0,
           pageCount: data?.pageCount ?? 0,
         },
-        // Pasar los filtros controlados al componente FacturasFilters
         customFilterProps: {
           metodoPago: metodoPagoFilter,
           onMetodoPagoChange: handleMetodoPagoChange,
@@ -180,6 +337,9 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
           statusPago: statusPagoFilter,
           onStatusPagoChange: handleStatusPagoChange,
           onClearFilters: handleClearFilters,
+          advancedFilters,
+          onApplyAdvancedFilters: handleApplyAdvancedFilters,
+          onExport: handleExportFacturas,
         },
       }),
     [
@@ -194,6 +354,9 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
       statusPagoFilter,
       handleStatusPagoChange,
       handleClearFilters,
+      advancedFilters,
+      handleApplyAdvancedFilters,
+      handleExportFacturas,
     ]
   );
 
@@ -246,14 +409,14 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
             />
           </PermissionGuard>
 
-          {/* Detail Sheet */}
+          {/* Detail sheet */}
           <FacturaDetailSheet
             factura={selectedFactura}
             open={detailSheetOpen}
             onOpenChange={setDetailSheetOpen}
           />
 
-          {/* Bulk Delete Dialog */}
+          {/* Bulk delete dialog */}
           <AlertDialog
             open={bulkDeleteState.open}
             onOpenChange={(open) =>
@@ -275,10 +438,9 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={() => {
-                    // TODO: implement bulk delete action
-                    setBulkDeleteState({ open: false, ids: [] });
-                  }}
+                  onClick={() =>
+                    setBulkDeleteState({ open: false, ids: [] })
+                  }
                 >
                   Eliminar
                 </AlertDialogAction>

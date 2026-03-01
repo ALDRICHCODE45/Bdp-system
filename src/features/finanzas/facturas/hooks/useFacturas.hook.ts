@@ -8,27 +8,49 @@ import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
 /**
  * Fetches a paginated, filtered, sorted list of facturas.
  *
- * @param params   - Filter / pagination / sort params forwarded to the server action.
+ * @param params      - Filter / pagination / sort params forwarded to the server action.
  * @param initialData - Optional SSR-prefetched data (from the Server Component page).
- *                      When provided the skeleton is never shown on first render.
+ *                      Only applied for the base unfiltered query (page 1, no filters).
  */
 export const useFacturas = (
   params: FacturasFilterParams,
   initialData?: PaginatedResult<FacturaDto>
 ) => {
-  // Only apply SSR initialData for the base unfiltered query (page 1, no filters).
-  // Every other queryKey must always fetch fresh from the server — passing
-  // initialData with `initialDataUpdatedAt: Date.now()` would make TanStack Query
-  // consider those entries as "fresh" and skip the server fetch entirely,
-  // causing all filter/tab/search changes to appear broken (data never updates).
+  const hasQuickFilters =
+    (params.metodoPago?.length ?? 0) > 0 ||
+    (params.moneda?.length ?? 0) > 0 ||
+    (params.statusPago?.length ?? 0) > 0;
+
+  const hasAdvancedFilters =
+    (params.uuid?.length ?? 0) > 0 ||
+    (params.usoCfdi?.length ?? 0) > 0 ||
+    (params.rfcEmisor?.length ?? 0) > 0 ||
+    (params.nombreEmisor?.length ?? 0) > 0 ||
+    (params.rfcReceptor?.length ?? 0) > 0 ||
+    (params.nombreReceptor?.length ?? 0) > 0 ||
+    params.subtotalMin !== undefined ||
+    params.subtotalMax !== undefined ||
+    params.totalMin !== undefined ||
+    params.totalMax !== undefined ||
+    params.impTrasladosMin !== undefined ||
+    params.impTrasladosMax !== undefined ||
+    params.impRetenidosMin !== undefined ||
+    params.impRetenidosMax !== undefined ||
+    !!params.fechaPagoFrom ||
+    !!params.fechaPagoTo ||
+    (params.ingresadoPor?.length ?? 0) > 0 ||
+    !!params.createdAtFrom ||
+    !!params.createdAtTo ||
+    !!params.updatedAtFrom ||
+    !!params.updatedAtTo;
+
   const isBaseQuery =
     params.page === 1 &&
-    !params.status &&
-    !params.metodoPago &&
-    !params.moneda &&
-    !params.statusPago &&
+    (params.status?.length ?? 0) === 0 &&
     !params.search &&
-    !params.sortBy;
+    !params.sortBy &&
+    !hasQuickFilters &&
+    !hasAdvancedFilters;
 
   const applicableInitialData = isBaseQuery ? initialData : undefined;
 
@@ -41,9 +63,32 @@ export const useFacturas = (
       params.sortOrder,
       params.search,
       params.status,
+      // Quick filters
       params.metodoPago,
       params.moneda,
       params.statusPago,
+      // Advanced filters
+      params.uuid,
+      params.usoCfdi,
+      params.rfcEmisor,
+      params.nombreEmisor,
+      params.rfcReceptor,
+      params.nombreReceptor,
+      params.subtotalMin,
+      params.subtotalMax,
+      params.totalMin,
+      params.totalMax,
+      params.impTrasladosMin,
+      params.impTrasladosMax,
+      params.impRetenidosMin,
+      params.impRetenidosMax,
+      params.fechaPagoFrom,
+      params.fechaPagoTo,
+      params.ingresadoPor,
+      params.createdAtFrom,
+      params.createdAtTo,
+      params.updatedAtFrom,
+      params.updatedAtTo,
     ],
     queryFn: async () => {
       const result = await getPaginatedFacturasAction(params);
@@ -52,11 +97,8 @@ export const useFacturas = (
       }
       return result.data;
     },
-    // Show previous data while a new fetch is in-flight (filter / page changes).
     placeholderData: keepPreviousData,
-    // Treat SSR data as fresh for 30 s to avoid an immediate client refetch.
     staleTime: 30_000,
-    // Hydrate from the Server Component prefetch only for the base query.
     initialData: applicableInitialData,
     initialDataUpdatedAt: applicableInitialData ? Date.now() : undefined,
   });

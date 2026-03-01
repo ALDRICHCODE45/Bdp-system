@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import { ALL_EXCEL_COLUMNS } from "../server/validators/importFacturaExcelRowSchema";
+import { format } from "date-fns";
 
 /**
  * Genera y descarga una plantilla Excel con las columnas requeridas
@@ -81,9 +82,7 @@ export function generateExcelTemplate(): void {
   XLSX.utils.book_append_sheet(workbook, instructionsSheet, "Instrucciones");
 
   // Generar nombre de archivo
-  const fileName = `plantilla_importar_facturas_${
-    new Date().toISOString().split("T")[0]
-  }.xlsx`;
+  const fileName = `plantilla_importar_facturas_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 
   // Descargar archivo
   XLSX.writeFile(workbook, fileName);

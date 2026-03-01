@@ -19,6 +19,15 @@ import {
 } from "@/core/shared/ui/select";
 import { useCreateFacturaForm } from "../../hooks/useCreateFacturaForm.hook";
 import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
+import { format, parse } from "date-fns";
+import { SelectWithCustom } from "../SelectWithCustom";
+
+const USO_CFDI_OPTIONS = [
+  "G01", "G02", "G03",
+  "I01", "I02", "I03", "I04", "I05", "I06", "I07", "I08",
+  "D01", "D02", "D03", "D04", "D05", "D06", "D07", "D08", "D09", "D10",
+  "CP01", "S01",
+].map((v) => ({ value: v, label: v }));
 
 interface CreateFacturaFormProps {
   onSuccess?: () => void;
@@ -352,12 +361,11 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
                   <FieldLabel htmlFor="usoCfdi">Uso CFDI</FieldLabel>
                   <FieldDescription>Opcional</FieldDescription>
                 </FieldContent>
-                <Input
-                  id="usoCfdi"
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="G03, P01, etc."
+                <SelectWithCustom
+                  options={USO_CFDI_OPTIONS}
+                  value={field.state.value ?? ""}
+                  onValueChange={(v) => field.handleChange(v)}
+                  placeholder="Seleccionar uso CFDI…"
                 />
               </Field>
             )}
@@ -486,11 +494,13 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
                 </FieldContent>
                 <DatePicker
                   date={
-                    field.state.value ? new Date(field.state.value) : undefined
+                    field.state.value
+                      ? parse(field.state.value, "yyyy-MM-dd", new Date())
+                      : undefined
                   }
                   onDateChange={(date) => {
                     field.handleChange(
-                      date ? date.toISOString().split("T")[0] : "",
+                      date ? format(date, "yyyy-MM-dd") : "",
                     );
                   }}
                 />

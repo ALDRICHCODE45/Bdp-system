@@ -1,3 +1,6 @@
+import { format, parseISO, isValid } from "date-fns";
+import { es } from "date-fns/locale";
+
 /**
  * Convierte el nombre técnico de un campo a un nombre legible en español
  */
@@ -71,15 +74,9 @@ export function formatFieldValue(
   // DateTime - Fecha de Pago
   if (campo === "fechaPago") {
     try {
-      const fecha = new Date(valor);
-      if (!isNaN(fecha.getTime())) {
-        return new Intl.DateTimeFormat("es-MX", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }).format(fecha);
+      const fecha = parseISO(valor);
+      if (isValid(fecha)) {
+        return format(fecha, "d 'de' MMMM yyyy, HH:mm", { locale: es });
       }
     } catch {
       return valor;

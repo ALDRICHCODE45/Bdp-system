@@ -14,6 +14,7 @@ import { Separator } from "@/core/shared/ui/separator";
 import { useUpdateFacturaForm } from "../../hooks/useUpdateFacturaForm.hook";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
 import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
+import { format, parse } from "date-fns";
 import { useState } from "react";
 import { TriangleAlert, Save } from "lucide-react";
 import { cn } from "@/core/lib/utils";
@@ -429,12 +430,12 @@ export const EditFacturaForm = ({
                       <DatePicker
                         date={
                           field.state.value
-                            ? new Date(field.state.value)
+                            ? parse(field.state.value, "yyyy-MM-dd", new Date())
                             : undefined
                         }
                         onDateChange={(date) => {
                           field.handleChange(
-                            date ? date.toISOString().split("T")[0] : ""
+                            date ? format(date, "yyyy-MM-dd") : ""
                           );
                         }}
                       />

@@ -1,8 +1,7 @@
 import { jsPDF } from "jspdf";
-import { PDF_CONFIG } from "./pdf-config";
 
 /**
- * Convierte una imagen a base64 para ser usada en jsPDF
+ * Carga una imagen desde una ruta pública y la convierte a base64 para jsPDF.
  */
 export const loadImageAsBase64 = async (imagePath: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -21,139 +20,61 @@ export const loadImageAsBase64 = async (imagePath: string): Promise<string> => {
   });
 };
 
-/**
- * Dibuja el encabezado del PDF con logo y nombre del sistema
- */
-export const drawHeader = (
-  doc: jsPDF,
-  logoBase64: string | null,
-  pageWidth: number
-) => {
-  const { margins, logo, fonts, colors, systemName } = PDF_CONFIG;
+// ─── Paleta de colores ────────────────────────────────────────────────────────
+export const COLORS = {
+  ink:   [17,  17,  17]  as [number, number, number], // texto principal
+  muted: [140, 140, 140] as [number, number, number], // labels / secundario
+  rule:  [220, 220, 220] as [number, number, number], // líneas separadoras
+} as const;
 
-  // Fondo del encabezado más compacto
-  doc.setFillColor(colors.lightGray);
-  doc.rect(0, 0, pageWidth, 35, "F");
+// ─── Tamaños de fuente (pt) ───────────────────────────────────────────────────
+export const FONT_SIZES = {
+  company:  13,
+  subtitle:  7,
+  hero:     21,   // monto total hero
+  section:   7,   // labels de sección (uppercase)
+  label:     7.5, // etiquetas de campo
+  value:     8.5, // valores de campo
+  small:     6.5, // footer / UUID
+} as const;
 
-  // Logo en la esquina superior derecha
-  if (logoBase64) {
-    try {
-      doc.addImage(
-        logoBase64,
-        "PNG",
-        pageWidth - margins.right - logo.width,
-        margins.top - 5,
-        logo.width,
-        logo.height
-      );
-    } catch (error) {
-      console.error("Error al cargar logo:", error);
-    }
-  }
+// ─── Utilidades de dibujo ─────────────────────────────────────────────────────
 
-  // Nombre del sistema a la izquierda
-  doc.setFontSize(fonts.title);
-  doc.setTextColor(colors.text);
-  doc.setFont("helvetica", "bold");
-  doc.text(systemName, margins.left, margins.top + 5);
+/** Aplica color de texto principal */
+export const setInk = (doc: jsPDF) =>
+  doc.setTextColor(...COLORS.ink);
 
-  return 45; // Retorna la posición Y donde termina el encabezado (más compacto)
-};
+/** Aplica color de texto secundario */
+export const setMuted = (doc: jsPDF) =>
+  doc.setTextColor(...COLORS.muted);
 
 /**
- * Dibuja el pie de página con información de generación
+ * Dibuja una línea horizontal separadora.
+ * @param weight - Grosor en mm (default 0.2)
  */
-export const drawFooter = (
+export const hRule = (
   doc: jsPDF,
-  pageWidth: number,
-  pageHeight: number
-) => {
-  const { margins, fonts, colors } = PDF_CONFIG;
-  const footerY = pageHeight - margins.bottom;
-
-  // Línea divisoria
-  doc.setDrawColor(colors.border);
-  doc.line(margins.left, footerY - 5, pageWidth - margins.right, footerY - 5);
-
-  // Texto del pie de página
-  doc.setFontSize(fonts.small);
-  doc.setTextColor(colors.secondary);
-  doc.setFont("helvetica", "italic");
-
-  const timestamp = new Date().toLocaleString("es-MX");
-  doc.text(`Documento generado el ${timestamp}`, margins.left, footerY);
-
-  // Número de página
-  doc.text(`Página 1 de 1`, pageWidth - margins.right, footerY, {
-    align: "right",
-  });
-};
-
-/**
- * Dibuja una sección con título
- */
-export const drawSection = (
-  doc: jsPDF,
-  title: string,
-  yPosition: number,
-  pageWidth: number
-): number => {
-  const { margins, fonts, colors } = PDF_CONFIG;
-
-  doc.setFillColor(colors.primary);
-  doc.rect(
-    margins.left,
-    yPosition,
-    pageWidth - margins.left - margins.right,
-    8,
-    "F"
-  );
-
-  doc.setFontSize(fonts.sectionHeader);
-  doc.setTextColor("#ffffff");
-  doc.setFont("helvetica", "bold");
-  doc.text(title, margins.left + 5, yPosition + 6);
-
-  return yPosition + 15; // Retorna nueva posición Y
-};
-
-/**
- * Dibuja un campo de información (label: value)
- * Maneja valores largos truncándolos si es necesario
- */
-export const drawField = (
-  doc: jsPDF,
-  label: string,
-  value: string,
-  x: number,
   y: number,
-  maxWidth: number = 70
-): void => {
-  const { fonts, colors } = PDF_CONFIG;
+  x1: number,
+  x2: number,
+  weight = 0.2
+) => {
+  doc.setDrawColor(...COLORS.rule);
+  doc.setLineWidth(weight);
+  doc.line(x1, y, x2, y);
+};
 
-  doc.setFontSize(fonts.normal);
+/**
+ * Dibuja una etiqueta de sección en mayúsculas (estilo editorial).
+ */
+export const sectionLabel = (
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number
+) => {
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(colors.text);
-  doc.text(`${label}:`, x, y);
-
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(colors.secondary);
-
-  // Truncar el valor si es muy largo
-  const displayValue = value || "N/A";
-  const textWidth = doc.getTextWidth(displayValue);
-
-  if (textWidth > maxWidth) {
-    // Truncar y añadir elipsis
-    let truncated = displayValue;
-    while (
-      doc.getTextWidth(truncated + "...") > maxWidth &&
-      truncated.length > 0
-    ) {
-      truncated = truncated.slice(0, -1);
-    }
-    doc.text(truncated + "...", x + 45, y);
-  } else {
-    doc.text(displayValue, x + 45, y);
-  }
+  doc.setFontSize(FONT_SIZES.section);
+  doc.setTextColor(...COLORS.muted);
+  doc.text(text.toUpperCase(), x, y);
 };

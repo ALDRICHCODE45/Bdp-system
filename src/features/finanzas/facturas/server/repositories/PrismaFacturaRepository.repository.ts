@@ -7,6 +7,7 @@ import {
 } from "./FacturaRepository.repository";
 import { Decimal } from "@prisma/client/runtime/library";
 import { FacturasFilterParams } from "../../types/FacturasFilterParams";
+import { parseISO } from "date-fns";
 
 type PrismaTransactionClient = Omit<
   PrismaClient,
@@ -20,29 +21,20 @@ const facturaIncludes = {
 const VALID_ESTADOS = new Set<string>(["BORRADOR", "ENVIADA", "PAGADA", "CANCELADA"]);
 
 const ALLOWED_SORT_COLUMNS = new Set([
-  "concepto",
-  "subtotal",
-  "total",
-  "uuid",
-  "rfcEmisor",
-  "rfcReceptor",
-  "moneda",
-  "status",
-  "createdAt",
-  "updatedAt",
-  "fechaPago",
-  "metodoPago",
-  "serie",
-  "folio",
-  "nombreEmisor",
-  "nombreReceptor",
-  "statusPago",
+  "concepto", "subtotal", "total", "uuid", "rfcEmisor", "rfcReceptor",
+  "moneda", "status", "createdAt", "updatedAt", "fechaPago", "metodoPago",
+  "serie", "folio", "nombreEmisor", "nombreReceptor", "statusPago",
 ]);
 
+/** Convierte un string a número, devuelve undefined si está vacío o es NaN */
+const toNum = (v: string | number | undefined): number | undefined => {
+  if (v === undefined || v === "") return undefined;
+  const n = typeof v === "number" ? v : parseFloat(String(v));
+  return isNaN(n) ? undefined : n;
+};
+
 export class PrismaFacturaRepository implements FacturaRepository {
-  constructor(
-    private prisma: PrismaClient | PrismaTransactionClient
-  ) {}
+  constructor(private prisma: PrismaClient | PrismaTransactionClient) {}
 
   async create(data: CreateFacturaArgs): Promise<FacturaEntity> {
     const factura = await this.prisma.factura.create({
@@ -69,7 +61,6 @@ export class PrismaFacturaRepository implements FacturaRepository {
       },
       include: facturaIncludes,
     });
-
     return factura;
   }
 
@@ -98,105 +89,210 @@ export class PrismaFacturaRepository implements FacturaRepository {
       },
       include: facturaIncludes,
     });
-
     return factura;
   }
 
   async delete(data: { id: string }): Promise<void> {
-    await this.prisma.factura.delete({
-      where: { id: data.id },
-    });
+    await this.prisma.factura.delete({ where: { id: data.id } });
   }
 
   async findById(data: { id: string }): Promise<FacturaEntity | null> {
-    const factura = await this.prisma.factura.findUnique({
+    return this.prisma.factura.findUnique({
       where: { id: data.id },
       include: facturaIncludes,
     });
-
-    return factura;
   }
 
   async findByUuid(uuid: string): Promise<boolean> {
-    const factura = await this.prisma.factura.findUnique({
-      where: { uuid },
-    });
-
+    const factura = await this.prisma.factura.findUnique({ where: { uuid } });
     return factura !== null;
   }
 
   async getAll(): Promise<FacturaEntity[]> {
-    const facturas = await this.prisma.factura.findMany({
+    return this.prisma.factura.findMany({
       include: facturaIncludes,
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
-
-    return facturas;
   }
 
-  async getPaginated(params: FacturasFilterParams): Promise<{ data: FacturaEntity[]; totalCount: number }> {
+  async getPaginated(
+    params: FacturasFilterParams
+  ): Promise<{ data: FacturaEntity[]; totalCount: number }> {
     const skip = (params.page - 1) * params.pageSize;
 
-    const sortColumn = params.sortBy && ALLOWED_SORT_COLUMNS.has(params.sortBy)
-      ? params.sortBy
-      : undefined;
-
+    const sortColumn =
+      params.sortBy && ALLOWED_SORT_COLUMNS.has(params.sortBy)
+        ? params.sortBy
+        : undefined;
     const orderBy = sortColumn
-      ? { [sortColumn]: params.sortOrder || "desc" }
+      ? { [sortColumn]: params.sortOrder ?? "desc" }
       : { createdAt: "desc" as const };
 
-    // Build WHERE clause
-    const where: Prisma.FacturaWhereInput = {};
     const andConditions: Prisma.FacturaWhereInput[] = [];
 
-    // Text search across multiple fields
+    // ── Búsqueda global ──────────────────────────────────────────────────────
     if (params.search) {
       andConditions.push({
         OR: [
-          { concepto: { contains: params.search, mode: "insensitive" } },
-          { uuid: { contains: params.search, mode: "insensitive" } },
-          { rfcEmisor: { contains: params.search, mode: "insensitive" } },
-          { rfcReceptor: { contains: params.search, mode: "insensitive" } },
-          { nombreEmisor: { contains: params.search, mode: "insensitive" } },
-          { nombreReceptor: { contains: params.search, mode: "insensitive" } },
+          { concepto:      { contains: params.search, mode: "insensitive" } },
+          { uuid:          { contains: params.search, mode: "insensitive" } },
+          { rfcEmisor:     { contains: params.search, mode: "insensitive" } },
+          { rfcReceptor:   { contains: params.search, mode: "insensitive" } },
+          { nombreEmisor:  { contains: params.search, mode: "insensitive" } },
+          { nombreReceptor:{ contains: params.search, mode: "insensitive" } },
         ],
       });
     }
 
-    // Filter by status (UI sends lowercase, Prisma enum expects UPPERCASE)
-    if (params.status) {
-      const upper = params.status.toUpperCase();
-      if (VALID_ESTADOS.has(upper)) {
-        andConditions.push({ status: upper as FacturaEstado });
+    // ── Tab: status (multi-select → IN) ─────────────────────────────────────
+    if (params.status?.length) {
+      const validStatuses = params.status
+        .map((s) => s.toUpperCase())
+        .filter((s) => VALID_ESTADOS.has(s)) as FacturaEstado[];
+      if (validStatuses.length > 0) {
+        andConditions.push({ status: { in: validStatuses } });
       }
     }
 
-    // Filter by metodoPago
-    if (params.metodoPago) {
+    // ── Quick filters (multi-select → IN) ────────────────────────────────────
+    if (params.metodoPago?.length) {
+      andConditions.push({ metodoPago: { in: params.metodoPago } });
+    }
+    if (params.moneda?.length) {
+      andConditions.push({ moneda: { in: params.moneda } });
+    }
+    if (params.statusPago?.length) {
+      andConditions.push({ statusPago: { in: params.statusPago } });
+    }
+
+    // ── Identificación ───────────────────────────────────────────────────────
+    if (params.uuid?.length) {
       andConditions.push({
-        metodoPago: params.metodoPago,
+        OR: params.uuid.map((u) => ({
+          uuid: { contains: u, mode: "insensitive" as const },
+        })),
+      });
+    }
+    if (params.usoCfdi?.length) {
+      andConditions.push({ usoCfdi: { in: params.usoCfdi } });
+    }
+
+    // ── Emisor ───────────────────────────────────────────────────────────────
+    if (params.rfcEmisor?.length) {
+      andConditions.push({
+        OR: params.rfcEmisor.map((v) => ({
+          rfcEmisor: { contains: v, mode: "insensitive" as const },
+        })),
+      });
+    }
+    if (params.nombreEmisor?.length) {
+      andConditions.push({
+        OR: params.nombreEmisor.map((v) => ({
+          nombreEmisor: { contains: v, mode: "insensitive" as const },
+        })),
       });
     }
 
-    // Filter by moneda
-    if (params.moneda) {
+    // ── Receptor ─────────────────────────────────────────────────────────────
+    if (params.rfcReceptor?.length) {
       andConditions.push({
-        moneda: params.moneda,
+        OR: params.rfcReceptor.map((v) => ({
+          rfcReceptor: { contains: v, mode: "insensitive" as const },
+        })),
+      });
+    }
+    if (params.nombreReceptor?.length) {
+      andConditions.push({
+        OR: params.nombreReceptor.map((v) => ({
+          nombreReceptor: { contains: v, mode: "insensitive" as const },
+        })),
       });
     }
 
-    // Filter by statusPago
-    if (params.statusPago) {
+    // ── Montos ───────────────────────────────────────────────────────────────
+    const subtotalMin = toNum(params.subtotalMin);
+    const subtotalMax = toNum(params.subtotalMax);
+    if (subtotalMin !== undefined || subtotalMax !== undefined) {
       andConditions.push({
-        statusPago: params.statusPago,
+        subtotal: {
+          ...(subtotalMin !== undefined && { gte: subtotalMin }),
+          ...(subtotalMax !== undefined && { lte: subtotalMax }),
+        },
       });
     }
 
-    if (andConditions.length > 0) {
-      where.AND = andConditions;
+    const totalMin = toNum(params.totalMin);
+    const totalMax = toNum(params.totalMax);
+    if (totalMin !== undefined || totalMax !== undefined) {
+      andConditions.push({
+        total: {
+          ...(totalMin !== undefined && { gte: totalMin }),
+          ...(totalMax !== undefined && { lte: totalMax }),
+        },
+      });
     }
+
+    const impTrasMin = toNum(params.impTrasladosMin);
+    const impTrasMax = toNum(params.impTrasladosMax);
+    if (impTrasMin !== undefined || impTrasMax !== undefined) {
+      andConditions.push({
+        totalImpuestosTransladados: {
+          ...(impTrasMin !== undefined && { gte: impTrasMin }),
+          ...(impTrasMax !== undefined && { lte: impTrasMax }),
+        },
+      });
+    }
+
+    const impRetMin = toNum(params.impRetenidosMin);
+    const impRetMax = toNum(params.impRetenidosMax);
+    if (impRetMin !== undefined || impRetMax !== undefined) {
+      andConditions.push({
+        totalImpuestosRetenidos: {
+          ...(impRetMin !== undefined && { gte: impRetMin }),
+          ...(impRetMax !== undefined && { lte: impRetMax }),
+        },
+      });
+    }
+
+    // ── Fecha de pago ────────────────────────────────────────────────────────
+    if (params.fechaPagoFrom || params.fechaPagoTo) {
+      andConditions.push({
+        fechaPago: {
+          ...(params.fechaPagoFrom && { gte: parseISO(params.fechaPagoFrom) }),
+          ...(params.fechaPagoTo && {
+            lte: new Date(params.fechaPagoTo + "T23:59:59"),
+          }),
+        },
+      });
+    }
+
+    // ── Auditoría ────────────────────────────────────────────────────────────
+    if (params.ingresadoPor?.length) {
+      andConditions.push({ ingresadoPor: { in: params.ingresadoPor } });
+    }
+    if (params.createdAtFrom || params.createdAtTo) {
+      andConditions.push({
+        createdAt: {
+          ...(params.createdAtFrom && { gte: parseISO(params.createdAtFrom) }),
+          ...(params.createdAtTo && {
+            lte: new Date(params.createdAtTo + "T23:59:59"),
+          }),
+        },
+      });
+    }
+    if (params.updatedAtFrom || params.updatedAtTo) {
+      andConditions.push({
+        updatedAt: {
+          ...(params.updatedAtFrom && { gte: parseISO(params.updatedAtFrom) }),
+          ...(params.updatedAtTo && {
+            lte: new Date(params.updatedAtTo + "T23:59:59"),
+          }),
+        },
+      });
+    }
+
+    const where: Prisma.FacturaWhereInput =
+      andConditions.length > 0 ? { AND: andConditions } : {};
 
     const [data, totalCount] = await Promise.all([
       this.prisma.factura.findMany({

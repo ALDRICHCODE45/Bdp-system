@@ -12,6 +12,8 @@ import { cn } from "@/core/lib/utils";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { FacturaRowActions } from "./forms/FacturaRowActions";
 import { FacturaStatusBadge } from "./FacturaStatusBadge";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 
 /**
  * Returns a locale-aware currency formatter for the given currency code.
@@ -30,11 +32,8 @@ export function getCurrencyFormatter(currency: string): Intl.NumberFormat {
   return currencyFormatterCache.get(key)!;
 }
 
-const dateFormatter = new Intl.DateTimeFormat("es-MX", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-});
+const formatDate = (isoString: string) =>
+  format(parseISO(isoString), "d MMM yyyy", { locale: es });
 
 const statusPagoColors: Record<string, string> = {
   Vigente:
@@ -161,7 +160,7 @@ export function createFacturasColumns(
         const fecha = row.getValue("createdAt") as string;
         return (
           <div className="text-xs">
-            {dateFormatter.format(new Date(fecha))}
+            {formatDate(fecha)}
           </div>
         );
       },

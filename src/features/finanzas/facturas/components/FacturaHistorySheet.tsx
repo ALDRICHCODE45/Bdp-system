@@ -19,7 +19,7 @@ import {
   TimelineItem,
   TimelineTitle,
 } from "@/core/shared/ui/timeline";
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, parseISO, differenceInHours } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatFieldName } from "../helpers/formatHistorialField";
 import { formatChangeDescription } from "../helpers/formatHistorialChange";
@@ -52,12 +52,10 @@ export function FacturaHistorySheet({
 
   const formatFecha = (fechaString: string) => {
     try {
-      const fecha = new Date(fechaString);
-      const now = new Date();
-      const diffInHours = (now.getTime() - fecha.getTime()) / (1000 * 60 * 60);
+      const fecha = parseISO(fechaString);
 
       // Si es hace menos de 24 horas, usar formatDistanceToNow
-      if (diffInHours < 24) {
+      if (differenceInHours(new Date(), fecha) < 24) {
         return formatDistanceToNow(fecha, {
           addSuffix: true,
           locale: es,

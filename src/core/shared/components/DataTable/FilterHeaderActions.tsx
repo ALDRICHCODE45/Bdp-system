@@ -1,7 +1,7 @@
 import { Button } from "@/core/shared/ui/button";
 import { LucideIcon, RefreshCw } from "lucide-react";
 import { Table } from "@tanstack/react-table";
-import { ExportButton } from "./ExportButton";
+import { ExportButton, ExportOptions } from "./ExportButton";
 
 interface FilterHeaderActions {
   showAddButton?: boolean;
@@ -10,9 +10,10 @@ interface FilterHeaderActions {
   onClearFilters: () => void;
   buttonTooltipText: string;
   onAdd?: () => void;
-  onExport?: (table: Table<unknown>) => void;
+  onExport?: (table: Table<unknown>, options?: ExportOptions) => void;
   table?: Table<unknown>;
   exportFileName?: string;
+  isServerSide?: boolean;
 }
 
 export const FilterHeaderActions = ({
@@ -25,6 +26,7 @@ export const FilterHeaderActions = ({
   onExport,
   table,
   exportFileName,
+  isServerSide = false,
 }: FilterHeaderActions) => {
   return (
     <>
@@ -54,6 +56,7 @@ export const FilterHeaderActions = ({
           table={table}
           onExport={onExport}
           fileName={exportFileName}
+          isServerSide={isServerSide}
         />
       )}
     </>

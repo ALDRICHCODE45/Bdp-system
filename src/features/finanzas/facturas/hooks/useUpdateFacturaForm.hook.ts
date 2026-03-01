@@ -3,6 +3,7 @@ import { useForm } from "@tanstack/react-form";
 import { updateFacturaSchemaUI } from "../schemas/updateFacturaSchemaUI";
 import { useUpdateFactura } from "./useUpdateFactura.hook";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
+import { format, parseISO } from "date-fns";
 
 export const useUpdateFacturaForm = (
   factura: FacturaDto,
@@ -30,7 +31,7 @@ export const useUpdateFacturaForm = (
       status: factura.status,
       nombreEmisor: factura.nombreEmisor || "",
       statusPago: factura.statusPago || "",
-      fechaPago: factura.fechaPago ? factura.fechaPago.split("T")[0] : "",
+      fechaPago: factura.fechaPago ? format(parseISO(factura.fechaPago), "yyyy-MM-dd") : "",
     },
     validators: {
       // @ts-expect-error - Zod schema validation types are complex

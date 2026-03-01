@@ -12,15 +12,20 @@ import {
 import { Download, FileSpreadsheet, Filter, CheckSquare } from "lucide-react";
 import { exportToExcel } from "@/core/shared/helpers/exportToExcel";
 
+export type ExportOptions = { selectedOnly?: boolean; filteredOnly?: boolean };
+
 interface ExportButtonProps<TData> {
   table: Table<TData>;
-  onExport?: (
-    table: Table<TData>,
-    options?: { selectedOnly?: boolean; filteredOnly?: boolean }
-  ) => void;
+  onExport?: (table: Table<TData>, options?: ExportOptions) => void;
   fileName?: string;
   enableSelectedRowsExport?: boolean;
   enableFilteredRowsExport?: boolean;
+  /**
+   * Activar cuando la tabla está en modo server-side.
+   * Oculta la opción "Exportar filas filtradas" (su conteo es incorrecto
+   * en server-side porque getFilteredRowModel solo tiene la página actual).
+   */
+  isServerSide?: boolean;
 }
 
 export function ExportButton<TData>({
@@ -29,12 +34,15 @@ export function ExportButton<TData>({
   fileName,
   enableSelectedRowsExport = true,
   enableFilteredRowsExport = true,
+  isServerSide = false,
 }: ExportButtonProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const filteredRowsCount = table.getFilteredRowModel().rows.length;
   const totalRowsCount = table.getRowCount();
   const hasSelectedRows = selectedRowsCount > 0;
-  const hasFilters = filteredRowsCount < totalRowsCount;
+  // En server-side, getFilteredRowModel solo tiene la página actual,
+  // por lo que hasFilters siempre sería true (10 < 1000). Lo desactivamos.
+  const hasFilters = !isServerSide && filteredRowsCount < totalRowsCount;
 
   const handleExportXLSX = (options?: {
     selectedOnly?: boolean;
