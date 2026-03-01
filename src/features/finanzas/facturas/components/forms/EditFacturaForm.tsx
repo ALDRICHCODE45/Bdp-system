@@ -71,7 +71,7 @@ export const EditFacturaForm = ({
 }: EditFacturaFormProps) => {
   const form = useUpdateFacturaForm(factura, onSuccess);
   const [canEdit, setCanEdit] = useState<boolean>(
-    factura.status === "borrador"
+    factura.status === "borrador",
   );
 
   // ── Warning banner for non-borrador facturas ──────────────────────────────
@@ -114,9 +114,11 @@ export const EditFacturaForm = ({
     >
       {WarningBanner}
 
-      <fieldset disabled={!canEdit} className={cn(!canEdit && "opacity-50 pointer-events-none")}>
+      <fieldset
+        disabled={!canEdit}
+        className={cn(!canEdit && "opacity-50 pointer-events-none")}
+      >
         <div className="space-y-6">
-
           {/* ── Identificación ──────────────────────────────────────────────── */}
           <div>
             <SectionHeader title="Identificación" />
@@ -129,14 +131,22 @@ export const EditFacturaForm = ({
                       ? (field.state.meta.errors[0] as string | undefined)
                       : null;
                   return (
-                    <FormField label="UUID" hint="Fiscal CFDI" error={error} required>
+                    <FormField
+                      label="UUID"
+                      hint="Fiscal CFDI"
+                      error={error}
+                      required
+                    >
                       <Input
                         id="uuid"
                         name={field.name}
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={!!error}
-                        className={cn(error && "border-destructive focus-visible:ring-destructive")}
+                        className={cn(
+                          error &&
+                            "border-destructive focus-visible:ring-destructive",
+                        )}
                         placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                         spellCheck={false}
                       />
@@ -153,14 +163,22 @@ export const EditFacturaForm = ({
                       ? (field.state.meta.errors[0] as string | undefined)
                       : null;
                   return (
-                    <FormField label="Concepto" hint="Descripción del servicio" error={error} required>
+                    <FormField
+                      label="Concepto"
+                      hint="Descripción del servicio"
+                      error={error}
+                      required
+                    >
                       <Input
                         id="concepto"
                         name={field.name}
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={!!error}
-                        className={cn(error && "border-destructive focus-visible:ring-destructive")}
+                        className={cn(
+                          error &&
+                            "border-destructive focus-visible:ring-destructive",
+                        )}
                       />
                     </FormField>
                   );
@@ -231,8 +249,11 @@ export const EditFacturaForm = ({
                             <SelectValue placeholder="Moneda" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="MXN">MXN — Peso mexicano</SelectItem>
+                            <SelectItem value="MXN">
+                              MXN — Peso mexicano
+                            </SelectItem>
                             <SelectItem value="USD">USD — Dólar</SelectItem>
+                            <SelectItem value="EUR">EUR — Euro</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormField>
@@ -258,7 +279,12 @@ export const EditFacturaForm = ({
                         ? (field.state.meta.errors[0] as string | undefined)
                         : null;
                     return (
-                      <FormField label="Subtotal" hint="Antes de impuestos" error={error} required>
+                      <FormField
+                        label="Subtotal"
+                        hint="Antes de impuestos"
+                        error={error}
+                        required
+                      >
                         <Input
                           id="subtotal"
                           name={field.name}
@@ -283,7 +309,12 @@ export const EditFacturaForm = ({
                         ? (field.state.meta.errors[0] as string | undefined)
                         : null;
                     return (
-                      <FormField label="Total" hint="Monto final" error={error} required>
+                      <FormField
+                        label="Total"
+                        hint="Monto final"
+                        error={error}
+                        required
+                      >
                         <Input
                           id="total"
                           name={field.name}
@@ -362,7 +393,11 @@ export const EditFacturaForm = ({
                           value={field.state.value}
                           onValueChange={(v) =>
                             field.handleChange(
-                              v as "borrador" | "enviada" | "pagada" | "cancelada"
+                              v as
+                                | "borrador"
+                                | "enviada"
+                                | "pagada"
+                                | "cancelada",
                             )
                           }
                         >
@@ -393,8 +428,12 @@ export const EditFacturaForm = ({
                           <SelectValue placeholder="Seleccionar" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="PUE">PUE — Pago en una exhibición</SelectItem>
-                          <SelectItem value="PPD">PPD — Pago en parcialidades</SelectItem>
+                          <SelectItem value="PUE">
+                            PUE — Pago en una exhibición
+                          </SelectItem>
+                          <SelectItem value="PPD">
+                            PPD — Pago en parcialidades
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </FormField>
@@ -435,7 +474,7 @@ export const EditFacturaForm = ({
                         }
                         onDateChange={(date) => {
                           field.handleChange(
-                            date ? format(date, "yyyy-MM-dd") : ""
+                            date ? format(date, "yyyy-MM-dd") : "",
                           );
                         }}
                       />
@@ -461,7 +500,12 @@ export const EditFacturaForm = ({
                         ? (field.state.meta.errors[0] as string | undefined)
                         : null;
                     return (
-                      <FormField label="RFC Emisor" hint="12–13 chars" error={error} required>
+                      <FormField
+                        label="RFC Emisor"
+                        hint="12–13 chars"
+                        error={error}
+                        required
+                      >
                         <Input
                           id="rfcEmisor"
                           name={field.name}
@@ -473,7 +517,7 @@ export const EditFacturaForm = ({
                           maxLength={13}
                           className={cn(
                             "font-mono uppercase",
-                            error && "border-destructive"
+                            error && "border-destructive",
                           )}
                         />
                       </FormField>
@@ -504,7 +548,12 @@ export const EditFacturaForm = ({
                         ? (field.state.meta.errors[0] as string | undefined)
                         : null;
                     return (
-                      <FormField label="RFC Receptor" hint="12–13 chars" error={error} required>
+                      <FormField
+                        label="RFC Receptor"
+                        hint="12–13 chars"
+                        error={error}
+                        required
+                      >
                         <Input
                           id="rfcReceptor"
                           name={field.name}
@@ -516,7 +565,7 @@ export const EditFacturaForm = ({
                           maxLength={13}
                           className={cn(
                             "font-mono uppercase",
-                            error && "border-destructive"
+                            error && "border-destructive",
                           )}
                         />
                       </FormField>
@@ -539,7 +588,6 @@ export const EditFacturaForm = ({
               </div>
             </div>
           </div>
-
         </div>
       </fieldset>
 

@@ -1,13 +1,10 @@
+"use client";
+
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
   SheetTitle,
 } from "@/core/shared/ui/sheet";
-import { Button } from "@/core/shared/ui/button";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 import { CreateFacturaForm } from "./forms/CreateFacturaForm";
 
@@ -21,25 +18,30 @@ export function CreateFacturaSheet({
   onClose,
 }: CreateFacturaSheetProps) {
   const isMobile = useIsMobile();
-  const sheetSide = isMobile ? "bottom" : "right";
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side={sheetSide}>
-        <SheetHeader>
-          <SheetTitle>Agregar Factura</SheetTitle>
-          <SheetDescription>
-            Ingresa la información de la factura:
-          </SheetDescription>
-        </SheetHeader>
-        <div className="h-[80vh] overflow-y-auto">
+      <SheetContent
+        side={isMobile ? "bottom" : "right"}
+        className="ml-0 rounded-2xl overflow-y-auto p-0 w-full sm:max-w-2xl"
+      >
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div className="px-6 pt-6 pb-4 border-b">
+          <p className="text-xs text-muted-foreground font-medium mb-1">
+            Nueva factura
+          </p>
+          <SheetTitle className="text-lg font-semibold">
+            Agregar factura
+          </SheetTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Completá los datos del CFDI para registrar la factura.
+          </p>
+        </div>
+
+        {/* ── Content ─────────────────────────────────────────────────────── */}
+        <div className="px-6 py-4">
           <CreateFacturaForm onSuccess={onClose} />
         </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button variant="outline">Cerrar</Button>
-          </SheetClose>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

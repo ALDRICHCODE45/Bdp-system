@@ -1,6 +1,13 @@
 "use client";
 import { Row } from "@tanstack/react-table";
-import { Eye, MoreHorizontal, Pencil, Trash2, History, FileText } from "lucide-react";
+import {
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  History,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
 import {
   DropdownMenu,
@@ -30,7 +37,7 @@ const EditFacturaSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const DeleteFacturaAlertDialog = dynamic(
@@ -41,7 +48,7 @@ const DeleteFacturaAlertDialog = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const FacturaHistorySheet = dynamic(
@@ -52,7 +59,7 @@ const FacturaHistorySheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 interface FacturaRowActionsProps {
@@ -60,7 +67,10 @@ interface FacturaRowActionsProps {
   onViewDetail?: (factura: FacturaDto) => void;
 }
 
-export function FacturaRowActions({ row, onViewDetail }: FacturaRowActionsProps) {
+export function FacturaRowActions({
+  row,
+  onViewDetail,
+}: FacturaRowActionsProps) {
   const { isOpen, openModal, closeModal } = useModalState();
   const {
     isOpen: isDeleteOpen,

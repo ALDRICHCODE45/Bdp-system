@@ -155,13 +155,29 @@ function TableBodyDataTableInner<TData, TValue>({
     [columnIds, table]
   );
 
-  // Calculate total min-width from all columns to enable horizontal scroll on mobile
-  const totalMinWidth = table
-    .getAllColumns()
-    .reduce(
-      (acc, column) => acc + getColumnMinWidth(column.getSize(), column.id),
-      0
-    );
+  // Calculate the px min-width of each visible column.
+  // Used both as the scroll threshold and to derive proportional % widths.
+  const visibleColumns = table.getVisibleLeafColumns();
+
+  const totalMinWidth = visibleColumns.reduce(
+    (acc, col) => acc + getColumnMinWidth(col.getSize(), col.id),
+    0
+  );
+
+  // Map columnId → proportional percentage width.
+  // Each column gets (its minPx / totalMinPx) * 100%, guaranteeing they always
+  // sum to exactly 100% regardless of which columns are visible.
+  // This lets the table be w-full (fills container) while also triggering
+  // horizontal scroll via minWidth when columns overflow the container.
+  const columnWidthMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const col of visibleColumns) {
+      const minPx = getColumnMinWidth(col.getSize(), col.id);
+      map.set(col.id, `${(minPx / totalMinWidth) * 100}%`);
+    }
+    return map;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalMinWidth]);
 
   // Renderizar la tabla
   const tableContent = (
@@ -194,6 +210,7 @@ function TableBodyDataTableInner<TData, TValue>({
                       header.column.id === "actions";
 
                     const minWidth = getColumnMinWidth(size, header.column.id);
+                    const proportionalWidth = columnWidthMap.get(header.column.id) ?? `${minWidth}px`;
 
                     return (
                       <TableHead
@@ -203,11 +220,9 @@ function TableBodyDataTableInner<TData, TValue>({
                           isCompactColumn ? "px-2" : "px-2 sm:px-6"
                         )}
                         style={{
-                          width: isCompactColumn ? `${minWidth}px` : `${size}%`,
+                          width: proportionalWidth,
                           minWidth: `${minWidth}px`,
-                          maxWidth: isCompactColumn
-                            ? `${minWidth}px`
-                            : `${size}%`,
+                          maxWidth: isCompactColumn ? `${minWidth}px` : undefined,
                           ...stickyStyles,
                         }}
                       >
@@ -251,6 +266,7 @@ function TableBodyDataTableInner<TData, TValue>({
                       cell.column.id === "actions";
 
                     const minWidth = getColumnMinWidth(size, cell.column.id);
+                    const proportionalWidth = columnWidthMap.get(cell.column.id) ?? `${minWidth}px`;
 
                     return (
                       <TableCell
@@ -260,11 +276,9 @@ function TableBodyDataTableInner<TData, TValue>({
                           isCompactColumn ? "px-2" : "px-2 sm:px-6"
                         )}
                         style={{
-                          width: isCompactColumn ? `${minWidth}px` : `${size}%`,
+                          width: proportionalWidth,
                           minWidth: `${minWidth}px`,
-                          maxWidth: isCompactColumn
-                            ? `${minWidth}px`
-                            : `${size}%`,
+                          maxWidth: isCompactColumn ? `${minWidth}px` : undefined,
                           ...stickyStyles,
                         }}
                       >

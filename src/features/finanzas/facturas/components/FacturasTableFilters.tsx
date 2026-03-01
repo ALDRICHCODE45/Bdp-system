@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from "@/core/shared/ui/card";
 import { Filter } from "lucide-react";
 import { FilterMultiSelect } from "@/core/shared/components/DataTable/FilterMultiSelect";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
+import { ColumnVisibilitySelector } from "@/core/shared/components/DataTable/ColumnVisibilitySelector";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 import { FacturasAdvancedFilters, countActiveAdvancedFilters } from "../types/FacturasAdvancedFilters.type";
 import { FacturasAdvancedFiltersSheet } from "./FacturasAdvancedFiltersSheet";
@@ -112,6 +113,7 @@ export function FacturasFilters({
                 <span>Importar Excel</span>
               </Button>
             )}
+            <ColumnVisibilitySelector table={table} />
             <FilterHeaderActions
               showAddButton={showAddButton}
               AddButtonIcon={addButtonIcon}

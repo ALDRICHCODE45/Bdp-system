@@ -137,6 +137,8 @@ export interface TableConfig<TData> {
   columnPinning?: ColumnPinningConfig;
   // Column order / DnD
   columnOrder?: ColumnOrderConfig;
+  // Default column visibility (used when no stored preference exists)
+  defaultColumnVisibility?: import("@tanstack/react-table").VisibilityState;
   // Server-side config
   serverSide?: ServerSideConfig;
   isFetching?: boolean;

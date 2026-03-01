@@ -14,6 +14,7 @@ import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { useFacturas } from "../hooks/useFacturas.hook";
 import { useDebounce } from "@/core/shared/hooks/use-debounce";
 import { Card, CardContent } from "@/core/shared/ui/card";
+import { cn } from "@/core/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ import { exportFacturasToExcel } from "../helpers/exportFacturasToExcel";
 import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
 import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { useFacturaStatusCounts } from "../hooks/useFacturaStatusCounts.hook";
+import { FacturasDashboardView } from "../components/FacturasDashboardView";
 
 const CreateFacturaSheet = dynamic(
   () =>
@@ -54,6 +56,9 @@ interface FacturasTablePageProps {
 }
 
 export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
+  // ── View mode (tabla | dashboard) ────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<"tabla" | "dashboard">("tabla");
+
   // ── Modal / sheet state ──────────────────────────────────────────────────
   const { isOpen, openModal, closeModal } = useModalState();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -369,6 +374,30 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
             title="Gestión de Facturas"
           />
 
+          {/* ── View mode tabs ──────────────────────────────────────────── */}
+          <div className="flex items-center gap-1 border-b pb-0">
+            {(["tabla", "dashboard"] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors",
+                  viewMode === mode
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {mode === "tabla" ? "Tabla" : "Dashboard"}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Dashboard view ──────────────────────────────────────────── */}
+          {viewMode === "dashboard" && <FacturasDashboardView />}
+
+          {/* ── Table view ─────────────────────────────────────────────── */}
+          {viewMode === "tabla" && (
+          <div className="space-y-6">
           <DataTableMultiTabs
             tabs={tabsConfig}
             activeTabs={activeTabs}
@@ -447,6 +476,8 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </div>
+          )}
         </div>
       </CardContent>
     </Card>

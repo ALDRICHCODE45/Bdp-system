@@ -124,6 +124,7 @@ export function DataTable<TData, TValue>({
       onSortingChange: config.onSortingChange,
       manualFiltering: config.manualFiltering,
       onColumnFiltersChange: config.onColumnFiltersChange,
+      defaultColumnVisibility: config.defaultColumnVisibility,
     }),
     [config],
   );
@@ -166,6 +167,7 @@ export function DataTable<TData, TValue>({
       right: [],
     },
     defaultOrder: finalConfig.columnOrder?.defaultOrder ?? [],
+    defaultVisibility: config.defaultColumnVisibility ?? {},
   });
 
   // Sincronizar columnOrder con las columnas actuales
@@ -190,15 +192,29 @@ export function DataTable<TData, TValue>({
       return storedColumnOrder;
     }
 
-    // Agregar columnas nuevas: "select" al principio, otras al final
+    // Agregar columnas nuevas: "select" al principio, otras antes de "actions"
     const selectColumn = newColumns.find((id) => id === "select");
-    const otherNewColumns = newColumns.filter((id) => id !== "select");
+    const otherNewColumns = newColumns.filter((id) => id !== "select" && id !== "actions");
 
     let result = [...storedColumnOrder];
     if (selectColumn) {
-      result = [selectColumn, ...result];
+      result = [selectColumn, ...result.filter((id) => id !== "select")];
     }
-    result = [...result, ...otherNewColumns];
+
+    // Insertar nuevas columnas antes de "actions"
+    const actionsIdx = result.indexOf("actions");
+    if (actionsIdx !== -1) {
+      result.splice(actionsIdx, 0, ...otherNewColumns);
+    } else {
+      result = [...result, ...otherNewColumns];
+    }
+
+    // Garantizar que "actions" siempre sea la última columna
+    const finalActionsIdx = result.indexOf("actions");
+    if (finalActionsIdx !== -1 && finalActionsIdx !== result.length - 1) {
+      result = result.filter((id) => id !== "actions");
+      result.push("actions");
+    }
 
     return result;
   }, [columns, storedColumnOrder]);
