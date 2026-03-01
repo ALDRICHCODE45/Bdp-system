@@ -5,12 +5,36 @@ import {
 } from "./ImportFacturaExcelRowDto.dto";
 
 /**
- * DTO para una factura duplicada encontrada
+ * Representa un cambio detectado entre un campo del Excel y el valor en sistema.
+ */
+export type FieldChange = {
+  /** Nombre interno del campo */
+  field: string;
+  /** Label legible en español */
+  label: string;
+  /** Valor actual en el sistema */
+  oldValue: string | number | null;
+  /** Valor nuevo proveniente del Excel */
+  newValue: string | number | null;
+  /**
+   * true cuando el cambio afecta campos financieros o fiscales críticos
+   * (total, subtotal, impuestos, RFC, moneda).
+   */
+  isHighRisk: boolean;
+};
+
+/**
+ * DTO para una factura duplicada encontrada.
+ * Incluye el diff completo de campos entre el Excel y el sistema.
  */
 export type DuplicadaDto = {
   row: ValidatedExcelRowDto;
   existing: FacturaDto;
   shouldUpdate: boolean;
+  /** Campos que difieren entre el Excel y el sistema */
+  changedFields: FieldChange[];
+  /** true si alguno de los cambios es de alto riesgo */
+  hasHighRiskChanges: boolean;
 };
 
 /**
@@ -31,6 +55,8 @@ export type ImportExcelPreviewDto = {
   // Archivo procesado
   fileName: string;
   totalRows: number;
+  /** Fila de Excel donde se detectó el header (útil para mostrar al usuario) */
+  headerExcelRow?: number;
 
   // Facturas nuevas a crear
   nuevas: ValidatedExcelRowDto[];
