@@ -41,7 +41,9 @@ import { exportFacturasToExcel } from "../helpers/exportFacturasToExcel";
 import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
 import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { useFacturaStatusCounts } from "../hooks/useFacturaStatusCounts.hook";
+import { useFacturasAggregates } from "../hooks/useFacturasAggregates.hook";
 import { FacturasDashboardView } from "../components/FacturasDashboardView";
+import { FacturasAggregatesBar } from "../components/FacturasAggregatesBar";
 
 const CreateFacturaSheet = dynamic(
   () =>
@@ -316,6 +318,13 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
 
   const { data: statusCounts } = useFacturaStatusCounts(countFilters);
 
+  // ── Aggregates (suma de campos numéricos de TODOS los registros filtrados) ──
+  const { data: aggregatesData, isFetching: isFetchingAggregates } =
+    useFacturasAggregates({
+      ...countFilters,
+      status,
+    });
+
   // ── Tabs ──────────────────────────────────────────────────────────────────
   const tabsConfig = useMemo(
     () => enrichFacturaTabsWithCounts(activeTabs, statusCounts),
@@ -423,6 +432,12 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
               onGlobalFilterChange={handleGlobalFilterChange}
             />
           </PermissionGuard>
+
+          {/* Aggregates bar */}
+          <FacturasAggregatesBar
+            data={aggregatesData}
+            isLoading={isFetchingAggregates && !aggregatesData}
+          />
 
           {/* Create sheet */}
           <PermissionGuard

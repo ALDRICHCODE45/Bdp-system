@@ -1,6 +1,18 @@
 export type DashboardPeriod = "month" | "quarter" | "year";
 
-/** Datos de un mes en la serie temporal */
+/** KPIs de una moneda específica */
+export type CurrencyKpis = {
+  moneda: string;
+  totalFacturado: number;
+  totalCobrado: number;
+  totalPorCobrar: number;
+  totalCancelado: number;
+  cantidadFacturas: number;
+  cantidadCanceladas: number;
+  tasaCobro: number;
+};
+
+/** Datos de un mes en la serie temporal (filtrada a la moneda primaria) */
 export type MonthlyDataPoint = {
   /** Etiqueta legible: "Ene", "Feb", etc. */
   label: string;
@@ -12,12 +24,13 @@ export type MonthlyDataPoint = {
   cobrado: number;
 };
 
-/** Cliente agrupado por monto facturado */
+/** Cliente agrupado por monto facturado — una entrada por (cliente, moneda) */
 export type TopClienteItem = {
   nombre: string;
   rfc: string;
   total: number;
   cantidadFacturas: number;
+  moneda: string;
 };
 
 /** Factura reciente resumida */
@@ -26,46 +39,39 @@ export type RecentFacturaItem = {
   concepto: string;
   nombreReceptor: string | null;
   total: number;
+  moneda: string;
   status: string;
   createdAt: string;
 };
 
 /** Payload completo del dashboard */
 export type FacturasDashboardDto = {
-  // ── KPIs ────────────────────────────────────────────────────────────────
-  /** Total facturado en el período (status != CANCELADA) */
-  totalFacturado: number;
-  /** Total cobrado en el período (status = PAGADA) */
-  totalCobrado: number;
-  /** Total por cobrar (status = ENVIADA, sin importar período de emisión) */
-  totalPorCobrar: number;
-  /** Cantidad de facturas en el período (status != CANCELADA) */
-  cantidadFacturas: number;
-  /** Cantidad de facturas canceladas en el período */
-  cantidadCanceladas: number;
-  /** Tasa de cobro 0-100 */
-  tasaCobro: number;
+  // ── KPIs por moneda ───────────────────────────────────────────────────────
+  /** KPIs agrupados por moneda. La primera entrada es la moneda primaria (mayor volumen). */
+  kpisByCurrency: CurrencyKpis[];
 
-  // ── Breakdown por status (conteo) ─────────────────────────────────────
+  /**
+   * Moneda primaria del período — la de mayor volumen facturado.
+   * Usada para filtrar la gráfica mensual y como referencia principal en KPIs.
+   */
+  primaryCurrency: string;
+
+  // ── Breakdown por status (conteo, todas las monedas) ─────────────────────
   countBorrador: number;
   countEnviada: number;
   countPagada: number;
   countCancelada: number;
-  /** Sum of total for CANCELADA facturas in the period */
-  totalCancelado: number;
-  /** Count of BORRADOR facturas in the period */
-  countBorradorTotal: number;
 
-  // ── Serie mensual (últimos N meses según período) ─────────────────────
+  // ── Serie mensual (moneda primaria únicamente) ────────────────────────────
   monthlySeries: MonthlyDataPoint[];
 
-  // ── Top 5 clientes ────────────────────────────────────────────────────
+  // ── Top clientes (una entrada por cliente × moneda) ───────────────────────
   topClientes: TopClienteItem[];
 
-  // ── Últimas facturas ──────────────────────────────────────────────────
+  // ── Últimas facturas ──────────────────────────────────────────────────────
   recentFacturas: RecentFacturaItem[];
 
-  // ── Meta ──────────────────────────────────────────────────────────────
+  // ── Meta ──────────────────────────────────────────────────────────────────
   period: DashboardPeriod;
   generatedAt: string;
 };

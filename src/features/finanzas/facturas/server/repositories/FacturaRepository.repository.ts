@@ -49,6 +49,16 @@ export type UpdateFacturaArgs = {
   fechaPago?: Date | null;
 };
 
+/** Fila de agregados numéricos agrupados por moneda */
+export type FacturaAggregateRow = {
+  moneda: string;
+  count: number;
+  total: number;
+  subtotal: number;
+  totalImpuestosTransladados: number | null;
+  totalImpuestosRetenidos: number | null;
+};
+
 export interface FacturaRepository {
   create(data: CreateFacturaArgs): Promise<FacturaEntity>;
   update(data: UpdateFacturaArgs): Promise<FacturaEntity>;
@@ -57,4 +67,7 @@ export interface FacturaRepository {
   findByUuid(uuid: string): Promise<boolean>;
   getAll(): Promise<FacturaEntity[]>;
   getPaginated(params: FacturasFilterParams): Promise<{ data: FacturaEntity[]; totalCount: number }>;
+  getAggregates(
+    params: Omit<FacturasFilterParams, "page" | "pageSize" | "sortBy" | "sortOrder">
+  ): Promise<FacturaAggregateRow[]>;
 }

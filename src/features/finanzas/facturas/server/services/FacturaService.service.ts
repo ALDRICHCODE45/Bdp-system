@@ -3,6 +3,7 @@ import { Result, Err, Ok } from "@/core/shared/result/result";
 import {
   FacturaRepository,
   FacturaEntity,
+  FacturaAggregateRow,
 } from "../repositories/FacturaRepository.repository";
 import {
   CreateFacturaInput,
@@ -187,6 +188,21 @@ export class FacturaService {
         error instanceof Error
           ? error
           : new Error("Error al obtener facturas paginadas")
+      );
+    }
+  }
+
+  async getAggregates(
+    params: Omit<FacturasFilterParams, "page" | "pageSize" | "sortBy" | "sortOrder">
+  ): Promise<Result<FacturaAggregateRow[], Error>> {
+    try {
+      const rows = await this.facturaRepository.getAggregates(params);
+      return Ok(rows);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al calcular agregados de facturas")
       );
     }
   }
