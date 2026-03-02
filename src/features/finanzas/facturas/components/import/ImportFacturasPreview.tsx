@@ -290,7 +290,7 @@ function DuplicadaFacturaRow({
   onToggle: () => void;
   disabled: boolean;
 }) {
-  const { row, existing, changedFields, hasHighRiskChanges } = duplicada;
+  const { row, changedFields, hasHighRiskChanges } = duplicada;
   const hasChanges = changedFields.length > 0;
   const highRiskCount = changedFields.filter((c) => c.isHighRisk).length;
 

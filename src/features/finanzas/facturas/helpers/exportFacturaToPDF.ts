@@ -240,7 +240,7 @@ export const exportFacturaToPDF = async (factura: FacturaDto): Promise<void> => 
       if (amount === null) return;
       doc.setFont("helvetica", bold ? "bold" : "normal");
       doc.setFontSize(bold ? F.value + 0.5 : F.label);
-      bold ? setInk(doc) : setMuted(doc);
+      if (bold) { setInk(doc); } else { setMuted(doc); }
       doc.text(label, MID, yRight);
 
       const amountStr = formatCurrency(amount, factura.moneda ?? "MXN");

@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/core/lib/prisma";
-import { Prisma, FacturaEstado } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { parseISO } from "date-fns";
 import type { FacturasFilterParams } from "../../types/FacturasFilterParams";
 
