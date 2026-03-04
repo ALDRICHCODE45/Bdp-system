@@ -378,27 +378,30 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
     <Card className="p-2 m-1">
       <CardContent>
         <div className="space-y-6">
-          <TablePresentation
-            subtitle="Administra y gestiona las facturas de tu empresa"
-            title="Gestión de Facturas"
-          />
+          {/* ── Header: título + view mode pills ──────────────────────────── */}
+          <div className="flex items-start justify-between gap-4">
+            <TablePresentation
+              subtitle="Administra y gestiona las facturas de tu empresa"
+              title="Gestión de Facturas"
+            />
 
-          {/* ── View mode tabs ──────────────────────────────────────────── */}
-          <div className="flex items-center gap-1 border-b pb-0">
-            {(["tabla", "dashboard"] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors",
-                  viewMode === mode
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {mode === "tabla" ? "Tabla" : "Dashboard"}
-              </button>
-            ))}
+            {/* ── View mode pills ──────────────────────────────────────────── */}
+            <div className="flex items-center gap-1 rounded-full border bg-muted/40 p-1 shrink-0">
+              {(["tabla", "dashboard"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-sm font-medium transition-all",
+                    viewMode === mode
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {mode === "tabla" ? "Tabla" : "Dashboard"}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* ── Dashboard view ──────────────────────────────────────────── */}
