@@ -11,23 +11,33 @@ export function generateExcelTemplate(): void {
   const headers = [...ALL_EXCEL_COLUMNS];
 
   // Ejemplo de datos
+  // El orden debe coincidir exactamente con ALL_EXCEL_COLUMNS:
+  // REQUIRED: UUID, Concepto, Subtotal, Total, RFC Emisor, RFC Receptor
+  // OPTIONAL:  Serie, Folio, Status, IVA Monto, Impuestos Trasladados, Impuestos Retenidos,
+  //            Método Pago, Moneda, Uso CFDI, Nombre Emisor, Nombre Receptor,
+  //            Status Pago, Fecha Emisión, Fecha Pago, Factura URL
   const exampleRow = [
     "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX", // UUID
-    "Servicios de consultoria", // Concepto
-    "10000.00", // Subtotal
-    "11600.00", // Total
-    "XAXX010101000", // RFC Emisor
-    "XAXX010101000", // RFC Receptor
-    "A", // Serie (opcional)
-    "001", // Folio (opcional)
-    "1600.00", // Impuestos Trasladados (opcional)
-    "0.00", // Impuestos Retenidos (opcional)
-    "PUE", // Método Pago (opcional)
-    "MXN", // Moneda (opcional)
-    "G03", // Uso CFDI (opcional)
-    "Empresa Emisora S.A.", // Nombre Emisor (opcional)
-    "Empresa Receptora S.A.", // Nombre Receptor (opcional)
-    "Pagado", // Status Pago (opcional)
+    "Servicios de consultoria",              // Concepto
+    10000.00,                                // Subtotal
+    11600.00,                                // Total
+    "XAXX010101000",                         // RFC Emisor
+    "XAXX010101000",                         // RFC Receptor
+    "A",                                     // Serie (opcional)
+    "001",                                   // Folio (opcional)
+    "VIGENTE",                               // Status (opcional)
+    1600.00,                                 // IVA Monto (opcional)
+    1600.00,                                 // Impuestos Trasladados (opcional)
+    0.00,                                    // Impuestos Retenidos (opcional)
+    "PUE",                                   // Método Pago (opcional)
+    "MXN",                                   // Moneda (opcional)
+    "G03",                                   // Uso CFDI (opcional)
+    "Empresa Emisora S.A.",                  // Nombre Emisor (opcional)
+    "Empresa Receptora S.A.",                // Nombre Receptor (opcional)
+    "Pagado",                                // Status Pago (opcional)
+    "2026-01-15",                            // Fecha Emisión (opcional, formato YYYY-MM-DD)
+    "2026-02-01",                            // Fecha Pago (opcional, formato YYYY-MM-DD)
+    "https://ejemplo.com/factura.pdf",       // Factura URL (opcional)
   ];
 
   // Crear datos de la hoja
@@ -57,7 +67,9 @@ export function generateExcelTemplate(): void {
     ["Columnas Opcionales:"],
     ["- Serie: Serie del comprobante"],
     ["- Folio: Folio del comprobante"],
-    ["- Impuestos Trasladados: Total de impuestos trasladados"],
+    ["- Status: Estado de la factura — VIGENTE o CANCELADA (por defecto VIGENTE)"],
+    ["- IVA Monto: Monto del IVA aplicado a la factura"],
+    ["- Impuestos Trasladados: Total de impuestos trasladados (IVA cobrado)"],
     ["- Impuestos Retenidos: Total de impuestos retenidos"],
     ["- Método Pago: PUE o PPD"],
     ["- Moneda: MXN, USD, etc. (por defecto MXN)"],
@@ -65,10 +77,14 @@ export function generateExcelTemplate(): void {
     ["- Nombre Emisor: Nombre o razón social del emisor"],
     ["- Nombre Receptor: Nombre o razón social del receptor"],
     ["- Status Pago: Pagado o Pendiente de pago"],
+    ["- Fecha Emisión: Fecha de timbrado/emisión del CFDI (formato YYYY-MM-DD)"],
+    ["- Fecha Pago: Fecha en que se realizó el pago (formato YYYY-MM-DD)"],
+    ["- Factura URL: URL del PDF de la factura timbrada (SAT)"],
     [""],
     ["NOTAS IMPORTANTES:"],
-    ["1. Si el UUID ya existe, se mostrará como duplicado"],
-    ["2. Todas las facturas nuevas se crean con status VIGENTE"],
+    ["1. Si el UUID ya existe, se mostrará como duplicado y podrás elegir si actualizarlo"],
+    ["2. Las facturas nuevas sin Status se crean como VIGENTE"],
+    ["3. Las fechas deben estar en formato YYYY-MM-DD (ej: 2026-01-15)"],
     [""],
     ["Tamaño máximo del archivo: 10MB"],
   ];

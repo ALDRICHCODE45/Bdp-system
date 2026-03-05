@@ -84,6 +84,38 @@ export const importFacturaExcelRowSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => (val?.trim() || null)),
+
+  status: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => {
+      if (!val) return null;
+      const normalized = val.trim().toLowerCase();
+      if (normalized === "vigente") return "VIGENTE";
+      if (normalized === "cancelada" || normalized === "cancelado") return "CANCELADA";
+      return null; // valor desconocido → usa el default del servicio
+    }),
+
+  iva: z.number().optional().nullable(),
+
+  fechaEmision: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val?.trim() || null)),
+
+  fechaPago: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val?.trim() || null)),
+
+  facturaUrl: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val?.trim() || null)),
 });
 
 export type ImportFacturaExcelRowInput = z.infer<typeof importFacturaExcelRowSchema>;
@@ -248,6 +280,42 @@ export const COLUMN_ALIASES: Record<string, string> = {
   "estado de pago": "statusPago",
   "estatus de pago": "statusPago",
   "estatus": "statusPago",
+
+  // ── Status (vigente/cancelada) ────────────────────────────────────────────
+  "status": "status",
+  "estatus factura": "status",
+  "estado factura": "status",
+  "status cfdi": "status",
+
+  // ── IVA ───────────────────────────────────────────────────────────────────
+  "iva monto": "iva",
+  "monto iva": "iva",
+  "valor iva": "iva",
+  // nota: "iva" solo ya está mapeado a totalImpuestosTransladados (alias histórico)
+  // usamos "iva monto" para el campo específico
+
+  // ── Fecha Emisión ─────────────────────────────────────────────────────────
+  "fecha emision": "fechaEmision",
+  "fecha de emision": "fechaEmision",
+  "fecha timbrado": "fechaEmision",
+  "fecha cfdi": "fechaEmision",
+  "fecha expedicion": "fechaEmision",
+  "fecha de expedicion": "fechaEmision",
+
+  // ── Fecha Pago ────────────────────────────────────────────────────────────
+  "fecha pago": "fechaPago",
+  "fecha de pago": "fechaPago",
+  "fecha cobro": "fechaPago",
+  "fecha de cobro": "fechaPago",
+
+  // ── Factura URL ───────────────────────────────────────────────────────────
+  "factura url": "facturaUrl",
+  "url factura": "facturaUrl",
+  "url pdf": "facturaUrl",
+  "pdf timbrado": "facturaUrl",
+  "url timbrado": "facturaUrl",
+  "enlace pdf": "facturaUrl",
+  "factura sat": "facturaUrl",
 };
 
 // ── Campos requeridos internos ────────────────────────────────────────────────
@@ -280,6 +348,11 @@ export const FIELD_TO_LABEL: Record<string, string> = {
   moneda: "Moneda",
   usoCfdi: "Uso CFDI",
   statusPago: "Status Pago",
+  status: "Status",
+  iva: "IVA Monto",
+  fechaEmision: "Fecha Emisión",
+  fechaPago: "Fecha Pago",
+  facturaUrl: "Factura URL",
 };
 
 // ── Backward compat (usado por generateExcelTemplate.ts) ─────────────────────
@@ -296,6 +369,8 @@ export const REQUIRED_EXCEL_COLUMNS = [
 export const OPTIONAL_EXCEL_COLUMNS = [
   "Serie",
   "Folio",
+  "Status",
+  "IVA Monto",
   "Impuestos Trasladados",
   "Impuestos Retenidos",
   "Método Pago",
@@ -304,6 +379,9 @@ export const OPTIONAL_EXCEL_COLUMNS = [
   "Nombre Emisor",
   "Nombre Receptor",
   "Status Pago",
+  "Fecha Emisión",
+  "Fecha Pago",
+  "Factura URL",
 ] as const;
 
 export const ALL_EXCEL_COLUMNS = [
@@ -320,6 +398,8 @@ export const EXCEL_COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "RFC Receptor": "rfcReceptor",
   "Serie": "serie",
   "Folio": "folio",
+  "Status": "status",
+  "IVA Monto": "iva",
   "Impuestos Trasladados": "totalImpuestosTransladados",
   "Impuestos Retenidos": "totalImpuestosRetenidos",
   "Método Pago": "metodoPago",
@@ -328,4 +408,7 @@ export const EXCEL_COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "Nombre Emisor": "nombreEmisor",
   "Nombre Receptor": "nombreReceptor",
   "Status Pago": "statusPago",
+  "Fecha Emisión": "fechaEmision",
+  "Fecha Pago": "fechaPago",
+  "Factura URL": "facturaUrl",
 };

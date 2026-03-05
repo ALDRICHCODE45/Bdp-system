@@ -20,6 +20,12 @@ export type ImportFacturaExcelRowDto = {
   usoCfdi?: string | null;
   nombreEmisor?: string | null;
   statusPago?: string | null;
+  // Campos nuevos
+  status?: string | null;
+  iva?: number | null;
+  fechaEmision?: string | null;
+  fechaPago?: string | null;
+  facturaUrl?: string | null;
 };
 
 /**

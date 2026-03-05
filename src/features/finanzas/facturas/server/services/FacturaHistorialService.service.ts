@@ -7,7 +7,9 @@ type FacturaData = {
   concepto: string;
   serie: string | null;
   folio: string | null;
+  fechaEmision: Date | null;
   subtotal: Prisma.Decimal | number;
+  iva: Prisma.Decimal | number | null;
   totalImpuestosTransladados: Prisma.Decimal | number | null;
   totalImpuestosRetenidos: Prisma.Decimal | number | null;
   total: Prisma.Decimal | number;
@@ -22,6 +24,7 @@ type FacturaData = {
   nombreEmisor: string | null;
   statusPago: string | null;
   fechaPago: Date | null;
+  facturaUrl: string | null;
 };
 
 export class FacturaHistorialService {
@@ -53,9 +56,9 @@ export class FacturaHistorialService {
       return "";
     }
 
-    // Date — para fechaPago solo guardamos yyyy-MM-dd para evitar phantom diffs por timezone
+    // Date — para fechas de solo-día guardamos yyyy-MM-dd para evitar phantom diffs por timezone
     if (value instanceof Date) {
-      if (campo === "fechaPago") {
+      if (campo === "fechaPago" || campo === "fechaEmision") {
         return this.normalizeDateToString(value);
       }
       return value.toISOString();
@@ -93,7 +96,9 @@ export class FacturaHistorialService {
       concepto: factura.concepto,
       serie: factura.serie,
       folio: factura.folio,
+      fechaEmision: factura.fechaEmision ?? null,
       subtotal: factura.subtotal,
+      iva: factura.iva ?? null,
       totalImpuestosTransladados: factura.totalImpuestosTransladados,
       totalImpuestosRetenidos: factura.totalImpuestosRetenidos,
       total: factura.total,
@@ -108,6 +113,7 @@ export class FacturaHistorialService {
       nombreEmisor: factura.nombreEmisor,
       statusPago: factura.statusPago,
       fechaPago: factura.fechaPago,
+      facturaUrl: factura.facturaUrl ?? null,
     };
   }
 
@@ -132,7 +138,9 @@ export class FacturaHistorialService {
       "concepto",
       "serie",
       "folio",
+      "fechaEmision",
       "subtotal",
+      "iva",
       "totalImpuestosTransladados",
       "totalImpuestosRetenidos",
       "total",
@@ -147,6 +155,7 @@ export class FacturaHistorialService {
       "nombreEmisor",
       "statusPago",
       "fechaPago",
+      "facturaUrl",
     ];
 
     for (const field of fields) {

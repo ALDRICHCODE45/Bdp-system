@@ -354,6 +354,7 @@ export class FacturaExcelImportService {
       if (
         fieldName === "subtotal" ||
         fieldName === "total" ||
+        fieldName === "iva" ||
         fieldName === "totalImpuestosTransladados" ||
         fieldName === "totalImpuestosRetenidos"
       ) {
@@ -530,6 +531,7 @@ export class FacturaExcelImportService {
             const newFactura = await txFacturaRepo.create({
               concepto: row.concepto,
               subtotal: row.subtotal,
+              iva: row.iva ?? null,
               totalImpuestosTransladados: row.totalImpuestosTransladados ?? null,
               totalImpuestosRetenidos: row.totalImpuestosRetenidos ?? null,
               total: row.total,
@@ -543,9 +545,11 @@ export class FacturaExcelImportService {
               metodoPago: row.metodoPago ?? null,
               moneda: row.moneda || "MXN",
               usoCfdi: row.usoCfdi ?? null,
-              status: "VIGENTE",
+              status: (row.status as "VIGENTE" | "CANCELADA") ?? "VIGENTE",
               statusPago: row.statusPago ?? null,
-              fechaPago: null,
+              fechaEmision: row.fechaEmision ? new Date(row.fechaEmision) : null,
+              fechaPago: row.fechaPago ? new Date(row.fechaPago) : null,
+              facturaUrl: row.facturaUrl ?? null,
               ingresadoPor: usuarioId,
             });
 
@@ -582,7 +586,11 @@ export class FacturaExcelImportService {
             const existingFactura = await tx.factura.findUnique({
               where: { id: dup.existing.id },
               include: { ingresadoPorRef: true },
-            });
+            }) as (Awaited<ReturnType<typeof tx.factura.findUnique>> & {
+              iva: number | null;
+              fechaEmision: Date | null;
+              facturaUrl: string | null;
+            }) | null;
 
             if (!existingFactura) {
               resultados.push({
@@ -599,6 +607,7 @@ export class FacturaExcelImportService {
               id: dup.existing.id,
               concepto: dup.row.concepto,
               subtotal: dup.row.subtotal,
+              iva: dup.row.iva ?? existingFactura.iva ?? null,
               totalImpuestosTransladados: dup.row.totalImpuestosTransladados ?? null,
               totalImpuestosRetenidos: dup.row.totalImpuestosRetenidos ?? null,
               total: dup.row.total,
@@ -612,9 +621,15 @@ export class FacturaExcelImportService {
               metodoPago: dup.row.metodoPago ?? existingFactura.metodoPago,
               moneda: dup.row.moneda || String(existingFactura.moneda),
               usoCfdi: dup.row.usoCfdi ?? existingFactura.usoCfdi,
-              status: existingFactura.status as "VIGENTE" | "CANCELADA",
+              status: (dup.row.status as "VIGENTE" | "CANCELADA") ?? (existingFactura.status as "VIGENTE" | "CANCELADA"),
               statusPago: dup.row.statusPago ?? existingFactura.statusPago,
-              fechaPago: existingFactura.fechaPago,
+              fechaEmision: dup.row.fechaEmision
+                ? new Date(dup.row.fechaEmision)
+                : existingFactura.fechaEmision ?? null,
+              fechaPago: dup.row.fechaPago
+                ? new Date(dup.row.fechaPago)
+                : existingFactura.fechaPago ?? null,
+              facturaUrl: dup.row.facturaUrl ?? existingFactura.facturaUrl ?? null,
             });
 
             await txHistorialService.createHistorialForUpdate(

@@ -3,7 +3,9 @@ export type UpdateFacturaDto = {
   concepto: string;
   serie?: string | null;
   folio?: string | null;
+  fechaEmision?: Date | null;
   subtotal: number;
+  iva?: number | null;
   totalImpuestosTransladados?: number | null;
   totalImpuestosRetenidos?: number | null;
   total: number;
@@ -14,8 +16,9 @@ export type UpdateFacturaDto = {
   metodoPago?: string | null;
   moneda?: string;
   usoCfdi?: string | null;
-  status: "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
+  status: "VIGENTE" | "CANCELADA";
   nombreEmisor?: string | null;
   statusPago?: string | null;
   fechaPago?: Date | null;
+  facturaUrl?: string | null;
 };
