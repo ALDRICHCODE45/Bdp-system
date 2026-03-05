@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     serverActions: {
-      bodySizeLimit: "1mb", // Permite archivos de hasta 10MB
+      bodySizeLimit: "50mb",
     },
     optimizePackageImports: ["lucide-react", "date-fns", "recharts"],
   },
