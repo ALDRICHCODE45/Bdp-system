@@ -1,26 +1,46 @@
--- Migration: Add iva, fechaEmision, facturaUrl fields to Factura
--- Also updates FacturaEstado enum from BORRADOR/ENVIADA/PAGADA/CANCELADA to VIGENTE/CANCELADA
+-- Migration: Add iva, fechaEmision, facturaUrl fields + migrate enum to VIGENTE/CANCELADA
+--
+-- WHY this approach (text intermediary):
+-- PostgreSQL does NOT allow using a newly added enum value in the SAME transaction
+-- that added it (ALTER TYPE ADD VALUE commits separately). Prisma wraps migrations
+-- in transactions, so the naive "ADD VALUE + UPDATE" pattern would fail.
+-- Solution: temporarily cast the column to TEXT, migrate the data freely,
+-- create a clean new enum, then cast back. This is the same technique Prisma
+-- uses internally for enum value removals.
 
--- Step 1: Add new columns (nullable first, then we'll handle the enum separately)
-ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "iva" DECIMAL(15,2);
+-- ── Step 1: Add new columns ──────────────────────────────────────────────────
+ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "iva"          DECIMAL(15,2);
 ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "fechaEmision" TIMESTAMP(3);
-ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "facturaUrl" TEXT;
+ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "facturaUrl"   TEXT;
 
--- Step 2: Add new enum value VIGENTE (PostgreSQL requires adding values before using them)
-ALTER TYPE "FacturaEstado" ADD VALUE IF NOT EXISTS 'VIGENTE';
+-- ── Step 2: Convert status column to TEXT (detach from enum constraint) ──────
+ALTER TABLE "Factura" ALTER COLUMN "status" TYPE TEXT;
 
--- Step 3: Migrate existing statuses to new values
--- BORRADOR → VIGENTE, ENVIADA → VIGENTE, PAGADA → VIGENTE, CANCELADA stays CANCELADA
-UPDATE "Factura" SET "status" = 'VIGENTE' WHERE "status" IN ('BORRADOR', 'ENVIADA', 'PAGADA');
+-- ── Step 3: Migrate old status values → VIGENTE / CANCELADA ──────────────────
+UPDATE "Factura"
+SET "status" = 'VIGENTE'
+WHERE "status" IN ('BORRADOR', 'ENVIADA', 'PAGADA');
+-- CANCELADA rows stay as CANCELADA — no action needed
 
--- Step 4: Drop old indexes that use status (if any reference old values)
+-- ── Step 4: Create the new clean enum ────────────────────────────────────────
+CREATE TYPE "FacturaEstado_new" AS ENUM ('VIGENTE', 'CANCELADA');
+
+-- ── Step 5: Cast the column back to the new enum ──────────────────────────────
+ALTER TABLE "Factura"
+  ALTER COLUMN "status" TYPE "FacturaEstado_new"
+  USING ("status"::"FacturaEstado_new");
+
+-- ── Step 6: Swap enum type names ─────────────────────────────────────────────
+ALTER TYPE "FacturaEstado"     RENAME TO "FacturaEstado_old";
+ALTER TYPE "FacturaEstado_new" RENAME TO "FacturaEstado";
+DROP TYPE "FacturaEstado_old";
+
+-- ── Step 7: Restore default value on the column ──────────────────────────────
+ALTER TABLE "Factura"
+  ALTER COLUMN "status" SET DEFAULT 'VIGENTE';
+
+-- ── Step 8: Rebuild indexes ───────────────────────────────────────────────────
 DROP INDEX IF EXISTS "Factura_status_idx";
 DROP INDEX IF EXISTS "Factura_status_createdAt_idx";
-
--- Step 5: Recreate indexes
-CREATE INDEX "Factura_status_idx" ON "Factura"("status");
+CREATE INDEX "Factura_status_idx"          ON "Factura"("status");
 CREATE INDEX "Factura_status_createdAt_idx" ON "Factura"("status", "createdAt");
-
--- Note: We cannot DROP enum values in PostgreSQL without recreating the type.
--- The old values (BORRADOR, ENVIADA, PAGADA) will remain in the enum definition
--- but will no longer be used by the application. This is safe.
