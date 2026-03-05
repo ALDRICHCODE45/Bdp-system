@@ -18,6 +18,7 @@ import { cn } from "@/core/lib/utils";
 import { useUpdateFacturaForm } from "../../hooks/useUpdateFacturaForm.hook";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
 import { useStore } from "@tanstack/react-form";
+import { FacturaSATUpload } from "../FacturaSATUpload";
 
 interface EditFacturaFormProps {
   factura: FacturaDto;
@@ -703,17 +704,11 @@ export const EditFacturaForm = ({
         <SectionHeader title="Factura SAT" />
         <form.Field name="facturaUrl">
           {(field) => (
-            <FormField
-              label="URL del PDF timbrado"
-              hint="Enlace al PDF de la factura SAT (Opcional)"
-            >
-              <Input
-                id="facturaUrl"
-                name={field.name}
+            <FormField label="PDF timbrado" hint="Subí el PDF de la factura timbrada por el SAT (Opcional)">
+              <FacturaSATUpload
                 value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="https://..."
-                type="url"
+                onChange={(url) => field.handleChange(url)}
+                onClear={() => field.handleChange("")}
               />
             </FormField>
           )}

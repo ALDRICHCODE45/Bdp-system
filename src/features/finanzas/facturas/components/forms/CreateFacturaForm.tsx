@@ -17,6 +17,7 @@ import { Plus } from "lucide-react";
 import { cn } from "@/core/lib/utils";
 import { useCreateFacturaForm } from "../../hooks/useCreateFacturaForm.hook";
 import { useStore } from "@tanstack/react-form";
+import { FacturaSATUpload } from "../FacturaSATUpload";
 
 // ─── SectionHeader ────────────────────────────────────────────────────────────
 function SectionHeader({ title }: { title: string }) {
@@ -588,14 +589,11 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
         <SectionHeader title="Factura SAT" />
         <form.Field name="facturaUrl">
           {(field) => (
-            <FormField label="URL del PDF timbrado" hint="Enlace al PDF de la factura SAT (Opcional)">
-              <Input
-                id="facturaUrl"
-                name={field.name}
+            <FormField label="PDF timbrado" hint="Subí el PDF de la factura timbrada por el SAT (Opcional)">
+              <FacturaSATUpload
                 value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="https://..."
-                type="url"
+                onChange={(url) => field.handleChange(url)}
+                onClear={() => field.handleChange("")}
               />
             </FormField>
           )}
