@@ -19,6 +19,7 @@ import { useUpdateFacturaForm } from "../../hooks/useUpdateFacturaForm.hook";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
 import { useStore } from "@tanstack/react-form";
 import { FacturaSATUpload } from "../FacturaSATUpload";
+import { CurrencyInput } from "@/core/shared/components/CurrencyInput";
 
 interface EditFacturaFormProps {
   factura: FacturaDto;
@@ -423,23 +424,15 @@ export const EditFacturaForm = ({
                     error={error}
                     required
                   >
-                    <Input
+                    <CurrencyInput
                       id="subtotal"
                       name={field.name}
-                      type="number"
-                      step="0.01"
                       value={field.state.value}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value) || 0;
+                      onChange={(val) => {
                         field.handleChange(val);
                         form.setFieldValue(
                           "total",
-                          calcularTotal(
-                            val,
-                            iva ?? 0,
-                            trasladados ?? 0,
-                            retenidos ?? 0
-                          )
+                          calcularTotal(val, iva ?? 0, trasladados ?? 0, retenidos ?? 0)
                         );
                       }}
                       aria-invalid={!!error}
@@ -453,23 +446,15 @@ export const EditFacturaForm = ({
             <form.Field name="iva">
               {(field) => (
                 <FormField label="IVA" hint="Opcional">
-                  <Input
+                  <CurrencyInput
                     id="iva"
                     name={field.name}
-                    type="number"
-                    step="0.01"
-                    value={field.state.value}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
+                    value={field.state.value ?? 0}
+                    onChange={(val) => {
                       field.handleChange(val);
                       form.setFieldValue(
                         "total",
-                        calcularTotal(
-                          subtotal ?? 0,
-                          val,
-                          trasladados ?? 0,
-                          retenidos ?? 0
-                        )
+                        calcularTotal(subtotal ?? 0, val, trasladados ?? 0, retenidos ?? 0)
                       );
                     }}
                   />
@@ -483,23 +468,15 @@ export const EditFacturaForm = ({
             <form.Field name="totalImpuestosTransladados">
               {(field) => (
                 <FormField label="Imp. Trasladados" hint="Opcional">
-                  <Input
+                  <CurrencyInput
                     id="totalImpuestosTransladados"
                     name={field.name}
-                    type="number"
-                    step="0.01"
-                    value={field.state.value}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
+                    value={field.state.value ?? 0}
+                    onChange={(val) => {
                       field.handleChange(val);
                       form.setFieldValue(
                         "total",
-                        calcularTotal(
-                          subtotal ?? 0,
-                          iva ?? 0,
-                          val,
-                          retenidos ?? 0
-                        )
+                        calcularTotal(subtotal ?? 0, iva ?? 0, val, retenidos ?? 0)
                       );
                     }}
                   />
@@ -510,23 +487,15 @@ export const EditFacturaForm = ({
             <form.Field name="totalImpuestosRetenidos">
               {(field) => (
                 <FormField label="Imp. Retenidos" hint="Opcional">
-                  <Input
+                  <CurrencyInput
                     id="totalImpuestosRetenidos"
                     name={field.name}
-                    type="number"
-                    step="0.01"
-                    value={field.state.value}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
+                    value={field.state.value ?? 0}
+                    onChange={(val) => {
                       field.handleChange(val);
                       form.setFieldValue(
                         "total",
-                        calcularTotal(
-                          subtotal ?? 0,
-                          iva ?? 0,
-                          trasladados ?? 0,
-                          val
-                        )
+                        calcularTotal(subtotal ?? 0, iva ?? 0, trasladados ?? 0, val)
                       );
                     }}
                   />
@@ -549,18 +518,14 @@ export const EditFacturaForm = ({
                   error={error}
                   required
                 >
-                  <Input
+                  <CurrencyInput
                     id="total"
                     name={field.name}
-                    type="number"
-                    step="0.01"
                     value={field.state.value}
+                    onChange={() => {}}
                     readOnly
                     aria-invalid={!!error}
-                    className={cn(
-                      "bg-muted/50 cursor-not-allowed",
-                      error && "border-destructive"
-                    )}
+                    className={cn(error && "border-destructive")}
                   />
                 </FormField>
               );
