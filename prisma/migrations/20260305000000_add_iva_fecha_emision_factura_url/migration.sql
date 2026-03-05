@@ -13,7 +13,11 @@ ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "iva"          DECIMAL(15,2);
 ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "fechaEmision" TIMESTAMP(3);
 ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "facturaUrl"   TEXT;
 
--- ── Step 2: Convert status column to TEXT (detach from enum constraint) ──────
+-- ── Step 2: Drop existing default before changing column type ────────────────
+-- PostgreSQL cannot auto-cast an enum default when changing column type.
+ALTER TABLE "Factura" ALTER COLUMN "status" DROP DEFAULT;
+
+-- ── Step 2b: Convert status column to TEXT (detach from enum constraint) ─────
 ALTER TABLE "Factura" ALTER COLUMN "status" TYPE TEXT;
 
 -- ── Step 3: Migrate old status values → VIGENTE / CANCELADA ──────────────────
