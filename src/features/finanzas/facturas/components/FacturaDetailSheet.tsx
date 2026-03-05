@@ -47,7 +47,7 @@ import { FacturaStatusBadge } from "./FacturaStatusBadge";
 import { cn } from "@/core/lib/utils";
 import { formatFieldName } from "../helpers/formatHistorialField";
 import { formatChangeDescription } from "../helpers/formatHistorialChange";
-import { History, AlertCircle, Copy, Check, Paperclip } from "lucide-react";
+import { History, AlertCircle, Copy, Check, Paperclip, ExternalLink } from "lucide-react";
 import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
 
 const FileUploadDropZone = dynamic(
@@ -68,17 +68,13 @@ interface FacturaDetailSheetProps {
 }
 
 const statusPagoColors: Record<string, string> = {
-  Vigente:
+  Pagado:
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 border-emerald-200",
-  Cancelado:
-    "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200",
-  NoPagado:
+  "Pendiente de pago":
     "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 border-amber-200",
 };
 
-const statusPagoLabels: Record<string, string> = {
-  NoPagado: "No Pagado",
-};
+const statusPagoLabels: Record<string, string> = {};
 
 // ─── InfoRow ────────────────────────────────────────────────────────────────
 function InfoRow({
@@ -185,6 +181,24 @@ function InformacionTab({ factura }: { factura: FacturaDto }) {
           <InfoRow label="Folio" value={factura.folio} mono />
           <InfoRow label="Método de Pago" value={factura.metodoPago} />
           <InfoRow label="Moneda" value={factura.moneda} />
+          <InfoRow
+            label="Fecha de Emisión"
+            value={formatDate(factura.fechaEmision)}
+          />
+          {factura.facturaUrl && (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">Factura SAT</span>
+              <a
+                href={factura.facturaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                <ExternalLink className="size-3.5 shrink-0" />
+                Ver PDF timbrado
+              </a>
+            </div>
+          )}
         </div>
       </div>
 
@@ -217,7 +231,10 @@ function InformacionTab({ factura }: { factura: FacturaDto }) {
         <SectionHeader title="Importes" />
         <div className="grid grid-cols-2 gap-4">
           <InfoRow label="Subtotal" value={fmt.format(factura.subtotal)} />
-          <InfoRow label="Total" value={fmt.format(factura.total)} />
+          <InfoRow
+            label="IVA"
+            value={factura.iva != null ? fmt.format(factura.iva) : null}
+          />
           <InfoRow
             label="Imp. Trasladados"
             value={
@@ -234,6 +251,7 @@ function InformacionTab({ factura }: { factura: FacturaDto }) {
                 : null
             }
           />
+          <InfoRow label="Total" value={fmt.format(factura.total)} />
         </div>
       </div>
 

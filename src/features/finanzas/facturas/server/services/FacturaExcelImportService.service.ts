@@ -543,7 +543,7 @@ export class FacturaExcelImportService {
               metodoPago: row.metodoPago ?? null,
               moneda: row.moneda || "MXN",
               usoCfdi: row.usoCfdi ?? null,
-              status: "BORRADOR",
+              status: "VIGENTE",
               statusPago: row.statusPago ?? null,
               fechaPago: null,
               ingresadoPor: usuarioId,
@@ -612,7 +612,7 @@ export class FacturaExcelImportService {
               metodoPago: dup.row.metodoPago ?? existingFactura.metodoPago,
               moneda: dup.row.moneda || String(existingFactura.moneda),
               usoCfdi: dup.row.usoCfdi ?? existingFactura.usoCfdi,
-              status: existingFactura.status,
+              status: existingFactura.status as "VIGENTE" | "CANCELADA",
               statusPago: dup.row.statusPago ?? existingFactura.statusPago,
               fechaPago: existingFactura.fechaPago,
             });

@@ -20,7 +20,9 @@ export const createFacturaAction = async (input: FormData) => {
   const concepto = input.get("concepto") as string;
   const serie = (input.get("serie") as string) || null;
   const folio = (input.get("folio") as string) || null;
+  const fechaEmisionString = input.get("fechaEmision");
   const subtotalString = input.get("subtotal");
+  const ivaString = input.get("iva");
   const totalImpuestosTrasladadosString = input.get("totalImpuestosTransladados");
   const totalImpuestosRetenidosString = input.get("totalImpuestosRetenidos");
   const totalString = input.get("total");
@@ -31,16 +33,14 @@ export const createFacturaAction = async (input: FormData) => {
   const metodoPago = (input.get("metodoPago") as string) || null;
   const moneda = (input.get("moneda") as string) || "MXN";
   const usoCfdi = (input.get("usoCfdi") as string) || null;
-  const status = (input.get("status") || "BORRADOR") as
-    | "BORRADOR"
-    | "ENVIADA"
-    | "PAGADA"
-    | "CANCELADA";
+  const status = (input.get("status") || "VIGENTE") as "VIGENTE" | "CANCELADA";
   const nombreEmisor = (input.get("nombreEmisor") as string) || null;
   const statusPago = (input.get("statusPago") as string) || null;
   const fechaPagoString = input.get("fechaPago");
+  const facturaUrl = (input.get("facturaUrl") as string) || null;
 
   const subtotal = subtotalString ? parseFloat(subtotalString as string) : 0;
+  const iva = ivaString ? parseFloat(ivaString as string) : null;
   const totalImpuestosTransladados = totalImpuestosTrasladadosString
     ? parseFloat(totalImpuestosTrasladadosString as string)
     : null;
@@ -48,16 +48,17 @@ export const createFacturaAction = async (input: FormData) => {
     ? parseFloat(totalImpuestosRetenidosString as string)
     : null;
   const total = totalString ? parseFloat(totalString as string) : 0;
-  const fechaPago = fechaPagoString
-    ? parseISO(fechaPagoString as string)
-    : null;
+  const fechaPago = fechaPagoString ? parseISO(fechaPagoString as string) : null;
+  const fechaEmision = fechaEmisionString ? parseISO(fechaEmisionString as string) : null;
 
   const facturaService = makeFacturaService({ prisma });
   const result = await facturaService.create({
     concepto,
     serie,
     folio,
+    fechaEmision,
     subtotal,
+    iva,
     totalImpuestosTransladados,
     totalImpuestosRetenidos,
     total,
@@ -72,6 +73,7 @@ export const createFacturaAction = async (input: FormData) => {
     nombreEmisor,
     statusPago,
     fechaPago,
+    facturaUrl,
     usuarioId,
   });
 

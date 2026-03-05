@@ -17,7 +17,11 @@ export const useUpdateFacturaForm = (
       concepto: factura.concepto,
       serie: factura.serie || "",
       folio: factura.folio || "",
+      fechaEmision: factura.fechaEmision
+        ? format(parseISO(factura.fechaEmision), "yyyy-MM-dd")
+        : "",
       subtotal: factura.subtotal,
+      iva: factura.iva ?? 0,
       totalImpuestosTransladados: factura.totalImpuestosTransladados || 0,
       totalImpuestosRetenidos: factura.totalImpuestosRetenidos || 0,
       total: factura.total,
@@ -28,10 +32,13 @@ export const useUpdateFacturaForm = (
       metodoPago: factura.metodoPago || "",
       moneda: factura.moneda,
       usoCfdi: factura.usoCfdi || "",
-      status: factura.status,
+      status: factura.status as "vigente" | "cancelada",
       nombreEmisor: factura.nombreEmisor || "",
       statusPago: factura.statusPago || "",
-      fechaPago: factura.fechaPago ? format(parseISO(factura.fechaPago), "yyyy-MM-dd") : "",
+      fechaPago: factura.fechaPago
+        ? format(parseISO(factura.fechaPago), "yyyy-MM-dd")
+        : "",
+      facturaUrl: factura.facturaUrl || "",
     },
     validators: {
       // @ts-expect-error - Zod schema validation types are complex
@@ -43,7 +50,9 @@ export const useUpdateFacturaForm = (
       formData.append("concepto", value.concepto);
       formData.append("serie", value.serie || "");
       formData.append("folio", value.folio || "");
+      formData.append("fechaEmision", value.fechaEmision || "");
       formData.append("subtotal", String(value.subtotal));
+      formData.append("iva", String(value.iva || ""));
       formData.append(
         "totalImpuestosTransladados",
         String(value.totalImpuestosTransladados || "")
@@ -64,6 +73,7 @@ export const useUpdateFacturaForm = (
       formData.append("nombreEmisor", value.nombreEmisor || "");
       formData.append("statusPago", value.statusPago || "");
       formData.append("fechaPago", value.fechaPago || "");
+      formData.append("facturaUrl", value.facturaUrl || "");
 
       await updateFacturaMutation.mutateAsync(formData);
       onSuccess?.();

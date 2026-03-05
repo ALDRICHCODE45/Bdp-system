@@ -130,12 +130,6 @@ export class FacturaService {
       return Err(new Error("Factura no encontrada"));
     }
 
-    if (existing.status !== "BORRADOR") {
-      return Err(
-        new Error("Solo se pueden eliminar facturas en estado BORRADOR")
-      );
-    }
-
     try {
       await this.facturaRepository.delete({ id });
       return Ok(undefined);

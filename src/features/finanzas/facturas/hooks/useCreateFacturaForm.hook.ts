@@ -11,7 +11,9 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       concepto: "",
       serie: "",
       folio: "",
+      fechaEmision: "",
       subtotal: 0,
+      iva: 0,
       totalImpuestosTransladados: 0,
       totalImpuestosRetenidos: 0,
       total: 0,
@@ -22,10 +24,11 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       metodoPago: "",
       moneda: "MXN",
       usoCfdi: "",
-      status: "borrador" as "borrador" | "enviada" | "pagada" | "cancelada",
+      status: "vigente" as "vigente" | "cancelada",
       nombreEmisor: "",
       statusPago: "",
       fechaPago: "",
+      facturaUrl: "",
     },
     validators: {
       // @ts-expect-error - Zod schema validation types are complex
@@ -36,7 +39,9 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       formData.append("concepto", value.concepto);
       formData.append("serie", value.serie || "");
       formData.append("folio", value.folio || "");
+      formData.append("fechaEmision", value.fechaEmision || "");
       formData.append("subtotal", String(value.subtotal));
+      formData.append("iva", String(value.iva || ""));
       formData.append(
         "totalImpuestosTransladados",
         String(value.totalImpuestosTransladados || "")
@@ -57,6 +62,7 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       formData.append("nombreEmisor", value.nombreEmisor || "");
       formData.append("statusPago", value.statusPago || "");
       formData.append("fechaPago", value.fechaPago || "");
+      formData.append("facturaUrl", value.facturaUrl || "");
 
       await createFacturaMutation.mutateAsync(formData);
       onSuccess?.();

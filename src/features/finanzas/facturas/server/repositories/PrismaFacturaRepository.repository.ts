@@ -19,7 +19,7 @@ const facturaIncludes = {
   ingresadoPorRef: { select: { name: true } },
 } as const;
 
-const VALID_ESTADOS = new Set<string>(["BORRADOR", "ENVIADA", "PAGADA", "CANCELADA"]);
+const VALID_ESTADOS = new Set<string>(["VIGENTE", "CANCELADA"]);
 
 const ALLOWED_SORT_COLUMNS = new Set([
   "concepto", "subtotal", "total", "uuid", "rfcEmisor", "rfcReceptor",
@@ -217,7 +217,9 @@ export class PrismaFacturaRepository implements FacturaRepository {
         concepto: data.concepto,
         serie: data.serie ?? null,
         folio: data.folio ?? null,
+        fechaEmision: data.fechaEmision ?? null,
         subtotal: new Decimal(data.subtotal),
+        iva: data.iva != null ? new Decimal(data.iva) : null,
         totalImpuestosTransladados: data.totalImpuestosTransladados != null ? new Decimal(data.totalImpuestosTransladados) : null,
         totalImpuestosRetenidos: data.totalImpuestosRetenidos != null ? new Decimal(data.totalImpuestosRetenidos) : null,
         total: new Decimal(data.total),
@@ -228,10 +230,12 @@ export class PrismaFacturaRepository implements FacturaRepository {
         metodoPago: data.metodoPago ?? null,
         moneda: data.moneda ?? "MXN",
         usoCfdi: data.usoCfdi ?? null,
-        status: data.status,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        status: data.status as any,
         nombreEmisor: data.nombreEmisor ?? null,
         statusPago: data.statusPago ?? null,
         fechaPago: data.fechaPago,
+        facturaUrl: data.facturaUrl ?? null,
         ingresadoPor: data.ingresadoPor,
       },
       include: facturaIncludes,
@@ -246,7 +250,9 @@ export class PrismaFacturaRepository implements FacturaRepository {
         concepto: data.concepto,
         serie: data.serie ?? null,
         folio: data.folio ?? null,
+        fechaEmision: data.fechaEmision ?? null,
         subtotal: new Decimal(data.subtotal),
+        iva: data.iva != null ? new Decimal(data.iva) : null,
         totalImpuestosTransladados: data.totalImpuestosTransladados != null ? new Decimal(data.totalImpuestosTransladados) : null,
         totalImpuestosRetenidos: data.totalImpuestosRetenidos != null ? new Decimal(data.totalImpuestosRetenidos) : null,
         total: new Decimal(data.total),
@@ -257,10 +263,12 @@ export class PrismaFacturaRepository implements FacturaRepository {
         metodoPago: data.metodoPago ?? null,
         moneda: data.moneda ?? "MXN",
         usoCfdi: data.usoCfdi ?? null,
-        status: data.status,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        status: data.status as any,
         nombreEmisor: data.nombreEmisor ?? null,
         statusPago: data.statusPago ?? null,
         fechaPago: data.fechaPago,
+        facturaUrl: data.facturaUrl ?? null,
       },
       include: facturaIncludes,
     });

@@ -4,7 +4,9 @@ export const createFacturaSchemaUI = z.object({
   concepto: z.string().min(1, "El concepto es requerido"),
   serie: z.string().optional(),
   folio: z.string().optional(),
+  fechaEmision: z.string().optional(),
   subtotal: z.number().min(0, "El subtotal debe ser mayor o igual a 0"),
+  iva: z.number().min(0).optional(),
   totalImpuestosTransladados: z.number().optional(),
   totalImpuestosRetenidos: z.number().optional(),
   total: z.number().min(0, "El total debe ser mayor o igual a 0"),
@@ -21,12 +23,13 @@ export const createFacturaSchemaUI = z.object({
   metodoPago: z.string().optional(),
   moneda: z.string().min(1, "La moneda es requerida"),
   usoCfdi: z.string().optional(),
-  status: z.enum(["borrador", "enviada", "pagada", "cancelada"], {
+  status: z.enum(["vigente", "cancelada"], {
     message: "Status inválido",
   }),
   nombreEmisor: z.string().optional(),
   statusPago: z.string().optional(),
   fechaPago: z.string().optional(),
+  facturaUrl: z.string().optional(),
 });
 
 export type CreateFacturaFormValues = z.infer<typeof createFacturaSchemaUI>;

@@ -287,7 +287,7 @@ export function FacturasDashboardView() {
               <KpiCard
                 label="Cobrado"
                 value={fmtShort(primaryKpis.totalCobrado, primaryCurrency)}
-                sub={`${data?.countPagada ?? 0} factura${(data?.countPagada ?? 0) !== 1 ? "s" : ""} pagada${(data?.countPagada ?? 0) !== 1 ? "s" : ""}`}
+                sub={`${data?.countVigente ?? 0} factura${(data?.countVigente ?? 0) !== 1 ? "s" : ""} vigente${(data?.countVigente ?? 0) !== 1 ? "s" : ""}`}
                 icon={<CheckCircle2 className="size-5 text-emerald-500" />}
               />
               <KpiCard

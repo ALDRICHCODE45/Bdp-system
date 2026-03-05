@@ -57,9 +57,7 @@ export type FacturasDashboardDto = {
   primaryCurrency: string;
 
   // ── Breakdown por status (conteo, todas las monedas) ─────────────────────
-  countBorrador: number;
-  countEnviada: number;
-  countPagada: number;
+  countVigente: number;
   countCancelada: number;
 
   // ── Serie mensual (moneda primaria únicamente) ────────────────────────────

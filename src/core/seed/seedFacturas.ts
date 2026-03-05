@@ -101,7 +101,7 @@ const usosCfdi = [
 const metodoPagos = ["CHEQUE", "TRANSFERENCIA", "EFECTIVO", "PUE", "PPD", null];
 const monedas    = ["MXN", "USD", "EUR"];
 const series     = ["A", "B", "C", "D", null, null, null]; // null más frecuente
-const statusPagos = ["Vigente", "Cancelado", "NoPagado", null];
+const statusPagos = ["Pagado", "Pendiente de pago", null];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -190,23 +190,22 @@ async function seedFacturas() {
 
       // ── Status (distribución realista) ─────────────────────────────────────
       const status = weighted(
-        [FacturaEstado.BORRADOR, FacturaEstado.ENVIADA, FacturaEstado.PAGADA, FacturaEstado.CANCELADA],
-        [12, 20, 53, 15]
+        [FacturaEstado.VIGENTE, FacturaEstado.CANCELADA],
+        [85, 15]
       );
 
       // ── Filtros variados ───────────────────────────────────────────────────
       const metodoPago = weighted(metodoPagos, [18, 35, 15, 20, 8, 4]);
       const moneda     = weighted(monedas,     [80, 14, 6]);
       const usoCfdi    = pick(usosCfdi); // distribución uniforme entre los 24 valores (23 + null)
-      const statusPago = weighted(statusPagos, [55, 18, 18, 9]);
+      const statusPago = weighted(statusPagos, [55, 35, 10]);
 
       // ── Fechas ─────────────────────────────────────────────────────────────
       // Repartimos createdAt en 2 años para que los filtros de fecha tengan variedad
       const createdAt = randomDate(730);
 
       const hasFechaPago =
-        status === FacturaEstado.PAGADA ||
-        (status === FacturaEstado.ENVIADA && Math.random() < 0.25);
+        status === FacturaEstado.VIGENTE && Math.random() < 0.60;
       const fechaPago = hasFechaPago
         ? new Date(createdAt.getTime() + Math.random() * 45 * 86_400_000)
         : null;

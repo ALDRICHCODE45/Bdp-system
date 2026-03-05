@@ -14,6 +14,7 @@ import { FacturaRowActions } from "./forms/FacturaRowActions";
 import { FacturaStatusBadge } from "./FacturaStatusBadge";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { ExternalLink } from "lucide-react";
 
 /**
  * Returns a locale-aware currency formatter for the given currency code.
@@ -39,17 +40,13 @@ const formatDateTime = (isoString: string) =>
   format(parseISO(isoString), "d MMM yyyy HH:mm", { locale: es });
 
 const statusPagoColors: Record<string, string> = {
-  Vigente:
+  Pagado:
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 border-0",
-  Cancelado:
-    "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-0",
-  NoPagado:
+  "Pendiente de pago":
     "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 border-0",
 };
 
-const statusPagoLabels: Record<string, string> = {
-  NoPagado: "No Pagado",
-};
+const statusPagoLabels: Record<string, string> = {};
 
 /** Celda vacía estándar para valores nulos */
 const EmptyCell = () => (
@@ -324,6 +321,40 @@ export function createFacturasColumns(
         <TextCell value={row.getValue("usoCfdi")} maxWidth={120} />
       ),
       size: 10,
+    },
+
+    // ─── Fecha Emisión ────────────────────────────────────────────────────
+    {
+      accessorKey: "fechaEmision",
+      header: "Fecha Emisión",
+      cell: ({ row }) => {
+        const fecha = row.getValue("fechaEmision") as string | null;
+        if (!fecha) return <EmptyCell />;
+        return <div className="text-xs">{formatDate(fecha)}</div>;
+      },
+      size: 10,
+    },
+
+    // ─── Factura URL ──────────────────────────────────────────────────────
+    {
+      accessorKey: "facturaUrl",
+      header: "Factura SAT",
+      cell: ({ row }) => {
+        const url = row.getValue("facturaUrl") as string | null;
+        if (!url) return <EmptyCell />;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            <ExternalLink className="size-3 shrink-0" />
+            PDF
+          </a>
+        );
+      },
+      size: 8,
     },
 
     // ─── Status ───────────────────────────────────────────────────────────

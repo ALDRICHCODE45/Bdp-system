@@ -9,7 +9,9 @@ export type CreateFacturaArgs = {
   concepto: string;
   serie?: string | null;
   folio?: string | null;
+  fechaEmision?: Date | null;
   subtotal: number;
+  iva?: number | null;
   totalImpuestosTransladados?: number | null;
   totalImpuestosRetenidos?: number | null;
   total: number;
@@ -20,10 +22,11 @@ export type CreateFacturaArgs = {
   metodoPago?: string | null;
   moneda?: string;
   usoCfdi?: string | null;
-  status: "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
+  status: "VIGENTE" | "CANCELADA";
   nombreEmisor?: string | null;
   statusPago?: string | null;
   fechaPago?: Date | null;
+  facturaUrl?: string | null;
   ingresadoPor?: string | null;
 };
 
@@ -32,7 +35,9 @@ export type UpdateFacturaArgs = {
   concepto: string;
   serie?: string | null;
   folio?: string | null;
+  fechaEmision?: Date | null;
   subtotal: number;
+  iva?: number | null;
   totalImpuestosTransladados?: number | null;
   totalImpuestosRetenidos?: number | null;
   total: number;
@@ -43,10 +48,11 @@ export type UpdateFacturaArgs = {
   metodoPago?: string | null;
   moneda?: string;
   usoCfdi?: string | null;
-  status: "BORRADOR" | "ENVIADA" | "PAGADA" | "CANCELADA";
+  status: "VIGENTE" | "CANCELADA";
   nombreEmisor?: string | null;
   statusPago?: string | null;
   fechaPago?: Date | null;
+  facturaUrl?: string | null;
 };
 
 /** Fila de agregados numéricos agrupados por moneda */

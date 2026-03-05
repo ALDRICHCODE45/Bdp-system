@@ -49,16 +49,16 @@ export async function getFacturasDashboardAction(
           _sum: { total: true },
           _count: { id: true },
         }),
-        // Por cobrar (ENVIADA, sin restricción de período)
+        // Por cobrar (Pendiente de pago, sin restricción de período)
         prisma.factura.groupBy({
           by: ["moneda"],
-          where: { status: "ENVIADA" },
+          where: { statusPago: "Pendiente de pago" },
           _sum: { total: true },
         }),
-        // Cobrado en el período (PAGADA)
+        // Cobrado en el período (statusPago = Pagado)
         prisma.factura.groupBy({
           by: ["moneda"],
-          where: { createdAt: { gte: periodStart }, status: "PAGADA" },
+          where: { createdAt: { gte: periodStart }, statusPago: "Pagado" },
           _sum: { total: true },
           _count: { id: true },
         }),
@@ -154,7 +154,7 @@ export async function getFacturasDashboardAction(
           SUM(total)                           AS total
         FROM "Factura"
         WHERE "fechaPago" >= ${seriesStart}
-          AND status = 'PAGADA'
+          AND "statusPago" = 'Pagado'
           AND moneda =  ${primaryCurrency}
         GROUP BY year, month
       `,
@@ -233,9 +233,7 @@ export async function getFacturasDashboardAction(
     const dto: FacturasDashboardDto = {
       kpisByCurrency,
       primaryCurrency,
-      countBorrador:  countMap["BORRADOR"]  ?? 0,
-      countEnviada:   countMap["ENVIADA"]   ?? 0,
-      countPagada:    countMap["PAGADA"]    ?? 0,
+      countVigente:   countMap["VIGENTE"]   ?? 0,
       countCancelada: countMap["CANCELADA"] ?? 0,
       monthlySeries,
       topClientes,

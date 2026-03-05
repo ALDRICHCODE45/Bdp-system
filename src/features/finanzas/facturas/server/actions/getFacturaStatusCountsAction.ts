@@ -6,9 +6,7 @@ import { parseISO } from "date-fns";
 import type { FacturasFilterParams } from "../../types/FacturasFilterParams";
 
 export type FacturaStatusCounts = {
-  borrador: number;
-  enviada: number;
-  pagada: number;
+  vigente: number;
   cancelada: number;
 };
 
@@ -153,9 +151,7 @@ export async function getFacturaStatusCountsAction(
     });
 
     const counts: FacturaStatusCounts = {
-      borrador: 0,
-      enviada: 0,
-      pagada: 0,
+      vigente: 0,
       cancelada: 0,
     };
 

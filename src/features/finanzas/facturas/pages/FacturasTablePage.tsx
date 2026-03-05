@@ -382,7 +382,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
           <div className="flex items-start justify-between gap-4">
             <TablePresentation
               subtitle="Administra y gestiona las facturas de tu empresa"
-              title="Gestión de Facturas"
+              title="Gestión de Facturas de Clientes"
             />
 
             {/* ── View mode pills ──────────────────────────────────────────── */}
