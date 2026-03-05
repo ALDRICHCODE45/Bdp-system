@@ -27,7 +27,7 @@ export function generateExcelTemplate(): void {
     "G03", // Uso CFDI (opcional)
     "Empresa Emisora S.A.", // Nombre Emisor (opcional)
     "Empresa Receptora S.A.", // Nombre Receptor (opcional)
-    "Vigente", // Status Pago (opcional)
+    "Pagado", // Status Pago (opcional)
   ];
 
   // Crear datos de la hoja
@@ -64,11 +64,11 @@ export function generateExcelTemplate(): void {
     ["- Uso CFDI: Clave de uso del CFDI (G03, P01, etc.)"],
     ["- Nombre Emisor: Nombre o razón social del emisor"],
     ["- Nombre Receptor: Nombre o razón social del receptor"],
-    ["- Status Pago: Vigente o Cancelado"],
+    ["- Status Pago: Pagado o Pendiente de pago"],
     [""],
     ["NOTAS IMPORTANTES:"],
     ["1. Si el UUID ya existe, se mostrará como duplicado"],
-    ["2. Todas las facturas nuevas se crean con status BORRADOR"],
+    ["2. Todas las facturas nuevas se crean con status VIGENTE"],
     [""],
     ["Tamaño máximo del archivo: 10MB"],
   ];

@@ -6,9 +6,7 @@ import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<string, string> = {
-  borrador: "Borrador",
-  enviada: "Enviada",
-  pagada: "Pagada",
+  vigente: "Vigente",
   cancelada: "Cancelada",
 };
 
@@ -55,11 +53,14 @@ export function exportFacturasToExcel(
     "Método de Pago",
     "Moneda",
     "Subtotal",
+    "IVA",
     "Imp. Trasladados",
     "Imp. Retenidos",
     "Total",
     "Status de Pago",
     "Fecha de Pago",
+    "Fecha de Emisión",
+    "Factura SAT (URL)",
     "Ingresado Por",
     "Fecha de Registro",
     "Última Actualización",
@@ -80,11 +81,14 @@ export function exportFacturasToExcel(
     f.metodoPago ?? "",
     f.moneda ?? "",
     formatNum(f.subtotal),
+    formatNum(f.iva),
     formatNum(f.totalImpuestosTransladados),
     formatNum(f.totalImpuestosRetenidos),
     formatNum(f.total),
     f.statusPago ?? "",
     formatDate(f.fechaPago),
+    formatDate(f.fechaEmision),
+    f.facturaUrl ?? "",
     f.ingresadoPorNombre ?? "",
     formatDate(f.createdAt),
     formatDate(f.updatedAt),
@@ -95,7 +99,7 @@ export function exportFacturasToExcel(
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
   // Anchos de columna (en orden, mismo que headers)
-  const colWidths = [36, 40, 6, 8, 12, 16, 35, 16, 35, 8, 16, 6, 14, 16, 16, 14, 14, 14, 25, 20, 20];
+  const colWidths = [36, 40, 6, 8, 12, 16, 35, 16, 35, 8, 16, 6, 14, 14, 16, 16, 14, 18, 14, 14, 40, 25, 20, 20];
   worksheet["!cols"] = colWidths.map((wch) => ({ wch }));
 
   // ── Workbook ───────────────────────────────────────────────────────────────

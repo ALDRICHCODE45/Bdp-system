@@ -22,9 +22,7 @@ const formatDate = (iso: string | null): string =>
   iso ? format(parseISO(iso), "d 'de' MMMM yyyy", { locale: es }) : "—";
 
 const STATUS_LABELS: Record<string, string> = {
-  borrador:  "Borrador",
-  enviada:   "Enviada",
-  pagada:    "Pagada",
+  vigente:   "Vigente",
   cancelada: "Cancelada",
 };
 
@@ -213,6 +211,7 @@ export const exportFacturaToPDF = async (factura: FacturaDto): Promise<void> => 
     };
 
     drawDetailRow("Status",       statusLabel);
+    if (factura.fechaEmision) drawDetailRow("Fecha emisión", formatDate(factura.fechaEmision));
     if (factura.serie || factura.folio) {
       drawDetailRow(
         "Serie / Folio",
@@ -251,6 +250,8 @@ export const exportFacturaToPDF = async (factura: FacturaDto): Promise<void> => 
     };
 
     drawAmountRow("Subtotal", factura.subtotal);
+    if (factura.iva != null && factura.iva > 0)
+      drawAmountRow("IVA", factura.iva);
     if (factura.totalImpuestosTransladados !== null)
       drawAmountRow("Imp. Trasladados", factura.totalImpuestosTransladados);
     if (factura.totalImpuestosRetenidos !== null)
