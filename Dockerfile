@@ -62,6 +62,11 @@ ENV HOSTNAME="0.0.0.0"
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+# Instalar CLI de Prisma v6 pinneado — necesario para migrate deploy en runtime.
+# Debe hacerse ANTES de cambiar a USER nextjs (necesita permisos de escritura).
+# No usamos npx porque sin versión bajaría Prisma 7 que tiene breaking changes.
+RUN npm install --no-save prisma@^6.18.0
+
 # Assets estáticos
 COPY --from=builder /app/public ./public
 
@@ -71,11 +76,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Prisma schema + migrations para poder correr migrate deploy en runtime
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-
-# CLI de Prisma v6 (node_modules/.bin/prisma) necesario para migrate deploy en runtime.
-# npx sin versión bajaria Prisma 7 que tiene breaking changes incompatibles con este proyecto.
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 
 # Entrypoint: corre migraciones y luego levanta la app
 COPY --chown=nextjs:nodejs entrypoint.sh ./entrypoint.sh
