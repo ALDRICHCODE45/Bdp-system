@@ -1,0 +1,43 @@
+name: Pipeline de Despliegue — BDP System
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descargar el código
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      # 2. Docker Buildx para builds multi-plataforma y mejor cache
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Login en Docker Hub
+      - name: Login en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 4. Build y Push a Docker Hub
+      # Genera dos tags: "latest" + el SHA corto del commit para trazabilidad
+      - name: Construir y subir imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/bdpsystem:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/bdpsystem:${{ github.sha }}
+
+      # 5. Notificar a Dockploy para que redeploy la app
+      - name: Notificar a Dockploy (Webhook)
+        run: |
+          curl -X POST ${{ secrets.DOCKPLOY_WEBHOOK }}
