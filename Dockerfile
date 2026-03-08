@@ -72,6 +72,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Prisma schema + migrations para poder correr migrate deploy en runtime
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
+# CLI de Prisma v6 (node_modules/.bin/prisma) necesario para migrate deploy en runtime.
+# npx sin versión bajaria Prisma 7 que tiene breaking changes incompatibles con este proyecto.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+
 # Entrypoint: corre migraciones y luego levanta la app
 COPY --chown=nextjs:nodejs entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh

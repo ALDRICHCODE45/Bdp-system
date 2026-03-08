@@ -2,7 +2,7 @@
 set -e
 
 echo "▶ Corriendo migraciones de Prisma..."
-npx prisma migrate deploy
+./node_modules/.bin/prisma migrate deploy
 
 echo "▶ Iniciando la aplicación..."
 exec node server.js
