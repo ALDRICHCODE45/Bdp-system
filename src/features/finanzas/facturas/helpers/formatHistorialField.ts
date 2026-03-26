@@ -10,11 +10,13 @@ export function formatFieldName(campo: string): string {
     serie: "Serie",
     folio: "Folio",
     subtotal: "Subtotal",
+    iva: "IVA",
     totalImpuestosTransladados: "Impuestos Trasladados",
     totalImpuestosRetenidos: "Impuestos Retenidos",
     total: "Total",
     uuid: "UUID",
-    metodoPago: "Método de Pago",
+    metodoPago: "Forma de Pago",
+    medioPago: "Método de Pago",
     moneda: "Moneda",
     usoCfdi: "Uso CFDI",
     status: "Status",
@@ -23,7 +25,9 @@ export function formatFieldName(campo: string): string {
     statusPago: "Status de Pago",
     rfcEmisor: "RFC Emisor",
     rfcReceptor: "RFC Receptor",
+    fechaEmision: "Fecha de Emisión",
     fechaPago: "Fecha de Pago",
+    facturaUrl: "Factura SAT (URL)",
   };
 
   return fieldNames[campo] || campo;
@@ -43,9 +47,9 @@ export function formatFieldValue(
   // Enums - Status
   if (campo === "status") {
     const statusMap: Record<string, string> = {
-      borrador: "Borrador",
-      enviada: "Enviada",
-      pagada: "Pagada",
+      VIGENTE: "Vigente",
+      CANCELADA: "Cancelada",
+      vigente: "Vigente",
       cancelada: "Cancelada",
     };
     return statusMap[valor] || valor;

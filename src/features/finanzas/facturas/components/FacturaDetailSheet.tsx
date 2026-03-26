@@ -72,6 +72,8 @@ const statusPagoColors: Record<string, string> = {
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 border-emerald-200",
   "Pendiente de pago":
     "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 border-amber-200",
+  Cancelada:
+    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200",
 };
 
 const statusPagoLabels: Record<string, string> = {};
@@ -179,7 +181,8 @@ function InformacionTab({ factura }: { factura: FacturaDto }) {
           <InfoRow label="Uso CFDI" value={factura.usoCfdi} />
           <InfoRow label="Serie" value={factura.serie} mono />
           <InfoRow label="Folio" value={factura.folio} mono />
-          <InfoRow label="Método de Pago" value={factura.metodoPago} />
+          <InfoRow label="Forma de Pago" value={factura.metodoPago} />
+          <InfoRow label="Método de Pago" value={factura.medioPago} />
           <InfoRow label="Moneda" value={factura.moneda} />
           <InfoRow
             label="Fecha de Emisión"

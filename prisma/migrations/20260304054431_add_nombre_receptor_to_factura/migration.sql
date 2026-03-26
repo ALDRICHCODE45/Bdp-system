@@ -10,39 +10,42 @@
   - You are about to drop the column `tipoOrigen` on the `Factura` table. All the data in the column will be lost.
 
 */
--- DropForeignKey
-ALTER TABLE "public"."Factura" DROP CONSTRAINT "Factura_autorizadoPorId_fkey";
+-- DropForeignKey (idempotent: skip if constraint does not exist)
+DO $$ BEGIN
+  ALTER TABLE "Factura" DROP CONSTRAINT "Factura_autorizadoPorId_fkey";
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
 
--- DropForeignKey
-ALTER TABLE "public"."Factura" DROP CONSTRAINT "Factura_clienteProveedorId_fkey";
+DO $$ BEGIN
+  ALTER TABLE "Factura" DROP CONSTRAINT "Factura_clienteProveedorId_fkey";
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
 
--- DropForeignKey
-ALTER TABLE "public"."Factura" DROP CONSTRAINT "Factura_creadoPorId_fkey";
+DO $$ BEGIN
+  ALTER TABLE "Factura" DROP CONSTRAINT "Factura_creadoPorId_fkey";
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
 
--- DropIndex
-DROP INDEX "public"."Factura_autorizadoPorId_idx";
+-- DropIndex (idempotent)
+DROP INDEX IF EXISTS "public"."Factura_autorizadoPorId_idx";
+DROP INDEX IF EXISTS "public"."Factura_clienteProveedorId_idx";
+DROP INDEX IF EXISTS "public"."Factura_creadoPorId_idx";
+DROP INDEX IF EXISTS "public"."Factura_origenId_idx";
+DROP INDEX IF EXISTS "public"."Factura_tipoOrigen_idx";
 
--- DropIndex
-DROP INDEX "public"."Factura_clienteProveedorId_idx";
+-- AlterTable (drop columns only if they exist, add nombreReceptor)
+DO $$ BEGIN
+  ALTER TABLE "Factura" DROP COLUMN IF EXISTS "autorizadoPorId",
+  DROP COLUMN IF EXISTS "clienteProveedor",
+  DROP COLUMN IF EXISTS "clienteProveedorId",
+  DROP COLUMN IF EXISTS "creadoPorId",
+  DROP COLUMN IF EXISTS "notas",
+  DROP COLUMN IF EXISTS "origenId",
+  DROP COLUMN IF EXISTS "tipoOrigen";
+EXCEPTION WHEN undefined_column THEN NULL;
+END $$;
 
--- DropIndex
-DROP INDEX "public"."Factura_creadoPorId_idx";
+ALTER TABLE "Factura" ADD COLUMN IF NOT EXISTS "nombreReceptor" TEXT;
 
--- DropIndex
-DROP INDEX "public"."Factura_origenId_idx";
-
--- DropIndex
-DROP INDEX "public"."Factura_tipoOrigen_idx";
-
--- AlterTable
-ALTER TABLE "Factura" DROP COLUMN "autorizadoPorId",
-DROP COLUMN "clienteProveedor",
-DROP COLUMN "clienteProveedorId",
-DROP COLUMN "creadoPorId",
-DROP COLUMN "notas",
-DROP COLUMN "origenId",
-DROP COLUMN "tipoOrigen",
-ADD COLUMN     "nombreReceptor" TEXT;
-
--- DropEnum
-DROP TYPE "public"."FacturaTipoOrigen";
+-- DropEnum (idempotent)
+DROP TYPE IF EXISTS "public"."FacturaTipoOrigen";

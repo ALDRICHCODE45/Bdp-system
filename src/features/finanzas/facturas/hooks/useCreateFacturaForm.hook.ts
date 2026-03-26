@@ -22,6 +22,7 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       nombreReceptor: "",
       rfcReceptor: "",
       metodoPago: "",
+      medioPago: "",
       moneda: "MXN",
       usoCfdi: "",
       status: "vigente" as "vigente" | "cancelada",
@@ -56,6 +57,7 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       formData.append("nombreReceptor", value.nombreReceptor || "");
       formData.append("rfcReceptor", value.rfcReceptor);
       formData.append("metodoPago", value.metodoPago || "");
+      formData.append("medioPago", value.medioPago || "");
       formData.append("moneda", value.moneda);
       formData.append("usoCfdi", value.usoCfdi || "");
       formData.append("status", value.status.toUpperCase());

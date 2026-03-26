@@ -17,11 +17,15 @@ import { useState } from "react";
 
 // ── Opciones de los filtros rápidos ──────────────────────────────────────────
 const metodoPagoOptions = [
-  { label: "CHEQUE", value: "CHEQUE" },
-  { label: "TRANSFERENCIA", value: "TRANSFERENCIA" },
-  { label: "EFECTIVO", value: "EFECTIVO" },
   { label: "PUE", value: "PUE" },
   { label: "PPD", value: "PPD" },
+];
+
+const medioPagoOptions = [
+  { label: "Transferencia", value: "Transferencia" },
+  { label: "Depósito", value: "Depósito" },
+  { label: "Efectivo", value: "Efectivo" },
+  { label: "Cheque", value: "Cheque" },
 ];
 
 const monedaOptions = [
@@ -31,9 +35,9 @@ const monedaOptions = [
 ];
 
 const statusPagoOptions = [
-  { label: "Vigente", value: "Vigente" },
-  { label: "Cancelado", value: "Cancelado" },
-  { label: "No Pagado", value: "NoPagado" },
+  { label: "Pagado", value: "Pagado" },
+  { label: "Pendiente de pago", value: "Pendiente de pago" },
+  { label: "Cancelada", value: "Cancelada" },
 ];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -49,6 +53,8 @@ interface FacturasFiltersProps extends BaseFilterProps {
   // Quick filters (multi-select)
   metodoPago?: string[];
   onMetodoPagoChange?: (value: string[]) => void;
+  medioPago?: string[];
+  onMedioPagoChange?: (value: string[]) => void;
   moneda?: string[];
   onMonedaChange?: (value: string[]) => void;
   statusPago?: string[];
@@ -71,6 +77,8 @@ export function FacturasFilters({
   onImport,
   metodoPago = [],
   onMetodoPagoChange,
+  medioPago = [],
+  onMedioPagoChange,
   moneda = [],
   onMonedaChange,
   statusPago = [],
@@ -131,12 +139,19 @@ export function FacturasFilters({
 
         {/* ── Filtros rápidos + botón Filtros avanzados ── */}
         <CardContent className="pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
             <FilterMultiSelect
-              label="Método de Pago"
+              label="Forma de Pago"
               options={metodoPagoOptions}
               selected={metodoPago}
               onChange={(v) => onMetodoPagoChange?.(v)}
+              placeholder="Todos"
+            />
+            <FilterMultiSelect
+              label="Método de Pago"
+              options={medioPagoOptions}
+              selected={medioPago}
+              onChange={(v) => onMedioPagoChange?.(v)}
               placeholder="Todos"
             />
             <FilterMultiSelect

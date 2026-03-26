@@ -20,6 +20,7 @@ export type CreateFacturaArgs = {
   nombreReceptor?: string | null;
   rfcReceptor: string;
   metodoPago?: string | null;
+  medioPago?: string | null;
   moneda?: string;
   usoCfdi?: string | null;
   status: "VIGENTE" | "CANCELADA";
@@ -46,6 +47,7 @@ export type UpdateFacturaArgs = {
   nombreReceptor?: string | null;
   rfcReceptor: string;
   metodoPago?: string | null;
+  medioPago?: string | null;
   moneda?: string;
   usoCfdi?: string | null;
   status: "VIGENTE" | "CANCELADA";

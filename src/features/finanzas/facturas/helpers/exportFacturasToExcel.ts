@@ -50,10 +50,11 @@ export function exportFacturasToExcel(
     "RFC Receptor",
     "Nombre Receptor",
     "Uso CFDI",
+    "Forma de Pago",
     "Método de Pago",
     "Moneda",
     "Subtotal",
-    "IVA",
+    "IVA Monto",
     "Imp. Trasladados",
     "Imp. Retenidos",
     "Total",
@@ -79,6 +80,7 @@ export function exportFacturasToExcel(
     f.nombreReceptor ?? "",
     f.usoCfdi ?? "",
     f.metodoPago ?? "",
+    f.medioPago ?? "",
     f.moneda ?? "",
     formatNum(f.subtotal),
     formatNum(f.iva),
@@ -99,7 +101,7 @@ export function exportFacturasToExcel(
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
   // Anchos de columna (en orden, mismo que headers)
-  const colWidths = [36, 40, 6, 8, 12, 16, 35, 16, 35, 8, 16, 6, 14, 14, 16, 16, 14, 18, 14, 14, 40, 25, 20, 20];
+  const colWidths = [36, 40, 6, 8, 12, 16, 35, 16, 35, 8, 14, 16, 6, 14, 14, 16, 16, 14, 18, 14, 14, 40, 25, 20, 20];
   worksheet["!cols"] = colWidths.map((wch) => ({ wch }));
 
   // ── Workbook ───────────────────────────────────────────────────────────────

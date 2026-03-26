@@ -28,6 +28,7 @@ export const facturaDefaultColumnVisibility = {
   totalImpuestosRetenidos: false,
   moneda: false,
   metodoPago: false,
+  medioPago: false,
   usoCfdi: false,
   fechaPago: false,
   ingresadoPorNombre: false,

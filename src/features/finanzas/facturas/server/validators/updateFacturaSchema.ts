@@ -22,6 +22,7 @@ export const updateFacturaSchema = z.object({
     .min(12, "El RFC receptor debe tener al menos 12 caracteres")
     .max(13, "El RFC receptor debe tener maximo 13 caracteres"),
   metodoPago: z.string().nullable().optional(),
+  medioPago: z.string().nullable().optional(),
   moneda: z.string().optional().default("MXN"),
   usoCfdi: z.string().nullable().optional(),
   status: z.enum(["VIGENTE", "CANCELADA"]),

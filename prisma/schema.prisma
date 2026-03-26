@@ -463,6 +463,7 @@ model Factura {
   nombreReceptor             String?
   rfcReceptor                String
   metodoPago                 String?
+  medioPago                  String?
   moneda                     String           @default("MXN")
   usoCfdi                    String?
   status                     FacturaEstado    @default(VIGENTE)
@@ -485,6 +486,7 @@ model Factura {
   @@index([rfcEmisor])
   @@index([rfcReceptor])
   @@index([metodoPago])
+  @@index([medioPago])
   @@index([statusPago])
   @@index([total])
   @@index([fechaPago])

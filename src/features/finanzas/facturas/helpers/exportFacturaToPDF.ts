@@ -218,7 +218,8 @@ export const exportFacturaToPDF = async (factura: FacturaDto): Promise<void> => 
         [factura.serie, factura.folio].filter(Boolean).join(" / ")
       );
     }
-    if (factura.metodoPago) drawDetailRow("Método de pago", factura.metodoPago);
+    if (factura.metodoPago) drawDetailRow("Forma de pago",  factura.metodoPago);
+    if (factura.medioPago)  drawDetailRow("Método de pago", factura.medioPago);
     if (factura.usoCfdi)    drawDetailRow("Uso CFDI",       factura.usoCfdi);
     drawDetailRow("Moneda", factura.moneda ?? "MXN");
 

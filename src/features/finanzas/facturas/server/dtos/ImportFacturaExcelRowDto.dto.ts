@@ -16,6 +16,7 @@ export type ImportFacturaExcelRowDto = {
   totalImpuestosTransladados?: number | null;
   totalImpuestosRetenidos?: number | null;
   metodoPago?: string | null;
+  medioPago?: string | null;
   moneda: string;
   usoCfdi?: string | null;
   nombreEmisor?: string | null;

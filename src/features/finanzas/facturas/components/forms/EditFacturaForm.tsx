@@ -572,7 +572,7 @@ export const EditFacturaForm = ({
 
             <form.Field name="metodoPago">
               {(field) => (
-                <FormField label="Método de Pago" hint="PUE / PPD">
+                <FormField label="Forma de Pago" hint="PUE / PPD">
                   <Select
                     name={field.name}
                     value={field.state.value}
@@ -595,6 +595,29 @@ export const EditFacturaForm = ({
             </form.Field>
           </div>
 
+          {/* Método de Pago */}
+          <form.Field name="medioPago">
+            {(field) => (
+              <FormField label="Método de Pago">
+                <Select
+                  name={field.name}
+                  value={field.state.value}
+                  onValueChange={(v) => field.handleChange(v)}
+                >
+                  <SelectTrigger id="medioPago">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Transferencia">Transferencia</SelectItem>
+                    <SelectItem value="Depósito">Depósito</SelectItem>
+                    <SelectItem value="Efectivo">Efectivo</SelectItem>
+                    <SelectItem value="Cheque">Cheque</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            )}
+          </form.Field>
+
           {/* Status Pago + Fecha de Pago */}
           <div className="grid grid-cols-2 gap-4">
             <form.Field name="statusPago">
@@ -613,6 +636,7 @@ export const EditFacturaForm = ({
                       <SelectItem value="Pendiente de pago">
                         Pendiente de pago
                       </SelectItem>
+                      <SelectItem value="Cancelada">Cancelada</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormField>

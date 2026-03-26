@@ -44,6 +44,8 @@ const statusPagoColors: Record<string, string> = {
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 border-0",
   "Pendiente de pago":
     "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 border-0",
+  Cancelada:
+    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0",
 };
 
 const statusPagoLabels: Record<string, string> = {};
@@ -303,14 +305,24 @@ export function createFacturasColumns(
       size: 8,
     },
 
-    // ─── Método de Pago ───────────────────────────────────────────────────
+    // ─── Forma de Pago (PUE/PPD) ─────────────────────────────────────────
     {
       accessorKey: "metodoPago",
-      header: "Método Pago",
+      header: "Forma Pago",
       cell: ({ row }) => (
         <TextCell value={row.getValue("metodoPago")} maxWidth={100} />
       ),
       size: 10,
+    },
+
+    // ─── Método de Pago (Transferencia, Depósito, etc.) ────────────────
+    {
+      accessorKey: "medioPago",
+      header: "Método Pago",
+      cell: ({ row }) => (
+        <TextCell value={row.getValue("medioPago")} maxWidth={120} />
+      ),
+      size: 12,
     },
 
     // ─── Uso CFDI ─────────────────────────────────────────────────────────

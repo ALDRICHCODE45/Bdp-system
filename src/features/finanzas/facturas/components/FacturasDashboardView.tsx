@@ -85,18 +85,20 @@ function ClientAvatar({ initials, colorIdx }: { initials: string; colorIdx: numb
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    PAGADA:    "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400",
-    ENVIADA:   "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400",
-    CANCELADA: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400",
-    BORRADOR:  "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
+  // Status styles — match Prisma FacturaEstado enum (vigente/cancelada)
+  const statusStyles: Record<string, string> = {
+    VIGENTE:   "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    CANCELADA: "bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400",
   };
-  const labels: Record<string, string> = {
-    PAGADA: "PAGADA", ENVIADA: "PENDIENTE", CANCELADA: "CANCELADA", BORRADOR: "BORRADOR",
+  const statusLabels: Record<string, string> = {
+    VIGENTE:   "Vigente",
+    CANCELADA: "Cancelada",
   };
+  const key = status.toUpperCase();
+  const fallbackStyle = "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400";
   return (
-    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0", styles[status] ?? styles["BORRADOR"])}>
-      {labels[status] ?? status}
+    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0", statusStyles[key] ?? fallbackStyle)}>
+      {statusLabels[key] ?? status}
     </span>
   );
 }

@@ -66,6 +66,12 @@ export const importFacturaExcelRowSchema = z.object({
     .nullable()
     .transform((val) => (val?.trim() || null)),
 
+  medioPago: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val?.trim() || null)),
+
   moneda: z
     .string()
     .optional()
@@ -251,14 +257,19 @@ export const COLUMN_ALIASES: Record<string, string> = {
   "retencion iva": "totalImpuestosRetenidos",
   "isr retenido": "totalImpuestosRetenidos",
 
-  // ── Método Pago ───────────────────────────────────────────────────────────
-  "metodo pago": "metodoPago",
-  "metodo de pago": "metodoPago",
+  // ── Forma de Pago (DB: metodoPago — PUE/PPD) ──────────────────────────────
   "forma pago": "metodoPago",
   "forma de pago": "metodoPago",
+  "clave metodo pago": "metodoPago",
   "tipo pago": "metodoPago",
   "tipo de pago": "metodoPago",
-  "clave metodo pago": "metodoPago",
+
+  // ── Método de Pago (DB: medioPago — Transferencia, Depósito, etc.) ────────
+  "metodo pago": "medioPago",
+  "metodo de pago": "medioPago",
+  "medio pago": "medioPago",
+  "medio de pago": "medioPago",
+  "metodo de pago medio": "medioPago",
 
   // ── Moneda ────────────────────────────────────────────────────────────────
   "moneda": "moneda",
@@ -344,7 +355,8 @@ export const FIELD_TO_LABEL: Record<string, string> = {
   folio: "Folio",
   totalImpuestosTransladados: "Impuestos Trasladados",
   totalImpuestosRetenidos: "Impuestos Retenidos",
-  metodoPago: "Método Pago",
+  metodoPago: "Forma de Pago",
+  medioPago: "Método de Pago",
   moneda: "Moneda",
   usoCfdi: "Uso CFDI",
   statusPago: "Status Pago",
@@ -373,7 +385,8 @@ export const OPTIONAL_EXCEL_COLUMNS = [
   "IVA Monto",
   "Impuestos Trasladados",
   "Impuestos Retenidos",
-  "Método Pago",
+  "Forma de Pago",
+  "Método de Pago",
   "Moneda",
   "Uso CFDI",
   "Nombre Emisor",
@@ -402,7 +415,8 @@ export const EXCEL_COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "IVA Monto": "iva",
   "Impuestos Trasladados": "totalImpuestosTransladados",
   "Impuestos Retenidos": "totalImpuestosRetenidos",
-  "Método Pago": "metodoPago",
+  "Forma de Pago": "metodoPago",
+  "Método de Pago": "medioPago",
   "Moneda": "moneda",
   "Uso CFDI": "usoCfdi",
   "Nombre Emisor": "nombreEmisor",

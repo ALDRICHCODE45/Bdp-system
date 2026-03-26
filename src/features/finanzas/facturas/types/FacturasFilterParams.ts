@@ -10,6 +10,7 @@ export interface FacturasFilterParams {
 
   // ── Quick filters (multi-select) ─────────────────────────────
   metodoPago?: string[];
+  medioPago?: string[];
   moneda?: string[];
   statusPago?: string[];
 

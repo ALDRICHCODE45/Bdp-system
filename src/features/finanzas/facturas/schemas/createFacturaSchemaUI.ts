@@ -21,6 +21,7 @@ export const createFacturaSchemaUI = z.object({
     .min(12, "El RFC receptor debe tener al menos 12 caracteres")
     .max(13, "El RFC receptor debe tener máximo 13 caracteres"),
   metodoPago: z.string().optional(),
+  medioPago: z.string().optional(),
   moneda: z.string().min(1, "La moneda es requerida"),
   usoCfdi: z.string().optional(),
   status: z.enum(["vigente", "cancelada"], {

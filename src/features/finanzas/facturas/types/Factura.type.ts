@@ -3,7 +3,9 @@ export interface Factura {
   concepto: string;
   serie: string | null;
   folio: string | null;
+  fechaEmision: string | null;
   subtotal: number;
+  iva: number | null;
   totalImpuestosTransladados: number | null;
   totalImpuestosRetenidos: number | null;
   total: number;
@@ -12,12 +14,14 @@ export interface Factura {
   nombreReceptor: string | null;
   rfcReceptor: string;
   metodoPago: string | null;
+  medioPago: string | null;
   moneda: string;
   usoCfdi: string | null;
-  status: "borrador" | "enviada" | "pagada" | "cancelada";
+  status: "vigente" | "cancelada";
   nombreEmisor: string | null;
   statusPago: string | null;
   fechaPago: string | null;
+  facturaUrl: string | null;
   ingresadoPor: string | null;
   ingresadoPorNombre: string | null;
   createdAt: string;

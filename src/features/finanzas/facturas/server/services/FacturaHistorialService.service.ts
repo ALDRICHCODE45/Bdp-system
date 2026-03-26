@@ -18,6 +18,7 @@ type FacturaData = {
   nombreReceptor: string | null;
   rfcReceptor: string;
   metodoPago: string | null;
+  medioPago: string | null;
   moneda: string;
   usoCfdi: string | null;
   status: string;
@@ -107,6 +108,7 @@ export class FacturaHistorialService {
       nombreReceptor: factura.nombreReceptor,
       rfcReceptor: factura.rfcReceptor,
       metodoPago: factura.metodoPago,
+      medioPago: factura.medioPago ?? null,
       moneda: factura.moneda,
       usoCfdi: factura.usoCfdi,
       status: factura.status,
@@ -149,6 +151,7 @@ export class FacturaHistorialService {
       "nombreReceptor",
       "rfcReceptor",
       "metodoPago",
+      "medioPago",
       "moneda",
       "usoCfdi",
       "status",

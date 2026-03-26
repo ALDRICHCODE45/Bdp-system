@@ -31,6 +31,7 @@ export const createFacturaAction = async (input: FormData) => {
   const nombreReceptor = (input.get("nombreReceptor") as string) || null;
   const rfcReceptor = input.get("rfcReceptor") as string;
   const metodoPago = (input.get("metodoPago") as string) || null;
+  const medioPago = (input.get("medioPago") as string) || null;
   const moneda = (input.get("moneda") as string) || "MXN";
   const usoCfdi = (input.get("usoCfdi") as string) || null;
   const status = (input.get("status") || "VIGENTE") as "VIGENTE" | "CANCELADA";
@@ -67,6 +68,7 @@ export const createFacturaAction = async (input: FormData) => {
     nombreReceptor,
     rfcReceptor,
     metodoPago,
+    medioPago,
     moneda,
     usoCfdi,
     status,

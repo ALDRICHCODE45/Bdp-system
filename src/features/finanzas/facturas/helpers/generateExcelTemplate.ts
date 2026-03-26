@@ -14,7 +14,7 @@ export function generateExcelTemplate(): void {
   // El orden debe coincidir exactamente con ALL_EXCEL_COLUMNS:
   // REQUIRED: UUID, Concepto, Subtotal, Total, RFC Emisor, RFC Receptor
   // OPTIONAL:  Serie, Folio, Status, IVA Monto, Impuestos Trasladados, Impuestos Retenidos,
-  //            Método Pago, Moneda, Uso CFDI, Nombre Emisor, Nombre Receptor,
+  //            Forma de Pago, Método de Pago, Moneda, Uso CFDI, Nombre Emisor, Nombre Receptor,
   //            Status Pago, Fecha Emisión, Fecha Pago, Factura URL
   const exampleRow = [
     "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX", // UUID
@@ -29,7 +29,8 @@ export function generateExcelTemplate(): void {
     1600.00,                                 // IVA Monto (opcional)
     1600.00,                                 // Impuestos Trasladados (opcional)
     0.00,                                    // Impuestos Retenidos (opcional)
-    "PUE",                                   // Método Pago (opcional)
+    "PUE",                                   // Forma de Pago (opcional)
+    "Transferencia",                         // Método de Pago (opcional)
     "MXN",                                   // Moneda (opcional)
     "G03",                                   // Uso CFDI (opcional)
     "Empresa Emisora S.A.",                  // Nombre Emisor (opcional)
@@ -71,7 +72,8 @@ export function generateExcelTemplate(): void {
     ["- IVA Monto: Monto del IVA aplicado a la factura"],
     ["- Impuestos Trasladados: Total de impuestos trasladados (IVA cobrado)"],
     ["- Impuestos Retenidos: Total de impuestos retenidos"],
-    ["- Método Pago: PUE o PPD"],
+    ["- Forma de Pago: PUE o PPD"],
+    ["- Método de Pago: Transferencia, Depósito, Efectivo o Cheque"],
     ["- Moneda: MXN, USD, etc. (por defecto MXN)"],
     ["- Uso CFDI: Clave de uso del CFDI (G03, P01, etc.)"],
     ["- Nombre Emisor: Nombre o razón social del emisor"],

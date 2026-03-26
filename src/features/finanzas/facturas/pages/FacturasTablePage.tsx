@@ -91,6 +91,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
 
   // ── Quick filters (multi-select, apply immediately) ───────────────────────
   const [metodoPagoFilter, setMetodoPagoFilter] = useState<string[]>([]);
+  const [medioPagoFilter, setMedioPagoFilter] = useState<string[]>([]);
   const [monedaFilter, setMonedaFilter] = useState<string[]>([]);
   const [statusPagoFilter, setStatusPagoFilter] = useState<string[]>([]);
 
@@ -138,6 +139,10 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
     (v: string[]) => { setMetodoPagoFilter(v); resetPage(); },
     [resetPage]
   );
+  const handleMedioPagoChange = useCallback(
+    (v: string[]) => { setMedioPagoFilter(v); resetPage(); },
+    [resetPage]
+  );
   const handleMonedaChange = useCallback(
     (v: string[]) => { setMonedaFilter(v); resetPage(); },
     [resetPage]
@@ -159,6 +164,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
   // Limpiar TODO
   const handleClearFilters = useCallback(() => {
     setMetodoPagoFilter([]);
+    setMedioPagoFilter([]);
     setMonedaFilter([]);
     setStatusPagoFilter([]);
     setAdvancedFilters(EMPTY_ADVANCED_FILTERS);
@@ -195,6 +201,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
         status,
         // Quick filters
         metodoPago: metodoPagoFilter.length ? metodoPagoFilter : undefined,
+        medioPago: medioPagoFilter.length ? medioPagoFilter : undefined,
         moneda: monedaFilter.length ? monedaFilter : undefined,
         statusPago: statusPagoFilter.length ? statusPagoFilter : undefined,
         // Advanced filters
@@ -236,6 +243,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
       debouncedSearch,
       status,
       metodoPagoFilter,
+      medioPagoFilter,
       monedaFilter,
       statusPagoFilter,
       advancedFilters,
@@ -253,6 +261,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
       status,
       // Quick filters
       metodoPago: metodoPagoFilter.length ? metodoPagoFilter : undefined,
+      medioPago: medioPagoFilter.length ? medioPagoFilter : undefined,
       moneda: monedaFilter.length ? monedaFilter : undefined,
       statusPago: statusPagoFilter.length ? statusPagoFilter : undefined,
       // Advanced filters
@@ -291,6 +300,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
   const countFilters = useMemo(() => ({
     search: debouncedSearch || undefined,
     metodoPago: metodoPagoFilter.length ? metodoPagoFilter : undefined,
+    medioPago: medioPagoFilter.length ? medioPagoFilter : undefined,
     moneda: monedaFilter.length ? monedaFilter : undefined,
     statusPago: statusPagoFilter.length ? statusPagoFilter : undefined,
     uuid: advancedFilters.uuid.length ? advancedFilters.uuid : undefined,
@@ -314,7 +324,7 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
     createdAtTo: advancedFilters.createdAtTo || undefined,
     updatedAtFrom: advancedFilters.updatedAtFrom || undefined,
     updatedAtTo: advancedFilters.updatedAtTo || undefined,
-  }), [debouncedSearch, metodoPagoFilter, monedaFilter, statusPagoFilter, advancedFilters]);
+  }), [debouncedSearch, metodoPagoFilter, medioPagoFilter, monedaFilter, statusPagoFilter, advancedFilters]);
 
   const { data: statusCounts } = useFacturaStatusCounts(countFilters);
 
@@ -346,6 +356,8 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
         customFilterProps: {
           metodoPago: metodoPagoFilter,
           onMetodoPagoChange: handleMetodoPagoChange,
+          medioPago: medioPagoFilter,
+          onMedioPagoChange: handleMedioPagoChange,
           moneda: monedaFilter,
           onMonedaChange: handleMonedaChange,
           statusPago: statusPagoFilter,
@@ -363,6 +375,8 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
       handleBulkDelete,
       metodoPagoFilter,
       handleMetodoPagoChange,
+      medioPagoFilter,
+      handleMedioPagoChange,
       monedaFilter,
       handleMonedaChange,
       statusPagoFilter,

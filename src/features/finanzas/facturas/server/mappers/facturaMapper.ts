@@ -22,6 +22,7 @@ export function toFacturaDto(entity: FacturaEntity): FacturaDto {
     nombreReceptor: entity.nombreReceptor,
     rfcReceptor: entity.rfcReceptor,
     metodoPago: entity.metodoPago,
+    medioPago: entity.medioPago ?? null,
     moneda: entity.moneda,
     usoCfdi: entity.usoCfdi,
     status: mapStatus(entity.status),

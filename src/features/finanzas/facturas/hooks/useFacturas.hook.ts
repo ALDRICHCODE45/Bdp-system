@@ -18,6 +18,7 @@ export const useFacturas = (
 ) => {
   const hasQuickFilters =
     (params.metodoPago?.length ?? 0) > 0 ||
+    (params.medioPago?.length ?? 0) > 0 ||
     (params.moneda?.length ?? 0) > 0 ||
     (params.statusPago?.length ?? 0) > 0;
 
@@ -65,6 +66,7 @@ export const useFacturas = (
       params.status,
       // Quick filters
       params.metodoPago,
+      params.medioPago,
       params.moneda,
       params.statusPago,
       // Advanced filters

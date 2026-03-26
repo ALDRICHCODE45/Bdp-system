@@ -72,6 +72,9 @@ export function buildFacturasWhereClause(
   if (params.metodoPago?.length) {
     andConditions.push({ metodoPago: { in: params.metodoPago } });
   }
+  if (params.medioPago?.length) {
+    andConditions.push({ medioPago: { in: params.medioPago } });
+  }
   if (params.moneda?.length) {
     andConditions.push({ moneda: { in: params.moneda } });
   }
@@ -228,6 +231,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
         nombreReceptor: data.nombreReceptor ?? null,
         rfcReceptor: data.rfcReceptor,
         metodoPago: data.metodoPago ?? null,
+        medioPago: data.medioPago ?? null,
         moneda: data.moneda ?? "MXN",
         usoCfdi: data.usoCfdi ?? null,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -261,6 +265,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
         nombreReceptor: data.nombreReceptor ?? null,
         rfcReceptor: data.rfcReceptor,
         metodoPago: data.metodoPago ?? null,
+        medioPago: data.medioPago ?? null,
         moneda: data.moneda ?? "MXN",
         usoCfdi: data.usoCfdi ?? null,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

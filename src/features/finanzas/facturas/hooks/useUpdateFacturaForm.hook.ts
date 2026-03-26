@@ -30,6 +30,7 @@ export const useUpdateFacturaForm = (
       nombreReceptor: factura.nombreReceptor || "",
       rfcReceptor: factura.rfcReceptor,
       metodoPago: factura.metodoPago || "",
+      medioPago: factura.medioPago || "",
       moneda: factura.moneda,
       usoCfdi: factura.usoCfdi || "",
       status: factura.status as "vigente" | "cancelada",
@@ -67,6 +68,7 @@ export const useUpdateFacturaForm = (
       formData.append("nombreReceptor", value.nombreReceptor || "");
       formData.append("rfcReceptor", value.rfcReceptor);
       formData.append("metodoPago", value.metodoPago || "");
+      formData.append("medioPago", value.medioPago || "");
       formData.append("moneda", value.moneda);
       formData.append("usoCfdi", value.usoCfdi || "");
       formData.append("status", value.status.toUpperCase());
