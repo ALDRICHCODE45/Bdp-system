@@ -20,6 +20,19 @@ import { useStore } from "@tanstack/react-form";
 import { FacturaSATUpload } from "../FacturaSATUpload";
 import { CurrencyInput } from "@/core/shared/components/CurrencyInput";
 
+// ─── getFieldError — extrae el mensaje de un error de TanStack Form + Zod ────
+// ValidationError = unknown, puede ser string, objeto Zod, etc.
+function getFieldError(errors: unknown[]): string | null {
+  if (!errors || errors.length === 0) return null;
+  const err = errors[0];
+  if (!err) return null;
+  if (typeof err === "string") return err;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message: unknown }).message);
+  }
+  return String(err);
+}
+
 // ─── SectionHeader ────────────────────────────────────────────────────────────
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -122,9 +135,10 @@ export const CreateFacturaForm = ({
     <form
       id="create-factura-form"
       autoComplete="off"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        form.handleSubmit();
+        e.stopPropagation();
+        await form.handleSubmit();
       }}
       className="space-y-6"
     >
@@ -138,7 +152,7 @@ export const CreateFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField label="RFC Emisor" hint="12–13 chars" error={error} required>
@@ -176,7 +190,7 @@ export const CreateFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField label="RFC Receptor" hint="12–13 chars" error={error} required>
@@ -221,7 +235,7 @@ export const CreateFacturaForm = ({
             {(field) => {
               const error =
                 field.state.meta.isTouched && !field.state.meta.isValid
-                  ? (field.state.meta.errors[0] as string | undefined)
+                  ? getFieldError(field.state.meta.errors)
                   : null;
               return (
                 <FormField label="UUID" error={error} required>
@@ -245,7 +259,7 @@ export const CreateFacturaForm = ({
             {(field) => {
               const error =
                 field.state.meta.isTouched && !field.state.meta.isValid
-                  ? (field.state.meta.errors[0] as string | undefined)
+                  ? getFieldError(field.state.meta.errors)
                   : null;
               return (
                 <FormField label="Concepto" error={error} required>
@@ -303,7 +317,7 @@ export const CreateFacturaForm = ({
                     value={field.state.value ?? ""}
                     onValueChange={(v) => field.handleChange(v)}
                   >
-                    <SelectTrigger id="usoCfdi">
+                    <SelectTrigger id="usoCfdi" className="w-full overflow-hidden">
                       <SelectValue placeholder="Seleccionar uso CFDI" />
                     </SelectTrigger>
                     <SelectContent>
@@ -322,7 +336,7 @@ export const CreateFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField label="Moneda" error={error} required>
@@ -360,7 +374,7 @@ export const CreateFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField label="Subtotal" hint="Antes de impuestos" error={error} required>
@@ -437,7 +451,7 @@ export const CreateFacturaForm = ({
             {(field) => {
               const error =
                 field.state.meta.isTouched && !field.state.meta.isValid
-                  ? (field.state.meta.errors[0] as string | undefined)
+                  ? getFieldError(field.state.meta.errors)
                   : null;
               return (
                 <FormField label="Total" hint="Calculado automáticamente" error={error} required>
@@ -469,7 +483,7 @@ export const CreateFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField label="Status" error={error} required>

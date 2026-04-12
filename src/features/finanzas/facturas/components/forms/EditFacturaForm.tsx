@@ -28,6 +28,19 @@ interface EditFacturaFormProps {
   isEditable?: boolean;
 }
 
+// ─── getFieldError — extrae el mensaje de un error de TanStack Form + Zod ────
+// ValidationError = unknown, puede ser string, objeto Zod, etc.
+function getFieldError(errors: unknown[]): string | null {
+  if (!errors || errors.length === 0) return null;
+  const err = errors[0];
+  if (!err) return null;
+  if (typeof err === "string") return err;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message: unknown }).message);
+  }
+  return String(err);
+}
+
 // ─── SectionHeader ────────────────────────────────────────────────────────────
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -155,9 +168,10 @@ export const EditFacturaForm = ({
     <form
       id="edit-factura-form"
       autoComplete="off"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        form.handleSubmit();
+        e.stopPropagation();
+        await form.handleSubmit();
       }}
       className="space-y-6"
     >
@@ -181,7 +195,7 @@ export const EditFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField
@@ -229,7 +243,7 @@ export const EditFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField
@@ -284,7 +298,7 @@ export const EditFacturaForm = ({
             {(field) => {
               const error =
                 field.state.meta.isTouched && !field.state.meta.isValid
-                  ? (field.state.meta.errors[0] as string | undefined)
+                  ? getFieldError(field.state.meta.errors)
                   : null;
               return (
                 <FormField label="UUID" hint="Fiscal CFDI" error={error} required>
@@ -311,7 +325,7 @@ export const EditFacturaForm = ({
             {(field) => {
               const error =
                 field.state.meta.isTouched && !field.state.meta.isValid
-                  ? (field.state.meta.errors[0] as string | undefined)
+                  ? getFieldError(field.state.meta.errors)
                   : null;
               return (
                 <FormField label="Concepto" error={error} required>
@@ -372,7 +386,7 @@ export const EditFacturaForm = ({
                     value={field.state.value ?? ""}
                     onValueChange={(v) => field.handleChange(v)}
                   >
-                    <SelectTrigger id="usoCfdi">
+                    <SelectTrigger id="usoCfdi" className="w-full overflow-hidden">
                       <SelectValue placeholder="Seleccionar uso CFDI" />
                     </SelectTrigger>
                     <SelectContent>
@@ -391,7 +405,7 @@ export const EditFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField label="Moneda" error={error} required>
@@ -429,7 +443,7 @@ export const EditFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField
@@ -523,7 +537,7 @@ export const EditFacturaForm = ({
             {(field) => {
               const error =
                 field.state.meta.isTouched && !field.state.meta.isValid
-                  ? (field.state.meta.errors[0] as string | undefined)
+                  ? getFieldError(field.state.meta.errors)
                   : null;
               return (
                 <FormField
@@ -560,7 +574,7 @@ export const EditFacturaForm = ({
               {(field) => {
                 const error =
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? (field.state.meta.errors[0] as string | undefined)
+                    ? getFieldError(field.state.meta.errors)
                     : null;
                 return (
                   <FormField label="Status" error={error} required>

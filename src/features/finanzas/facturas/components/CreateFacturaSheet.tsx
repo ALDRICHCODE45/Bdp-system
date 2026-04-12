@@ -27,10 +27,10 @@ export function CreateFacturaSheet({
       <SheetContent
         side={isMobile ? "bottom" : "right"}
         className={cn(
-          "ml-0 p-0 w-full sm:max-w-2xl",
+          "ml-0 p-0 w-full sm:max-w-2xl flex flex-col overflow-hidden",
           isMobile
-            ? "rounded-t-2xl max-h-[92dvh] flex flex-col overflow-hidden"
-            : "rounded-2xl overflow-y-auto"
+            ? "rounded-t-2xl max-h-[92dvh]"
+            : "rounded-2xl h-full"
         )}
       >
         {/* ── Header ──────────────────────────────────────────────────────── */}

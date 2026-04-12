@@ -123,14 +123,14 @@ export function EditFacturaSheet({
       <SheetContent
         side={isMobile ? "bottom" : "right"}
         className={cn(
-          "ml-0 p-0 w-full sm:max-w-2xl",
+          "ml-0 p-0 w-full sm:max-w-2xl flex flex-col overflow-hidden",
           isMobile
-            ? "rounded-t-2xl max-h-[92dvh] flex flex-col overflow-hidden"
-            : "rounded-2xl overflow-y-auto"
+            ? "rounded-t-2xl max-h-[92dvh]"
+            : "rounded-2xl h-full"
         )}
       >
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <SheetHeader className="px-6 pt-6 pb-4 border-b">
+        <SheetHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-xs text-muted-foreground font-medium mb-1">
