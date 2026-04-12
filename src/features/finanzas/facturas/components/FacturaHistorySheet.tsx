@@ -17,6 +17,7 @@ import {
 import { Button } from "@/core/shared/ui/button";
 import { Badge } from "@/core/shared/ui/badge";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { cn } from "@/core/lib/utils";
 import { useFacturaHistorial } from "../hooks/useFacturaHistorial.hook";
 import { format, parseISO, isToday, isYesterday } from "date-fns";
 import { es } from "date-fns/locale";
@@ -125,9 +126,12 @@ export function FacturaHistorySheet({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side={sheetSide}
-        className="w-full sm:min-w-xl flex flex-col"
+        className={cn(
+          "w-full sm:min-w-xl flex flex-col",
+          isMobile && "rounded-t-2xl max-h-[92dvh] overflow-hidden"
+        )}
       >
-        <SheetHeader>
+        <SheetHeader className="shrink-0">
           <SheetTitle className="flex items-center gap-2">
             <History className="size-5 text-primary" />
             Historial de cambios

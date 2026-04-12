@@ -28,6 +28,7 @@ import { EditFacturaForm } from "./forms/EditFacturaForm";
 import { FacturaStatusBadge } from "./FacturaStatusBadge";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { isWithin24Hours } from "../helpers/capturadorUtils";
+import { cn } from "@/core/lib/utils";
 
 const FileUploadDropZone = dynamic(
   () =>
@@ -121,7 +122,12 @@ export function EditFacturaSheet({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className=" ml-0 rounded-2xl overflow-y-auto p-0 w-full sm:max-w-2xl"
+        className={cn(
+          "ml-0 p-0 w-full sm:max-w-2xl",
+          isMobile
+            ? "rounded-t-2xl max-h-[92dvh] flex flex-col overflow-hidden"
+            : "rounded-2xl overflow-y-auto"
+        )}
       >
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <SheetHeader className="px-6 pt-6 pb-4 border-b">
@@ -146,7 +152,7 @@ export function EditFacturaSheet({
         </SheetHeader>
 
         {/* ── Tabs ────────────────────────────────────────────────────────── */}
-        <div className="px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="w-full">
               <TabsTrigger value="datos" className="flex-1">

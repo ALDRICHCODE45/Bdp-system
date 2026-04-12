@@ -7,6 +7,7 @@ import {
 } from "@/core/shared/ui/sheet";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 import { CreateFacturaForm } from "./forms/CreateFacturaForm";
+import { cn } from "@/core/lib/utils";
 
 interface CreateFacturaSheetProps {
   isOpen: boolean;
@@ -25,10 +26,15 @@ export function CreateFacturaSheet({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className="ml-0 rounded-2xl overflow-y-auto p-0 w-full sm:max-w-2xl"
+        className={cn(
+          "ml-0 p-0 w-full sm:max-w-2xl",
+          isMobile
+            ? "rounded-t-2xl max-h-[92dvh] flex flex-col overflow-hidden"
+            : "rounded-2xl overflow-y-auto"
+        )}
       >
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="px-6 pt-6 pb-4 border-b">
+        <div className="px-6 pt-6 pb-4 border-b shrink-0">
           <p className="text-xs text-muted-foreground font-medium mb-1">
             Nueva factura
           </p>
@@ -41,7 +47,7 @@ export function CreateFacturaSheet({
         </div>
 
         {/* ── Content ─────────────────────────────────────────────────────── */}
-        <div className="px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <CreateFacturaForm onSuccess={onClose} isCapturador={isCapturador} />
         </div>
       </SheetContent>

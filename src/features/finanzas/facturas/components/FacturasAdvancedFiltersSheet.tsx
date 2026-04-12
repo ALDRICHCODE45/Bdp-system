@@ -25,6 +25,7 @@ import {
 import { useMemo } from "react";
 import { SlidersHorizontal, RotateCcw } from "lucide-react";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { cn } from "@/core/lib/utils";
 
 const USO_CFDI_OPTIONS = [
   "G01",
@@ -209,10 +210,15 @@ export function FacturasAdvancedFiltersSheet({
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className="rounded-3xl overflow-y-auto p-0 w-full sm:max-w-2xl"
+        className={cn(
+          "p-0 w-full sm:max-w-2xl",
+          isMobile
+            ? "rounded-t-3xl max-h-[92dvh] flex flex-col overflow-hidden"
+            : "rounded-3xl overflow-y-auto"
+        )}
       >
         {/* Header */}
-        <SheetHeader className="px-6 pt-6 pb-4 border-b">
+        <SheetHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
             <SheetTitle>Filtros avanzados</SheetTitle>

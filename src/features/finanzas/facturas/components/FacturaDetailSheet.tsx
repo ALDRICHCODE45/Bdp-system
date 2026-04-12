@@ -502,7 +502,12 @@ export function FacturaDetailSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className="rounded-3xl overflow-y-auto p-0 w-full sm:max-w-3xl"
+        className={cn(
+          "p-0 w-full sm:max-w-3xl",
+          isMobile
+            ? "rounded-t-3xl max-h-[92dvh] flex flex-col overflow-hidden"
+            : "rounded-3xl overflow-y-auto"
+        )}
       >
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <SheetHeader className="px-6 pt-6 pb-4 border-b">
@@ -555,7 +560,7 @@ export function FacturaDetailSheet({
         </SheetHeader>
 
         {/* ── Tabs ───────────────────────────────────────────────────────── */}
-        <div className="flex-1 px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="w-full">
               <TabsTrigger value="info" className="flex-1">

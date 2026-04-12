@@ -45,6 +45,8 @@ import { useFacturaStatusCounts } from "../hooks/useFacturaStatusCounts.hook";
 import { useFacturasAggregates } from "../hooks/useFacturasAggregates.hook";
 import { FacturasDashboardView } from "../components/FacturasDashboardView";
 import { FacturasAggregatesBar } from "../components/FacturasAggregatesBar";
+import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { FacturaMobileView } from "../components/mobile/FacturaMobileView";
 
 const CreateFacturaSheet = dynamic(
   () =>
@@ -65,9 +67,18 @@ export function FacturasTablePage({
 }: FacturasTablePageProps) {
   const { user } = useAuth();
   const currentUserId = user?.id;
+  const isMobile = useIsMobile();
 
   // ── View mode (tabla | dashboard) ────────────────────────────────────────
   const [viewMode, setViewMode] = useState<"tabla" | "dashboard">("tabla");
+
+  // ── Mobile-specific state ─────────────────────────────────────────────────
+  const [mobilePage, setMobilePage] = useState(1);
+  const [mobileSearch, setMobileSearch] = useState("");
+  const debouncedMobileSearch = useDebounce(mobileSearch, 300);
+  const [mobileStatusFilter, setMobileStatusFilter] = useState<
+    "all" | "vigente" | "cancelada"
+  >("all");
 
   // ── Modal / sheet state ──────────────────────────────────────────────────
   const { isOpen, openModal, closeModal } = useModalState();
@@ -258,6 +269,38 @@ export function FacturasTablePage({
     ]
   );
 
+  // ── Mobile handlers ───────────────────────────────────────────────────────
+  const handleMobilePageChange = useCallback((page: number) => {
+    setMobilePage(page);
+  }, []);
+
+  const handleMobileSearchChange = useCallback((value: string) => {
+    setMobileSearch(value);
+    setMobilePage(1);
+  }, []);
+
+  const handleMobileStatusFilterChange = useCallback(
+    (newStatus: "all" | "vigente" | "cancelada") => {
+      setMobileStatusFilter(newStatus);
+      setMobilePage(1);
+    },
+    []
+  );
+
+  const handleClearFiltersMobile = useCallback(() => {
+    setMetodoPagoFilter([]);
+    setMedioPagoFilter([]);
+    setMonedaFilter([]);
+    setStatusPagoFilter([]);
+    setAdvancedFilters(EMPTY_ADVANCED_FILTERS);
+    setMobileSearch("");
+    setMobilePage(1);
+  }, []);
+
+  // Mobile status array (mirrors desktop activeTabs logic)
+  const mobileStatus =
+    mobileStatusFilter !== "all" ? [mobileStatusFilter] : undefined;
+
   // ── Data fetching ─────────────────────────────────────────────────────────
   const { data, isPending, isFetching } = useFacturas(
     {
@@ -297,6 +340,22 @@ export function FacturasTablePage({
     },
     initialData
   );
+
+  // ── Mobile data fetching ──────────────────────────────────────────────────
+  const {
+    data: mobileData,
+    isPending: isMobilePending,
+  } = useFacturas({
+    page: mobilePage,
+    pageSize: 20,
+    search: debouncedMobileSearch || undefined,
+    status: mobileStatus,
+    // Quick filters — compartidos con desktop
+    metodoPago: metodoPagoFilter.length ? metodoPagoFilter : undefined,
+    medioPago: medioPagoFilter.length ? medioPagoFilter : undefined,
+    moneda: monedaFilter.length ? monedaFilter : undefined,
+    statusPago: statusPagoFilter.length ? statusPagoFilter : undefined,
+  });
 
   // ── Columns ───────────────────────────────────────────────────────────────
   const columns = useMemo(
@@ -402,6 +461,80 @@ export function FacturasTablePage({
     ]
   );
 
+  // ── Shared modals — rendered regardless of mobile/desktop ────────────────
+  const sharedModals = (
+    <>
+      {/* Create sheet — capturador puede crear con campos restringidos */}
+      {isCapturador ? (
+        <>
+          {isOpen && (
+            <CreateFacturaSheet
+              isOpen={true}
+              onClose={closeModal}
+              isCapturador={true}
+            />
+          )}
+        </>
+      ) : (
+        <PermissionGuard
+          permissions={[
+            PermissionActions.facturas.crear,
+            PermissionActions.facturas.gestionar,
+          ]}
+        >
+          {isOpen && <CreateFacturaSheet isOpen={true} onClose={closeModal} />}
+          <ImportFacturasDialog
+            open={importDialogOpen}
+            onOpenChange={setImportDialogOpen}
+          />
+        </PermissionGuard>
+      )}
+
+      {/* Detail sheet */}
+      <FacturaDetailSheet
+        factura={selectedFactura}
+        open={detailSheetOpen}
+        onOpenChange={setDetailSheetOpen}
+        isCapturador={isCapturador}
+      />
+    </>
+  );
+
+  // ── Mobile view ───────────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <>
+        <FacturaMobileView
+          data={mobileData}
+          isLoading={isMobilePending && !mobileData}
+          isCapturador={isCapturador}
+          currentUserId={currentUserId}
+          onCreateClick={openModal}
+          onViewDetail={handleViewDetail}
+          onImportClick={isCapturador ? undefined : () => setImportDialogOpen(true)}
+          page={mobilePage}
+          onPageChange={handleMobilePageChange}
+          statusFilter={mobileStatusFilter}
+          onStatusFilterChange={handleMobileStatusFilterChange}
+          metodoPago={metodoPagoFilter}
+          onMetodoPagoChange={handleMetodoPagoChange}
+          medioPago={medioPagoFilter}
+          onMedioPagoChange={handleMedioPagoChange}
+          moneda={monedaFilter}
+          onMonedaChange={handleMonedaChange}
+          statusPago={statusPagoFilter}
+          onStatusPagoChange={handleStatusPagoChange}
+          onClearFilters={handleClearFiltersMobile}
+          search={mobileSearch}
+          onSearchChange={handleMobileSearchChange}
+          aggregates={aggregatesData}
+          statusCounts={statusCounts}
+        />
+        {sharedModals}
+      </>
+    );
+  }
+
   return (
     <Card className="p-2 m-1">
       <CardContent>
@@ -476,39 +609,8 @@ export function FacturasTablePage({
             isLoading={isFetchingAggregates && !aggregatesData}
           />
 
-          {/* Create sheet — capturador puede crear con campos restringidos */}
-          {isCapturador ? (
-            <>
-              {isOpen && (
-                <CreateFacturaSheet
-                  isOpen={true}
-                  onClose={closeModal}
-                  isCapturador={true}
-                />
-              )}
-            </>
-          ) : (
-            <PermissionGuard
-              permissions={[
-                PermissionActions.facturas.crear,
-                PermissionActions.facturas.gestionar,
-              ]}
-            >
-              {isOpen && <CreateFacturaSheet isOpen={true} onClose={closeModal} />}
-              <ImportFacturasDialog
-                open={importDialogOpen}
-                onOpenChange={setImportDialogOpen}
-              />
-            </PermissionGuard>
-          )}
-
-          {/* Detail sheet */}
-          <FacturaDetailSheet
-            factura={selectedFactura}
-            open={detailSheetOpen}
-            onOpenChange={setDetailSheetOpen}
-            isCapturador={isCapturador}
-          />
+          {/* Shared modals (create, import, detail) */}
+          {sharedModals}
 
           {/* Bulk delete dialog */}
           <AlertDialog
