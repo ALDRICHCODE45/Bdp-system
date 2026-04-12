@@ -74,6 +74,42 @@ async function main() {
   });
 
   console.log("✅ Relación usuario-rol creada/verificada:", userRole.id);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Rol "Capturador" — acceso restringido para captura de facturas propias
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const capturadorRole = await prisma.role.upsert({
+    where: { name: "Capturador" },
+    update: {},
+    create: {
+      name: "Capturador",
+    },
+  });
+
+  console.log("✅ Rol 'Capturador' creado/verificado:", capturadorRole.id);
+
+  const capturadorPermission = await prisma.permission.findUnique({
+    where: { name: "facturas:capturar" },
+  });
+
+  if (capturadorPermission) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId: capturadorRole.id,
+          permissionId: capturadorPermission.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId: capturadorRole.id,
+        permissionId: capturadorPermission.id,
+      },
+    });
+    console.log("✅ Permiso 'facturas:capturar' asignado al rol Capturador");
+  }
+
   console.log("🎉 Seed completado exitosamente!");
 }
 

@@ -3,6 +3,8 @@
 import { makeFacturaExcelImportService } from "../services/makeFacturaExcelImportService";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { ImportExcelPreviewDto } from "../dtos/ImportExcelPreviewDto.dto";
 
 type ActionResult<T> =
@@ -17,6 +19,11 @@ export async function previewImportFacturasAction(
   formData: FormData
 ): Promise<ActionResult<ImportExcelPreviewDto>> {
   try {
+    await requireAnyPermission(
+      [PermissionActions.facturas.crear, PermissionActions.facturas.gestionar],
+      "No tienes permiso para importar facturas"
+    );
+
     // Verificar autenticación
     const session = await auth();
     if (!session?.user) {

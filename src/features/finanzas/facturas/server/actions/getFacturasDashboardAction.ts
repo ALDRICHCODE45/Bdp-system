@@ -2,6 +2,8 @@
 
 import prisma from "@/core/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import type {
   CurrencyKpis,
   DashboardPeriod,
@@ -33,6 +35,12 @@ function getSeriesMonths(period: DashboardPeriod): number {
 export async function getFacturasDashboardAction(
   period: DashboardPeriod = "month"
 ): Promise<{ ok: true; data: FacturasDashboardDto } | { ok: false; error: string }> {
+  // Solo accesible para usuarios con permiso de acceso o gestión (no Capturador)
+  await requireAnyPermission(
+    [PermissionActions.facturas.acceder, PermissionActions.facturas.gestionar],
+    "No tienes permiso para ver el dashboard de facturas"
+  );
+
   try {
     const periodStart  = getPeriodStart(period);
     const seriesMonths = getSeriesMonths(period);

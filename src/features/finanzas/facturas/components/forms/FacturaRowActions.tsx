@@ -28,6 +28,12 @@ import { useModalState } from "@/core/shared/hooks/useModalState";
 import { exportFacturaToPDF } from "../../helpers/exportFacturaToPDF";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { isWithin24Hours } from "../../helpers/capturadorUtils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/core/shared/ui/tooltip";
 
 const EditFacturaSheet = dynamic(
   () =>
@@ -65,11 +71,15 @@ const FacturaHistorySheet = dynamic(
 interface FacturaRowActionsProps {
   row: Row<FacturaDto>;
   onViewDetail?: (factura: FacturaDto) => void;
+  isCapturador?: boolean;
+  currentUserId?: string;
 }
 
 export function FacturaRowActions({
   row,
   onViewDetail,
+  isCapturador = false,
+  currentUserId,
 }: FacturaRowActionsProps) {
   const { isOpen, openModal, closeModal } = useModalState();
   const {
@@ -83,6 +93,11 @@ export function FacturaRowActions({
     closeModal: closeHistory,
   } = useModalState();
   const factura = row.original;
+
+  // ── Capturador edit eligibility ─────────────────────────────────────────
+  const isOwner = factura.ingresadoPor === currentUserId;
+  const isEditable = isWithin24Hours(new Date(factura.createdAt));
+  const capturadorCanEdit = isCapturador ? isOwner && isEditable : true;
 
   return (
     <>
@@ -114,95 +129,144 @@ export function FacturaRowActions({
 
           <DropdownMenuSeparator />
 
-          {/* Editar */}
-          <PermissionGuard
-            permissions={[
-              PermissionActions.facturas.editar,
-              PermissionActions.facturas.gestionar,
-            ]}
-          >
-            <DropdownMenuItem onClick={openModal} className="gap-2">
-              <Pencil className="size-4 text-muted-foreground" />
-              Editar
-            </DropdownMenuItem>
-          </PermissionGuard>
-
-          {/* Historial */}
-          <DropdownMenuItem onClick={openHistory} className="gap-2">
-            <History className="size-4 text-muted-foreground" />
-            Historial
-          </DropdownMenuItem>
-
-          {/* Exportar PDF */}
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="gap-2">
-              <FileText className="size-4 text-muted-foreground" />
-              Exportar
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem
-                  onClick={() => exportFacturaToPDF(factura)}
-                  className="gap-2"
-                >
-                  <FileText className="size-4" />
-                  PDF
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-
-          <DropdownMenuSeparator />
-
-          {/* Eliminar — destructive al final */}
-          <PermissionGuard
-            permissions={[
-              PermissionActions.facturas.eliminar,
-              PermissionActions.facturas.gestionar,
-            ]}
-          >
-            <DropdownMenuItem
-              onClick={openDeleteModal}
-              className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+          {/* Editar — capturador: visible pero puede estar disabled */}
+          {isCapturador ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <DropdownMenuItem
+                    onClick={capturadorCanEdit ? openModal : undefined}
+                    disabled={!capturadorCanEdit}
+                    className="gap-2"
+                  >
+                    <Pencil className="size-4 text-muted-foreground" />
+                    Editar
+                  </DropdownMenuItem>
+                </span>
+              </TooltipTrigger>
+              {!capturadorCanEdit && (
+                <TooltipContent>
+                  <p className="text-xs">
+                    {!isOwner
+                      ? "Solo podés editar tus propias facturas"
+                      : "Solo podés editar facturas de las últimas 24 horas"}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          ) : (
+            <PermissionGuard
+              permissions={[
+                PermissionActions.facturas.editar,
+                PermissionActions.facturas.gestionar,
+              ]}
             >
-              <Trash2 className="size-4" />
-              Eliminar
+              <DropdownMenuItem onClick={openModal} className="gap-2">
+                <Pencil className="size-4 text-muted-foreground" />
+                Editar
+              </DropdownMenuItem>
+            </PermissionGuard>
+          )}
+
+          {/* Historial — oculto para capturador */}
+          {!isCapturador && (
+            <DropdownMenuItem onClick={openHistory} className="gap-2">
+              <History className="size-4 text-muted-foreground" />
+              Historial
             </DropdownMenuItem>
-          </PermissionGuard>
+          )}
+
+          {/* Exportar PDF — oculto para capturador */}
+          {!isCapturador && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-2">
+                <FileText className="size-4 text-muted-foreground" />
+                Exportar
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem
+                    onClick={() => exportFacturaToPDF(factura)}
+                    className="gap-2"
+                  >
+                    <FileText className="size-4" />
+                    PDF
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          )}
+
+          {/* Eliminar — oculto para capturador */}
+          {!isCapturador && (
+            <>
+              <DropdownMenuSeparator />
+              <PermissionGuard
+                permissions={[
+                  PermissionActions.facturas.eliminar,
+                  PermissionActions.facturas.gestionar,
+                ]}
+              >
+                <DropdownMenuItem
+                  onClick={openDeleteModal}
+                  className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                >
+                  <Trash2 className="size-4" />
+                  Eliminar
+                </DropdownMenuItem>
+              </PermissionGuard>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <PermissionGuard
-        permissions={[
-          PermissionActions.facturas.editar,
-          PermissionActions.facturas.gestionar,
-        ]}
-      >
-        {isOpen && (
-          <EditFacturaSheet
-            isOpen={true}
-            onClose={closeModal}
-            factura={factura}
-          />
-        )}
-      </PermissionGuard>
+      {/* Edit sheet — capturador or regular user */}
+      {isCapturador ? (
+        <>
+          {isOpen && capturadorCanEdit && (
+            <EditFacturaSheet
+              isOpen={true}
+              onClose={closeModal}
+              factura={factura}
+              isCapturador={true}
+            />
+          )}
+        </>
+      ) : (
+        <PermissionGuard
+          permissions={[
+            PermissionActions.facturas.editar,
+            PermissionActions.facturas.gestionar,
+          ]}
+        >
+          {isOpen && (
+            <EditFacturaSheet
+              isOpen={true}
+              onClose={closeModal}
+              factura={factura}
+            />
+          )}
+        </PermissionGuard>
+      )}
 
-      <PermissionGuard
-        permissions={[
-          PermissionActions.facturas.eliminar,
-          PermissionActions.facturas.gestionar,
-        ]}
-      >
-        {isDeleteOpen && (
-          <DeleteFacturaAlertDialog
-            isOpen={isDeleteOpen}
-            onClose={closeDeleteModal}
-            factura={factura}
-          />
-        )}
-      </PermissionGuard>
+      {!isCapturador && (
+        <PermissionGuard
+          permissions={[
+            PermissionActions.facturas.eliminar,
+            PermissionActions.facturas.gestionar,
+          ]}
+        >
+          {isDeleteOpen && (
+            <DeleteFacturaAlertDialog
+              isOpen={isDeleteOpen}
+              onClose={closeDeleteModal}
+              factura={factura}
+            />
+          )}
+        </PermissionGuard>
+      )}
 
-      {isHistoryOpen && (
+      {!isCapturador && isHistoryOpen && (
         <FacturaHistorySheet
           isOpen={true}
           onClose={closeHistory}

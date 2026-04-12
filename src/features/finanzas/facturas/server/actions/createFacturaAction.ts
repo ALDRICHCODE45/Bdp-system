@@ -7,15 +7,21 @@ import { auth } from "@/core/lib/auth/auth";
 import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { parseISO } from "date-fns";
+import { isCapturadorOnly } from "@/features/finanzas/facturas/helpers/capturadorUtils";
 
 export const createFacturaAction = async (input: FormData) => {
   await requireAnyPermission(
-    [PermissionActions.facturas.crear, PermissionActions.facturas.gestionar],
+    [
+      PermissionActions.facturas.capturar,
+      PermissionActions.facturas.crear,
+      PermissionActions.facturas.gestionar,
+    ],
     "No tienes permiso para crear la factura"
   );
 
   const session = await auth();
   const usuarioId = session?.user?.id || null;
+  const userPermissions = session?.user?.permissions ?? [];
 
   const concepto = input.get("concepto") as string;
   const serie = (input.get("serie") as string) || null;
@@ -52,32 +58,61 @@ export const createFacturaAction = async (input: FormData) => {
   const fechaPago = fechaPagoString ? parseISO(fechaPagoString as string) : null;
   const fechaEmision = fechaEmisionString ? parseISO(fechaEmisionString as string) : null;
 
+  const isCapturador = isCapturadorOnly(userPermissions);
+
   const facturaService = makeFacturaService({ prisma });
-  const result = await facturaService.create({
-    concepto,
-    serie,
-    folio,
-    fechaEmision,
-    subtotal,
-    iva,
-    totalImpuestosTransladados,
-    totalImpuestosRetenidos,
-    total,
-    uuid,
-    rfcEmisor,
-    nombreReceptor,
-    rfcReceptor,
-    metodoPago,
-    medioPago,
-    moneda,
-    usoCfdi,
-    status,
-    nombreEmisor,
-    statusPago,
-    fechaPago,
-    facturaUrl,
-    usuarioId,
-  });
+
+  let result;
+
+  if (isCapturador) {
+    // Capturador: solo campos permitidos, status forzado a VIGENTE, ingresadoPor forzado
+    result = await facturaService.create({
+      concepto,
+      serie,
+      folio,
+      subtotal,
+      iva,
+      totalImpuestosTransladados,
+      totalImpuestosRetenidos,
+      total,
+      uuid,
+      rfcEmisor,
+      nombreEmisor,
+      rfcReceptor,
+      nombreReceptor,
+      moneda,
+      usoCfdi,
+      status: "VIGENTE",
+      usuarioId,
+    });
+  } else {
+    // Flujo normal: todos los campos
+    result = await facturaService.create({
+      concepto,
+      serie,
+      folio,
+      fechaEmision,
+      subtotal,
+      iva,
+      totalImpuestosTransladados,
+      totalImpuestosRetenidos,
+      total,
+      uuid,
+      rfcEmisor,
+      nombreReceptor,
+      rfcReceptor,
+      metodoPago,
+      medioPago,
+      moneda,
+      usoCfdi,
+      status,
+      nombreEmisor,
+      statusPago,
+      fechaPago,
+      facturaUrl,
+      usuarioId,
+    });
+  }
 
   if (!result.ok) {
     return { ok: false, error: result.error.message };

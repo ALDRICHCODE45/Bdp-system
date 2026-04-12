@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { makeFacturaExcelImportService } from "../services/makeFacturaExcelImportService";
 import prisma from "@/core/lib/prisma";
 import { auth } from "@/core/lib/auth/auth";
+import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { ImportExcelPreviewDto, ImportOptionsDto } from "../dtos/ImportExcelPreviewDto.dto";
 import { ImportExecutionResultDto } from "../dtos/ImportFacturaResultDto.dto";
 
@@ -20,6 +22,11 @@ export async function executeImportFacturasAction(
   options: ImportOptionsDto
 ): Promise<ActionResult<ImportExecutionResultDto>> {
   try {
+    await requireAnyPermission(
+      [PermissionActions.facturas.crear, PermissionActions.facturas.gestionar],
+      "No tienes permiso para importar facturas"
+    );
+
     // Verificar autenticación
     const session = await auth();
     if (!session?.user) {

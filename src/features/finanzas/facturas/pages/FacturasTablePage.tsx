@@ -13,6 +13,7 @@ import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { useFacturas } from "../hooks/useFacturas.hook";
 import { useDebounce } from "@/core/shared/hooks/use-debounce";
+import { useAuth } from "@/core/shared/hooks/use-auth";
 import { Card, CardContent } from "@/core/shared/ui/card";
 import { cn } from "@/core/lib/utils";
 import {
@@ -55,9 +56,16 @@ const CreateFacturaSheet = dynamic(
 
 interface FacturasTablePageProps {
   initialData?: PaginatedResult<FacturaDto>;
+  isCapturador?: boolean;
 }
 
-export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
+export function FacturasTablePage({
+  initialData,
+  isCapturador = false,
+}: FacturasTablePageProps) {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
+
   // ── View mode (tabla | dashboard) ────────────────────────────────────────
   const [viewMode, setViewMode] = useState<"tabla" | "dashboard">("tabla");
 
@@ -292,8 +300,8 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
 
   // ── Columns ───────────────────────────────────────────────────────────────
   const columns = useMemo(
-    () => createFacturasColumns(handleViewDetail),
-    [handleViewDetail]
+    () => createFacturasColumns(handleViewDetail, isCapturador, currentUserId),
+    [handleViewDetail, isCapturador, currentUserId]
   );
 
   // ── Status counts (filtros activos sin status) ─────────────────────────────
@@ -346,8 +354,10 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
     () =>
       createTableConfig(FacturasTableConfig, {
         onAdd: openModal,
-        onImport: () => setImportDialogOpen(true),
-        onBulkDelete: handleBulkDelete,
+        // Capturador no puede importar
+        onImport: isCapturador ? undefined : () => setImportDialogOpen(true),
+        // Capturador no puede hacer bulk delete
+        onBulkDelete: isCapturador ? undefined : handleBulkDelete,
         serverSide: {
           enabled: true,
           totalCount: data?.totalCount ?? 0,
@@ -365,10 +375,14 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
           onClearFilters: handleClearFilters,
           advancedFilters,
           onApplyAdvancedFilters: handleApplyAdvancedFilters,
-          onExport: handleExportFacturas,
+          // Capturador no puede exportar
+          onExport: isCapturador ? undefined : handleExportFacturas,
+          // Capturador no ve filtros
+          isCapturador,
         },
       }),
     [
+      isCapturador,
       openModal,
       data?.totalCount,
       data?.pageCount,
@@ -399,41 +413,47 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
               title="Gestión de Facturas de Clientes"
             />
 
-            {/* ── View mode pills ──────────────────────────────────────────── */}
-            <div className="flex items-center gap-1 rounded-full border bg-muted/40 p-1 shrink-0">
-              {(["tabla", "dashboard"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  className={cn(
-                    "rounded-full px-4 py-1.5 text-sm font-medium transition-all",
-                    viewMode === mode
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {mode === "tabla" ? "Tabla" : "Dashboard"}
-                </button>
-              ))}
-            </div>
+            {/* ── View mode pills — oculto para capturador ─────────────────── */}
+            {!isCapturador && (
+              <div className="flex items-center gap-1 rounded-full border bg-muted/40 p-1 shrink-0">
+                {(["tabla", "dashboard"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setViewMode(mode)}
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-sm font-medium transition-all",
+                      viewMode === mode
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {mode === "tabla" ? "Tabla" : "Dashboard"}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* ── Dashboard view ──────────────────────────────────────────── */}
-          {viewMode === "dashboard" && <FacturasDashboardView />}
+          {/* ── Dashboard view — oculto para capturador ─────────────────── */}
+          {!isCapturador && viewMode === "dashboard" && <FacturasDashboardView />}
 
           {/* ── Table view ─────────────────────────────────────────────── */}
-          {viewMode === "tabla" && (
+          {(isCapturador || viewMode === "tabla") && (
           <div className="space-y-6">
-          <DataTableMultiTabs
-            tabs={tabsConfig}
-            activeTabs={activeTabs}
-            onTabsChange={handleMultiTabChange}
-          />
+          {/* Tabs de status — ocultos para capturador */}
+          {!isCapturador && (
+            <DataTableMultiTabs
+              tabs={tabsConfig}
+              activeTabs={activeTabs}
+              onTabsChange={handleMultiTabChange}
+            />
+          )}
 
           <PermissionGuard
             permissions={[
               PermissionActions.facturas.acceder,
               PermissionActions.facturas.gestionar,
+              PermissionActions.facturas.capturar,
             ]}
           >
             <DataTable
@@ -456,25 +476,38 @@ export function FacturasTablePage({ initialData }: FacturasTablePageProps) {
             isLoading={isFetchingAggregates && !aggregatesData}
           />
 
-          {/* Create sheet */}
-          <PermissionGuard
-            permissions={[
-              PermissionActions.facturas.crear,
-              PermissionActions.facturas.gestionar,
-            ]}
-          >
-            {isOpen && <CreateFacturaSheet isOpen={true} onClose={closeModal} />}
-            <ImportFacturasDialog
-              open={importDialogOpen}
-              onOpenChange={setImportDialogOpen}
-            />
-          </PermissionGuard>
+          {/* Create sheet — capturador puede crear con campos restringidos */}
+          {isCapturador ? (
+            <>
+              {isOpen && (
+                <CreateFacturaSheet
+                  isOpen={true}
+                  onClose={closeModal}
+                  isCapturador={true}
+                />
+              )}
+            </>
+          ) : (
+            <PermissionGuard
+              permissions={[
+                PermissionActions.facturas.crear,
+                PermissionActions.facturas.gestionar,
+              ]}
+            >
+              {isOpen && <CreateFacturaSheet isOpen={true} onClose={closeModal} />}
+              <ImportFacturasDialog
+                open={importDialogOpen}
+                onOpenChange={setImportDialogOpen}
+              />
+            </PermissionGuard>
+          )}
 
           {/* Detail sheet */}
           <FacturaDetailSheet
             factura={selectedFactura}
             open={detailSheetOpen}
             onOpenChange={setDetailSheetOpen}
+            isCapturador={isCapturador}
           />
 
           {/* Bulk delete dialog */}

@@ -18,7 +18,7 @@ export default function SignInLayout({
           alt="Login Background"
           className="object-contain"
           fill
-          priority
+          unoptimized
         />
       </div>
     </div>

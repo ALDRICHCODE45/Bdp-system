@@ -6,6 +6,7 @@
 export const PermissionActions = {
   facturas: {
     acceder: "facturas:acceder",
+    capturar: "facturas:capturar",
     crear: "facturas:crear",
     editar: "facturas:editar",
     eliminar: "facturas:eliminar",

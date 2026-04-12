@@ -100,10 +100,24 @@ function AmountCell({
   );
 }
 
+/** Columnas que el Capturador no puede ver */
+const CAPTURADOR_EXCLUDED_COLUMN_IDS = [
+  "status",
+  "metodoPago",
+  "medioPago",
+  "statusPago",
+  "fechaPago",
+  "fechaEmision",
+  "facturaUrl",
+  "updatedAt",
+] as const;
+
 export function createFacturasColumns(
   onViewDetail: (factura: FacturaDto) => void,
+  isCapturador = false,
+  currentUserId?: string,
 ): ColumnDef<FacturaDto>[] {
-  return [
+  const allColumns: ColumnDef<FacturaDto>[] = [
     // ─── Selección ───────────────────────────────────────────────────────
     {
       id: "select",
@@ -448,12 +462,26 @@ export function createFacturasColumns(
       id: "actions",
       header: () => <span className="sr-only">Acciones</span>,
       cell: ({ row }) => (
-        <FacturaRowActions row={row} onViewDetail={onViewDetail} />
+        <FacturaRowActions
+          row={row}
+          onViewDetail={onViewDetail}
+          isCapturador={isCapturador}
+          currentUserId={currentUserId}
+        />
       ),
       enableHiding: false,
       size: 8,
     },
   ];
+
+  if (!isCapturador) return allColumns;
+
+  const excluded: string[] = [...CAPTURADOR_EXCLUDED_COLUMN_IDS];
+  return allColumns.filter((col) => {
+    const colDef = col as { accessorKey?: string; id?: string };
+    const colId = colDef.accessorKey ?? colDef.id ?? "";
+    return !excluded.includes(colId);
+  });
 }
 
 // Keep the old export for backward compatibility (some imports may still use it)

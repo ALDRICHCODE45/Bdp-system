@@ -11,11 +11,13 @@ import { CreateFacturaForm } from "./forms/CreateFacturaForm";
 interface CreateFacturaSheetProps {
   isOpen: boolean;
   onClose: () => void;
+  isCapturador?: boolean;
 }
 
 export function CreateFacturaSheet({
   isOpen,
   onClose,
+  isCapturador = false,
 }: CreateFacturaSheetProps) {
   const isMobile = useIsMobile();
 
@@ -40,7 +42,7 @@ export function CreateFacturaSheet({
 
         {/* ── Content ─────────────────────────────────────────────────────── */}
         <div className="px-6 py-4">
-          <CreateFacturaForm onSuccess={onClose} />
+          <CreateFacturaForm onSuccess={onClose} isCapturador={isCapturador} />
         </div>
       </SheetContent>
     </Sheet>

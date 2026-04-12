@@ -1,5 +1,5 @@
 import { ROUTE_PERMISSIONS } from "./route-permissions.config";
-import { hasPermission } from "./permission-checker";
+import { hasPermission, hasAnyPermission } from "./permission-checker";
 
 /**
  * Orden de prioridad de las rutas para redirección por defecto
@@ -67,8 +67,13 @@ export function getDefaultRoute(userPermissions: string[]): string {
       continue;
     }
 
-    // Verificar si el usuario tiene el permiso requerido
-    if (hasPermission(userPermissions, requiredPermission)) {
+    // Verificar si el usuario tiene el permiso requerido.
+    // Si el permiso es un array, basta con tener AL MENOS UNO.
+    const canAccess = Array.isArray(requiredPermission)
+      ? hasAnyPermission(userPermissions, requiredPermission)
+      : hasPermission(userPermissions, requiredPermission);
+
+    if (canAccess) {
       return route;
     }
   }
@@ -76,7 +81,11 @@ export function getDefaultRoute(userPermissions: string[]): string {
   // Si no se encontró ninguna ruta accesible, buscar en todas las rutas configuradas
   // (por si hay rutas que no están en la lista de prioridad)
   for (const [route, requiredPermission] of Object.entries(ROUTE_PERMISSIONS)) {
-    if (hasPermission(userPermissions, requiredPermission)) {
+    const canAccess = Array.isArray(requiredPermission)
+      ? hasAnyPermission(userPermissions, requiredPermission)
+      : hasPermission(userPermissions, requiredPermission);
+
+    if (canAccess) {
       return route;
     }
   }

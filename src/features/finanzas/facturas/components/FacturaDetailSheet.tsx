@@ -65,6 +65,7 @@ interface FacturaDetailSheetProps {
   factura: FacturaDto | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isCapturador?: boolean;
 }
 
 const statusPagoColors: Record<string, string> = {
@@ -150,7 +151,13 @@ function CopyUUID({ uuid }: { uuid: string }) {
 }
 
 // ─── InformacionTab ──────────────────────────────────────────────────────────
-function InformacionTab({ factura }: { factura: FacturaDto }) {
+function InformacionTab({
+  factura,
+  isCapturador = false,
+}: {
+  factura: FacturaDto;
+  isCapturador?: boolean;
+}) {
   const fmt = getCurrencyFormatter(factura.moneda);
 
   const formatDate = (d: string | null | undefined) => {
@@ -181,14 +188,20 @@ function InformacionTab({ factura }: { factura: FacturaDto }) {
           <InfoRow label="Uso CFDI" value={factura.usoCfdi} />
           <InfoRow label="Serie" value={factura.serie} mono />
           <InfoRow label="Folio" value={factura.folio} mono />
-          <InfoRow label="Forma de Pago" value={factura.metodoPago} />
-          <InfoRow label="Método de Pago" value={factura.medioPago} />
+          {!isCapturador && (
+            <InfoRow label="Forma de Pago" value={factura.metodoPago} />
+          )}
+          {!isCapturador && (
+            <InfoRow label="Método de Pago" value={factura.medioPago} />
+          )}
           <InfoRow label="Moneda" value={factura.moneda} />
-          <InfoRow
-            label="Fecha de Emisión"
-            value={formatDate(factura.fechaEmision)}
-          />
-          {factura.facturaUrl && (
+          {!isCapturador && (
+            <InfoRow
+              label="Fecha de Emisión"
+              value={formatDate(factura.fechaEmision)}
+            />
+          )}
+          {!isCapturador && factura.facturaUrl && (
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Factura SAT</span>
               <a
@@ -258,44 +271,52 @@ function InformacionTab({ factura }: { factura: FacturaDto }) {
         </div>
       </div>
 
-      <Separator />
+      {/* Pago — oculto para capturador */}
+      {!isCapturador && (
+        <>
+          <Separator />
 
-      {/* Pago */}
-      <div>
-        <SectionHeader title="Pago" />
-        <div className="grid grid-cols-2 gap-4">
-          <InfoRow
-            label="Estado de Pago"
-            value={
-              factura.statusPago
-                ? (statusPagoLabels[factura.statusPago] ?? factura.statusPago)
-                : null
-            }
-          />
-          <InfoRow
-            label="Fecha de Pago"
-            value={formatDate(factura.fechaPago)}
-          />
-        </div>
-      </div>
+          <div>
+            <SectionHeader title="Pago" />
+            <div className="grid grid-cols-2 gap-4">
+              <InfoRow
+                label="Estado de Pago"
+                value={
+                  factura.statusPago
+                    ? (statusPagoLabels[factura.statusPago] ?? factura.statusPago)
+                    : null
+                }
+              />
+              <InfoRow
+                label="Fecha de Pago"
+                value={formatDate(factura.fechaPago)}
+              />
+            </div>
+          </div>
+        </>
+      )}
 
-      <Separator />
+      {/* Auditoría — oculto para capturador */}
+      {!isCapturador && (
+        <>
+          <Separator />
 
-      {/* Auditoría */}
-      <div>
-        <SectionHeader title="Auditoría" />
-        <div className="grid grid-cols-2 gap-4">
-          <InfoRow label="Ingresado por" value={factura.ingresadoPorNombre} />
-          <InfoRow
-            label="Fecha de registro"
-            value={formatDateTime(factura.createdAt)}
-          />
-          <InfoRow
-            label="Última actualización"
-            value={formatDateTime(factura.updatedAt)}
-          />
-        </div>
-      </div>
+          <div>
+            <SectionHeader title="Auditoría" />
+            <div className="grid grid-cols-2 gap-4">
+              <InfoRow label="Ingresado por" value={factura.ingresadoPorNombre} />
+              <InfoRow
+                label="Fecha de registro"
+                value={formatDateTime(factura.createdAt)}
+              />
+              <InfoRow
+                label="Última actualización"
+                value={formatDateTime(factura.updatedAt)}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -462,6 +483,7 @@ export function FacturaDetailSheet({
   factura,
   open,
   onOpenChange,
+  isCapturador = false,
 }: FacturaDetailSheetProps) {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("info");
@@ -492,8 +514,10 @@ export function FacturaDetailSheet({
 
               {/* Badges: status + statusPago + moneda */}
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <FacturaStatusBadge status={factura.status} />
-                {factura.statusPago && (
+                {!isCapturador && (
+                  <FacturaStatusBadge status={factura.status} />
+                )}
+                {!isCapturador && factura.statusPago && (
                   <Badge
                     variant="outline"
                     className={cn(
@@ -537,44 +561,53 @@ export function FacturaDetailSheet({
               <TabsTrigger value="info" className="flex-1">
                 Información
               </TabsTrigger>
-              <TabsTrigger value="archivos" className="flex-1">
-                <span className="flex items-center gap-1.5">
-                  <Paperclip className="size-3" />
-                  Archivos
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="historial" className="flex-1">
-                <span className="flex items-center gap-1.5">
-                  <History className="size-3" />
-                  Historial
-                </span>
-              </TabsTrigger>
+              {/* Archivos e Historial — ocultos para capturador */}
+              {!isCapturador && (
+                <>
+                  <TabsTrigger value="archivos" className="flex-1">
+                    <span className="flex items-center gap-1.5">
+                      <Paperclip className="size-3" />
+                      Archivos
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="historial" className="flex-1">
+                    <span className="flex items-center gap-1.5">
+                      <History className="size-3" />
+                      Historial
+                    </span>
+                  </TabsTrigger>
+                </>
+              )}
             </TabsList>
 
             {/* Información */}
             <TabsContent value="info" className="mt-5">
-              <InformacionTab factura={factura} />
+              <InformacionTab factura={factura} isCapturador={isCapturador} />
             </TabsContent>
 
-            {/* Archivos — lazy */}
-            <TabsContent value="archivos" className="mt-5">
-              {(activeTab === "archivos" || visitedTabs.has("archivos")) && (
-                <FilesTab
-                  facturaId={factura.id}
-                  isActive={activeTab === "archivos"}
-                />
-              )}
-            </TabsContent>
+            {/* Archivos — lazy, oculto para capturador */}
+            {!isCapturador && (
+              <TabsContent value="archivos" className="mt-5">
+                {(activeTab === "archivos" || visitedTabs.has("archivos")) && (
+                  <FilesTab
+                    facturaId={factura.id}
+                    isActive={activeTab === "archivos"}
+                  />
+                )}
+              </TabsContent>
+            )}
 
-            {/* Historial — lazy */}
-            <TabsContent value="historial" className="mt-5">
-              {(activeTab === "historial" || visitedTabs.has("historial")) && (
-                <HistorialTab
-                  facturaId={factura.id}
-                  isActive={activeTab === "historial"}
-                />
-              )}
-            </TabsContent>
+            {/* Historial — lazy, oculto para capturador */}
+            {!isCapturador && (
+              <TabsContent value="historial" className="mt-5">
+                {(activeTab === "historial" || visitedTabs.has("historial")) && (
+                  <HistorialTab
+                    facturaId={factura.id}
+                    isActive={activeTab === "historial"}
+                  />
+                )}
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </SheetContent>

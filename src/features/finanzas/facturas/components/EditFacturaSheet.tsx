@@ -27,6 +27,7 @@ import { getFilesByEntityAction } from "@/features/Files/server/actions/getFiles
 import { EditFacturaForm } from "./forms/EditFacturaForm";
 import { FacturaStatusBadge } from "./FacturaStatusBadge";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
+import { isWithin24Hours } from "../helpers/capturadorUtils";
 
 const FileUploadDropZone = dynamic(
   () =>
@@ -43,6 +44,7 @@ interface EditFacturaSheetProps {
   isOpen: boolean;
   onClose: () => void;
   factura: FacturaDto | null;
+  isCapturador?: boolean;
 }
 
 // ─── Files Tab ───────────────────────────────────────────────────────────────
@@ -97,8 +99,12 @@ export function EditFacturaSheet({
   isOpen,
   onClose,
   factura,
+  isCapturador = false,
 }: EditFacturaSheetProps) {
   const isMobile = useIsMobile();
+  const isEditable = factura
+    ? isWithin24Hours(new Date(factura.createdAt))
+    : false;
   const [activeTab, setActiveTab] = useState("datos");
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
     new Set(["datos"]),
@@ -128,7 +134,9 @@ export function EditFacturaSheet({
                 {factura.concepto}
               </SheetTitle>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <FacturaStatusBadge status={factura.status} />
+                {!isCapturador && (
+                  <FacturaStatusBadge status={factura.status} />
+                )}
                 <span className="font-mono text-xs text-muted-foreground border rounded px-1.5 py-0.5">
                   {factura.moneda}
                 </span>
@@ -144,28 +152,37 @@ export function EditFacturaSheet({
               <TabsTrigger value="datos" className="flex-1">
                 Datos
               </TabsTrigger>
-              <TabsTrigger value="archivos" className="flex-1">
-                <span className="flex items-center gap-1.5">
-                  <Paperclip className="size-3" />
-                  Archivos
-                </span>
-              </TabsTrigger>
+              {!isCapturador && (
+                <TabsTrigger value="archivos" className="flex-1">
+                  <span className="flex items-center gap-1.5">
+                    <Paperclip className="size-3" />
+                    Archivos
+                  </span>
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Datos */}
             <TabsContent value="datos" className="mt-5">
-              <EditFacturaForm factura={factura} onSuccess={onClose} />
+              <EditFacturaForm
+                factura={factura}
+                onSuccess={onClose}
+                isCapturador={isCapturador}
+                isEditable={isCapturador ? isEditable : true}
+              />
             </TabsContent>
 
-            {/* Archivos — lazy */}
-            <TabsContent value="archivos" className="mt-5">
-              {(activeTab === "archivos" || visitedTabs.has("archivos")) && (
-                <FilesTab
-                  facturaId={factura.id}
-                  isActive={activeTab === "archivos"}
-                />
-              )}
-            </TabsContent>
+            {/* Archivos — lazy, oculto para capturador */}
+            {!isCapturador && (
+              <TabsContent value="archivos" className="mt-5">
+                {(activeTab === "archivos" || visitedTabs.has("archivos")) && (
+                  <FilesTab
+                    facturaId={factura.id}
+                    isActive={activeTab === "archivos"}
+                  />
+                )}
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </SheetContent>

@@ -1,6 +1,9 @@
 import { LucideIcon } from "lucide-react";
 import { getRequiredPermission } from "@/core/lib/permissions/route-permissions.config";
-import { hasPermission } from "@/core/lib/permissions/permission-checker";
+import {
+  hasPermission,
+  hasAnyPermission,
+} from "@/core/lib/permissions/permission-checker";
 
 /**
  * Tipo para los items del sidebar
@@ -45,8 +48,11 @@ export function filterSidebarLinks(
         return true;
       }
 
-      // Verificar si el usuario tiene el permiso requerido
-      return hasPermission(userPermissions, requiredPermission);
+      // Verificar si el usuario tiene el permiso requerido.
+      // Si es un array, basta con tener AL MENOS UNO.
+      return Array.isArray(requiredPermission)
+        ? hasAnyPermission(userPermissions, requiredPermission)
+        : hasPermission(userPermissions, requiredPermission);
     });
 
     // Agregar el módulo solo si tiene items visibles

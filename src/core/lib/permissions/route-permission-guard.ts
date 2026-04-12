@@ -10,6 +10,7 @@ import {
   requiresPermission,
 } from "./route-permissions.config";
 import { MiddlewarePermissionsService } from "./middleware-permissions.service";
+import { hasAnyPermission } from "./permission-checker";
 
 /**
  * Tipo para el objeto de autenticación del middleware
@@ -22,7 +23,7 @@ type AuthRequest = unknown;
 type AccessCheckResult = {
   hasAccess: boolean;
   reason?: string;
-  requiredPermission?: string;
+  requiredPermission?: string | string[];
 };
 
 /**
@@ -82,22 +83,22 @@ export class RoutePermissionGuard {
       };
     }
 
-    // Verificar si el usuario tiene el permiso requerido
-    const hasPermission = MiddlewarePermissionsService.hasRequiredPermission(
-      userPermissions,
-      requiredPermission,
-    );
+    // Verificar si el usuario tiene el permiso requerido.
+    // Si el permiso es un array, basta con tener AL MENOS UNO (ANY).
+    const hasAccess = Array.isArray(requiredPermission)
+      ? MiddlewarePermissionsService.hasAdminPermission(userPermissions) ||
+        hasAnyPermission(userPermissions, requiredPermission)
+      : MiddlewarePermissionsService.hasRequiredPermission(
+          userPermissions,
+          requiredPermission,
+        );
 
     // Logging en desarrollo
-    MiddlewarePermissionsService.logPermissionCheck(
-      auth,
-      pathname,
-      hasPermission,
-    );
+    MiddlewarePermissionsService.logPermissionCheck(auth, pathname, hasAccess);
 
     return {
-      hasAccess: hasPermission,
-      reason: hasPermission ? "Permiso verificado" : "Permiso insuficiente",
+      hasAccess,
+      reason: hasAccess ? "Permiso verificado" : "Permiso insuficiente",
       requiredPermission,
     };
   }

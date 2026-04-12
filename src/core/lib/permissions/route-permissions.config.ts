@@ -12,9 +12,9 @@
  * - Para rutas anidadas, usar el permiso del recurso principal
  */
 
-export const ROUTE_PERMISSIONS: Record<string, string> = {
+export const ROUTE_PERMISSIONS: Record<string, string | string[]> = {
   // Módulo de Finanzas
-  "/facturas": "facturas:acceder",
+  "/facturas": ["facturas:acceder", "facturas:capturar"],
   "/ingresos": "ingresos:acceder",
   "/egresos": "egresos:acceder",
   "/clientes-proovedores": "clientes-proovedores:acceder",
@@ -39,19 +39,22 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
 };
 
 /**
- * Obtiene el permiso requerido para una ruta específica
+ * Obtiene el permiso requerido para una ruta específica.
+ * Puede retornar un string simple o un array de strings (ANY of them grants access).
  *
  * @param pathname - La ruta a verificar (ej: "/facturas")
- * @returns El permiso requerido o null si la ruta no requiere permisos específicos
+ * @returns El permiso (o array de permisos) requerido, o null si la ruta no requiere permisos
  */
-export function getRequiredPermission(pathname: string): string | null {
+export function getRequiredPermission(
+  pathname: string,
+): string | string[] | null {
   // Buscar coincidencia exacta primero
-  if (ROUTE_PERMISSIONS[pathname]) {
+  if (ROUTE_PERMISSIONS[pathname] !== undefined) {
     return ROUTE_PERMISSIONS[pathname];
   }
 
   // Buscar coincidencia parcial para rutas anidadas
-  // Ejemplo: "/facturas/123" debería requerir "facturas:acceder"
+  // Ejemplo: "/facturas/123" debería requerir el permiso de "facturas"
   const matchingRoute = Object.keys(ROUTE_PERMISSIONS).find((route) => {
     // Si la ruta configurada termina con "/", permitir subrutas
     if (route.endsWith("/")) {

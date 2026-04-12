@@ -242,7 +242,6 @@ export const COLUMN_ALIASES: Record<string, string> = {
   "total impuestos trasladados": "totalImpuestosTransladados",
   "imp trasladados": "totalImpuestosTransladados",
   "iva trasladado": "totalImpuestosTransladados",
-  "iva": "totalImpuestosTransladados",
   "iva cobrado": "totalImpuestosTransladados",
   "impuesto al valor agregado": "totalImpuestosTransladados",
   "impuestos traslados": "totalImpuestosTransladados",
@@ -299,11 +298,10 @@ export const COLUMN_ALIASES: Record<string, string> = {
   "status cfdi": "status",
 
   // ── IVA ───────────────────────────────────────────────────────────────────
+  "iva": "iva",
   "iva monto": "iva",
   "monto iva": "iva",
   "valor iva": "iva",
-  // nota: "iva" solo ya está mapeado a totalImpuestosTransladados (alias histórico)
-  // usamos "iva monto" para el campo específico
 
   // ── Fecha Emisión ─────────────────────────────────────────────────────────
   "fecha emision": "fechaEmision",

@@ -63,6 +63,8 @@ interface FacturasFiltersProps extends BaseFilterProps {
   // Advanced filters
   advancedFilters?: FacturasAdvancedFilters;
   onApplyAdvancedFilters?: (filters: FacturasAdvancedFilters) => void;
+  // Role flags
+  isCapturador?: boolean;
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -86,6 +88,7 @@ export function FacturasFilters({
   onClearFilters,
   advancedFilters,
   onApplyAdvancedFilters,
+  isCapturador = false,
 }: FacturasFiltersProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -110,6 +113,7 @@ export function FacturasFilters({
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
+            {/* Importar — no disponible para capturador (onImport es undefined cuando isCapturador) */}
             {onImport && (
               <Button
                 variant="outline"
@@ -128,7 +132,8 @@ export function FacturasFilters({
               addButtonText={addButtonText}
               buttonTooltipText="Agregar Factura"
               onAdd={onAdd}
-              onClearFilters={handleClearAll}
+              // Capturador: sin botón limpiar (no-op) ni exportar
+              onClearFilters={isCapturador ? () => {} : handleClearAll}
               onExport={onExport}
               table={table}
               exportFileName="facturas"
@@ -137,59 +142,61 @@ export function FacturasFilters({
           </div>
         </CardHeader>
 
-        {/* ── Filtros rápidos + botón Filtros avanzados ── */}
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-            <FilterMultiSelect
-              label="Forma de Pago"
-              options={metodoPagoOptions}
-              selected={metodoPago}
-              onChange={(v) => onMetodoPagoChange?.(v)}
-              placeholder="Todos"
-            />
-            <FilterMultiSelect
-              label="Método de Pago"
-              options={medioPagoOptions}
-              selected={medioPago}
-              onChange={(v) => onMedioPagoChange?.(v)}
-              placeholder="Todos"
-            />
-            <FilterMultiSelect
-              label="Moneda"
-              options={monedaOptions}
-              selected={moneda}
-              onChange={(v) => onMonedaChange?.(v)}
-              placeholder="Todas"
-            />
-            <FilterMultiSelect
-              label="Status de Pago"
-              options={statusPagoOptions}
-              selected={statusPago}
-              onChange={(v) => onStatusPagoChange?.(v)}
-              placeholder="Todos"
-            />
+        {/* ── Filtros rápidos + botón Filtros avanzados — ocultos para capturador ── */}
+        {!isCapturador && (
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+              <FilterMultiSelect
+                label="Forma de Pago"
+                options={metodoPagoOptions}
+                selected={metodoPago}
+                onChange={(v) => onMetodoPagoChange?.(v)}
+                placeholder="Todos"
+              />
+              <FilterMultiSelect
+                label="Método de Pago"
+                options={medioPagoOptions}
+                selected={medioPago}
+                onChange={(v) => onMedioPagoChange?.(v)}
+                placeholder="Todos"
+              />
+              <FilterMultiSelect
+                label="Moneda"
+                options={monedaOptions}
+                selected={moneda}
+                onChange={(v) => onMonedaChange?.(v)}
+                placeholder="Todas"
+              />
+              <FilterMultiSelect
+                label="Status de Pago"
+                options={statusPagoOptions}
+                selected={statusPago}
+                onChange={(v) => onStatusPagoChange?.(v)}
+                placeholder="Todos"
+              />
 
-            {/* Botón Filtros avanzados */}
-            <div className="space-y-2">
-              <span className="block text-xs font-medium text-muted-foreground">
-                Más filtros
-              </span>
-              <Button
-                variant="outline"
-                className="w-full gap-2 relative"
-                onClick={() => setSheetOpen(true)}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filtros
-                {activeAdvancedCount > 0 && (
-                  <Badge className="ml-auto h-5 min-w-5 px-1 text-xs flex items-center justify-center">
-                    {activeAdvancedCount}
-                  </Badge>
-                )}
-              </Button>
+              {/* Botón Filtros avanzados */}
+              <div className="space-y-2">
+                <span className="block text-xs font-medium text-muted-foreground">
+                  Más filtros
+                </span>
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 relative"
+                  onClick={() => setSheetOpen(true)}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filtros
+                  {activeAdvancedCount > 0 && (
+                    <Badge className="ml-auto h-5 min-w-5 px-1 text-xs flex items-center justify-center">
+                      {activeAdvancedCount}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
 
       {/* Sheet de filtros avanzados */}

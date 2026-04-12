@@ -13,7 +13,7 @@ import {
 import { Separator } from "@/core/shared/ui/separator";
 import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
 import { format, parse } from "date-fns";
-import { Save } from "lucide-react";
+import { Save, AlertTriangle } from "lucide-react";
 import { cn } from "@/core/lib/utils";
 import { useUpdateFacturaForm } from "../../hooks/useUpdateFacturaForm.hook";
 import { FacturaDto } from "../../server/dtos/FacturaDto.dto";
@@ -24,6 +24,8 @@ import { CurrencyInput } from "@/core/shared/components/CurrencyInput";
 interface EditFacturaFormProps {
   factura: FacturaDto;
   onSuccess?: () => void;
+  isCapturador?: boolean;
+  isEditable?: boolean;
 }
 
 // ─── SectionHeader ────────────────────────────────────────────────────────────
@@ -121,6 +123,8 @@ const USO_CFDI_OPTIONS = [
 export const EditFacturaForm = ({
   factura,
   onSuccess,
+  isCapturador = false,
+  isEditable = true,
 }: EditFacturaFormProps) => {
   const form = useUpdateFacturaForm(factura, onSuccess);
 
@@ -157,6 +161,16 @@ export const EditFacturaForm = ({
       }}
       className="space-y-6"
     >
+      {/* ── Banner de 24h para capturador ────────────────────────────────── */}
+      {isCapturador && !isEditable && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <p className="text-sm">
+            Solo podés editar facturas de las últimas 24 horas. Esta factura ya no es editable.
+          </p>
+        </div>
+      )}
+
       {/* ── Datos Fiscales — PRIMERO ────────────────────────────────────── */}
       <div>
         <SectionHeader title="Datos Fiscales" />
@@ -534,10 +548,10 @@ export const EditFacturaForm = ({
         </div>
       </div>
 
-      <Separator />
+      {!isCapturador && <Separator />}
 
-      {/* ── Status y Pago ────────────────────────────────────────────────── */}
-      <div>
+      {/* ── Status y Pago — oculta para capturador ───────────────────────── */}
+      {!isCapturador && <div>
         <SectionHeader title="Status y Pago" />
         <div className="space-y-4">
           {/* Status + Método de Pago */}
@@ -684,28 +698,35 @@ export const EditFacturaForm = ({
             )}
           </form.Field>
         </div>
-      </div>
+      </div>}
 
-      <Separator />
+      {!isCapturador && <Separator />}
 
-      {/* ── Factura SAT ──────────────────────────────────────────────────── */}
-      <div>
-        <SectionHeader title="Factura SAT" />
-        <form.Field name="facturaUrl">
-          {(field) => (
-            <FormField label="PDF timbrado" hint="Subí el PDF de la factura timbrada por el SAT (Opcional)">
-              <FacturaSATUpload
-                value={field.state.value}
-                onChange={(url) => field.handleChange(url)}
-                onClear={() => field.handleChange("")}
-              />
-            </FormField>
-          )}
-        </form.Field>
-      </div>
+      {/* ── Factura SAT — oculta para capturador ─────────────────────────── */}
+      {!isCapturador && (
+        <div>
+          <SectionHeader title="Factura SAT" />
+          <form.Field name="facturaUrl">
+            {(field) => (
+              <FormField label="PDF timbrado" hint="Subí el PDF de la factura timbrada por el SAT (Opcional)">
+                <FacturaSATUpload
+                  value={field.state.value}
+                  onChange={(url) => field.handleChange(url)}
+                  onClear={() => field.handleChange("")}
+                />
+              </FormField>
+            )}
+          </form.Field>
+        </div>
+      )}
 
       {/* ── Submit ─────────────────────────────────────────────────────────── */}
-      <Button type="submit" form="edit-factura-form" className="w-full gap-2">
+      <Button
+        type="submit"
+        form="edit-factura-form"
+        className="w-full gap-2"
+        disabled={isCapturador && !isEditable}
+      >
         <Save className="size-4" />
         Guardar cambios
       </Button>

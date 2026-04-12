@@ -53,14 +53,18 @@ export const useUpdateFacturaForm = (
       formData.append("folio", value.folio || "");
       formData.append("fechaEmision", value.fechaEmision || "");
       formData.append("subtotal", String(value.subtotal));
-      formData.append("iva", String(value.iva || ""));
+      formData.append("iva", value.iva != null ? String(value.iva) : "");
       formData.append(
         "totalImpuestosTransladados",
-        String(value.totalImpuestosTransladados || "")
+        value.totalImpuestosTransladados != null
+          ? String(value.totalImpuestosTransladados)
+          : ""
       );
       formData.append(
         "totalImpuestosRetenidos",
-        String(value.totalImpuestosRetenidos || "")
+        value.totalImpuestosRetenidos != null
+          ? String(value.totalImpuestosRetenidos)
+          : ""
       );
       formData.append("total", String(value.total));
       formData.append("uuid", value.uuid);

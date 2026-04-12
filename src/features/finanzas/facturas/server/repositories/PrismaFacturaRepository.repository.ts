@@ -234,8 +234,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
         medioPago: data.medioPago ?? null,
         moneda: data.moneda ?? "MXN",
         usoCfdi: data.usoCfdi ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        status: data.status as any,
+        status: data.status as FacturaEstado,
         nombreEmisor: data.nombreEmisor ?? null,
         statusPago: data.statusPago ?? null,
         fechaPago: data.fechaPago,
@@ -268,8 +267,7 @@ export class PrismaFacturaRepository implements FacturaRepository {
         medioPago: data.medioPago ?? null,
         moneda: data.moneda ?? "MXN",
         usoCfdi: data.usoCfdi ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        status: data.status as any,
+        status: data.status as FacturaEstado,
         nombreEmisor: data.nombreEmisor ?? null,
         statusPago: data.statusPago ?? null,
         fechaPago: data.fechaPago,

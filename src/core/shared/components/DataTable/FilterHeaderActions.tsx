@@ -51,7 +51,7 @@ export const FilterHeaderActions = ({
         <RefreshCw />
         <span>Limpiar</span>
       </Button>
-      {table && (
+      {table && onExport !== undefined && (
         <ExportButton
           table={table}
           onExport={onExport}

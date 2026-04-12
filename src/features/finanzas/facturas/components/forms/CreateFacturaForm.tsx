@@ -91,10 +91,14 @@ const USO_CFDI_OPTIONS = [
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface CreateFacturaFormProps {
   onSuccess?: () => void;
+  isCapturador?: boolean;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
+export const CreateFacturaForm = ({
+  onSuccess,
+  isCapturador = false,
+}: CreateFacturaFormProps) => {
   const form = useCreateFacturaForm(onSuccess);
 
   // Leer valores reactivos para auto-calcular Total
@@ -453,10 +457,10 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
         </div>
       </div>
 
-      <Separator />
+      {!isCapturador && <Separator />}
 
       {/* ── Status y Pago ────────────────────────────────────────────────── */}
-      <div>
+      {!isCapturador && <div>
         <SectionHeader title="Status y Pago" />
         <div className="space-y-4">
           {/* Status + Método de Pago */}
@@ -592,25 +596,27 @@ export const CreateFacturaForm = ({ onSuccess }: CreateFacturaFormProps) => {
             )}
           </form.Field>
         </div>
-      </div>
+      </div>}
 
-      <Separator />
+      {!isCapturador && <Separator />}
 
-      {/* ── Factura SAT ──────────────────────────────────────────────────── */}
-      <div>
-        <SectionHeader title="Factura SAT" />
-        <form.Field name="facturaUrl">
-          {(field) => (
-            <FormField label="PDF timbrado" hint="Subí el PDF de la factura timbrada por el SAT (Opcional)">
-              <FacturaSATUpload
-                value={field.state.value}
-                onChange={(url) => field.handleChange(url)}
-                onClear={() => field.handleChange("")}
-              />
-            </FormField>
-          )}
-        </form.Field>
-      </div>
+      {/* ── Factura SAT — oculta para capturador ─────────────────────────── */}
+      {!isCapturador && (
+        <div>
+          <SectionHeader title="Factura SAT" />
+          <form.Field name="facturaUrl">
+            {(field) => (
+              <FormField label="PDF timbrado" hint="Subí el PDF de la factura timbrada por el SAT (Opcional)">
+                <FacturaSATUpload
+                  value={field.state.value}
+                  onChange={(url) => field.handleChange(url)}
+                  onClear={() => field.handleChange("")}
+                />
+              </FormField>
+            )}
+          </form.Field>
+        </div>
+      )}
 
       {/* ── Submit ─────────────────────────────────────────────────────────── */}
       <Button type="submit" form="create-factura-form" className="w-full gap-2">

@@ -22,6 +22,12 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
     description: "Acceder al módulo de facturas",
   },
   {
+    name: "facturas:capturar",
+    resource: "facturas",
+    action: "capturar",
+    description: "Registrar facturas propias como capturador",
+  },
+  {
     name: "facturas:crear",
     resource: "facturas",
     action: "crear",
