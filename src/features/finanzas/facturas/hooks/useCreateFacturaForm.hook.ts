@@ -70,8 +70,13 @@ export const useCreateFacturaForm = (onSuccess?: () => void) => {
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("facturaUrl", value.facturaUrl || "");
 
-      await createFacturaMutation.mutateAsync(formData);
-      onSuccess?.();
+      try {
+        await createFacturaMutation.mutateAsync(formData);
+        onSuccess?.();
+      } catch {
+        // El error ya es manejado por onError en useCreateFactura (toast)
+        // No re-lanzamos para evitar que Next.js lo interprete como un crash
+      }
     },
   });
 

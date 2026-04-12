@@ -81,8 +81,13 @@ export const useUpdateFacturaForm = (
       formData.append("fechaPago", value.fechaPago || "");
       formData.append("facturaUrl", value.facturaUrl || "");
 
-      await updateFacturaMutation.mutateAsync(formData);
-      onSuccess?.();
+      try {
+        await updateFacturaMutation.mutateAsync(formData);
+        onSuccess?.();
+      } catch {
+        // El error ya es manejado por onError en useUpdateFactura (toast)
+        // No re-lanzamos para evitar que Next.js lo interprete como un crash
+      }
     },
   });
 
