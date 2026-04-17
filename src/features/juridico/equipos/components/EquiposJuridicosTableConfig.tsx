@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import type { TableConfig } from "@/core/shared/components/DataTable/types";
 import type { EquipoJuridicoDto } from "../server/dtos/EquipoJuridicoDto.dto";
 
@@ -13,6 +14,11 @@ export const equiposJuridicosDefaultColumnVisibility = {
 };
 
 export const EquiposJuridicosTableConfig: TableConfig<EquipoJuridicoDto> = {
+  actions: {
+    showAddButton: true,
+    addButtonText: "Nuevo Equipo",
+    addButtonIcon: <Plus className="size-4" />,
+  },
   pagination: {
     defaultPageSize: 10,
     pageSizeOptions: [10, 20, 30, 50],

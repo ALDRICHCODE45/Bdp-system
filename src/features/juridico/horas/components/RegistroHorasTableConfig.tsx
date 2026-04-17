@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import type { TableConfig } from "@/core/shared/components/DataTable/types";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
 
@@ -27,6 +28,7 @@ export const RegistroHorasTableConfig: TableConfig<RegistroHoraDto> = {
   actions: {
     showAddButton: true,
     addButtonText: "Registrar Horas",
+    addButtonIcon: <Plus className="size-4" />,
   },
   pagination: {
     defaultPageSize: 10,
