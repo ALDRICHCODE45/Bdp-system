@@ -27,7 +27,12 @@ export const handleEditRequestCreated = inngest.createFunction(
                 permissions: {
                   some: {
                     permission: {
-                      name: "juridico-horas:autorizar-edicion",
+                      name: {
+                        in: [
+                          "juridico-horas:autorizar-edicion",
+                          "juridico-horas:gestionar",
+                        ],
+                      },
                     },
                   },
                 },
