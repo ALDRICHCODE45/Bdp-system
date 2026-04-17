@@ -72,6 +72,29 @@ export const sidebarLinks = {
       ],
     },
     {
+      title: "Jurídico",
+      url: "Jurídico",
+      icon: Scale,
+      items: [
+        {
+          title: "Clientes",
+          url: "/juridico/clientes",
+        },
+        {
+          title: "Asuntos",
+          url: "/juridico/asuntos",
+        },
+        {
+          title: "Equipos",
+          url: "/juridico/equipos",
+        },
+        {
+          title: "Horas",
+          url: "/juridico/horas",
+        },
+      ],
+    },
+    {
       title: "Sistema",
       url: "Sistema",
       icon: Monitor,

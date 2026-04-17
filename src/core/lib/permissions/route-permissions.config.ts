@@ -29,6 +29,13 @@ export const ROUTE_PERMISSIONS: Record<string, string | string[]> = {
   "/qr-entry": "recepcion:acceder",
   "/register-qr-entry": "recepcion:acceder",
 
+  // Módulo Jurídico
+  "/juridico/clientes": "juridico-clientes:acceder",
+  "/juridico/asuntos": "juridico-asuntos:acceder",
+  "/juridico/equipos": "juridico-equipos:acceder",
+  "/juridico/horas": "juridico-horas:acceder",
+  "/juridico/horas/reportes": "juridico-horas:ver-reportes",
+
   // Módulo de Sistema
   "/usuarios": "usuarios:acceder",
   "/config": "roles:acceder", // La configuración requiere acceso a roles

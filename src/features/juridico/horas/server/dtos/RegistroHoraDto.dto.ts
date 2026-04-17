@@ -1,0 +1,21 @@
+export type RegistroHoraDto = {
+  id: string;
+  usuarioId: string;
+  usuarioNombre: string;
+  usuarioEmail: string;
+  equipoJuridicoId: string;
+  equipoJuridicoNombre: string;
+  clienteJuridicoId: string;
+  clienteJuridicoNombre: string;
+  asuntoJuridicoId: string;
+  asuntoJuridicoNombre: string;
+  socioId: string;
+  socioNombre: string;
+  horas: number;
+  descripcion: string | null;
+  ano: number;
+  semana: number;
+  editable: boolean;
+  createdAt: string;
+  updatedAt: string;
+};

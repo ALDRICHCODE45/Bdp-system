@@ -18,6 +18,18 @@ const envSchema = z.object({
   DO_SPACES_BUCKET: z.string().min(1, "DO_SPACES_BUCKET es requerido"),
   DO_SPACES_REGION: z.string().min(1, "DO_SPACES_REGION es requerido"),
 
+  // SMTP (Email)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_SECURE: z.coerce.boolean().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+
+  // Inngest Cloud
+  INNGEST_EVENT_KEY: z.string().optional(),
+  INNGEST_SIGNING_KEY: z.string().optional(),
+
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),

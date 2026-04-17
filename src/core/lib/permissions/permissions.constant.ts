@@ -403,6 +403,155 @@ const SISTEMA_PERMISSIONS: PermissionDefinition[] = [
 ];
 
 /**
+ * Permisos del módulo Jurídico
+ */
+const JURIDICO_PERMISSIONS: PermissionDefinition[] = [
+  // Clientes Jurídicos - Granulares
+  {
+    name: "juridico-clientes:acceder",
+    resource: "juridico-clientes",
+    action: "acceder",
+    description: "Acceder al módulo de clientes jurídicos",
+  },
+  {
+    name: "juridico-clientes:crear",
+    resource: "juridico-clientes",
+    action: "crear",
+    description: "Crear clientes jurídicos",
+  },
+  {
+    name: "juridico-clientes:editar",
+    resource: "juridico-clientes",
+    action: "editar",
+    description: "Editar clientes jurídicos",
+  },
+  {
+    name: "juridico-clientes:eliminar",
+    resource: "juridico-clientes",
+    action: "eliminar",
+    description: "Eliminar clientes jurídicos",
+  },
+  // Clientes Jurídicos - Modular
+  {
+    name: "juridico-clientes:gestionar",
+    resource: "juridico-clientes",
+    action: "gestionar",
+    description: "Gestión completa de clientes jurídicos",
+  },
+
+  // Asuntos Jurídicos - Granulares
+  {
+    name: "juridico-asuntos:acceder",
+    resource: "juridico-asuntos",
+    action: "acceder",
+    description: "Acceder al módulo de asuntos",
+  },
+  {
+    name: "juridico-asuntos:crear",
+    resource: "juridico-asuntos",
+    action: "crear",
+    description: "Crear asuntos jurídicos",
+  },
+  {
+    name: "juridico-asuntos:editar",
+    resource: "juridico-asuntos",
+    action: "editar",
+    description: "Editar asuntos jurídicos",
+  },
+  {
+    name: "juridico-asuntos:eliminar",
+    resource: "juridico-asuntos",
+    action: "eliminar",
+    description: "Eliminar asuntos jurídicos",
+  },
+  // Asuntos Jurídicos - Modular
+  {
+    name: "juridico-asuntos:gestionar",
+    resource: "juridico-asuntos",
+    action: "gestionar",
+    description: "Gestión completa de asuntos",
+  },
+
+  // Equipos Jurídicos - Granulares
+  {
+    name: "juridico-equipos:acceder",
+    resource: "juridico-equipos",
+    action: "acceder",
+    description: "Acceder al módulo de equipos",
+  },
+  {
+    name: "juridico-equipos:crear",
+    resource: "juridico-equipos",
+    action: "crear",
+    description: "Crear equipos jurídicos",
+  },
+  {
+    name: "juridico-equipos:editar",
+    resource: "juridico-equipos",
+    action: "editar",
+    description: "Editar equipos y membresía",
+  },
+  {
+    name: "juridico-equipos:eliminar",
+    resource: "juridico-equipos",
+    action: "eliminar",
+    description: "Eliminar equipos jurídicos",
+  },
+  // Equipos Jurídicos - Modular
+  {
+    name: "juridico-equipos:gestionar",
+    resource: "juridico-equipos",
+    action: "gestionar",
+    description: "Gestión completa de equipos",
+  },
+
+  // Horas Jurídicas - Granulares
+  {
+    name: "juridico-horas:acceder",
+    resource: "juridico-horas",
+    action: "acceder",
+    description: "Acceder al módulo de horas",
+  },
+  {
+    name: "juridico-horas:registrar",
+    resource: "juridico-horas",
+    action: "registrar",
+    description: "Registrar y editar horas dentro del plazo",
+  },
+  {
+    name: "juridico-horas:editar",
+    resource: "juridico-horas",
+    action: "editar",
+    description: "Modificar registros de horas existentes dentro del plazo",
+  },
+  {
+    name: "juridico-horas:solicitar-edicion",
+    resource: "juridico-horas",
+    action: "solicitar-edicion",
+    description: "Solicitar autorización para editar fuera de plazo",
+  },
+  {
+    name: "juridico-horas:autorizar-edicion",
+    resource: "juridico-horas",
+    action: "autorizar-edicion",
+    description: "Autorizar ediciones pendientes (admin)",
+  },
+  {
+    name: "juridico-horas:ver-reportes",
+    resource: "juridico-horas",
+    action: "ver-reportes",
+    description: "Acceso a reportes de horas",
+  },
+  // Horas Jurídicas - Modular
+  {
+    name: "juridico-horas:gestionar",
+    resource: "juridico-horas",
+    action: "gestionar",
+    description: "Gestión completa del módulo de horas",
+  },
+];
+
+/**
  * Permiso especial de administrador
  */
 const ADMIN_PERMISSION: PermissionDefinition = {
@@ -420,6 +569,7 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   ...RH_PERMISSIONS,
   ...RECEPCION_PERMISSIONS,
   ...SISTEMA_PERMISSIONS,
+  ...JURIDICO_PERMISSIONS,
   ADMIN_PERMISSION,
 ];
 
@@ -431,6 +581,7 @@ export const PERMISSIONS_BY_MODULE = {
   rh: RH_PERMISSIONS,
   recepcion: RECEPCION_PERMISSIONS,
   sistema: SISTEMA_PERMISSIONS,
+  juridico: JURIDICO_PERMISSIONS,
   admin: [ADMIN_PERMISSION],
 };
 

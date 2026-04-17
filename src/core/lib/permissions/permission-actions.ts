@@ -81,6 +81,36 @@ export const PermissionActions = {
   permisos: {
     acceder: "permisos:acceder",
   },
+  "juridico-clientes": {
+    acceder: "juridico-clientes:acceder",
+    crear: "juridico-clientes:crear",
+    editar: "juridico-clientes:editar",
+    eliminar: "juridico-clientes:eliminar",
+    gestionar: "juridico-clientes:gestionar",
+  },
+  "juridico-asuntos": {
+    acceder: "juridico-asuntos:acceder",
+    crear: "juridico-asuntos:crear",
+    editar: "juridico-asuntos:editar",
+    eliminar: "juridico-asuntos:eliminar",
+    gestionar: "juridico-asuntos:gestionar",
+  },
+  "juridico-equipos": {
+    acceder: "juridico-equipos:acceder",
+    crear: "juridico-equipos:crear",
+    editar: "juridico-equipos:editar",
+    eliminar: "juridico-equipos:eliminar",
+    gestionar: "juridico-equipos:gestionar",
+  },
+  "juridico-horas": {
+    acceder: "juridico-horas:acceder",
+    registrar: "juridico-horas:registrar",
+    editar: "juridico-horas:editar",
+    "solicitar-edicion": "juridico-horas:solicitar-edicion",
+    "autorizar-edicion": "juridico-horas:autorizar-edicion",
+    "ver-reportes": "juridico-horas:ver-reportes",
+    gestionar: "juridico-horas:gestionar",
+  },
 } as const;
 
 /**

@@ -87,6 +87,8 @@ model Socio {
   ingresosComoAutorizador Ingreso[]          @relation("IngresoAutorizador")
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
+  asuntosJuridicos        AsuntoJuridico[]
+  registrosHoraJuridico   RegistroHora[]
 
   @@index([email])
   @@index([activo])
@@ -200,6 +202,10 @@ model User {
   egresosCreados             Egreso[]           @relation("EgresoIngresadoPor")
   ingresosCreados            Ingreso[]          @relation("IngresoIngresadoPor")
   facturasCreadas            Factura[]          @relation("FacturaIngresadoPor")
+  equiposJuridicos           EquipoJuridicoUsuario[]
+  registrosHora              RegistroHora[]
+  autorizacionesSolicitadas  AutorizacionEdicion[]  @relation("AutorizacionSolicitante")
+  autorizacionesResueltas    AutorizacionEdicion[]  @relation("AutorizacionAutorizador")
 }
 
 model Role {
@@ -575,4 +581,153 @@ model Asistencia {
   @@index([correo])
   @@index([fecha])
   @@index([tipo])
+}
+
+// ─── Módulo Jurídico ────────────────────────────────────────────────────────
+
+enum AsuntoJuridicoEstado {
+  ACTIVO
+  INACTIVO
+  CERRADO
+}
+
+enum AutorizacionEstado {
+  PENDIENTE
+  AUTORIZADA
+  RECHAZADA
+  UTILIZADA
+}
+
+model ClienteJuridico {
+  id        String   @id @default(uuid())
+  nombre    String
+  rfc       String?
+  contacto  String?
+  email     String?
+  telefono  String?
+  direccion String?
+  notas     String?
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  asuntos       AsuntoJuridico[]
+  registrosHora RegistroHora[]
+
+  @@index([activo])
+  @@index([nombre])
+}
+
+model AsuntoJuridico {
+  id                String               @id @default(uuid())
+  nombre            String
+  descripcion       String?
+  estado            AsuntoJuridicoEstado @default(ACTIVO)
+  clienteJuridicoId String
+  clienteJuridico   ClienteJuridico      @relation(fields: [clienteJuridicoId], references: [id], onDelete: Restrict)
+  socioId           String
+  socio             Socio                @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  registrosHora RegistroHora[]
+
+  @@index([clienteJuridicoId])
+  @@index([socioId])
+  @@index([estado])
+}
+
+model EquipoJuridico {
+  id          String   @id @default(uuid())
+  nombre      String
+  descripcion String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  miembros      EquipoJuridicoUsuario[]
+  registrosHora RegistroHora[]
+
+  @@index([activo])
+  @@index([nombre])
+}
+
+model EquipoJuridicoUsuario {
+  id        String         @id @default(uuid())
+  equipoId  String
+  equipo    EquipoJuridico @relation(fields: [equipoId], references: [id], onDelete: Cascade)
+  usuarioId String
+  usuario   User           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@unique([equipoId, usuarioId])
+  @@index([equipoId])
+  @@index([usuarioId])
+}
+
+model RegistroHora {
+  id                String          @id @default(uuid())
+  usuarioId         String
+  usuario           User            @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  equipoJuridicoId  String
+  equipoJuridico    EquipoJuridico  @relation(fields: [equipoJuridicoId], references: [id], onDelete: Restrict)
+  clienteJuridicoId String
+  clienteJuridico   ClienteJuridico @relation(fields: [clienteJuridicoId], references: [id], onDelete: Restrict)
+  asuntoJuridicoId  String
+  asuntoJuridico    AsuntoJuridico  @relation(fields: [asuntoJuridicoId], references: [id], onDelete: Restrict)
+  socioId           String
+  socio             Socio           @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  horas             Decimal         @db.Decimal(5, 2)
+  descripcion       String?
+  ano               Int
+  semana            Int
+  editable          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  historial      RegistroHoraHistorial[]
+  autorizaciones AutorizacionEdicion[]
+
+  @@index([usuarioId])
+  @@index([equipoJuridicoId])
+  @@index([clienteJuridicoId])
+  @@index([asuntoJuridicoId])
+  @@index([socioId])
+  @@index([ano, semana])
+  @@index([usuarioId, ano, semana])
+  @@index([createdAt])
+}
+
+model RegistroHoraHistorial {
+  id             String       @id @default(uuid())
+  registroHoraId String
+  registroHora   RegistroHora @relation(fields: [registroHoraId], references: [id], onDelete: Cascade)
+  campo          String
+  valorAnterior  String?
+  valorNuevo     String
+  usuarioId      String?
+  motivo         String?
+  fechaCambio    DateTime     @default(now())
+
+  @@index([registroHoraId])
+  @@index([fechaCambio])
+}
+
+model AutorizacionEdicion {
+  id             String             @id @default(uuid())
+  registroHoraId String
+  registroHora   RegistroHora       @relation(fields: [registroHoraId], references: [id], onDelete: Cascade)
+  solicitanteId  String
+  solicitante    User               @relation("AutorizacionSolicitante", fields: [solicitanteId], references: [id], onDelete: Restrict)
+  autorizadorId  String?
+  autorizador    User?              @relation("AutorizacionAutorizador", fields: [autorizadorId], references: [id], onDelete: SetNull)
+  justificacion  String
+  estado         AutorizacionEstado @default(PENDIENTE)
+  motivoRechazo  String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([registroHoraId])
+  @@index([solicitanteId])
+  @@index([estado])
 }
