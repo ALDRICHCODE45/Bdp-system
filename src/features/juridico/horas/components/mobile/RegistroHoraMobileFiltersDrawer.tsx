@@ -143,15 +143,15 @@ export function RegistroHoraMobileFiltersDrawer({
               Equipo
             </Label>
             <Select
-              value={equipoJuridicoId ?? ""}
-              onValueChange={(v) => onEquipoChange(v || undefined)}
+              value={equipoJuridicoId ?? "__all__"}
+              onValueChange={(v) => onEquipoChange(v === "__all__" ? undefined : v)}
               disabled={isLoading}
             >
               <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder="Todos los equipos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los equipos</SelectItem>
+                <SelectItem value="__all__">Todos los equipos</SelectItem>
                 {equipos.map((e) => (
                   <SelectItem key={e.id} value={e.id}>
                     {e.nombre}
@@ -167,15 +167,15 @@ export function RegistroHoraMobileFiltersDrawer({
               Cliente
             </Label>
             <Select
-              value={clienteJuridicoId ?? ""}
-              onValueChange={(v) => onClienteChange(v || undefined)}
+              value={clienteJuridicoId ?? "__all__"}
+              onValueChange={(v) => onClienteChange(v === "__all__" ? undefined : v)}
               disabled={isLoading}
             >
               <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder="Todos los clientes" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los clientes</SelectItem>
+                <SelectItem value="__all__">Todos los clientes</SelectItem>
                 {clientes.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.nombre}
@@ -191,14 +191,14 @@ export function RegistroHoraMobileFiltersDrawer({
               Año
             </Label>
             <Select
-              value={ano ? String(ano) : ""}
-              onValueChange={(v) => onAnoChange(v ? Number(v) : undefined)}
+              value={ano ? String(ano) : "__all__"}
+              onValueChange={(v) => onAnoChange(v === "__all__" ? undefined : Number(v))}
             >
               <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder="Todos los años" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los años</SelectItem>
+                <SelectItem value="__all__">Todos los años</SelectItem>
                 {YEARS.map((y) => (
                   <SelectItem key={y} value={String(y)}>
                     {y}
