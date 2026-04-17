@@ -151,7 +151,7 @@ export function EditAsuntoJuridicoSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-1 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 py-4">
           {/* Nombre */}
           <div className="space-y-1">
             <Label htmlFor="nombre">

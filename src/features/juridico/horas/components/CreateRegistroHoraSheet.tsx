@@ -148,7 +148,7 @@ export function CreateRegistroHoraSheet({
         </SheetHeader>
 
         {/* Current week info */}
-        <div className="flex items-center gap-2 px-1 pt-2 pb-1">
+        <div className="flex items-center gap-2 px-4 pt-2 pb-1">
           <CalendarClock className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Semana actual:</span>
           <Badge variant="outline" className="font-mono text-xs">
@@ -156,7 +156,7 @@ export function CreateRegistroHoraSheet({
           </Badge>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-1 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 py-4">
           {/* Equipo Jurídico */}
           <div className="space-y-1">
             <Label htmlFor="equipoJuridicoId">

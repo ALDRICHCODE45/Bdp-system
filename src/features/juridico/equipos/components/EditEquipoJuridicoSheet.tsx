@@ -112,7 +112,7 @@ export function EditEquipoJuridicoSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-1 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 py-4">
           {/* Nombre */}
           <div className="space-y-1">
             <Label htmlFor="nombre">
@@ -156,7 +156,7 @@ export function EditEquipoJuridicoSheet({
         <Separator className="my-4" />
 
         {/* Miembros manager */}
-        <div className="px-1 pb-4">
+        <div className="px-4 pb-4">
           <EquipoMiembrosManager equipo={liveEquipo} />
         </div>
 

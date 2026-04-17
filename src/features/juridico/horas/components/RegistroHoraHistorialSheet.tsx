@@ -50,7 +50,7 @@ export function RegistroHoraHistorialSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="py-4 px-1 space-y-4">
+        <div className="py-4 px-4 space-y-4">
           {isPending && (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

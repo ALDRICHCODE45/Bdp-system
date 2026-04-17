@@ -165,7 +165,7 @@ export function EditRegistroHoraSheet({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-1 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 py-4">
           {/* Equipo Jurídico */}
           <div className="space-y-1">
             <Label htmlFor="equipoJuridicoId">
