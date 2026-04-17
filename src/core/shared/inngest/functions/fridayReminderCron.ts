@@ -32,13 +32,7 @@ export const fridayReminderCron = inngest.createFunction(
                   permissions: {
                     some: {
                       permission: {
-                        name: {
-                          in: [
-                            "juridico-horas:registrar",
-                            "juridico-horas:gestionar",
-                            "admin:all",
-                          ],
-                        },
+                        name: "juridico-horas:registrar",
                       },
                     },
                   },

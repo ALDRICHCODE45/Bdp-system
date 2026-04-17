@@ -43,13 +43,7 @@ export const mondayReportCron = inngest.createFunction(
                   permissions: {
                     some: {
                       permission: {
-                        name: {
-                          in: [
-                            "juridico-horas:registrar",
-                            "juridico-horas:gestionar",
-                            "admin:all",
-                          ],
-                        },
+                        name: "juridico-horas:registrar",
                       },
                     },
                   },
@@ -87,7 +81,10 @@ export const mondayReportCron = inngest.createFunction(
                   some: {
                     permission: {
                       name: {
-                        in: ["juridico-horas:autorizar-edicion", "admin:all"],
+                        in: [
+                          "juridico-horas:autorizar-edicion",
+                          "juridico-horas:gestionar",
+                        ],
                       },
                     },
                   },
