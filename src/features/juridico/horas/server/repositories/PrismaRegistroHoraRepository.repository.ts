@@ -5,6 +5,7 @@ import type {
   CreateRegistroHoraArgs,
   UpdateRegistroHoraArgs,
 } from "./RegistroHoraRepository.repository";
+import type { RegistroHorasFilterParams } from "../../types/RegistroHorasFilterParams";
 
 const registroHoraIncludes = {
   usuario: { select: { id: true, name: true, email: true } },
@@ -93,5 +94,120 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
       where: { id },
       data: { editable },
     });
+  }
+
+  async getPaginated(
+    params: RegistroHorasFilterParams
+  ): Promise<{ data: RegistroHoraEntity[]; totalCount: number }> {
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy,
+      sortOrder,
+      search,
+      equipoJuridicoId,
+      clienteJuridicoId,
+      asuntoJuridicoId,
+      socioId,
+      usuarioId,
+      ano,
+      semanaDesde,
+      semanaHasta,
+    } = params;
+
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.RegistroHoraWhereInput = {
+      ...(equipoJuridicoId ? { equipoJuridicoId } : {}),
+      ...(clienteJuridicoId ? { clienteJuridicoId } : {}),
+      ...(asuntoJuridicoId ? { asuntoJuridicoId } : {}),
+      ...(socioId ? { socioId } : {}),
+      ...(usuarioId ? { usuarioId } : {}),
+      ...(ano ? { ano } : {}),
+      ...(semanaDesde || semanaHasta
+        ? {
+            semana: {
+              ...(semanaDesde ? { gte: semanaDesde } : {}),
+              ...(semanaHasta ? { lte: semanaHasta } : {}),
+            },
+          }
+        : {}),
+      ...(search
+        ? {
+            OR: [
+              {
+                usuario: {
+                  name: { contains: search, mode: "insensitive" },
+                },
+              },
+              {
+                equipoJuridico: {
+                  nombre: { contains: search, mode: "insensitive" },
+                },
+              },
+              {
+                clienteJuridico: {
+                  nombre: { contains: search, mode: "insensitive" },
+                },
+              },
+              {
+                asuntoJuridico: {
+                  nombre: { contains: search, mode: "insensitive" },
+                },
+              },
+              {
+                socio: {
+                  nombre: { contains: search, mode: "insensitive" },
+                },
+              },
+              {
+                descripcion: { contains: search, mode: "insensitive" },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    // Build orderBy
+    let orderBy: Prisma.RegistroHoraOrderByWithRelationInput[] = [
+      { ano: "desc" },
+      { semana: "desc" },
+      { createdAt: "desc" },
+    ];
+
+    if (sortBy) {
+      const direction = sortOrder ?? "asc";
+      const columnMap: Record<
+        string,
+        Prisma.RegistroHoraOrderByWithRelationInput
+      > = {
+        semana: { semana: direction },
+        ano: { ano: direction },
+        horas: { horas: direction },
+        editable: { editable: direction },
+        createdAt: { createdAt: direction },
+        equipoJuridicoNombre: { equipoJuridico: { nombre: direction } },
+        clienteJuridicoNombre: { clienteJuridico: { nombre: direction } },
+        asuntoJuridicoNombre: { asuntoJuridico: { nombre: direction } },
+        socioNombre: { socio: { nombre: direction } },
+        usuarioNombre: { usuario: { name: direction } },
+      };
+      if (columnMap[sortBy]) {
+        orderBy = [columnMap[sortBy]];
+      }
+    }
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.registroHora.findMany({
+        where,
+        include: registroHoraIncludes,
+        orderBy,
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.registroHora.count({ where }),
+    ]);
+
+    return { data, totalCount };
   }
 }

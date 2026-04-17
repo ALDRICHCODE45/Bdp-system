@@ -5,6 +5,7 @@ import type {
 } from "../repositories/EquipoJuridicoRepository.repository";
 import { Result, Ok, Err } from "@/core/shared/result/result";
 import { ConflictError } from "@/core/shared/errors/domain";
+import type { EquiposJuridicosFilterParams } from "../../types/EquiposJuridicosFilterParams";
 
 type CreateEquipoJuridicoInput = {
   nombre: string;
@@ -192,6 +193,23 @@ export class EquipoJuridicoService {
         error instanceof Error
           ? error
           : new Error("Error al remover miembro del equipo")
+      );
+    }
+  }
+
+  async getPaginated(
+    params: EquiposJuridicosFilterParams
+  ): Promise<
+    Result<{ data: EquipoJuridicoEntity[]; totalCount: number }, Error>
+  > {
+    try {
+      const result = await this.repo.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener equipos jurídicos")
       );
     }
   }

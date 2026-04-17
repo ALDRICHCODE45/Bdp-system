@@ -1,11 +1,13 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/core/shared/ui/badge";
+import { Users } from "lucide-react";
 import type { EquipoJuridicoDto } from "../server/dtos/EquipoJuridicoDto.dto";
 import { EquipoJuridicoRowActions } from "./EquipoJuridicoRowActions";
-import { Users } from "lucide-react";
 
-export const equiposJuridicosColumns: ColumnDef<EquipoJuridicoDto>[] = [
+export const getEquiposJuridicosColumns = (
+  onViewDetail?: (equipo: EquipoJuridicoDto) => void
+): ColumnDef<EquipoJuridicoDto>[] => [
   {
     header: "Nombre",
     accessorKey: "nombre",
@@ -15,11 +17,6 @@ export const equiposJuridicosColumns: ColumnDef<EquipoJuridicoDto>[] = [
       </div>
     ),
     size: 30,
-    filterFn: (row, id, value: string) => {
-      if (!value) return true;
-      const nombre = (row.getValue(id) as string).toLowerCase();
-      return nombre.includes(value.toLowerCase());
-    },
   },
   {
     header: "Descripción",
@@ -71,8 +68,14 @@ export const equiposJuridicosColumns: ColumnDef<EquipoJuridicoDto>[] = [
   {
     id: "actions",
     header: () => <span className="sr-only">Acciones</span>,
-    cell: ({ row }) => <EquipoJuridicoRowActions row={row} />,
+    cell: ({ row }) => (
+      <EquipoJuridicoRowActions row={row} onViewDetail={onViewDetail} />
+    ),
     size: 5,
     enableHiding: false,
+    enableSorting: false,
   },
 ];
+
+// Legacy export for backward compatibility
+export const equiposJuridicosColumns = getEquiposJuridicosColumns();

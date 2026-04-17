@@ -11,6 +11,7 @@ import {
   isValidISOWeek,
   isWithinDeadline,
 } from "@/core/shared/helpers/weekUtils";
+import type { RegistroHorasFilterParams } from "../../types/RegistroHorasFilterParams";
 
 export class RegistroHoraService {
   constructor(
@@ -238,6 +239,23 @@ export class RegistroHoraService {
         error instanceof Error
           ? error
           : new Error("Error al obtener registros por semana")
+      );
+    }
+  }
+
+  async getPaginated(
+    params: RegistroHorasFilterParams
+  ): Promise<
+    Result<{ data: RegistroHoraEntity[]; totalCount: number }, Error>
+  > {
+    try {
+      const result = await this.repo.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener registros de horas paginados")
       );
     }
   }

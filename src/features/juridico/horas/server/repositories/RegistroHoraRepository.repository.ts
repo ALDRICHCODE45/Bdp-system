@@ -6,6 +6,7 @@ import type {
   AsuntoJuridico,
   Socio,
 } from "@prisma/client";
+import type { RegistroHorasFilterParams } from "../../types/RegistroHorasFilterParams";
 
 export type RegistroHoraEntity = RegistroHora & {
   usuario: Pick<User, "id" | "name" | "email">;
@@ -50,4 +51,7 @@ export interface RegistroHoraRepository {
   getAll(): Promise<RegistroHoraEntity[]>;
   getAllByUsuario(usuarioId: string): Promise<RegistroHoraEntity[]>;
   setEditable(id: string, editable: boolean): Promise<void>;
+  getPaginated(
+    params: RegistroHorasFilterParams
+  ): Promise<{ data: RegistroHoraEntity[]; totalCount: number }>;
 }

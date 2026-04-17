@@ -1,4 +1,5 @@
 import type { ClienteJuridico } from "@prisma/client";
+import type { ClientesJuridicosFilterParams } from "../../types/ClientesJuridicosFilterParams";
 
 export type ClienteJuridicoEntity = ClienteJuridico;
 
@@ -30,4 +31,7 @@ export interface ClienteJuridicoRepository {
   findById(id: string): Promise<ClienteJuridicoEntity | null>;
   findByNombre(nombre: string): Promise<ClienteJuridicoEntity | null>;
   getAll(): Promise<ClienteJuridicoEntity[]>;
+  getPaginated(
+    params: ClientesJuridicosFilterParams
+  ): Promise<{ data: ClienteJuridicoEntity[]; totalCount: number }>;
 }

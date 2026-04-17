@@ -1,4 +1,5 @@
 import type { EquipoJuridico, User } from "@prisma/client";
+import type { EquiposJuridicosFilterParams } from "../../types/EquiposJuridicosFilterParams";
 
 export type EquipoJuridicoMiembro = {
   id: string;
@@ -32,4 +33,7 @@ export interface EquipoJuridicoRepository {
   getAll(): Promise<EquipoJuridicoEntity[]>;
   addMiembro(equipoId: string, usuarioId: string): Promise<void>;
   removeMiembro(equipoId: string, usuarioId: string): Promise<void>;
+  getPaginated(
+    params: EquiposJuridicosFilterParams
+  ): Promise<{ data: EquipoJuridicoEntity[]; totalCount: number }>;
 }

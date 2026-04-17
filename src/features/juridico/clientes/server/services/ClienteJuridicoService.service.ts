@@ -5,6 +5,7 @@ import type {
 } from "../repositories/ClienteJuridicoRepository.repository";
 import { Result, Ok, Err } from "@/core/shared/result/result";
 import { ConflictError } from "@/core/shared/errors/domain";
+import type { ClientesJuridicosFilterParams } from "../../types/ClientesJuridicosFilterParams";
 
 type CreateClienteJuridicoInput = {
   nombre: string;
@@ -134,6 +135,23 @@ export class ClienteJuridicoService {
         error instanceof Error
           ? error
           : new Error("Error al obtener cliente jurídico")
+      );
+    }
+  }
+
+  async getPaginated(
+    params: ClientesJuridicosFilterParams
+  ): Promise<
+    Result<{ data: ClienteJuridicoEntity[]; totalCount: number }, Error>
+  > {
+    try {
+      const result = await this.repo.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener clientes jurídicos")
       );
     }
   }

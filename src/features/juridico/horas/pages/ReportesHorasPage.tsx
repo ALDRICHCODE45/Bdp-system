@@ -5,10 +5,10 @@ import { ReportesHorasView } from "../components/ReportesHorasView";
 
 export function ReportesHorasPage() {
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Reportes de Horas</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Reportes de Horas</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Vista administrativa de horas registradas
         </p>
       </div>

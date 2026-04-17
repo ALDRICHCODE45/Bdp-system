@@ -5,6 +5,7 @@ import type {
 } from "../repositories/AsuntoJuridicoRepository.repository";
 import { Result, Ok, Err } from "@/core/shared/result/result";
 import { ConflictError } from "@/core/shared/errors/domain";
+import type { AsuntosJuridicosFilterParams } from "../../types/AsuntosJuridicosFilterParams";
 
 type CreateAsuntoJuridicoInput = {
   nombre: string;
@@ -161,6 +162,23 @@ export class AsuntoJuridicoService {
         error instanceof Error
           ? error
           : new Error("Error al obtener asunto jurídico")
+      );
+    }
+  }
+
+  async getPaginated(
+    params: AsuntosJuridicosFilterParams
+  ): Promise<
+    Result<{ data: AsuntoJuridicoEntity[]; totalCount: number }, Error>
+  > {
+    try {
+      const result = await this.repo.getPaginated(params);
+      return Ok(result);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener asuntos jurídicos")
       );
     }
   }

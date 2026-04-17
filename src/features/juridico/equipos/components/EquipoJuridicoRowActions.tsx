@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import type { EquipoJuridicoDto } from "../server/dtos/EquipoJuridicoDto.dto";
 import { useDeleteEquipoJuridico } from "../hooks/useDeleteEquipoJuridico.hook";
-import { Trash2, Users } from "lucide-react";
+import { Eye, Trash2, Users } from "lucide-react";
 import type { ColaboradorAction } from "@/features/RecursosHumanos/colaboradores/components/forms/ColaboradorActions.config";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
@@ -33,11 +33,15 @@ const DeleteEquipoJuridicoAlertDialog = dynamic(
   }
 );
 
+interface EquipoJuridicoRowActionsProps {
+  row: Row<EquipoJuridicoDto>;
+  onViewDetail?: (equipo: EquipoJuridicoDto) => void;
+}
+
 export function EquipoJuridicoRowActions({
   row,
-}: {
-  row: Row<EquipoJuridicoDto>;
-}) {
+  onViewDetail,
+}: EquipoJuridicoRowActionsProps) {
   const equipo = row.original;
 
   const {
@@ -59,6 +63,16 @@ export function EquipoJuridicoRowActions({
   };
 
   const actions: ColaboradorAction[] = [
+    ...(onViewDetail
+      ? [
+          {
+            id: "view",
+            label: "Ver detalles",
+            icon: Eye,
+            onClick: () => onViewDetail(equipo),
+          },
+        ]
+      : []),
     {
       id: "edit",
       label: "Editar / Miembros",
@@ -69,7 +83,7 @@ export function EquipoJuridicoRowActions({
       id: "delete",
       label: "Eliminar",
       icon: Trash2,
-      variant: "destructive",
+      variant: "destructive" as const,
       onClick: openDelete,
     },
   ];

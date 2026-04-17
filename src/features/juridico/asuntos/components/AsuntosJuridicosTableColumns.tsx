@@ -82,6 +82,20 @@ export const asuntosJuridicosColumns: ColumnDef<AsuntoJuridicoDto>[] = [
     size: 20,
   },
   {
+    header: "Descripción",
+    accessorKey: "descripcion",
+    cell: ({ row }) => {
+      const desc = row.getValue("descripcion") as string | null;
+      if (!desc) return <span className="text-muted-foreground text-xs">—</span>;
+      return (
+        <div className="text-sm text-muted-foreground truncate max-w-[220px]">
+          {desc}
+        </div>
+      );
+    },
+    size: 25,
+  },
+  {
     header: "Fecha de creación",
     accessorKey: "createdAt",
     cell: ({ row }) => {

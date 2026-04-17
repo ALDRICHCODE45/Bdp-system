@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import type {
   ClienteJuridicoRepository,
   ClienteJuridicoEntity,
   CreateClienteJuridicoArgs,
   UpdateClienteJuridicoArgs,
 } from "./ClienteJuridicoRepository.repository";
+import type { ClientesJuridicosFilterParams } from "../../types/ClientesJuridicosFilterParams";
 
 export class PrismaClienteJuridicoRepository
   implements ClienteJuridicoRepository
@@ -67,5 +68,44 @@ export class PrismaClienteJuridicoRepository
       where: { activo: true },
       orderBy: { nombre: "asc" },
     });
+  }
+
+  async getPaginated(
+    params: ClientesJuridicosFilterParams
+  ): Promise<{ data: ClienteJuridicoEntity[]; totalCount: number }> {
+    const { page, pageSize, sortBy, sortOrder, search } = params;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.ClienteJuridicoWhereInput = {
+      activo: params.activo ?? true,
+    };
+
+    if (search) {
+      where.OR = [
+        { nombre: { contains: search, mode: "insensitive" } },
+        { rfc: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { contacto: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const orderBy: Prisma.ClienteJuridicoOrderByWithRelationInput = {};
+    if (sortBy) {
+      (orderBy as Record<string, string>)[sortBy] = sortOrder ?? "asc";
+    } else {
+      orderBy.nombre = "asc";
+    }
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.clienteJuridico.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy,
+      }),
+      this.prisma.clienteJuridico.count({ where }),
+    ]);
+
+    return { data, totalCount };
   }
 }

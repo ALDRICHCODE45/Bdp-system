@@ -1,6 +1,8 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/core/shared/ui/badge";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import type { ClienteJuridicoDto } from "../server/dtos/ClienteJuridicoDto.dto";
 import { ClienteJuridicoRowActions } from "./ClienteJuridicoRowActions";
 
@@ -14,11 +16,6 @@ export const clientesJuridicosColumns: ColumnDef<ClienteJuridicoDto>[] = [
       </div>
     ),
     size: 25,
-    filterFn: (row, id, value: string) => {
-      if (!value) return true;
-      const nombre = (row.getValue(id) as string).toLowerCase();
-      return nombre.includes(value.toLowerCase());
-    },
   },
   {
     header: "RFC",
@@ -32,19 +29,6 @@ export const clientesJuridicosColumns: ColumnDef<ClienteJuridicoDto>[] = [
       );
     },
     size: 15,
-  },
-  {
-    header: "Contacto",
-    accessorKey: "contacto",
-    cell: ({ row }) => {
-      const contacto = row.getValue("contacto") as string | null;
-      return contacto ? (
-        <div className="text-sm truncate">{contacto}</div>
-      ) : (
-        <span className="text-muted-foreground text-xs">—</span>
-      );
-    },
-    size: 20,
   },
   {
     header: "Email",
@@ -73,6 +57,45 @@ export const clientesJuridicosColumns: ColumnDef<ClienteJuridicoDto>[] = [
     size: 15,
   },
   {
+    header: "Contacto",
+    accessorKey: "contacto",
+    cell: ({ row }) => {
+      const contacto = row.getValue("contacto") as string | null;
+      return contacto ? (
+        <div className="text-sm truncate">{contacto}</div>
+      ) : (
+        <span className="text-muted-foreground text-xs">—</span>
+      );
+    },
+    size: 20,
+  },
+  {
+    header: "Dirección",
+    accessorKey: "direccion",
+    cell: ({ row }) => {
+      const direccion = row.getValue("direccion") as string | null;
+      return direccion ? (
+        <div className="text-sm truncate max-w-[200px]">{direccion}</div>
+      ) : (
+        <span className="text-muted-foreground text-xs">—</span>
+      );
+    },
+    size: 20,
+  },
+  {
+    header: "Notas",
+    accessorKey: "notas",
+    cell: ({ row }) => {
+      const notas = row.getValue("notas") as string | null;
+      return notas ? (
+        <div className="text-sm truncate max-w-[200px]">{notas}</div>
+      ) : (
+        <span className="text-muted-foreground text-xs">—</span>
+      );
+    },
+    size: 20,
+  },
+  {
     header: "Estado",
     accessorKey: "activo",
     cell: ({ row }) => {
@@ -91,6 +114,24 @@ export const clientesJuridicosColumns: ColumnDef<ClienteJuridicoDto>[] = [
       );
     },
     size: 10,
+    enableHiding: false,
+  },
+  {
+    header: "Fecha de registro",
+    accessorKey: "createdAt",
+    cell: ({ row }) => {
+      const createdAt = row.getValue("createdAt") as string;
+      try {
+        return (
+          <div className="text-sm text-muted-foreground whitespace-nowrap">
+            {format(new Date(createdAt), "d MMM yyyy", { locale: es })}
+          </div>
+        );
+      } catch {
+        return <span className="text-muted-foreground text-xs">—</span>;
+      }
+    },
+    size: 15,
   },
   {
     id: "actions",
@@ -98,5 +139,6 @@ export const clientesJuridicosColumns: ColumnDef<ClienteJuridicoDto>[] = [
     cell: ({ row }) => <ClienteJuridicoRowActions row={row} />,
     size: 5,
     enableHiding: false,
+    enableSorting: false,
   },
 ];

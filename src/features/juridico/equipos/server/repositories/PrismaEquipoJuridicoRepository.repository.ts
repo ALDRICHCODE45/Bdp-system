@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import type {
   EquipoJuridicoRepository,
   EquipoJuridicoEntity,
   CreateEquipoJuridicoArgs,
   UpdateEquipoJuridicoArgs,
 } from "./EquipoJuridicoRepository.repository";
+import type { EquiposJuridicosFilterParams } from "../../types/EquiposJuridicosFilterParams";
 
 const equipoIncludes = {
   miembros: {
@@ -85,5 +86,43 @@ export class PrismaEquipoJuridicoRepository
         equipoId_usuarioId: { equipoId, usuarioId },
       },
     });
+  }
+
+  async getPaginated(
+    params: EquiposJuridicosFilterParams
+  ): Promise<{ data: EquipoJuridicoEntity[]; totalCount: number }> {
+    const { page, pageSize, sortBy, sortOrder, search } = params;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.EquipoJuridicoWhereInput = {
+      activo: params.activo ?? true,
+    };
+
+    if (search) {
+      where.OR = [
+        { nombre: { contains: search, mode: "insensitive" } },
+        { descripcion: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const orderBy: Prisma.EquipoJuridicoOrderByWithRelationInput = {};
+    if (sortBy) {
+      (orderBy as Record<string, string>)[sortBy] = sortOrder ?? "asc";
+    } else {
+      orderBy.nombre = "asc";
+    }
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.equipoJuridico.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy,
+        include: equipoIncludes,
+      }),
+      this.prisma.equipoJuridico.count({ where }),
+    ]);
+
+    return { data, totalCount };
   }
 }

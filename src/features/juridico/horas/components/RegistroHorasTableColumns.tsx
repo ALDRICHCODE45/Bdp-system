@@ -1,12 +1,12 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/core/shared/ui/badge";
-import { CheckCircle, XCircle } from "lucide-react";
+import { Lock, Unlock } from "lucide-react";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
 import { RegistroHoraRowActions } from "./RegistroHoraRowActions";
 import { formatHoras } from "../helpers/formatHoras";
 
-function formatWeekLabel(ano: number, semana: number): string {
+export function formatWeekLabel(ano: number, semana: number): string {
   return `Sem ${semana} - ${ano}`;
 }
 
@@ -21,6 +21,21 @@ export const registroHorasColumns: ColumnDef<RegistroHoraDto>[] = [
       </div>
     ),
     size: 12,
+  },
+  {
+    header: "Abogado",
+    accessorKey: "usuarioNombre",
+    cell: ({ row }) => (
+      <div className="space-y-0.5">
+        <div className="text-sm font-medium truncate max-w-[130px]">
+          {row.getValue("usuarioNombre")}
+        </div>
+        <div className="text-xs text-muted-foreground truncate max-w-[130px]">
+          {row.original.usuarioEmail}
+        </div>
+      </div>
+    ),
+    size: 16,
   },
   {
     header: "Equipo",
@@ -70,7 +85,7 @@ export const registroHorasColumns: ColumnDef<RegistroHoraDto>[] = [
       return (
         <Badge
           variant="secondary"
-          className="bg-blue-50 text-blue-800 font-mono text-xs"
+          className="bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200 font-mono text-xs"
         >
           {formatHoras(horas)}
         </Badge>
@@ -83,12 +98,10 @@ export const registroHorasColumns: ColumnDef<RegistroHoraDto>[] = [
     accessorKey: "descripcion",
     cell: ({ row }) => {
       const desc = row.getValue("descripcion") as string | null;
-      if (!desc) return <span className="text-muted-foreground text-xs">—</span>;
+      if (!desc)
+        return <span className="text-muted-foreground text-xs">—</span>;
       return (
-        <div
-          className="text-sm truncate max-w-[180px]"
-          title={desc}
-        >
+        <div className="text-sm truncate max-w-[180px]" title={desc}>
           {desc}
         </div>
       );
@@ -96,17 +109,23 @@ export const registroHorasColumns: ColumnDef<RegistroHoraDto>[] = [
     size: 18,
   },
   {
-    header: "Editable",
+    header: "Estado",
     accessorKey: "editable",
     cell: ({ row }) => {
       const editable = row.getValue("editable") as boolean;
       return editable ? (
-        <CheckCircle className="h-4 w-4 text-green-500" />
+        <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
+          <Unlock className="h-3.5 w-3.5" />
+          <span>Editable</span>
+        </div>
       ) : (
-        <XCircle className="h-4 w-4 text-gray-400" />
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Lock className="h-3.5 w-3.5" />
+          <span>Bloqueado</span>
+        </div>
       );
     },
-    size: 8,
+    size: 10,
   },
   {
     header: "Registrado",

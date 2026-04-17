@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import type {
   AsuntoJuridicoRepository,
   AsuntoJuridicoEntity,
   CreateAsuntoJuridicoArgs,
   UpdateAsuntoJuridicoArgs,
 } from "./AsuntoJuridicoRepository.repository";
+import type { AsuntosJuridicosFilterParams } from "../../types/AsuntosJuridicosFilterParams";
 
 const asuntoIncludes = {
   clienteJuridico: { select: { id: true, nombre: true } },
@@ -81,5 +82,62 @@ export class PrismaAsuntoJuridicoRepository
       orderBy: { nombre: "asc" },
       include: asuntoIncludes,
     });
+  }
+
+  async getPaginated(
+    params: AsuntosJuridicosFilterParams
+  ): Promise<{ data: AsuntoJuridicoEntity[]; totalCount: number }> {
+    const { page, pageSize, sortBy, sortOrder, search, estado, clienteJuridicoId } =
+      params;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.AsuntoJuridicoWhereInput = {};
+
+    if (clienteJuridicoId) {
+      where.clienteJuridicoId = clienteJuridicoId;
+    }
+
+    if (estado && estado.length > 0) {
+      where.estado = { in: estado as ("ACTIVO" | "INACTIVO" | "CERRADO")[] };
+    }
+
+    if (search) {
+      where.OR = [
+        { nombre: { contains: search, mode: "insensitive" } },
+        { descripcion: { contains: search, mode: "insensitive" } },
+        {
+          clienteJuridico: {
+            nombre: { contains: search, mode: "insensitive" },
+          },
+        },
+        {
+          socio: { nombre: { contains: search, mode: "insensitive" } },
+        },
+      ];
+    }
+
+    const orderBy: Prisma.AsuntoJuridicoOrderByWithRelationInput = {};
+    if (sortBy && sortBy !== "clienteJuridicoNombre" && sortBy !== "socioNombre") {
+      (orderBy as Record<string, string>)[sortBy] = sortOrder ?? "asc";
+    } else if (sortBy === "clienteJuridicoNombre") {
+      orderBy.clienteJuridico = { nombre: sortOrder ?? "asc" };
+    } else if (sortBy === "socioNombre") {
+      orderBy.socio = { nombre: sortOrder ?? "asc" };
+    } else {
+      orderBy.nombre = "asc";
+    }
+
+    const [data, totalCount] = await Promise.all([
+      this.prisma.asuntoJuridico.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy,
+        include: asuntoIncludes,
+      }),
+      this.prisma.asuntoJuridico.count({ where }),
+    ]);
+
+    return { data, totalCount };
   }
 }
