@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ColumnFiltersState, SortingState } from "@tanstack/react-table";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
@@ -30,21 +30,25 @@ export const EntradasYSalidasTablePage = () => {
   const { isOpen, openModal, closeModal } = useModalState();
 
   const handleOpenModal = useCallback(() => openModal(), [openModal]);
-  const tableConfig = useMemo(
-    () => createTableConfig(EntradasSalidasTableConfig, { onAdd: handleOpenModal }),
-    [handleOpenModal],
-  );
-
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: tableConfig.pagination?.defaultPageSize ?? 10,
+    pageSize: EntradasSalidasTableConfig.pagination?.defaultPageSize ?? 10,
   });
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
-  const searchValue =
-    (columnFilters.find((f) => f.id === "visitante")?.value as string) ?? "";
+  const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebounce(searchValue, 300);
+
+  const handlePaginationChange = useCallback((nextPagination: PaginationState) => {
+    setPagination(nextPagination);
+  }, []);
+
+  const handleSortingChange = useCallback((nextSorting: SortingState) => {
+    setSorting(nextSorting);
+  }, []);
+
+  const handleGlobalFilterChange = useCallback((value: string) => {
+    setSearchValue(value);
+  }, []);
 
   useEffect(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
@@ -59,21 +63,16 @@ export const EntradasYSalidasTablePage = () => {
   });
 
   const serverConfig = useMemo(
-    () => ({
-      ...tableConfig,
-      pagination: {
-        ...tableConfig.pagination,
-        manualPagination: true,
-        pageCount: data?.pageCount ?? 0,
-        totalCount: data?.totalCount ?? 0,
-        onPaginationChange: setPagination,
-      },
-      manualSorting: true,
-      onSortingChange: setSorting,
-      manualFiltering: true,
-      onColumnFiltersChange: setColumnFilters,
-    }),
-    [tableConfig, data?.pageCount, data?.totalCount],
+    () =>
+      createTableConfig(EntradasSalidasTableConfig, {
+        onAdd: handleOpenModal,
+        serverSide: {
+          enabled: true,
+          totalCount: data?.totalCount ?? 0,
+          pageCount: data?.pageCount ?? 0,
+        },
+      }),
+    [handleOpenModal, data?.pageCount, data?.totalCount],
   );
 
   return (
@@ -93,6 +92,11 @@ export const EntradasYSalidasTablePage = () => {
           data={data?.data ?? []}
           config={serverConfig}
           isLoading={isPending}
+          pagination={pagination}
+          sorting={sorting}
+          onPaginationChange={handlePaginationChange}
+          onSortingChange={handleSortingChange}
+          onGlobalFilterChange={handleGlobalFilterChange}
         />
       </PermissionGuard>
 

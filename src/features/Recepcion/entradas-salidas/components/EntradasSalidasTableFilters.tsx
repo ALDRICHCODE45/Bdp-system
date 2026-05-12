@@ -63,9 +63,11 @@ export const EntradasSalidasTableFilters = ({
                       "") as string
                   }
                   onChange={(e) => {
+                    const value = e.target.value;
                     table
                       .getColumn("visitante")
-                      ?.setFilterValue(e.target.value);
+                      ?.setFilterValue(value);
+                    onGlobalFilterChange?.(value);
                   }}
                 />
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
