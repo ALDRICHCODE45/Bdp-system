@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import type { TableConfig } from "@/core/shared/components/DataTable/types";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
+import { RegistroHorasTableFilters } from "./RegistroHorasTableFilters";
 
 /**
  * Columnas visibles por defecto.
@@ -24,6 +25,10 @@ export const RegistroHorasTableConfig: TableConfig<RegistroHoraDto> = {
   filters: {
     searchPlaceholder: "Buscar por abogado, cliente, asunto...",
     showSearch: true,
+    customFilter: {
+      component: RegistroHorasTableFilters,
+      props: {},
+    },
   },
   actions: {
     showAddButton: true,

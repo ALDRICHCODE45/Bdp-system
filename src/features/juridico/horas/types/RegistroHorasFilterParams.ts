@@ -5,8 +5,19 @@ export interface RegistroHorasFilterParams extends PaginationParams {
   clienteJuridicoId?: string;
   asuntoJuridicoId?: string;
   socioId?: string;
-  usuarioId?: string; // auto-set for non-admin
+  usuarioId?: string; // legacy single-value support
+
+  equipoJuridicoIds?: string[];
+  clienteJuridicoIds?: string[];
+  asuntoJuridicoIds?: string[];
+  socioIds?: string[];
+  usuarioIds?: string[];
+
   ano?: number;
   semanaDesde?: number;
   semanaHasta?: number;
+  horasMin?: number;
+  horasMax?: number;
+  fechaRegistroDesde?: string;
+  fechaRegistroHasta?: string;
 }

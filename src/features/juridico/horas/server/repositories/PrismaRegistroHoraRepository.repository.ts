@@ -116,25 +116,74 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
       asuntoJuridicoId,
       socioId,
       usuarioId,
+      equipoJuridicoIds,
+      clienteJuridicoIds,
+      asuntoJuridicoIds,
+      socioIds,
+      usuarioIds,
       ano,
       semanaDesde,
       semanaHasta,
+      horasMin,
+      horasMax,
+      fechaRegistroDesde,
+      fechaRegistroHasta,
     } = params;
 
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.RegistroHoraWhereInput = {
-      ...(equipoJuridicoId ? { equipoJuridicoId } : {}),
-      ...(clienteJuridicoId ? { clienteJuridicoId } : {}),
-      ...(asuntoJuridicoId ? { asuntoJuridicoId } : {}),
-      ...(socioId ? { socioId } : {}),
-      ...(usuarioId ? { usuarioId } : {}),
+      ...(equipoJuridicoIds && equipoJuridicoIds.length > 0
+        ? { equipoJuridicoId: { in: equipoJuridicoIds } }
+        : equipoJuridicoId
+          ? { equipoJuridicoId }
+          : {}),
+      ...(clienteJuridicoIds && clienteJuridicoIds.length > 0
+        ? { clienteJuridicoId: { in: clienteJuridicoIds } }
+        : clienteJuridicoId
+          ? { clienteJuridicoId }
+          : {}),
+      ...(asuntoJuridicoIds && asuntoJuridicoIds.length > 0
+        ? { asuntoJuridicoId: { in: asuntoJuridicoIds } }
+        : asuntoJuridicoId
+          ? { asuntoJuridicoId }
+          : {}),
+      ...(socioIds && socioIds.length > 0
+        ? { socioId: { in: socioIds } }
+        : socioId
+          ? { socioId }
+          : {}),
+      ...(usuarioIds && usuarioIds.length > 0
+        ? { usuarioId: { in: usuarioIds } }
+        : usuarioId
+          ? { usuarioId }
+          : {}),
       ...(ano ? { ano } : {}),
       ...(semanaDesde || semanaHasta
         ? {
             semana: {
               ...(semanaDesde ? { gte: semanaDesde } : {}),
               ...(semanaHasta ? { lte: semanaHasta } : {}),
+            },
+          }
+        : {}),
+      ...(horasMin !== undefined || horasMax !== undefined
+        ? {
+            horas: {
+              ...(horasMin !== undefined ? { gte: horasMin } : {}),
+              ...(horasMax !== undefined ? { lte: horasMax } : {}),
+            },
+          }
+        : {}),
+      ...(fechaRegistroDesde || fechaRegistroHasta
+        ? {
+            createdAt: {
+              ...(fechaRegistroDesde
+                ? { gte: new Date(`${fechaRegistroDesde}T00:00:00.000Z`) }
+                : {}),
+              ...(fechaRegistroHasta
+                ? { lte: new Date(`${fechaRegistroHasta}T23:59:59.999Z`) }
+                : {}),
             },
           }
         : {}),
@@ -199,7 +248,11 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
         usuarioNombre: { usuario: { name: direction } },
       };
       if (columnMap[sortBy]) {
-        orderBy = [columnMap[sortBy]];
+        if (sortBy === "semana") {
+          orderBy = [{ ano: direction }, { semana: direction }];
+        } else {
+          orderBy = [columnMap[sortBy]];
+        }
       }
     }
 

@@ -17,9 +17,18 @@ export const useRegistrosHoras = (params: RegistroHorasFilterParams) => {
       params.asuntoJuridicoId,
       params.socioId,
       params.usuarioId,
+      params.equipoJuridicoIds,
+      params.clienteJuridicoIds,
+      params.asuntoJuridicoIds,
+      params.socioIds,
+      params.usuarioIds,
       params.ano,
       params.semanaDesde,
       params.semanaHasta,
+      params.horasMin,
+      params.horasMax,
+      params.fechaRegistroDesde,
+      params.fechaRegistroHasta,
     ],
     queryFn: async () => {
       const result = await getPaginatedRegistrosHorasAction(params);

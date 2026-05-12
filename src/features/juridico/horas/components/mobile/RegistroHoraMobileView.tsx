@@ -17,6 +17,7 @@ import type { PaginatedResult } from "@/core/shared/types/pagination.types";
 import type { RegistroHoraDto } from "../../server/dtos/RegistroHoraDto.dto";
 import { RegistroHoraMobileCard } from "./RegistroHoraMobileCard";
 import { RegistroHoraMobileFiltersDrawer } from "./RegistroHoraMobileFiltersDrawer";
+import type { RegistroHorasAdvancedFilters } from "../../types/RegistroHorasAdvancedFilters.type";
 
 // ── Skeleton loaders ──────────────────────────────────────────────────────────
 function CardSkeleton() {
@@ -50,12 +51,15 @@ interface RegistroHoraMobileViewProps {
   search: string;
   onSearchChange: (v: string) => void;
   // Filtros adicionales
-  equipoJuridicoId?: string;
-  onEquipoChange: (id: string | undefined) => void;
-  clienteJuridicoId?: string;
-  onClienteChange: (id: string | undefined) => void;
-  ano?: number;
-  onAnoChange: (ano: number | undefined) => void;
+  equipoJuridicoIds: string[];
+  onEquipoChange: (ids: string[]) => void;
+  clienteJuridicoIds: string[];
+  onClienteChange: (ids: string[]) => void;
+  usuarioIds: string[];
+  onUsuarioChange: (ids: string[]) => void;
+  canFilterByUsuario: boolean;
+  advancedFilters: RegistroHorasAdvancedFilters;
+  onAdvancedFiltersChange: (filters: RegistroHorasAdvancedFilters) => void;
   onClearFilters: () => void;
 }
 
@@ -69,12 +73,15 @@ export function RegistroHoraMobileView({
   onPageChange,
   search,
   onSearchChange,
-  equipoJuridicoId,
+  equipoJuridicoIds,
   onEquipoChange,
-  clienteJuridicoId,
+  clienteJuridicoIds,
   onClienteChange,
-  ano,
-  onAnoChange,
+  usuarioIds,
+  onUsuarioChange,
+  canFilterByUsuario,
+  advancedFilters,
+  onAdvancedFiltersChange,
   onClearFilters,
 }: RegistroHoraMobileViewProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -84,9 +91,18 @@ export function RegistroHoraMobileView({
 
   const activeFilterCount = [
     search.length > 0,
-    !!equipoJuridicoId,
-    !!clienteJuridicoId,
-    !!ano,
+    equipoJuridicoIds.length > 0,
+    clienteJuridicoIds.length > 0,
+    usuarioIds.length > 0,
+    advancedFilters.asuntoJuridicoIds.length > 0,
+    advancedFilters.socioIds.length > 0,
+    advancedFilters.ano !== undefined,
+    advancedFilters.semanaDesde !== undefined,
+    advancedFilters.semanaHasta !== undefined,
+    advancedFilters.horasMin.length > 0,
+    advancedFilters.horasMax.length > 0,
+    advancedFilters.fechaRegistroDesde.length > 0,
+    advancedFilters.fechaRegistroHasta.length > 0,
   ].filter(Boolean).length;
 
   return (
@@ -203,12 +219,15 @@ export function RegistroHoraMobileView({
         onOpenChange={setFiltersOpen}
         search={search}
         onSearchChange={onSearchChange}
-        equipoJuridicoId={equipoJuridicoId}
+        equipoJuridicoIds={equipoJuridicoIds}
         onEquipoChange={onEquipoChange}
-        clienteJuridicoId={clienteJuridicoId}
+        clienteJuridicoIds={clienteJuridicoIds}
         onClienteChange={onClienteChange}
-        ano={ano}
-        onAnoChange={onAnoChange}
+        usuarioIds={usuarioIds}
+        onUsuarioChange={onUsuarioChange}
+        canFilterByUsuario={canFilterByUsuario}
+        advancedFilters={advancedFilters}
+        onAdvancedFiltersChange={onAdvancedFiltersChange}
         onClearFilters={onClearFilters}
       />
     </div>

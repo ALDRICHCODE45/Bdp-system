@@ -24,6 +24,10 @@ import { RegistroHoraMobileView } from "../components/mobile/RegistroHoraMobileV
 import { AutorizacionesTable } from "../components/AutorizacionesTable";
 import { getCurrentWeekInfo } from "@/core/shared/helpers/weekUtils";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
+import {
+  EMPTY_REGISTRO_HORAS_ADVANCED_FILTERS,
+  type RegistroHorasAdvancedFilters,
+} from "../types/RegistroHorasAdvancedFilters.type";
 
 const CreateRegistroHoraSheet = dynamic(
   () =>
@@ -39,6 +43,10 @@ export function RegistroHorasTablePage() {
   const canManageAutorizaciones = checkAny([
     PermissionActions["juridico-horas"]["autorizar-edicion"],
     PermissionActions["juridico-horas"].gestionar,
+  ]);
+  const canFilterByUsuario = checkAny([
+    PermissionActions["juridico-horas"].gestionar,
+    PermissionActions["juridico-horas"]["ver-reportes"],
   ]);
   const currentWeekInfo = getCurrentWeekInfo();
 
@@ -59,18 +67,25 @@ export function RegistroHorasTablePage() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
 
-  // Desktop filters (managed via search bar for now)
-  const [desktopEquipo] = useState<string | undefined>();
-  const [desktopCliente] = useState<string | undefined>();
-  const [desktopAno] = useState<number | undefined>();
+  const [desktopEquipoIds, setDesktopEquipoIds] = useState<string[]>([]);
+  const [desktopClienteIds, setDesktopClienteIds] = useState<string[]>([]);
+  const [desktopUsuarioIds, setDesktopUsuarioIds] = useState<string[]>([]);
+  const [desktopAdvancedFilters, setDesktopAdvancedFilters] =
+    useState<RegistroHorasAdvancedFilters>(
+      EMPTY_REGISTRO_HORAS_ADVANCED_FILTERS
+    );
 
   // ── Mobile: separate state ────────────────────────────────────────────────
   const [mobilePage, setMobilePage] = useState(1);
   const [mobileSearch, setMobileSearch] = useState("");
   const debouncedMobileSearch = useDebounce(mobileSearch, 300);
-  const [mobileEquipo, setMobileEquipo] = useState<string | undefined>();
-  const [mobileCliente, setMobileCliente] = useState<string | undefined>();
-  const [mobileAno, setMobileAno] = useState<number | undefined>();
+  const [mobileEquipoIds, setMobileEquipoIds] = useState<string[]>([]);
+  const [mobileClienteIds, setMobileClienteIds] = useState<string[]>([]);
+  const [mobileUsuarioIds, setMobileUsuarioIds] = useState<string[]>([]);
+  const [mobileAdvancedFilters, setMobileAdvancedFilters] =
+    useState<RegistroHorasAdvancedFilters>(
+      EMPTY_REGISTRO_HORAS_ADVANCED_FILTERS
+    );
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const resetPage = useCallback(
@@ -118,34 +133,38 @@ export function RegistroHorasTablePage() {
     setMobilePage(1);
   }, []);
 
-  const handleMobileEquipoChange = useCallback(
-    (id: string | undefined) => {
-      setMobileEquipo(id);
+  const handleMobileEquipoChange = useCallback((ids: string[]) => {
+      setMobileEquipoIds(ids);
       setMobilePage(1);
-    },
-    []
-  );
+    }, []);
 
-  const handleMobileClienteChange = useCallback(
-    (id: string | undefined) => {
-      setMobileCliente(id);
+  const handleMobileClienteChange = useCallback((ids: string[]) => {
+      setMobileClienteIds(ids);
       setMobilePage(1);
-    },
-    []
-  );
+    }, []);
 
-  const handleMobileAnoChange = useCallback((ano: number | undefined) => {
-    setMobileAno(ano);
+  const handleMobileUsuarioChange = useCallback((ids: string[]) => {
+    setMobileUsuarioIds(ids);
     setMobilePage(1);
   }, []);
 
   const handleMobileClearFilters = useCallback(() => {
     setMobileSearch("");
-    setMobileEquipo(undefined);
-    setMobileCliente(undefined);
-    setMobileAno(undefined);
+    setMobileEquipoIds([]);
+    setMobileClienteIds([]);
+    setMobileUsuarioIds([]);
+    setMobileAdvancedFilters(EMPTY_REGISTRO_HORAS_ADVANCED_FILTERS);
     setMobilePage(1);
   }, []);
+
+  const handleDesktopClearFilters = useCallback(() => {
+    setDesktopEquipoIds([]);
+    setDesktopClienteIds([]);
+    setDesktopUsuarioIds([]);
+    setDesktopAdvancedFilters(EMPTY_REGISTRO_HORAS_ADVANCED_FILTERS);
+    setSearch("");
+    resetPage();
+  }, [resetPage]);
 
   // ── Data fetching — desktop ───────────────────────────────────────────────
   const { data, isPending, isFetching } = useRegistrosHoras({
@@ -154,9 +173,22 @@ export function RegistroHorasTablePage() {
     sortBy: sorting[0]?.id,
     sortOrder: sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined,
     search: debouncedSearch || undefined,
-    equipoJuridicoId: desktopEquipo,
-    clienteJuridicoId: desktopCliente,
-    ano: desktopAno,
+    equipoJuridicoIds: desktopEquipoIds,
+    clienteJuridicoIds: desktopClienteIds,
+    usuarioIds: canFilterByUsuario ? desktopUsuarioIds : undefined,
+    asuntoJuridicoIds: desktopAdvancedFilters.asuntoJuridicoIds,
+    socioIds: desktopAdvancedFilters.socioIds,
+    ano: desktopAdvancedFilters.ano,
+    semanaDesde: desktopAdvancedFilters.semanaDesde,
+    semanaHasta: desktopAdvancedFilters.semanaHasta,
+    horasMin: desktopAdvancedFilters.horasMin
+      ? Number(desktopAdvancedFilters.horasMin)
+      : undefined,
+    horasMax: desktopAdvancedFilters.horasMax
+      ? Number(desktopAdvancedFilters.horasMax)
+      : undefined,
+    fechaRegistroDesde: desktopAdvancedFilters.fechaRegistroDesde || undefined,
+    fechaRegistroHasta: desktopAdvancedFilters.fechaRegistroHasta || undefined,
   });
 
   // ── Data fetching — mobile ────────────────────────────────────────────────
@@ -164,23 +196,71 @@ export function RegistroHorasTablePage() {
     page: mobilePage,
     pageSize: 20,
     search: debouncedMobileSearch || undefined,
-    equipoJuridicoId: mobileEquipo,
-    clienteJuridicoId: mobileCliente,
-    ano: mobileAno,
+    equipoJuridicoIds: mobileEquipoIds,
+    clienteJuridicoIds: mobileClienteIds,
+    usuarioIds: canFilterByUsuario ? mobileUsuarioIds : undefined,
+    asuntoJuridicoIds: mobileAdvancedFilters.asuntoJuridicoIds,
+    socioIds: mobileAdvancedFilters.socioIds,
+    ano: mobileAdvancedFilters.ano,
+    semanaDesde: mobileAdvancedFilters.semanaDesde,
+    semanaHasta: mobileAdvancedFilters.semanaHasta,
+    horasMin: mobileAdvancedFilters.horasMin
+      ? Number(mobileAdvancedFilters.horasMin)
+      : undefined,
+    horasMax: mobileAdvancedFilters.horasMax
+      ? Number(mobileAdvancedFilters.horasMax)
+      : undefined,
+    fechaRegistroDesde: mobileAdvancedFilters.fechaRegistroDesde || undefined,
+    fechaRegistroHasta: mobileAdvancedFilters.fechaRegistroHasta || undefined,
   });
 
   // ── Table config ──────────────────────────────────────────────────────────
   const tableConfig = useMemo(
     () =>
-      createTableConfig(RegistroHorasTableConfig, {
-        onAdd: openModal,
-        serverSide: {
-          enabled: true,
-          totalCount: data?.totalCount ?? 0,
+        createTableConfig(RegistroHorasTableConfig, {
+          onAdd: openModal,
+          customFilterProps: {
+            equipoJuridicoIds: desktopEquipoIds,
+            clienteJuridicoIds: desktopClienteIds,
+            usuarioIds: desktopUsuarioIds,
+            canFilterByUsuario,
+            onEquipoJuridicoIdsChange: (value: string[]) => {
+              setDesktopEquipoIds(value);
+              resetPage();
+            },
+            onClienteJuridicoIdsChange: (value: string[]) => {
+              setDesktopClienteIds(value);
+              resetPage();
+            },
+            onUsuarioIdsChange: (value: string[]) => {
+              setDesktopUsuarioIds(value);
+              resetPage();
+            },
+            advancedFilters: desktopAdvancedFilters,
+            onApplyAdvancedFilters: (filters: RegistroHorasAdvancedFilters) => {
+              setDesktopAdvancedFilters(filters);
+              resetPage();
+            },
+            onClearFilters: handleDesktopClearFilters,
+          },
+          serverSide: {
+            enabled: true,
+            totalCount: data?.totalCount ?? 0,
           pageCount: data?.pageCount ?? 0,
         },
       }),
-    [openModal, data?.totalCount, data?.pageCount]
+    [
+      openModal,
+      data?.totalCount,
+      data?.pageCount,
+      desktopEquipoIds,
+      desktopClienteIds,
+      desktopUsuarioIds,
+      canFilterByUsuario,
+      desktopAdvancedFilters,
+      handleDesktopClearFilters,
+      resetPage,
+    ]
   );
 
   // ── Shared modals ─────────────────────────────────────────────────────────
@@ -222,12 +302,18 @@ export function RegistroHorasTablePage() {
           onPageChange={handleMobilePageChange}
           search={mobileSearch}
           onSearchChange={handleMobileSearchChange}
-          equipoJuridicoId={mobileEquipo}
+          equipoJuridicoIds={mobileEquipoIds}
           onEquipoChange={handleMobileEquipoChange}
-          clienteJuridicoId={mobileCliente}
+          clienteJuridicoIds={mobileClienteIds}
           onClienteChange={handleMobileClienteChange}
-          ano={mobileAno}
-          onAnoChange={handleMobileAnoChange}
+          usuarioIds={mobileUsuarioIds}
+          onUsuarioChange={handleMobileUsuarioChange}
+          canFilterByUsuario={canFilterByUsuario}
+          advancedFilters={mobileAdvancedFilters}
+          onAdvancedFiltersChange={(filters) => {
+            setMobileAdvancedFilters(filters);
+            setMobilePage(1);
+          }}
           onClearFilters={handleMobileClearFilters}
         />
         {sharedModals}

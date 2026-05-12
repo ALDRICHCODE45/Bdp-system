@@ -47,6 +47,7 @@ export const getPaginatedRegistrosHorasAction = async (
     page,
     pageSize,
     usuarioId: isAdmin ? params.usuarioId : session.user.id,
+    usuarioIds: isAdmin ? params.usuarioIds : [session.user.id],
   };
 
   const service = makeRegistroHoraService({ prisma });
