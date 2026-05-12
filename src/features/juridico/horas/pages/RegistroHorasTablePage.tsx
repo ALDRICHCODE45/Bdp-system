@@ -84,8 +84,8 @@ export function RegistroHorasTablePage() {
   }, []);
 
   const columns = useMemo(
-    () => createRegistroHorasColumns(handleViewDetail),
-    [handleViewDetail]
+    () => createRegistroHorasColumns(handleViewDetail, { canManage: canManageAutorizaciones }),
+    [handleViewDetail, canManageAutorizaciones]
   );
 
   const handlePaginationChange = useCallback(

@@ -12,8 +12,10 @@ export function formatWeekLabel(ano: number, semana: number): string {
 }
 
 export function createRegistroHorasColumns(
-  onViewDetail?: (registro: RegistroHoraDto) => void
+  onViewDetail?: (registro: RegistroHoraDto) => void,
+  options?: { canManage?: boolean }
 ): ColumnDef<RegistroHoraDto>[] {
+  const canManage = options?.canManage === true;
   return [
   {
     header: "Semana",
@@ -116,7 +118,7 @@ export function createRegistroHorasColumns(
     header: "Estado",
     accessorKey: "editable",
     cell: ({ row }) => {
-      const status = getRegistroHoraEditStatus(row.original);
+      const status = getRegistroHoraEditStatus(row.original, { canManage });
 
       if (status === "EN_PLAZO") {
         return (
@@ -132,6 +134,15 @@ export function createRegistroHorasColumns(
           <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
             <Unlock className="h-3.5 w-3.5" />
             <span>Autorizado</span>
+          </div>
+        );
+      }
+
+      if (status === "GESTION") {
+        return (
+          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+            <Unlock className="h-3.5 w-3.5" />
+            <span>Edición gestión</span>
           </div>
         );
       }
