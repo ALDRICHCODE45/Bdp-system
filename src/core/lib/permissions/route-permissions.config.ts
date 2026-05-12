@@ -35,6 +35,7 @@ export const ROUTE_PERMISSIONS: Record<string, string | string[]> = {
   "/juridico/equipos": "juridico-equipos:acceder",
   "/juridico/horas": "juridico-horas:acceder",
   "/juridico/horas/reportes": "juridico-horas:ver-reportes",
+  "/juridico/horas/dashboard": "juridico-horas:gestionar",
 
   // Módulo de Sistema
   "/usuarios": "usuarios:acceder",

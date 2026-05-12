@@ -4,6 +4,7 @@ import {
   Headset,
   Monitor,
   Scale,
+  BarChart3,
 } from "lucide-react";
 
 export const sidebarLinks = {
@@ -91,6 +92,11 @@ export const sidebarLinks = {
         {
           title: "Horas",
           url: "/juridico/horas",
+        },
+        {
+          title: "Dashboard Horas",
+          url: "/juridico/horas/dashboard",
+          icon: BarChart3,
         },
       ],
     },
