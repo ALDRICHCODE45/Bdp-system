@@ -12,6 +12,7 @@ import { Button } from "@/core/shared/ui/button";
 import { Badge } from "@/core/shared/ui/badge";
 import { useGetRegistroHoraHistorial } from "../hooks/useGetRegistroHoraHistorial.hook";
 import { Loader2, History } from "lucide-react";
+import { formatHoras } from "../helpers/formatHoras";
 
 interface RegistroHoraHistorialSheetProps {
   registroHoraId: string;
@@ -99,13 +100,19 @@ export function RegistroHoraHistorialSheet({
                   <div>
                     <p className="text-muted-foreground mb-1">Anterior</p>
                     <p className="font-mono bg-muted rounded px-2 py-1 break-all">
-                      {entry.valorAnterior ?? <em className="text-muted-foreground">vacío</em>}
+                      {entry.valorAnterior
+                        ? entry.campo === "horas"
+                          ? formatHoras(Number(entry.valorAnterior))
+                          : entry.valorAnterior
+                        : <em className="text-muted-foreground">vacío</em>}
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground mb-1">Nuevo</p>
                     <p className="font-mono bg-muted rounded px-2 py-1 break-all">
-                      {entry.valorNuevo}
+                      {entry.campo === "horas"
+                        ? formatHoras(Number(entry.valorNuevo))
+                        : entry.valorNuevo}
                     </p>
                   </div>
                 </div>

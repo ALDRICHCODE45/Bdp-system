@@ -42,11 +42,15 @@ import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
+import { usePermissions } from "@/core/shared/hooks/use-permissions";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { cn } from "@/core/lib/utils";
-import { isWithinDeadline } from "@/core/shared/helpers/weekUtils";
 
 import { formatHoras } from "../helpers/formatHoras";
+import {
+  canEditRegistroHora,
+  getRegistroHoraEditStatus,
+} from "../helpers/registroHoraEditStatus";
 import { formatWeekLabel } from "./RegistroHorasTableColumns";
 import { useGetRegistroHoraHistorial } from "../hooks/useGetRegistroHoraHistorial.hook";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
@@ -92,8 +96,56 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
+function RegistroHoraStatus({
+  registro,
+  canManage,
+}: {
+  registro: RegistroHoraDto;
+  canManage: boolean;
+}) {
+  const status = getRegistroHoraEditStatus(registro, { canManage });
+
+  if (status === "EN_PLAZO") {
+    return (
+      <span className="flex items-center gap-1 text-green-700 dark:text-green-400">
+        <Unlock className="h-3.5 w-3.5" />
+        En plazo
+      </span>
+    );
+  }
+
+  if (status === "AUTORIZADO") {
+    return (
+      <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400">
+        <Unlock className="h-3.5 w-3.5" />
+        Autorizado
+      </span>
+    );
+  }
+
+  if (status === "GESTION") {
+    return (
+      <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400">
+        <Unlock className="h-3.5 w-3.5" />
+        Edición gestión
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-1 text-muted-foreground">
+      <Lock className="h-3.5 w-3.5" />
+      Bloqueado
+    </span>
+  );
+}
+
 // ─── InformacionTab ──────────────────────────────────────────────────────────
 function InformacionTab({ registro }: { registro: RegistroHoraDto }) {
+  const { hasAnyPermission } = usePermissions();
+  const canManage = hasAnyPermission([
+    PermissionActions["juridico-horas"].gestionar,
+  ]);
   const formatDate = (d: string | null | undefined) => {
     if (!d) return null;
     try {
@@ -146,22 +198,10 @@ function InformacionTab({ registro }: { registro: RegistroHoraDto }) {
             value={formatWeekLabel(registro.ano, registro.semana)}
           />
           <InfoRow label="Año" value={String(registro.ano)} />
-          <InfoRow
-            label="Estado"
-            value={
-              registro.editable ? (
-                <span className="flex items-center gap-1 text-green-700 dark:text-green-400">
-                  <Unlock className="h-3.5 w-3.5" />
-                  Editable
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <Lock className="h-3.5 w-3.5" />
-                  Bloqueado
-                </span>
-              )
-            }
-          />
+            <InfoRow
+              label="Estado"
+              value={<RegistroHoraStatus registro={registro} canManage={canManage} />}
+            />
         </div>
       </div>
 
@@ -330,6 +370,10 @@ export function RegistroHoraDetailSheet({
   onOpenChange,
 }: RegistroHoraDetailSheetProps) {
   const isMobile = useIsMobile();
+  const { hasAnyPermission } = usePermissions();
+  const canManage = hasAnyPermission([
+    PermissionActions["juridico-horas"].gestionar,
+  ]);
 
   const [activeTab, setActiveTab] = useState("info");
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
@@ -355,9 +399,9 @@ export function RegistroHoraDetailSheet({
 
   if (!registro) return null;
 
-  const isDeadlinePassed = !isWithinDeadline(registro.ano, registro.semana);
-  const canEdit = registro.editable;
-  const canSolicitar = !registro.editable && isDeadlinePassed;
+  const editStatus = getRegistroHoraEditStatus(registro, { canManage });
+  const canEdit = canEditRegistroHora(registro, { canManage });
+  const canSolicitar = editStatus === "BLOQUEADO";
 
   return (
     <>
@@ -385,23 +429,31 @@ export function RegistroHoraDetailSheet({
                   >
                     {formatWeekLabel(registro.ano, registro.semana)}
                   </Badge>
-                  {registro.editable ? (
-                    <Badge
-                      variant="outline"
-                      className="text-xs gap-1 text-green-700 border-green-300 dark:text-green-400 dark:border-green-700"
-                    >
-                      <Unlock className="size-3" />
-                      Editable
-                    </Badge>
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="text-xs gap-1 text-muted-foreground"
-                    >
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-xs gap-1",
+                      editStatus === "EN_PLAZO" &&
+                        "text-green-700 border-green-300 dark:text-green-400 dark:border-green-700",
+                      (editStatus === "AUTORIZADO" ||
+                        editStatus === "GESTION") &&
+                        "text-amber-700 border-amber-300 dark:text-amber-400 dark:border-amber-700",
+                      editStatus === "BLOQUEADO" && "text-muted-foreground"
+                    )}
+                  >
+                    {editStatus === "BLOQUEADO" ? (
                       <Lock className="size-3" />
-                      Bloqueado
-                    </Badge>
-                  )}
+                    ) : (
+                      <Unlock className="size-3" />
+                    )}
+                    {editStatus === "EN_PLAZO"
+                      ? "En plazo"
+                      : editStatus === "AUTORIZADO"
+                        ? "Autorizado"
+                        : editStatus === "GESTION"
+                          ? "Edición gestión"
+                        : "Bloqueado"}
+                  </Badge>
                   <Badge
                     variant="secondary"
                     className="font-mono text-xs bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200"

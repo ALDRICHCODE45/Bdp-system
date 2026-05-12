@@ -7,6 +7,7 @@ import { toRegistroHoraDto } from "../mappers/registroHoraMapper";
 import prisma from "@/core/lib/prisma";
 import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { hasAnyPermission } from "@/core/lib/permissions/permission-checker";
 import { horasMinutosToDecimal } from "../../helpers/formatHoras";
 
 export const updateRegistroHoraAction = async (input: unknown) => {
@@ -24,6 +25,11 @@ export const updateRegistroHoraAction = async (input: unknown) => {
   }
 
   const parsed = updateRegistroHoraSchema.parse(input);
+  const userPermissions = session.user.permissions || [];
+
+  const canOverrideDeadline = hasAnyPermission(userPermissions, [
+    PermissionActions["juridico-horas"].gestionar,
+  ]);
 
   // Convert hours + minutes to decimal for storage
   const horasDecimal = horasMinutosToDecimal(parsed.horas, parsed.minutos);
@@ -39,7 +45,8 @@ export const updateRegistroHoraAction = async (input: unknown) => {
       horas: horasDecimal,
       descripcion: parsed.descripcion,
     },
-    session.user.id
+    session.user.id,
+    { canOverrideDeadline }
   );
 
   if (!result.ok) return { ok: false as const, error: result.error.message };

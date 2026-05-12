@@ -5,12 +5,16 @@ import { Lock, Unlock } from "lucide-react";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
 import { RegistroHoraRowActions } from "./RegistroHoraRowActions";
 import { formatHoras } from "../helpers/formatHoras";
+import { getRegistroHoraEditStatus } from "../helpers/registroHoraEditStatus";
 
 export function formatWeekLabel(ano: number, semana: number): string {
   return `Sem ${semana} - ${ano}`;
 }
 
-export const registroHorasColumns: ColumnDef<RegistroHoraDto>[] = [
+export function createRegistroHorasColumns(
+  onViewDetail?: (registro: RegistroHoraDto) => void
+): ColumnDef<RegistroHoraDto>[] {
+  return [
   {
     header: "Semana",
     id: "semana",
@@ -112,13 +116,27 @@ export const registroHorasColumns: ColumnDef<RegistroHoraDto>[] = [
     header: "Estado",
     accessorKey: "editable",
     cell: ({ row }) => {
-      const editable = row.getValue("editable") as boolean;
-      return editable ? (
-        <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
-          <Unlock className="h-3.5 w-3.5" />
-          <span>Editable</span>
-        </div>
-      ) : (
+      const status = getRegistroHoraEditStatus(row.original);
+
+      if (status === "EN_PLAZO") {
+        return (
+          <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
+            <Unlock className="h-3.5 w-3.5" />
+            <span>En plazo</span>
+          </div>
+        );
+      }
+
+      if (status === "AUTORIZADO") {
+        return (
+          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+            <Unlock className="h-3.5 w-3.5" />
+            <span>Autorizado</span>
+          </div>
+        );
+      }
+
+      return (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Lock className="h-3.5 w-3.5" />
           <span>Bloqueado</span>
@@ -147,8 +165,17 @@ export const registroHorasColumns: ColumnDef<RegistroHoraDto>[] = [
   {
     id: "actions",
     header: () => <span className="sr-only">Acciones</span>,
-    cell: ({ row }) => <RegistroHoraRowActions row={row} />,
+    cell: ({ row }) => (
+      <RegistroHoraRowActions
+        row={row}
+        onViewDetail={onViewDetail}
+      />
+    ),
     size: 5,
     enableHiding: false,
   },
-];
+  ];
+}
+
+/** @deprecated Use createRegistroHorasColumns() instead */
+export const registroHorasColumns = createRegistroHorasColumns();

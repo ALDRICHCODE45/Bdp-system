@@ -6,11 +6,15 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
 import { useDeleteRegistroHora } from "../hooks/useDeleteRegistroHora.hook";
-import { Pencil, Trash2, History, FilePenLine } from "lucide-react";
+import { Pencil, Trash2, History, FilePenLine, Eye } from "lucide-react";
 import type { ColaboradorAction } from "@/features/RecursosHumanos/colaboradores/components/forms/ColaboradorActions.config";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
-import { isWithinDeadline } from "@/core/shared/helpers/weekUtils";
+import { usePermissions } from "@/core/shared/hooks/use-permissions";
+import {
+  canEditRegistroHora,
+  getRegistroHoraEditStatus,
+} from "../helpers/registroHoraEditStatus";
 
 const EditRegistroHoraSheet = dynamic(
   () =>
@@ -47,10 +51,16 @@ const SolicitarEdicionDialog = dynamic(
 
 export function RegistroHoraRowActions({
   row,
+  onViewDetail,
 }: {
   row: Row<RegistroHoraDto>;
+  onViewDetail?: (registro: RegistroHoraDto) => void;
 }) {
   const registro = row.original;
+  const { hasAnyPermission } = usePermissions();
+  const canManage = hasAnyPermission([
+    PermissionActions["juridico-horas"].gestionar,
+  ]);
 
   const {
     isOpen: isEditOpen,
@@ -74,16 +84,26 @@ export function RegistroHoraRowActions({
     await deleteMutation.mutateAsync(registro.id);
   };
 
-  // Show "Solicitar Edición" when: editable=false AND deadline has passed
-  const isDeadlinePassed = !isWithinDeadline(registro.ano, registro.semana);
-  const showSolicitar = !registro.editable && isDeadlinePassed;
+  const canEdit = canEditRegistroHora(registro, { canManage });
+  const showSolicitar =
+    getRegistroHoraEditStatus(registro, { canManage }) === "BLOQUEADO";
 
   const actions: ColaboradorAction[] = [
-    ...(registro.editable
+    ...(onViewDetail
+      ? [
+          {
+            id: "view-detail",
+            label: "Ver detalle",
+            icon: Eye,
+            onClick: () => onViewDetail(registro),
+          } as ColaboradorAction,
+        ]
+      : []),
+    ...(canEdit
       ? [
           {
             id: "edit",
-            label: "Editar",
+            label: canManage ? "Editar (gestión)" : "Editar",
             icon: Pencil,
             onClick: openEdit,
           } as ColaboradorAction,

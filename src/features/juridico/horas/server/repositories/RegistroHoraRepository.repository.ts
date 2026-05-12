@@ -5,6 +5,7 @@ import type {
   ClienteJuridico,
   AsuntoJuridico,
   Socio,
+  AutorizacionEdicion,
 } from "@prisma/client";
 import type { RegistroHorasFilterParams } from "../../types/RegistroHorasFilterParams";
 
@@ -14,6 +15,7 @@ export type RegistroHoraEntity = RegistroHora & {
   clienteJuridico: Pick<ClienteJuridico, "id" | "nombre">;
   asuntoJuridico: Pick<AsuntoJuridico, "id" | "nombre">;
   socio: Pick<Socio, "id" | "nombre">;
+  autorizaciones: Pick<AutorizacionEdicion, "id" | "estado">[];
 };
 
 export type CreateRegistroHoraArgs = {

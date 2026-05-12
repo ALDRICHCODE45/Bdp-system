@@ -13,9 +13,9 @@ export const registroHorasDefaultColumnVisibility = {
   asuntoJuridicoNombre: true,
   horas: true,
   editable: true,
+  usuarioNombre: true,
   // hidden by default:
   socioNombre: false,
-  usuarioNombre: false,
   descripcion: false,
   createdAt: false,
 };
@@ -42,7 +42,7 @@ export const RegistroHorasTableConfig: TableConfig<RegistroHoraDto> = {
   enableRowSelection: false,
   columnOrder: {
     enabled: true,
-    persistKey: "registro-horas-table",
+    persistKey: "registro-horas-table-v2",
   },
   defaultColumnVisibility: registroHorasDefaultColumnVisibility,
 };

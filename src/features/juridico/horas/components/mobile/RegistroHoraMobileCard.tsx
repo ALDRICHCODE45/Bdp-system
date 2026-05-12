@@ -16,11 +16,15 @@ import { useModalState } from "@/core/shared/hooks/useModalState";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { usePermissions } from "@/core/shared/hooks/use-permissions";
 import { cn } from "@/core/lib/utils";
-import { isWithinDeadline } from "@/core/shared/helpers/weekUtils";
 import { useDeleteRegistroHora } from "../../hooks/useDeleteRegistroHora.hook";
 import { formatHoras } from "../../helpers/formatHoras";
 import { formatWeekLabel } from "../RegistroHorasTableColumns";
+import {
+  canEditRegistroHora,
+  getRegistroHoraEditStatus,
+} from "../../helpers/registroHoraEditStatus";
 import type { RegistroHoraDto } from "../../server/dtos/RegistroHoraDto.dto";
 
 const EditRegistroHoraSheet = dynamic(
@@ -48,6 +52,10 @@ export function RegistroHoraMobileCard({
   registro,
   onViewDetail,
 }: RegistroHoraMobileCardProps) {
+  const { hasAnyPermission } = usePermissions();
+  const canManage = hasAnyPermission([
+    PermissionActions["juridico-horas"].gestionar,
+  ]);
   const {
     isOpen: isEditOpen,
     openModal: openEdit,
@@ -66,9 +74,9 @@ export function RegistroHoraMobileCard({
     await deleteMutation.mutateAsync(registro.id);
   };
 
-  const isDeadlinePassed = !isWithinDeadline(registro.ano, registro.semana);
-  const canEdit = registro.editable;
-  const canSolicitar = !registro.editable && isDeadlinePassed;
+  const editStatus = getRegistroHoraEditStatus(registro, { canManage });
+  const canEdit = canEditRegistroHora(registro, { canManage });
+  const canSolicitar = editStatus === "BLOQUEADO";
 
   const weekLabel = formatWeekLabel(registro.ano, registro.semana);
   const horasLabel = formatHoras(registro.horas);
@@ -101,16 +109,26 @@ export function RegistroHoraMobileCard({
           <span
             className={cn(
               "shrink-0",
-              canEdit
-                ? "text-green-600 dark:text-green-400"
-                : "text-muted-foreground"
+                editStatus === "EN_PLAZO"
+                  ? "text-green-600 dark:text-green-400"
+                  : editStatus === "AUTORIZADO" || editStatus === "GESTION"
+                    ? "text-amber-600 dark:text-amber-400"
+                    : "text-muted-foreground"
             )}
-            title={canEdit ? "Editable" : "Bloqueado"}
+            title={
+              editStatus === "EN_PLAZO"
+                ? "En plazo"
+                : editStatus === "AUTORIZADO"
+                  ? "Autorizado"
+                  : editStatus === "GESTION"
+                    ? "Edición por gestión"
+                  : "Bloqueado"
+            }
           >
-            {canEdit ? (
-              <Unlock className="size-3.5" />
-            ) : (
+            {editStatus === "BLOQUEADO" ? (
               <Lock className="size-3.5" />
+            ) : (
+              <Unlock className="size-3.5" />
             )}
           </span>
         </div>
@@ -178,7 +196,7 @@ export function RegistroHoraMobileCard({
                   >
                     <DropdownMenuItem onClick={openEdit} className="gap-2">
                       <Pencil className="size-4 text-muted-foreground" />
-                      Editar
+                      {canManage ? "Editar (gestión)" : "Editar"}
                     </DropdownMenuItem>
                   </PermissionGuard>
                 </>

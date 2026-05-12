@@ -85,7 +85,8 @@ export class RegistroHoraService {
 
   async update(
     input: UpdateRegistroHoraArgs,
-    usuarioId: string
+    usuarioId: string,
+    options?: { canOverrideDeadline?: boolean }
   ): Promise<Result<RegistroHoraEntity, Error>> {
     try {
       // 1. Find existing
@@ -94,8 +95,11 @@ export class RegistroHoraService {
         return Err(new Error("Registro de horas no encontrado"));
       }
 
-      // 2. Check editable flag
-      if (!existing.editable) {
+      const withinDeadline = isWithinDeadline(existing.ano, existing.semana);
+      const canOverrideDeadline = options?.canOverrideDeadline === true;
+
+      // 2. Dentro de plazo: editable=true. Fuera de plazo: requiere autorización AUTORIZADA activa.
+      if (withinDeadline && !existing.editable) {
         return Err(
           new Error(
             "Este registro no es editable. Solicita autorización al administrador."
@@ -103,10 +107,29 @@ export class RegistroHoraService {
         );
       }
 
-      const withinDeadline = isWithinDeadline(existing.ano, existing.semana);
-
       // 3. Use transaction: update + historial + conditionally set editable=false
       const updated = await this.prisma.$transaction(async (tx) => {
+        let autorizacionAutorizadaId: string | null = null;
+
+        if (!withinDeadline && !canOverrideDeadline) {
+          const autorizacionActiva = await tx.autorizacionEdicion.findFirst({
+            where: {
+              registroHoraId: input.id,
+              estado: "AUTORIZADA",
+            },
+            orderBy: { createdAt: "asc" },
+            select: { id: true },
+          });
+
+          if (!autorizacionActiva) {
+            throw new Error(
+              "El plazo de edición ha vencido. Solicita autorización al administrador."
+            );
+          }
+
+          autorizacionAutorizadaId = autorizacionActiva.id;
+        }
+
         // Update registro
         const updatedRegistro = await tx.registroHora.update({
           where: { id: input.id },
@@ -124,6 +147,12 @@ export class RegistroHoraService {
             clienteJuridico: { select: { id: true, nombre: true } },
             asuntoJuridico: { select: { id: true, nombre: true } },
             socio: { select: { id: true, nombre: true } },
+            autorizaciones: {
+              where: { estado: "AUTORIZADA" },
+              select: { id: true, estado: true },
+              orderBy: { createdAt: "asc" },
+              take: 1,
+            },
           },
         });
 
@@ -135,14 +164,12 @@ export class RegistroHoraService {
           });
           updatedRegistro.editable = false;
 
-          // Mark the AUTORIZADA autorizacion as UTILIZADA
-          await tx.autorizacionEdicion.updateMany({
-            where: {
-              registroHoraId: input.id,
-              estado: "AUTORIZADA",
-            },
-            data: { estado: "UTILIZADA" },
-          });
+          if (autorizacionAutorizadaId) {
+            await tx.autorizacionEdicion.update({
+              where: { id: autorizacionAutorizadaId },
+              data: { estado: "UTILIZADA" },
+            });
+          }
         }
 
         return updatedRegistro;

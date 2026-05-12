@@ -11,12 +11,13 @@ import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import { useDebounce } from "@/core/shared/hooks/use-debounce";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { usePermissions } from "@/core/shared/hooks/use-permissions";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { Card, CardContent } from "@/core/shared/ui/card";
 import dynamic from "next/dynamic";
 
 import { useRegistrosHoras } from "../hooks/useRegistrosHoras.hook";
-import { registroHorasColumns } from "../components/RegistroHorasTableColumns";
+import { createRegistroHorasColumns } from "../components/RegistroHorasTableColumns";
 import { RegistroHorasTableConfig } from "../components/RegistroHorasTableConfig";
 import { RegistroHoraDetailSheet } from "../components/RegistroHoraDetailSheet";
 import { RegistroHoraMobileView } from "../components/mobile/RegistroHoraMobileView";
@@ -32,14 +33,13 @@ const CreateRegistroHoraSheet = dynamic(
   { ssr: false, loading: () => <LoadingModalState /> }
 );
 
-interface RegistroHorasTablePageProps {
-  isAdmin?: boolean;
-}
-
-export function RegistroHorasTablePage({
-  isAdmin = false,
-}: RegistroHorasTablePageProps) {
+export function RegistroHorasTablePage() {
   const isMobile = useIsMobile();
+  const { hasAnyPermission: checkAny } = usePermissions();
+  const canManageAutorizaciones = checkAny([
+    PermissionActions["juridico-horas"]["autorizar-edicion"],
+    PermissionActions["juridico-horas"].gestionar,
+  ]);
   const currentWeekInfo = getCurrentWeekInfo();
 
   // ── Modal state ──────────────────────────────────────────────────────────
@@ -82,6 +82,11 @@ export function RegistroHorasTablePage({
     setSelectedRegistro(registro);
     setIsDetailOpen(true);
   }, []);
+
+  const columns = useMemo(
+    () => createRegistroHorasColumns(handleViewDetail),
+    [handleViewDetail]
+  );
 
   const handlePaginationChange = useCallback(
     (p: PaginationState) => setPagination(p),
@@ -248,7 +253,7 @@ export function RegistroHorasTablePage({
             ]}
           >
             <DataTable
-              columns={registroHorasColumns}
+              columns={columns}
               data={data?.data ?? []}
               config={tableConfig}
               isLoading={isPending && !data}
@@ -261,17 +266,8 @@ export function RegistroHorasTablePage({
             />
           </PermissionGuard>
 
-          {/* Admin-only: solicitudes de autorización */}
-          {isAdmin && (
-            <PermissionGuard
-              permissions={[
-                PermissionActions["juridico-horas"]["autorizar-edicion"],
-                PermissionActions["juridico-horas"].gestionar,
-              ]}
-            >
-              <AutorizacionesTable />
-            </PermissionGuard>
-          )}
+          {/* Admin/gestor: solicitudes de autorización pendientes */}
+          {canManageAutorizaciones && <AutorizacionesTable />}
 
           {sharedModals}
         </div>

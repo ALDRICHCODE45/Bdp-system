@@ -34,6 +34,8 @@ import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
 import { AlertTriangle } from "lucide-react";
 import { isWithinDeadline } from "@/core/shared/helpers/weekUtils";
 import { decimalToHorasMinutos } from "../helpers/formatHoras";
+import { usePermissions } from "@/core/shared/hooks/use-permissions";
+import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
 const MINUTOS_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
@@ -84,6 +86,10 @@ export function EditRegistroHoraSheet({
 
   const updateMutation = useUpdateRegistroHora();
   const withinDeadline = isWithinDeadline(registro.ano, registro.semana);
+  const { hasAnyPermission } = usePermissions();
+  const canManage = hasAnyPermission([
+    PermissionActions["juridico-horas"].gestionar,
+  ]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -159,8 +165,11 @@ export function EditRegistroHoraSheet({
           <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 mx-1 mt-2">
             <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
             <p className="text-xs text-amber-700">
-              El plazo de edición de esta semana ha vencido. Esta edición
-              consumirá la autorización otorgada y el registro quedará bloqueado.
+              {canManage
+                ? "El plazo de edición de esta semana ha vencido. Estás editando con permisos de gestión y, al guardar, el registro quedará bloqueado para ediciones normales."
+                : registro.hasActiveAuthorization
+                  ? "El plazo de edición de esta semana ha vencido. Esta edición consumirá la autorización otorgada y el registro quedará bloqueado."
+                  : "El plazo de edición de esta semana ha vencido. Solo podés editar si existe una autorización activa o permisos de gestión."}
             </p>
           </div>
         )}

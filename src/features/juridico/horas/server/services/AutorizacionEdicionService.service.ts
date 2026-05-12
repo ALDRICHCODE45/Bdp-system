@@ -45,11 +45,18 @@ export class AutorizacionEdicionService {
         );
       }
 
-      // 4. Verify registro.editable === false (needs authorization)
-      if (registro.editable) {
+      // 4. Verify no active AUTORIZADA authorization exists (would mean editing is already allowed)
+      const autorizacionActiva =
+        await this.prisma.autorizacionEdicion.findFirst({
+          where: {
+            registroHoraId: input.registroHoraId,
+            estado: "AUTORIZADA",
+          },
+        });
+      if (autorizacionActiva) {
         return Err(
           new Error(
-            "Este registro ya está habilitado para edición. No es necesario solicitar autorización."
+            "Este registro ya tiene una autorización activa. Puedes editarlo directamente."
           )
         );
       }

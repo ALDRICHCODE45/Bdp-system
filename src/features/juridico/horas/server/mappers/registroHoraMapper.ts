@@ -20,6 +20,7 @@ export function toRegistroHoraDto(entity: RegistroHoraEntity): RegistroHoraDto {
     ano: entity.ano,
     semana: entity.semana,
     editable: entity.editable,
+    hasActiveAuthorization: entity.autorizaciones.length > 0,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
   };

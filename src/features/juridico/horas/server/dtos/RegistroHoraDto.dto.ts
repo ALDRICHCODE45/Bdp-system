@@ -16,6 +16,7 @@ export type RegistroHoraDto = {
   ano: number;
   semana: number;
   editable: boolean;
+  hasActiveAuthorization: boolean;
   createdAt: string;
   updatedAt: string;
 };

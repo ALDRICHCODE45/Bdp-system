@@ -13,6 +13,12 @@ const registroHoraIncludes = {
   clienteJuridico: { select: { id: true, nombre: true } },
   asuntoJuridico: { select: { id: true, nombre: true } },
   socio: { select: { id: true, nombre: true } },
+  autorizaciones: {
+    where: { estado: "AUTORIZADA" as const },
+    select: { id: true, estado: true },
+    orderBy: { createdAt: "asc" as const },
+    take: 1,
+  },
 } as const;
 
 export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
