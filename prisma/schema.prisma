@@ -24,29 +24,29 @@ enum ClienteProveedorTipo {
   PROVEEDOR
 }
 
-enum EgresoClasificacion {
-  GASTO_OP
-  HONORARIOS
-  SERVICIOS
-  ARRENDAMIENTO
-  COMISIONES
-  DISPOSICION
+enum MovimientoTipo {
+  INGRESO
+  EGRESO
 }
 
-enum EgresoCategoria {
+enum MovimientoCategoria {
   FACTURACION
   COMISIONES
   DISPOSICION
   BANCARIZACIONES
+  GASTO_OP
+  HONORARIOS
+  SERVICIOS
+  ARRENDAMIENTO
 }
 
-enum EgresoFormaPago {
+enum MovimientoFormaPago {
   TRANSFERENCIA
   EFECTIVO
   CHEQUE
 }
 
-enum EgresoCargoAbono {
+enum MovimientoCargoAbono {
   BDP
   CALFC
   GLOBAL
@@ -54,13 +54,13 @@ enum EgresoCargoAbono {
   APP
 }
 
-enum EgresoEstado {
+enum MovimientoEstado {
   PAGADO
   PENDIENTE
   CANCELADO
 }
 
-enum EgresoFacturadoPor {
+enum MovimientoFacturadoPor {
   BDP
   CALFC
   GLOBAL
@@ -81,10 +81,8 @@ model Socio {
   notas                   String?
   colaboradores           Colaborador[]
   clientesProveedores     ClienteProveedor[]
-  egresosComSolicitante   Egreso[]           @relation("EgresoSolicitante")
-  egresosComoAutorizador  Egreso[]           @relation("EgresoAutorizador")
-  ingresosComSolicitante  Ingreso[]          @relation("IngresoSolicitante")
-  ingresosComoAutorizador Ingreso[]          @relation("IngresoAutorizador")
+  movimientosComoSolicitante Movimiento[] @relation("MovimientoSolicitante")
+  movimientosComoAutorizador Movimiento[] @relation("MovimientoAutorizador")
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
   asuntosJuridicos        AsuntoJuridico[]
@@ -199,8 +197,7 @@ model User {
   createdAt                  DateTime           @default(now())
   updatedAt                  DateTime           @updatedAt
   clientesProveedoresCreados ClienteProveedor[] @relation("ClienteProveedorIngresadoPor")
-  egresosCreados             Egreso[]           @relation("EgresoIngresadoPor")
-  ingresosCreados            Ingreso[]          @relation("IngresoIngresadoPor")
+  movimientosCreados         Movimiento[]       @relation("MovimientoIngresadoPor")
   facturasCreadas            Factura[]          @relation("FacturaIngresadoPor")
   equiposJuridicos           EquipoJuridicoUsuario[]
   registrosHora              RegistroHora[]
@@ -276,9 +273,8 @@ model ClienteProveedor {
   socio                   Socio?                      @relation(fields: [socioId], references: [id], onDelete: SetNull)
   ingresadoPor            String?
   ingresadoPorRef         User?                       @relation("ClienteProveedorIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
-  egresosComoProveedor    Egreso[]                    @relation("EgresoProveedor")
-  egresosComoClienteProye Egreso[]                    @relation("EgresoClienteProyecto")
-  ingresosComoCliente     Ingreso[]                   @relation("IngresoCliente")
+  movimientosComoProveedor Movimiento[]               @relation("MovimientoProveedor")
+  movimientosComoCliente   Movimiento[]               @relation("MovimientoCliente")
   historial               ClienteProveedorHistorial[]
   createdAt               DateTime                    @default(now())
   updatedAt               DateTime                    @updatedAt
@@ -289,94 +285,85 @@ model ClienteProveedor {
   @@index([ingresadoPor])
 }
 
-model Egreso {
-  id                 String              @id @default(uuid())
-  concepto           String
-  clasificacion      EgresoClasificacion
-  categoria          EgresoCategoria
-  proveedor          String
-  proveedorId        String
-  proveedorRef       ClienteProveedor    @relation("EgresoProveedor", fields: [proveedorId], references: [id], onDelete: Restrict)
-  solicitanteId      String?
-  solicitanteRef     Socio?              @relation("EgresoSolicitante", fields: [solicitanteId], references: [id], onDelete: Restrict)
-  autorizadorId      String?
-  autorizadorRef     Socio?              @relation("EgresoAutorizador", fields: [autorizadorId], references: [id], onDelete: Restrict)
-  numeroFactura      String
-  folioFiscal        String
-  periodo            String
-  formaPago          EgresoFormaPago
-  origen             String
-  numeroCuenta       String
-  clabe              String
-  cargoAbono         EgresoCargoAbono
-  cantidad           Decimal             @db.Decimal(15, 2)
-  estado             EgresoEstado
-  fechaPago          DateTime?
-  fechaRegistro      DateTime            @default(now())
-  facturadoPor       EgresoFacturadoPor
-  clienteProyecto    String?
-  clienteProyectoId  String?
-  clienteProyectoRef ClienteProveedor?   @relation("EgresoClienteProyecto", fields: [clienteProyectoId], references: [id], onDelete: Restrict)
-  facturaId          String?
-  notas              String?
-  ingresadoPor       String?
-  ingresadoPorRef    User?               @relation("EgresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
-  historial          EgresoHistorial[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+model Movimiento {
+  id                        String                 @id @default(uuid())
+  tipo                      MovimientoTipo
+  titular                   String
+  estadoCuenta              String
+  fechaCorte                DateTime
+  fechaOperacion            DateTime
+  descripcionLiteral        String
+  monto                     Decimal                @db.Decimal(15, 2)
+  dedupHash                 String                 @unique
 
+  // Optional fields
+  concepto                  String?
+  descripcionAdministracion String?
+  categoria                 MovimientoCategoria?
+  formaPago                 MovimientoFormaPago?
+  cargoAbono                MovimientoCargoAbono?
+  facturadoPor              MovimientoFacturadoPor?
+  periodo                   String?
+  numeroFactura             String?
+  folioFiscal               String?
+
+  // Proveedor (text + optional FK)
+  proveedor                 String?
+  proveedorId               String?
+  proveedorRef              ClienteProveedor?      @relation("MovimientoProveedor", fields: [proveedorId], references: [id], onDelete: SetNull)
+
+  // Cliente (text + optional FK)
+  cliente                   String?
+  clienteId                 String?
+  clienteRef                ClienteProveedor?      @relation("MovimientoCliente", fields: [clienteId], references: [id], onDelete: SetNull)
+
+  // People references
+  solicitanteId             String?
+  solicitanteRef            Socio?                 @relation("MovimientoSolicitante", fields: [solicitanteId], references: [id], onDelete: SetNull)
+  autorizadorId             String?
+  autorizadorRef            Socio?                 @relation("MovimientoAutorizador", fields: [autorizadorId], references: [id], onDelete: SetNull)
+
+  // Other optional
+  notas                     String?
+  facturaId                 String?
+  ingresadoPor              String?
+  ingresadoPorRef           User?                  @relation("MovimientoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
+  estado                    MovimientoEstado       @default(PAGADO)
+
+  // Relations
+  historial                 MovimientoHistorial[]
+  createdAt                 DateTime               @default(now())
+  updatedAt                 DateTime               @updatedAt
+
+  @@index([tipo])
   @@index([estado])
-  @@index([periodo])
+  @@index([tipo, estado])
+  @@index([titular])
+  @@index([fechaOperacion])
+  @@index([fechaCorte])
   @@index([proveedorId])
-  @@index([clienteProyectoId])
-  @@index([fechaPago])
-  @@index([createdAt])
-  @@index([ingresadoPor])
+  @@index([clienteId])
   @@index([solicitanteId])
   @@index([autorizadorId])
+  @@index([ingresadoPor])
+  @@index([createdAt])
+  @@index([tipo, createdAt])
   @@index([estado, createdAt])
-  @@index([periodo, createdAt])
 }
 
-model EgresoHistorial {
-  id            String   @id @default(uuid())
-  egresoId      String
-  egreso        Egreso   @relation(fields: [egresoId], references: [id], onDelete: Cascade)
-  campo         String
-  valorAnterior String?
-  valorNuevo    String
-  usuarioId     String?
-  motivo        String?
-  fechaCambio   DateTime @default(now())
+model MovimientoHistorial {
+  id              String      @id @default(uuid())
+  movimientoId    String
+  movimiento      Movimiento  @relation(fields: [movimientoId], references: [id], onDelete: Cascade)
+  campo           String
+  valorAnterior   String?
+  valorNuevo      String
+  usuarioId       String?
+  motivo          String?
+  fechaCambio     DateTime    @default(now())
 
-  @@index([egresoId])
+  @@index([movimientoId])
   @@index([fechaCambio])
-}
-
-enum IngresoFormaPago {
-  TRANSFERENCIA
-  EFECTIVO
-  CHEQUE
-}
-
-enum IngresoEstado {
-  PAGADO
-  PENDIENTE
-  CANCELADO
-}
-
-enum IngresoCargoAbono {
-  BDP
-  CALFC
-}
-
-enum IngresoFacturadoPor {
-  BDP
-  CALFC
-  GLOBAL
-  RGZ
-  RJS
-  APP
 }
 
 enum FacturaEstado {
@@ -386,69 +373,8 @@ enum FacturaEstado {
 
 enum FileAttachmentEntityType {
   FACTURA
-  EGRESO
-  INGRESO
+  MOVIMIENTO
   CLIENTE_PROVEEDOR
-}
-
-model Ingreso {
-  id                 String              @id @default(uuid())
-  concepto           String
-  cliente            String
-  clienteId          String
-  clienteRef         ClienteProveedor    @relation("IngresoCliente", fields: [clienteId], references: [id], onDelete: Restrict)
-  solicitanteId      String?
-  solicitanteRef     Socio?              @relation("IngresoSolicitante", fields: [solicitanteId], references: [id], onDelete: Restrict)
-  autorizadorId      String?
-  autorizadorRef     Socio?              @relation("IngresoAutorizador", fields: [autorizadorId], references: [id], onDelete: Restrict)
-  numeroFactura      String
-  folioFiscal        String              @unique
-  periodo            String
-  formaPago          IngresoFormaPago
-  origen             String
-  numeroCuenta       String
-  clabe              String
-  cargoAbono         IngresoCargoAbono
-  cantidad           Decimal             @db.Decimal(15, 2)
-  estado             IngresoEstado
-  fechaPago          DateTime?
-  fechaRegistro      DateTime            @default(now())
-  facturadoPor       IngresoFacturadoPor
-  clienteProyecto    String
-  fechaParticipacion DateTime?
-  facturaId          String?
-  notas              String?
-  ingresadoPor       String?
-  ingresadoPorRef    User?               @relation("IngresoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
-  historial          IngresoHistorial[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-
-  @@index([estado])
-  @@index([periodo])
-  @@index([clienteId])
-  @@index([fechaPago])
-  @@index([createdAt])
-  @@index([ingresadoPor])
-  @@index([solicitanteId])
-  @@index([autorizadorId])
-  @@index([estado, createdAt])
-  @@index([periodo, createdAt])
-}
-
-model IngresoHistorial {
-  id            String   @id @default(uuid())
-  ingresoId     String
-  ingreso       Ingreso  @relation(fields: [ingresoId], references: [id], onDelete: Cascade)
-  campo         String
-  valorAnterior String?
-  valorNuevo    String
-  usuarioId     String?
-  motivo        String?
-  fechaCambio   DateTime @default(now())
-
-  @@index([ingresoId])
-  @@index([fechaCambio])
 }
 
 model Factura {
