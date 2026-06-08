@@ -15,8 +15,7 @@
 export const ROUTE_PERMISSIONS: Record<string, string | string[]> = {
   // Módulo de Finanzas
   "/facturas": ["facturas:acceder", "facturas:capturar"],
-  "/ingresos": "ingresos:acceder",
-  "/egresos": "egresos:acceder",
+  "/movimientos": "movimientos:acceder",
   "/clientes-proovedores": "clientes-proovedores:acceder",
 
   // Módulo de Recursos Humanos

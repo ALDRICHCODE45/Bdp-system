@@ -7,8 +7,7 @@ import { hasPermission, hasAnyPermission } from "./permission-checker";
  */
 const ROUTE_PRIORITY = [
   "/facturas",
-  "/ingresos",
-  "/egresos",
+  "/movimientos",
   "/colaboradores",
   "/socios",
   "/entradas-salidas",

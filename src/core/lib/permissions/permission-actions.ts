@@ -12,19 +12,13 @@ export const PermissionActions = {
     eliminar: "facturas:eliminar",
     gestionar: "facturas:gestionar",
   },
-  ingresos: {
-    acceder: "ingresos:acceder",
-    crear: "ingresos:crear",
-    editar: "ingresos:editar",
-    eliminar: "ingresos:eliminar",
-    gestionar: "ingresos:gestionar",
-  },
-  egresos: {
-    acceder: "egresos:acceder",
-    crear: "egresos:crear",
-    editar: "egresos:editar",
-    eliminar: "egresos:eliminar",
-    gestionar: "egresos:gestionar",
+  movimientos: {
+    acceder: "movimientos:acceder",
+    crear: "movimientos:crear",
+    editar: "movimientos:editar",
+    eliminar: "movimientos:eliminar",
+    gestionar: "movimientos:gestionar",
+    importar: "movimientos:importar",
   },
   "clientes-proovedores": {
     acceder: "clientes-proovedores:acceder",

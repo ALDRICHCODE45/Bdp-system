@@ -54,72 +54,44 @@ const FINANZAS_PERMISSIONS: PermissionDefinition[] = [
       "Gestionar completamente el módulo de facturas (incluye todas las acciones)",
   },
 
-  // Ingresos - Granulares
+  // Movimientos - Granulares
   {
-    name: "ingresos:acceder",
-    resource: "ingresos",
+    name: "movimientos:acceder",
+    resource: "movimientos",
     action: "acceder",
-    description: "Acceder al módulo de ingresos",
+    description: "Acceder al módulo de movimientos",
   },
   {
-    name: "ingresos:crear",
-    resource: "ingresos",
+    name: "movimientos:crear",
+    resource: "movimientos",
     action: "crear",
-    description: "Crear nuevos ingresos",
+    description: "Crear nuevos movimientos",
   },
   {
-    name: "ingresos:editar",
-    resource: "ingresos",
+    name: "movimientos:editar",
+    resource: "movimientos",
     action: "editar",
-    description: "Editar ingresos existentes",
+    description: "Editar movimientos existentes",
   },
   {
-    name: "ingresos:eliminar",
-    resource: "ingresos",
+    name: "movimientos:eliminar",
+    resource: "movimientos",
     action: "eliminar",
-    description: "Eliminar ingresos",
+    description: "Eliminar movimientos",
   },
-  // Ingresos - Modular
   {
-    name: "ingresos:gestionar",
-    resource: "ingresos",
+    name: "movimientos:importar",
+    resource: "movimientos",
+    action: "importar",
+    description: "Importar movimientos desde Excel",
+  },
+  // Movimientos - Modular
+  {
+    name: "movimientos:gestionar",
+    resource: "movimientos",
     action: "gestionar",
     description:
-      "Gestionar completamente el módulo de ingresos (incluye todas las acciones)",
-  },
-
-  // Egresos - Granulares
-  {
-    name: "egresos:acceder",
-    resource: "egresos",
-    action: "acceder",
-    description: "Acceder al módulo de egresos",
-  },
-  {
-    name: "egresos:crear",
-    resource: "egresos",
-    action: "crear",
-    description: "Crear nuevos egresos",
-  },
-  {
-    name: "egresos:editar",
-    resource: "egresos",
-    action: "editar",
-    description: "Editar egresos existentes",
-  },
-  {
-    name: "egresos:eliminar",
-    resource: "egresos",
-    action: "eliminar",
-    description: "Eliminar egresos",
-  },
-  // Egresos - Modular
-  {
-    name: "egresos:gestionar",
-    resource: "egresos",
-    action: "gestionar",
-    description:
-      "Gestionar completamente el módulo de egresos (incluye todas las acciones)",
+      "Gestionar completamente el módulo de movimientos (incluye todas las acciones)",
   },
 
   // Clientes/Proveedores - Granulares
