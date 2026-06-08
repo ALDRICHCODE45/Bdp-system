@@ -24,12 +24,8 @@ export const sidebarLinks = {
           url: "/facturas",
         },
         {
-          title: "Ingresos",
-          url: "/ingresos",
-        },
-        {
-          title: "Egresos",
-          url: "/egresos",
+          title: "Ingresos/Egresos",
+          url: "/movimientos",
         },
 
         {
