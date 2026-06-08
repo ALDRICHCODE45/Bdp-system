@@ -12,8 +12,7 @@ export const uploadFileAction = async (formData: FormData) => {
   const file = formData.get("file") as File;
   const entityType = formData.get("entityType") as
     | "FACTURA"
-    | "EGRESO"
-    | "INGRESO"
+    | "MOVIMIENTO"
     | "CLIENTE_PROVEEDOR";
   const entityId = formData.get("entityId") as string;
 
@@ -38,8 +37,7 @@ export const uploadFileAction = async (formData: FormData) => {
   // Revalidar la ruta correspondiente según el tipo de entidad
   const pathMap: Record<string, string> = {
     FACTURA: "/facturas",
-    EGRESO: "/egresos",
-    INGRESO: "/ingresos",
+    MOVIMIENTO: "/movimientos",
     CLIENTE_PROVEEDOR: "/clientes-proovedores",
   };
 

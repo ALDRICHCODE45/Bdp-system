@@ -15,7 +15,7 @@ export class FileService {
    */
   async uploadFile(
     file: File,
-    entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
+    entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR",
     entityId: string,
     uploadedBy?: string | null,
   ): Promise<Result<FileEntity, Error>> {
@@ -79,7 +79,7 @@ export class FileService {
    * Obtiene todos los archivos asociados a una entidad
    */
   async getFilesByEntity(
-    entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
+    entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR",
     entityId: string,
   ): Promise<Result<FileEntity[], Error>> {
     try {

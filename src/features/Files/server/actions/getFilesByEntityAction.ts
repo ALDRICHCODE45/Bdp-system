@@ -4,7 +4,7 @@ import { makeFileService } from "../services/makeFileService";
 import prisma from "@/core/lib/prisma";
 
 export const getFilesByEntityAction = async (
-  entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
+  entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR",
   entityId: string
 ) => {
   if (!entityType || !entityId) {

@@ -19,7 +19,7 @@ import {
 
 interface FileListProps {
   files: FileEntity[];
-  entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR";
+  entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR";
   onFileDeleted?: () => void;
 }
 

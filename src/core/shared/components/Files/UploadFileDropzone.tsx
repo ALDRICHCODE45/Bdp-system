@@ -17,7 +17,7 @@ import { useCallback, useState } from "react";
 import { uploadFileAction } from "@/features/Files/server/actions/uploadFileAction";
 
 interface FileUploadDropZoneProps {
-  entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR";
+  entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR";
   entityId: string;
   onUploadSuccess?: () => void;
   maxFiles?: number;

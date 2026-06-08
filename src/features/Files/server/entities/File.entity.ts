@@ -4,7 +4,7 @@ export interface FileEntity {
   fileUrl: string;
   fileSize: number;
   mimeType: string;
-  entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR";
+  entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR";
   entityId: string;
   uploadedBy: string | null;
   createdAt: Date;

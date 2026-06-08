@@ -10,7 +10,7 @@ export interface FileRepository {
   delete(data: DeleteFileDto): Promise<void>;
   findById(data: FindFileByIdDto): Promise<FileEntity | null>;
   findByEntity(
-    entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
+    entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR",
     entityId: string
   ): Promise<FileEntity[]>;
 }

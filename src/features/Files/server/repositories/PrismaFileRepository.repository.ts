@@ -63,7 +63,7 @@ export class PrismaFileRespository implements FileRepository {
   }
 
   async findByEntity(
-    entityType: "FACTURA" | "EGRESO" | "INGRESO" | "CLIENTE_PROVEEDOR",
+    entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR",
     entityId: string
   ): Promise<FileEntity[]> {
     const fileAttachments = await this.prisma.fileAttachment.findMany({
@@ -99,8 +99,7 @@ export class PrismaFileRespository implements FileRepository {
       mimeType: fileAttachment.mimeType,
       entityType: fileAttachment.entityType as
         | "FACTURA"
-        | "EGRESO"
-        | "INGRESO"
+        | "MOVIMIENTO"
         | "CLIENTE_PROVEEDOR",
       entityId: fileAttachment.entityId,
       uploadedBy: fileAttachment.uploadedBy,

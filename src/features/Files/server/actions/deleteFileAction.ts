@@ -8,8 +8,7 @@ export const deleteFileAction = async (formData: FormData) => {
   const fileId = formData.get("fileId") as string;
   const entityType = formData.get("entityType") as
     | "FACTURA"
-    | "EGRESO"
-    | "INGRESO"
+    | "MOVIMIENTO"
     | "CLIENTE_PROVEEDOR";
 
   if (!fileId) {
@@ -26,8 +25,7 @@ export const deleteFileAction = async (formData: FormData) => {
   // Revalidar la ruta correspondiente según el tipo de entidad
   const pathMap: Record<string, string> = {
     FACTURA: "/facturas",
-    EGRESO: "/egresos",
-    INGRESO: "/ingresos",
+    MOVIMIENTO: "/movimientos",
     CLIENTE_PROVEEDOR: "/clientes-proovedores",
   };
 
