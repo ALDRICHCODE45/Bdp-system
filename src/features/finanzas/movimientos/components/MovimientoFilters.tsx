@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Filter, SlidersHorizontal, FileSpreadsheet, RotateCcw } from "lucide-react";
+import { Filter, SlidersHorizontal, FileSpreadsheet, RotateCcw, Plus } from "lucide-react";
 import type { Table } from "@tanstack/react-table";
 import { format, parse } from "date-fns";
 import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
@@ -268,6 +268,7 @@ export function MovimientoFilters({
             <FilterHeaderActions
               onClearFilters={handleClearAll}
               addButtonText="Agregar"
+              AddButtonIcon={Plus}
               buttonTooltipText="Agregar Movimiento"
               showAddButton={!!onAdd}
               onAdd={onAdd}
