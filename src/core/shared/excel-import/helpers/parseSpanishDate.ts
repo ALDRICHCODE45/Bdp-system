@@ -1,3 +1,5 @@
+import * as XLSX from "xlsx";
+
 /**
  * Spanish month abbreviations and full names mapped to 0-based month index.
  *
@@ -6,6 +8,7 @@
  */
 const SPANISH_MONTHS: Record<string, number> = {
   // Abbreviations
+  en: 0,
   ene: 0,
   feb: 1,
   mar: 2,
@@ -46,10 +49,52 @@ const SPANISH_MONTHS: Record<string, number> = {
  */
 const SPANISH_DATE_REGEX = /^(\d{1,2})[/-]([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)[/-](\d{2})$/;
 
+const MIN_EXCEL_DATE_SERIAL = 1;
+const MAX_EXCEL_DATE_SERIAL = 2958465;
+
+function createUtcDate(year: number, monthIndex: number, day: number): Date | null {
+  const date = new Date(Date.UTC(year, monthIndex, day));
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== monthIndex ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function parseExcelSerialDate(value: unknown): Date | null {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value.trim())
+        : Number.NaN;
+
+  if (
+    !Number.isFinite(numericValue) ||
+    !Number.isInteger(numericValue) ||
+    numericValue < MIN_EXCEL_DATE_SERIAL ||
+    numericValue > MAX_EXCEL_DATE_SERIAL
+  ) {
+    return null;
+  }
+
+  const parsed = XLSX.SSF.parse_date_code(numericValue);
+  if (!parsed) return null;
+
+  return createUtcDate(parsed.y, parsed.m - 1, parsed.d);
+}
+
 /**
- * Parses a date string in Spanish short format (D-MMM-YY or DD-MMM-YY).
+ * Parses either a Spanish short date string (D-MMM-YY or DD-MMM-YY)
+ * or an Excel numeric date serial.
  *
- * Strict parser — only accepts the specific Spanish date format.
+ * Strict parser — only accepts the supported Spanish date format
+ * or a valid Excel serial date.
  * Does NOT fall back to `new Date()` for unrecognized formats.
  *
  * **2-digit year resolution**:
@@ -60,9 +105,11 @@ const SPANISH_DATE_REGEX = /^(\d{1,2})[/-]([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)[/-
  *
  * @example
  * parseSpanishDate("5-ene-26")    // → Date(2026, 0, 5)  — January 5, 2026
+ * parseSpanishDate("5-en-26")     // → Date(2026, 0, 5)  — January 5, 2026
  * parseSpanishDate("31-dic-99")   // → Date(1999, 11, 31) — December 31, 1999
  * parseSpanishDate("15-ago-21")   // → Date(2021, 7, 15)  — August 15, 2021
  * parseSpanishDate("1-septiembre-23") // → Date(2023, 8, 1) — September 1, 2023
+ * parseSpanishDate(46053)          // → Date(2026, 0, 31) — Excel serial date
  * parseSpanishDate("2026-01-05")  // → null (ISO format not accepted)
  * parseSpanishDate("5-jan-26")    // → null (English abbreviation not accepted)
  * parseSpanishDate("")            // → null
@@ -73,6 +120,9 @@ const SPANISH_DATE_REGEX = /^(\d{1,2})[/-]([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)[/-
  */
 export function parseSpanishDate(value: unknown): Date | null {
   if (value === null || value === undefined) return null;
+
+  const excelSerialDate = parseExcelSerialDate(value);
+  if (excelSerialDate) return excelSerialDate;
 
   const str = String(value).trim();
   if (str === "") return null;
@@ -92,18 +142,5 @@ export function parseSpanishDate(value: unknown): Date | null {
   // 2-digit year resolution: 0-49 → 2000s, 50-99 → 1900s
   const year = yearShort <= 49 ? 2000 + yearShort : 1900 + yearShort;
 
-  // Construct the date and validate it (catches invalid days like Feb 30)
-  const date = new Date(year, monthIndex, day);
-
-  // Verify the date components match what we parsed
-  // (new Date(2026, 1, 30) silently becomes March 2 — we reject that)
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== monthIndex ||
-    date.getDate() !== day
-  ) {
-    return null;
-  }
-
-  return date;
+  return createUtcDate(year, monthIndex, day);
 }
