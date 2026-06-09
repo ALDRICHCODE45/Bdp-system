@@ -81,16 +81,19 @@ export function MovimientosTable({
     [onView, onEdit, onDelete],
   );
 
-  // Build filter props for the custom filter component
-  const filterProps: MovimientoFiltersProps = {
-    table: null as unknown as MovimientoFiltersProps["table"], // Injected by DataTable
+  // Build filter props for the custom filter component.
+  // The shared DataTable's CustomFilterComponent requires `props` extending
+  // Record<string, unknown>. We keep a typed local object and satisfy the
+  // shared-layer constraint with a single narrow cast at the boundary so
+  // MovimientoFiltersProps stays strictly typed (no index signature).
+  const filterProps = {
     filters,
     onFiltersChange,
     onImport,
     onAdd,
     onClearFilters,
     titulares,
-  };
+  } satisfies Omit<MovimientoFiltersProps, "table">;
 
   return (
     <TooltipProvider>

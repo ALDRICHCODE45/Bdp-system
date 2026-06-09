@@ -23,10 +23,20 @@ export function DataTableFilters<TData>({
   const inputRef = useRef<HTMLInputElement>(null);
   const id = useId();
 
+  // Componente de filtros personalizado
+  const CustomFilterComponent = config.filters?.customFilter?.component;
+  const customFilterProps = config.filters?.customFilter?.props || {};
+  const isDefaultSearchEnabled = !!config.filters?.showSearch && !CustomFilterComponent;
+
+  const searchColumn = isDefaultSearchEnabled
+    ? (config.filters?.searchColumn ?? "nombre")
+    : null;
+  const searchColumnInstance = searchColumn
+    ? table.getAllColumns().find((column) => column.id === searchColumn)
+    : undefined;
+
   // Estado local para el valor del input (sin debounce)
-  const searchColumn = config.filters?.searchColumn || "nombre";
-  const currentFilterValue = (table.getColumn(searchColumn)?.getFilterValue() ??
-    "") as string;
+  const currentFilterValue = (searchColumnInstance?.getFilterValue() ?? "") as string;
   const [searchValue, setSearchValue] = useState<string>(currentFilterValue);
 
   // Debounce del valor de búsqueda (300ms por defecto)
@@ -38,7 +48,11 @@ export function DataTableFilters<TData>({
 
   // Actualizar el filtro de la tabla cuando el valor debounceado cambia
   useEffect(() => {
-    const column = table.getColumn(searchColumn);
+    if (!searchColumn) {
+      return;
+    }
+
+    const column = table.getAllColumns().find((item) => item.id === searchColumn);
     if (column) {
       column.setFilterValue(debouncedSearchValue);
     }
@@ -46,8 +60,16 @@ export function DataTableFilters<TData>({
 
   // Sincronizar el estado local cuando el filtro externo cambia
   useEffect(() => {
-    const filterValue = (table.getColumn(searchColumn)?.getFilterValue() ??
-      "") as string;
+    if (!searchColumn) {
+      if (searchValue !== "") {
+        setSearchValue("");
+      }
+      return;
+    }
+
+    const filterValue =
+      (table.getAllColumns().find((item) => item.id === searchColumn)?.getFilterValue() ??
+        "") as string;
     if (filterValue !== searchValue) {
       setSearchValue(filterValue);
     }
@@ -57,12 +79,10 @@ export function DataTableFilters<TData>({
   // Función para limpiar la búsqueda
   const handleClearSearch = () => {
     setSearchValue("");
-    table.getColumn(searchColumn)?.setFilterValue("");
+    if (searchColumn) {
+      table.getAllColumns().find((item) => item.id === searchColumn)?.setFilterValue("");
+    }
   };
-
-  // Componente de filtros personalizado
-  const CustomFilterComponent = config.filters?.customFilter?.component;
-  const customFilterProps = config.filters?.customFilter?.props || {};
 
   // Componente de acciones personalizado
   const CustomActionComponent =
@@ -74,10 +94,10 @@ export function DataTableFilters<TData>({
       {CustomFilterComponent ? (
         <div className="mx-1">
           <CustomFilterComponent
+            {...customFilterProps}
             table={table as TanstackTable<unknown>}
             onGlobalFilterChange={setGlobalFilter}
             onExport={config.actions?.onExport}
-            {...customFilterProps}
           />
         </div>
       ) : (

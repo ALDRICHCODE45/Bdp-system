@@ -1,28 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { Filter, SlidersHorizontal, FileSpreadsheet } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Filter, SlidersHorizontal, FileSpreadsheet, RotateCcw } from "lucide-react";
 import type { Table } from "@tanstack/react-table";
+import { format, parse } from "date-fns";
 import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
 import { Badge } from "@/core/shared/ui/badge";
 import { Button } from "@/core/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/core/shared/ui/card";
 import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
-import { FilterMultiSelect } from "@/core/shared/components/DataTable/FilterMultiSelect";
-import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
-import { ColumnVisibilitySelector } from "@/core/shared/components/DataTable/ColumnVisibilitySelector";
+import { Separator } from "@/core/shared/ui/separator";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
   SheetTitle,
 } from "@/core/shared/ui/sheet";
+import { FilterMultiSelect } from "@/core/shared/components/DataTable/FilterMultiSelect";
+import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
+import { ColumnVisibilitySelector } from "@/core/shared/components/DataTable/ColumnVisibilitySelector";
+import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { cn } from "@/core/lib/utils";
+import { SectionHeader } from "./forms/MovimientoFormField";
 import type { MovimientoFilterInput } from "../server/actions/getMovimientosAction";
 
-// ---------------------------------------------------------------------------
-// Filter option enums
-// ---------------------------------------------------------------------------
+// ─── Filter option enums ──────────────────────────────────────────────────────
 
 const ESTADO_OPTIONS = [
   { label: "Pagado", value: "PAGADO" },
@@ -64,15 +67,12 @@ const FACTURADO_POR_OPTIONS = [
   { label: "APP", value: "APP" },
 ];
 
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
+// ─── Props ────────────────────────────────────────────────────────────────────
 
 export interface MovimientoFiltersProps {
-  table: Table<unknown>;
+  table?: Table<unknown> | null;
   filters: MovimientoFilterInput;
   onFiltersChange: (filters: MovimientoFilterInput) => void;
-  // Header action callbacks
   onImport?: () => void;
   onExport?: (table: Table<unknown>, options?: ExportOptions) => void;
   onAdd?: () => void;
@@ -81,14 +81,10 @@ export interface MovimientoFiltersProps {
   titulares?: string[];
 }
 
-// ---------------------------------------------------------------------------
-// Count active advanced filters (excluding quick filters on the main card)
-// ---------------------------------------------------------------------------
+// ─── Count active advanced filters ───────────────────────────────────────────
 
 function countAdvancedFilters(f: MovimientoFilterInput): number {
   let count = 0;
-  if (f.formaPago && f.formaPago.length > 0) count++;
-  if (f.cargoAbono && f.cargoAbono.length > 0) count++;
   if (f.facturadoPor && f.facturadoPor.length > 0) count++;
   if (f.titular && f.titular.length > 0) count++;
   if (f.fechaOperacionFrom || f.fechaOperacionTo) count++;
@@ -97,9 +93,87 @@ function countAdvancedFilters(f: MovimientoFilterInput): number {
   return count;
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+// ─── Empty advanced draft ─────────────────────────────────────────────────────
+
+function emptyDraft(): AdvancedDraft {
+  return {
+    facturadoPor: [],
+    titular: [],
+    fechaOperacionFrom: "",
+    fechaOperacionTo: "",
+    fechaCorteFrom: "",
+    fechaCorteTo: "",
+    montoMin: "",
+    montoMax: "",
+  };
+}
+
+interface AdvancedDraft {
+  facturadoPor: string[];
+  titular: string[];
+  fechaOperacionFrom: string;
+  fechaOperacionTo: string;
+  fechaCorteFrom: string;
+  fechaCorteTo: string;
+  montoMin: string;
+  montoMax: string;
+}
+
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+
+const strToDate = (s: string): Date | undefined => {
+  if (!s) return undefined;
+  try {
+    return parse(s, "yyyy-MM-dd", new Date());
+  } catch {
+    return undefined;
+  }
+};
+
+const dateToStr = (d: Date | undefined): string =>
+  d ? format(d, "yyyy-MM-dd") : "";
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function DateRange({
+  label,
+  fromValue,
+  toValue,
+  onFromChange,
+  onToChange,
+}: {
+  label: string;
+  fromValue: string;
+  toValue: string;
+  onFromChange: (v: string) => void;
+  onToChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Desde</Label>
+          <DatePicker
+            date={strToDate(fromValue)}
+            onDateChange={(d) => onFromChange(dateToStr(d))}
+            placeholder="Desde"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Hasta</Label>
+          <DatePicker
+            date={strToDate(toValue)}
+            onDateChange={(d) => onToChange(dateToStr(d))}
+            placeholder="Hasta"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function MovimientoFilters({
   table,
@@ -111,8 +185,29 @@ export function MovimientoFilters({
   onClearFilters,
   titulares = [],
 }: MovimientoFiltersProps) {
+  const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [draft, setDraft] = useState<AdvancedDraft>(emptyDraft());
+
   const advancedCount = countAdvancedFilters(filters);
+
+  // Sync draft when sheet opens
+  useEffect(() => {
+    if (sheetOpen) {
+      setDraft({
+        facturadoPor: (filters.facturadoPor as string[]) ?? [],
+        titular: filters.titular ?? [],
+        fechaOperacionFrom: filters.fechaOperacionFrom ?? "",
+        fechaOperacionTo: filters.fechaOperacionTo ?? "",
+        fechaCorteFrom: filters.fechaCorteFrom ?? "",
+        fechaCorteTo: filters.fechaCorteTo ?? "",
+        montoMin: filters.montoMin != null ? String(filters.montoMin) : "",
+        montoMax: filters.montoMax != null ? String(filters.montoMax) : "",
+      });
+    }
+  }, [sheetOpen, filters]);
+
+  if (!table) return null;
 
   const update = (partial: Partial<MovimientoFilterInput>) =>
     onFiltersChange({ ...filters, ...partial, page: 1 });
@@ -120,6 +215,31 @@ export function MovimientoFilters({
   const handleClearAll = () => {
     onClearFilters?.();
   };
+
+  const handleApply = () => {
+    onFiltersChange({
+      ...filters,
+      facturadoPor: draft.facturadoPor.length > 0
+        ? (draft.facturadoPor as MovimientoFilterInput["facturadoPor"])
+        : undefined,
+      titular: draft.titular.length > 0 ? draft.titular : undefined,
+      fechaOperacionFrom: draft.fechaOperacionFrom || undefined,
+      fechaOperacionTo: draft.fechaOperacionTo || undefined,
+      fechaCorteFrom: draft.fechaCorteFrom || undefined,
+      fechaCorteTo: draft.fechaCorteTo || undefined,
+      montoMin: draft.montoMin ? Number(draft.montoMin) : undefined,
+      montoMax: draft.montoMax ? Number(draft.montoMax) : undefined,
+      page: 1,
+    });
+    setSheetOpen(false);
+  };
+
+  const handleReset = () => {
+    setDraft(emptyDraft());
+  };
+
+  const setDraftField = <K extends keyof AdvancedDraft>(key: K, value: AdvancedDraft[K]) =>
+    setDraft((prev) => ({ ...prev, [key]: value }));
 
   return (
     <>
@@ -191,10 +311,10 @@ export function MovimientoFilters({
               placeholder="Todos"
             />
 
-            {/* Advanced filters button */}
+            {/* Advanced filters trigger */}
             <div className="space-y-2">
               <span className="block text-xs font-medium text-muted-foreground">
-                Mas filtros
+                Más filtros
               </span>
               <Button
                 variant="outline"
@@ -202,7 +322,7 @@ export function MovimientoFilters({
                 onClick={() => setSheetOpen(true)}
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                Filtros
+                Filtros avanzados
                 {advancedCount > 0 && (
                   <Badge className="ml-auto h-5 min-w-5 px-1 text-xs flex items-center justify-center">
                     {advancedCount}
@@ -214,149 +334,117 @@ export function MovimientoFilters({
         </CardContent>
       </Card>
 
-      {/* Advanced filters sheet */}
+      {/* ── Advanced filters sheet ────────────────────────────────────────── */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="overflow-y-auto w-[400px] sm:max-w-[400px]">
-          <SheetHeader>
-            <SheetTitle>Filtros avanzados</SheetTitle>
-          </SheetHeader>
+        <SheetContent
+          side={isMobile ? "bottom" : "right"}
+          className={cn(
+            "p-0 w-full sm:max-w-2xl",
+            isMobile
+              ? "rounded-t-2xl max-h-[92dvh] flex flex-col overflow-hidden"
+              : "rounded-2xl flex flex-col overflow-hidden"
+          )}
+        >
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 border-b shrink-0">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              <SheetTitle>Filtros avanzados</SheetTitle>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Filtrá movimientos con criterios adicionales. Los cambios aplican al presionar &ldquo;Aplicar filtros&rdquo;.
+            </p>
+          </div>
 
-          <div className="mt-6 space-y-5">
-            {/* Facturado Por */}
-            <FilterMultiSelect
-              label="Facturado Por"
-              options={FACTURADO_POR_OPTIONS}
-              selected={(filters.facturadoPor as string[]) ?? []}
-              onChange={(v) => update({ facturadoPor: v as MovimientoFilterInput["facturadoPor"] })}
-              placeholder="Todos"
-            />
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
-            {/* Titular */}
-            <FilterMultiSelect
-              label="Titular"
-              options={titulares.map((t) => ({ label: t, value: t }))}
-              selected={filters.titular ?? []}
-              onChange={(v) => update({ titular: v })}
-              placeholder="Todos"
-            />
+            {/* ── Identificación ─────────────────────────────────────── */}
+            <section className="space-y-4">
+              <SectionHeader title="Identificación" />
+              <FilterMultiSelect
+                label="Facturado por"
+                options={FACTURADO_POR_OPTIONS}
+                selected={draft.facturadoPor}
+                onChange={(v) => setDraftField("facturadoPor", v)}
+                placeholder="Todos"
+              />
+              <FilterMultiSelect
+                label="Titular"
+                options={titulares.map((t) => ({ label: t, value: t }))}
+                selected={draft.titular}
+                onChange={(v) => setDraftField("titular", v)}
+                placeholder="Todos"
+              />
+            </section>
 
-            {/* Fecha Operacion range */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">
-                Fecha Operacion
-              </Label>
+            <Separator />
+
+            {/* ── Fechas ─────────────────────────────────────────────── */}
+            <section className="space-y-4">
+              <SectionHeader title="Fechas" />
+              <DateRange
+                label="Fecha de operación"
+                fromValue={draft.fechaOperacionFrom}
+                toValue={draft.fechaOperacionTo}
+                onFromChange={(v) => setDraftField("fechaOperacionFrom", v)}
+                onToChange={(v) => setDraftField("fechaOperacionTo", v)}
+              />
+              <DateRange
+                label="Fecha de corte"
+                fromValue={draft.fechaCorteFrom}
+                toValue={draft.fechaCorteTo}
+                onFromChange={(v) => setDraftField("fechaCorteFrom", v)}
+                onToChange={(v) => setDraftField("fechaCorteTo", v)}
+              />
+            </section>
+
+            <Separator />
+
+            {/* ── Monto ──────────────────────────────────────────────── */}
+            <section className="space-y-4">
+              <SectionHeader title="Monto" />
               <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="date"
-                  className="text-xs"
-                  value={filters.fechaOperacionFrom ?? ""}
-                  onChange={(e) =>
-                    update({
-                      fechaOperacionFrom: e.target.value || undefined,
-                    })
-                  }
-                  placeholder="Desde"
-                />
-                <Input
-                  type="date"
-                  className="text-xs"
-                  value={filters.fechaOperacionTo ?? ""}
-                  onChange={(e) =>
-                    update({
-                      fechaOperacionTo: e.target.value || undefined,
-                    })
-                  }
-                  placeholder="Hasta"
-                />
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Mínimo</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="$0"
+                    value={draft.montoMin}
+                    onChange={(e) => setDraftField("montoMin", e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Máximo</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="Sin límite"
+                    value={draft.montoMax}
+                    onChange={(e) => setDraftField("montoMax", e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
               </div>
-            </div>
+            </section>
+          </div>
 
-            {/* Fecha Corte range */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">
-                Fecha Corte
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="date"
-                  className="text-xs"
-                  value={filters.fechaCorteFrom ?? ""}
-                  onChange={(e) =>
-                    update({
-                      fechaCorteFrom: e.target.value || undefined,
-                    })
-                  }
-                  placeholder="Desde"
-                />
-                <Input
-                  type="date"
-                  className="text-xs"
-                  value={filters.fechaCorteTo ?? ""}
-                  onChange={(e) =>
-                    update({
-                      fechaCorteTo: e.target.value || undefined,
-                    })
-                  }
-                  placeholder="Hasta"
-                />
-              </div>
-            </div>
-
-            {/* Monto range */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">
-                Rango de Monto (MXN)
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="number"
-                  className="text-xs"
-                  value={filters.montoMin ?? ""}
-                  onChange={(e) =>
-                    update({
-                      montoMin: e.target.value
-                        ? Number(e.target.value)
-                        : undefined,
-                    })
-                  }
-                  placeholder="Min"
-                  min={0}
-                  step={0.01}
-                />
-                <Input
-                  type="number"
-                  className="text-xs"
-                  value={filters.montoMax ?? ""}
-                  onChange={(e) =>
-                    update({
-                      montoMax: e.target.value
-                        ? Number(e.target.value)
-                        : undefined,
-                    })
-                  }
-                  placeholder="Max"
-                  min={0}
-                  step={0.01}
-                />
-              </div>
-            </div>
-
-            {/* Apply / Clear */}
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  handleClearAll();
-                  setSheetOpen(false);
-                }}
-              >
-                Limpiar todo
-              </Button>
-              <Button className="flex-1" onClick={() => setSheetOpen(false)}>
-                Aplicar
-              </Button>
-            </div>
+          {/* Sticky footer */}
+          <div className="border-t px-6 py-4 flex gap-3 bg-background shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              className="gap-1.5"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Limpiar
+            </Button>
+            <Button onClick={handleApply} className="flex-1">
+              Aplicar filtros
+            </Button>
           </div>
         </SheetContent>
       </Sheet>
