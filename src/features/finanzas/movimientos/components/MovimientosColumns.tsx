@@ -21,8 +21,6 @@ import { cn } from "@/core/lib/utils";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
 import type { MovimientoListItemDto } from "../server/dtos/MovimientoListDto.dto";
 
 // ---------------------------------------------------------------------------
@@ -34,8 +32,14 @@ const MXN_FORMATTER = new Intl.NumberFormat("es-MX", {
   currency: "MXN",
 });
 
-const formatDate = (iso: string) =>
-  format(parseISO(iso), "d MMM yyyy", { locale: es });
+/** Format an ISO date string as "d MMM yyyy" in UTC (date-only, no tz drift). */
+const UTC_DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", {
+  timeZone: "UTC",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+const formatDate = (iso: string) => UTC_DATE_FORMATTER.format(new Date(iso));
 
 // ---------------------------------------------------------------------------
 // Shared cell renderers
