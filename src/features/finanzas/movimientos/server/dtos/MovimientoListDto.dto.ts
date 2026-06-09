@@ -21,6 +21,7 @@ export type MovimientoListDto = {
   aggregates: {
     totalIngresos: string;
     totalEgresos: string;
-    count: number;
+    countIngresos: number;
+    countEgresos: number;
   };
 };

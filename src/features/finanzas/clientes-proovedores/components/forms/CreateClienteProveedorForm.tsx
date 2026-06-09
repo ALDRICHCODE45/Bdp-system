@@ -21,7 +21,7 @@ import {
 } from "@/core/shared/ui/select";
 import { useCreateClienteProveedorForm } from "../../hooks/useCreateClienteProveedorForm.hook";
 import { useSocios } from "@/features/RecursosHumanos/socios/hooks/useSocios.hook";
-import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 
 interface CreateClienteProveedorFormProps {
   onSuccess?: () => void;

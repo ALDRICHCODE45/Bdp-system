@@ -10,7 +10,7 @@ import {
 import { Input } from "@/core/shared/ui/input";
 import { Textarea } from "@/core/shared/ui/textarea";
 import { useUpdateEntradaSalidaForm } from "../../hooks/useUpdateEntradaSalidaForm.hook";
-import { DatePicker } from "../DatePicker";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import { EntradasSalidasDTO } from "../../server/dtos/EntradasSalidasDto.dto";
 
 interface EditEntradaSalidaFormProps {

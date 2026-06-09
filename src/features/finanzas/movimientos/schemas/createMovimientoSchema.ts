@@ -1,5 +1,43 @@
 import { z } from "zod";
 
+export const movimientoCategoriaOptions = [
+  "FACTURACION",
+  "COMISIONES",
+  "DISPOSICION",
+  "BANCARIZACIONES",
+  "GASTO_OP",
+  "HONORARIOS",
+  "SERVICIOS",
+  "ARRENDAMIENTO",
+] as const;
+
+export const movimientoFormaPagoOptions = [
+  "TRANSFERENCIA",
+  "EFECTIVO",
+  "CHEQUE",
+] as const;
+
+export const movimientoCargoAbonoOptions = [
+  "BDP",
+  "CALFC",
+  "GLOBAL",
+  "RJZ",
+  "APP",
+] as const;
+
+export const movimientoFacturadoPorOptions = [
+  "BDP",
+  "CALFC",
+  "GLOBAL",
+  "RGZ",
+  "RJS",
+  "APP",
+] as const;
+
+const optionalEmptyEnum = <TValues extends readonly [string, ...string[]]>(
+  values: TValues
+) => z.union([z.enum(values), z.literal("")]).optional();
+
 /**
  * Client-side Zod schema for the create movimiento form.
  *
@@ -29,10 +67,10 @@ export const createMovimientoSchema = z.object({
   // Optional fields
   concepto: z.string().optional(),
   descripcionAdministracion: z.string().optional(),
-  categoria: z.string().optional(),
-  formaPago: z.string().optional(),
-  cargoAbono: z.string().optional(),
-  facturadoPor: z.string().optional(),
+  categoria: optionalEmptyEnum(movimientoCategoriaOptions),
+  formaPago: optionalEmptyEnum(movimientoFormaPagoOptions),
+  cargoAbono: optionalEmptyEnum(movimientoCargoAbonoOptions),
+  facturadoPor: optionalEmptyEnum(movimientoFacturadoPorOptions),
   periodo: z.string().optional(),
   numeroFactura: z.string().optional(),
   folioFiscal: z.string().optional(),

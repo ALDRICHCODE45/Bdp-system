@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 import { Separator } from "@/core/shared/ui/separator";
-import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import { format, parse } from "date-fns";
 import { Save, AlertTriangle } from "lucide-react";
 import { cn } from "@/core/lib/utils";

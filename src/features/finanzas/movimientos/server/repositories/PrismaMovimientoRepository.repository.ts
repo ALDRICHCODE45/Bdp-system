@@ -24,7 +24,7 @@ type PrismaTransactionClient = Omit<
 // ---------------------------------------------------------------------------
 
 const DEFAULT_PAGE = 1;
-const DEFAULT_SIZE = 25;
+const DEFAULT_SIZE = 20;
 const MAX_SIZE = 200;
 
 const ALLOWED_SORT_COLUMNS = new Set([
@@ -162,6 +162,10 @@ export class PrismaMovimientoRepository implements MovimientoRepository {
     const orderBy = { [sortColumn]: sortDir };
 
     const where = buildMovimientoWhereClause(params);
+    const aggregateWhere = buildMovimientoWhereClause({
+      ...params,
+      tipo: "ALL",
+    });
 
     const [items, total, aggregates] = await Promise.all([
       this.prisma.movimiento.findMany({
@@ -172,7 +176,7 @@ export class PrismaMovimientoRepository implements MovimientoRepository {
         include: movimientoIncludes,
       }),
       this.prisma.movimiento.count({ where }),
-      this.computeAggregates(where),
+      this.computeAggregates(aggregateWhere),
     ]);
 
     return { items: items as MovimientoEntity[], total, aggregates };

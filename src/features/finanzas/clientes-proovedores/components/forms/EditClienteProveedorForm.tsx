@@ -22,7 +22,7 @@ import {
 import { useEditClienteProveedorForm } from "../../hooks/useEditClienteProveedorForm.hook";
 import { ClienteProveedorDto } from "../../server/dtos/ClienteProveedorDto.dto";
 import { useSocios } from "@/features/RecursosHumanos/socios/hooks/useSocios.hook";
-import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 
 interface EditClienteProveedorFormProps {
   clienteProveedor: ClienteProveedorDto;

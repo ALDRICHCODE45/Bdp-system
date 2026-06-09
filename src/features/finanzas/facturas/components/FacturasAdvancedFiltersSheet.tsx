@@ -14,7 +14,7 @@ import { Input } from "@/core/shared/ui/input";
 import { Separator } from "@/core/shared/ui/separator";
 import { FilterMultiSelect } from "@/core/shared/components/DataTable/FilterMultiSelect";
 import { TagInput } from "@/core/shared/components/DataTable/TagInput";
-import { DatePicker } from "@/features/Recepcion/entradas-salidas/components/DatePicker";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import { useAllUsers } from "../hooks/useAllUsers.hook";
 import { parse } from "date-fns";
 import { format } from "date-fns";

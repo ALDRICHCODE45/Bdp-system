@@ -39,7 +39,7 @@ export class MovimientoService {
       const { items, total, aggregates } = await this.repo.findAll(params);
 
       const page = Math.max(params.page ?? 1, 1);
-      const pageSize = Math.min(Math.max(params.size ?? 25, 1), 200);
+      const pageSize = Math.min(Math.max(params.size ?? 20, 1), 200);
 
       return Ok({
         data: toMovimientoListItemDtoArray(items),
@@ -52,7 +52,8 @@ export class MovimientoService {
         aggregates: {
           totalIngresos: aggregates.totalIngresos.toString(),
           totalEgresos: aggregates.totalEgresos.toString(),
-          count: aggregates.countIngresos + aggregates.countEgresos,
+          countIngresos: aggregates.countIngresos,
+          countEgresos: aggregates.countEgresos,
         },
       });
     } catch (error) {

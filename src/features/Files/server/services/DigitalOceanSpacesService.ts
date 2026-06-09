@@ -79,7 +79,7 @@ export class DigitalOceanSpacesService {
   /**
    * Sube un archivo a Digital Ocean Spaces
    * @param file - El archivo a subir
-   * @param folder - La carpeta donde se guardará (ej: "facturas", "egresos")
+   * @param folder - La carpeta donde se guardará (ej: "facturas", "movimientos")
    * @returns La URL del archivo subido
    */
   async uploadFile(file: File, folder: string): Promise<string> {

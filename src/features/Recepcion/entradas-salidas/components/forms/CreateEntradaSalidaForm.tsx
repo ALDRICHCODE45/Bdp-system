@@ -11,7 +11,7 @@ import {
 import { Input } from "@/core/shared/ui/input";
 import { Textarea } from "@/core/shared/ui/textarea";
 import { useCreateEntradaSalidaForm } from "../../hooks/useCreateEntradaSalidaForm.hook";
-import { DatePicker } from "../DatePicker";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 
 interface CreateEntradaSalidaFormProps {
   onSuccess?: () => void;

@@ -1,22 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/core/shared/ui/card";
+import prisma from "@/core/lib/prisma";
+import { MovimientosTablePage } from "@/features/finanzas/movimientos/pages/MovimientosTablePage";
+import { makeMovimientoService } from "@/features/finanzas/movimientos/server/services/makeMovimientoService";
 
-/**
- * Placeholder server page for the unified Movimientos route.
- * Real content (MovimientosTablePage) will be wired in T15.
- */
 export default async function MovimientosPage() {
+  const service = makeMovimientoService({ prisma });
+  const result = await service.getAll({ page: 1, size: 20, tipo: "ALL" });
+  const initialData = result.ok ? result.value : undefined;
+  const initialDataUpdatedAt = result.ok ? Date.now() : undefined;
+
   return (
-    <div className="flex flex-1 items-center justify-center p-8">
-      <Card className="w-full max-w-md text-center">
-        <CardHeader>
-          <CardTitle>Ingresos / Egresos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Modulo unificado de movimientos — proximamente.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <MovimientosTablePage
+      initialData={initialData}
+      initialDataUpdatedAt={initialDataUpdatedAt}
+    />
   );
 }
