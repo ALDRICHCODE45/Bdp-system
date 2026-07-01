@@ -26,10 +26,6 @@ import { absenceRecordSchema } from "../validators/absenceRecordSchema";
  * guarantees the audit trail cannot be forged from a tampered FormData.
  */
 
-const idSchema = z.object({
-  id: z.string().uuid("ID de colaborador inválido"),
-});
-
 /**
  * Read-only list of absence records for one colaborador. Gated by
  * `colaboradores:acceder` (matches the spec: any profile viewer can see
@@ -138,9 +134,3 @@ export async function createAbsenceAction(input: FormData) {
 
   return { ok: true as const, data: result.value };
 }
-
-/**
- * Re-export for consumers that want to verify the id shape before calling
- * the action (kept module-private via the schema variable above).
- */
-export { idSchema };
