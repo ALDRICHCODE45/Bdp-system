@@ -1,7 +1,7 @@
 "use client";
 
 import { Table } from "@tanstack/react-table";
-import { Search, FileSpreadsheet, LayoutGrid, Rows3 } from "lucide-react";
+import { Search, FileSpreadsheet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
 import { Badge } from "@/core/shared/ui/badge";
@@ -12,12 +12,6 @@ import { Label } from "@/core/shared/ui/label";
 import { useDebounce } from "@/core/shared/hooks/use-debounce";
 import { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 import { ColumnVisibilitySelector } from "@/core/shared/components/DataTable/ColumnVisibilitySelector";
-import {
-  getLocalStorageItem,
-  setLocalStorageItem,
-} from "@/core/shared/helpers/localStorage.helper";
-
-const VIEW_STORAGE_KEY = "colaboradores-view";
 
 export type ColaboradoresViewMode = "tabla" | "cards";
 
@@ -25,19 +19,17 @@ export type ColaboradoresViewMode = "tabla" | "cards";
  * Filter component for the slim colaboradores table (P1, cap1).
  *
  * - Search input (debounced 300ms over name + correo + puesto on the server)
- * - Cards / Tabla toggle persisted in localStorage['colaboradores-view']
  * - Importar (left as a no-op stub — bulk import from Excel is not in P1 scope;
  *   wired through so the button shape is consistent with Facturas)
  * - Exportar button that honors the active tab filter
+ *
+ * NOTE: the Tabla/Cards view toggle lives in the PAGE header (not here), so it
+ * stays reachable in the cards view where this filter bar is not rendered.
  */
 interface ColaboradoresTableFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   /** Called with the latest debounced search term (caller forwards to server). */
   onGlobalFilterChange?: (value: string) => void;
-  /** Called when the user toggles table ↔ cards. */
-  onViewModeChange?: (mode: ColaboradoresViewMode) => void;
-  /** Current view mode (controlled). */
-  viewMode?: ColaboradoresViewMode;
   /** Total row count (current page for table, or full count for cards). */
   totalCount?: number;
   /** Export handler. Receives the table and ExportOptions. */
@@ -49,8 +41,6 @@ interface ColaboradoresTableFiltersProps extends BaseFilterProps {
 export function ColaboradoresTableFilters({
   table,
   onGlobalFilterChange,
-  onViewModeChange,
-  viewMode = "tabla",
   totalCount,
   onExport,
   onImport,
@@ -80,29 +70,6 @@ export function ColaboradoresTableFilters({
     lastEmittedSearch.current = debouncedSearch;
     onGlobalFilterChangeRef.current?.(debouncedSearch);
   }, [debouncedSearch]);
-
-  // ── Cards toggle (cap1 req4: persisted in localStorage['colaboradores-view']) ──
-  const [internalViewMode, setInternalViewMode] =
-    useState<ColaboradoresViewMode>(viewMode);
-
-  // Hydrate from localStorage once on mount (client-only).
-  useEffect(() => {
-    const stored = getLocalStorageItem<ColaboradoresViewMode>(
-      VIEW_STORAGE_KEY,
-      "tabla",
-    );
-    if (stored === "tabla" || stored === "cards") {
-      setInternalViewMode(stored);
-      onViewModeChange?.(stored);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleToggleView = (next: ColaboradoresViewMode) => {
-    setInternalViewMode(next);
-    setLocalStorageItem(VIEW_STORAGE_KEY, next);
-    onViewModeChange?.(next);
-  };
 
   const rowCount = totalCount ?? table.getRowCount();
 
@@ -138,29 +105,8 @@ export function ColaboradoresTableFilters({
             <span>Exportar</span>
           </Button>
           <ColumnVisibilitySelector table={table} />
-          {/* View toggle */}
-          <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
-            <Button
-              variant={internalViewMode === "tabla" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => handleToggleView("tabla")}
-              className="h-7 px-2"
-              aria-label="Vista tabla"
-              aria-pressed={internalViewMode === "tabla"}
-            >
-              <Rows3 className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant={internalViewMode === "cards" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => handleToggleView("cards")}
-              className="h-7 px-2"
-              aria-label="Vista tarjetas"
-              aria-pressed={internalViewMode === "cards"}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
-          </div>
+          {/* View toggle moved to the page header so it stays visible in the
+              cards view too (this filter bar only renders in the tabla view). */}
         </div>
       </CardHeader>
 

@@ -1,18 +1,27 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { PaginationState, SortingState, Table } from "@tanstack/react-table";
 import { toast } from "sonner";
+import { Plus, LayoutGrid, Rows3 } from "lucide-react";
 import {
   Card,
   CardContent,
 } from "@/core/shared/ui/card";
+import { Button } from "@/core/shared/ui/button";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { DataTableMultiTabs } from "@/core/shared/components/DataTable/DataTableMultiTabs";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { useModalState } from "@/core/shared/hooks/useModalState";
+import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
+import {
+  getLocalStorageItem,
+  setLocalStorageItem,
+} from "@/core/shared/helpers/localStorage.helper";
 import { ColaboradoresTableConfig } from "../components/ColaboradoresTableConfig";
 import { ColaboradoresCardsView } from "../components/ColaboradoresCardsView";
 import { colaboradoresColumns } from "../components/ColaboradoresTableColumns";
@@ -28,6 +37,19 @@ import type { ExportOptions } from "@/core/shared/components/DataTable/ExportBut
 import type { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import type { ColaboradoresViewMode } from "../components/ColaboradoresTableFilters";
 import type { ColaboradoresFilterParams } from "../types/ColaboradoresFilterParams";
+
+// CreateColaboradorForm pulls in server-only utilities through its hook chain;
+// mount the sheet via next/dynamic with ssr:false so it stays out of the RSC
+// critical path (mirrors CreateFacturaSheet in FacturasTablePage).
+const CreateColaboradorSheet = dynamic(
+  () =>
+    import("../components/CreateColaboradorSheet").then((mod) => ({
+      default: mod.CreateColaboradorSheet,
+    })),
+  { ssr: false, loading: () => <LoadingModalState /> },
+);
+
+const VIEW_STORAGE_KEY = "colaboradores-view";
 
 export function ColaboradoresTablePage() {
   // ── Pagination / sorting ───────────────────────────────────────────────
@@ -51,8 +73,22 @@ export function ColaboradoresTablePage() {
   // mode cascades into a setState loop ("Maximum update depth exceeded").
   const status = useMemo(() => tabIdsToStatusFilter(activeTabs), [activeTabs]);
 
-  // ── Cards vs Tabla toggle (cap1 req4) ─────────────────────────────────
-  const [viewMode, setViewMode] = useState<ColaboradoresViewMode>("tabla");
+  // ── Cards vs Tabla toggle (cap1 req4: persisted in localStorage) ──────
+  const [viewMode, setViewMode] = useState<ColaboradoresViewMode>(() => {
+    const stored = getLocalStorageItem<ColaboradoresViewMode>(
+      VIEW_STORAGE_KEY,
+      "tabla",
+    );
+    return stored === "cards" ? "cards" : "tabla";
+  });
+
+  const handleViewModeChange = useCallback((next: ColaboradoresViewMode) => {
+    setViewMode(next);
+    setLocalStorageItem(VIEW_STORAGE_KEY, next);
+  }, []);
+
+  // ── Create sheet modal ────────────────────────────────────────────────
+  const { isOpen, openModal, closeModal } = useModalState();
 
   // ── Tab counts ─────────────────────────────────────────────────────────
   const { data: statusCounts } = useColaboradorStatusCounts();
@@ -145,25 +181,69 @@ export function ColaboradoresTablePage() {
           pageCount: data?.pageCount ?? 0,
         },
         customFilterProps: {
-          viewMode,
-          onViewModeChange: setViewMode,
           totalCount: data?.totalCount,
           onExport: handleExport,
           // onImport intencionalmente omitido en P1 — la importación masiva
           // se aborda en fases posteriores; el botón no se renderiza.
         },
       }),
-    [data?.totalCount, data?.pageCount, handleExport, viewMode],
+    [data?.totalCount, data?.pageCount, handleExport],
   );
 
   return (
     <Card className="p-2 m-1">
       <CardContent>
         <div className="space-y-6">
-          <TablePresentation
-            subtitle="Administra y gestiona los colaboradores de tu empresa"
-            title="Gestión de Colaboradores"
-          />
+          {/* ── Header: título + view toggle + crear ──────────────────────── */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <TablePresentation
+              subtitle="Administra y gestiona los colaboradores de tu empresa"
+              title="Gestión de Colaboradores"
+            />
+
+            <div className="flex items-center gap-2 shrink-0">
+              {/* View toggle — lives at page level so it stays visible in BOTH
+                  tabla and cards views (the DataTable-embedded copy vanished
+                  when switching to cards). */}
+              <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
+                <Button
+                  type="button"
+                  variant={viewMode === "tabla" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handleViewModeChange("tabla")}
+                  className="h-8 px-2"
+                  aria-label="Vista tabla"
+                  aria-pressed={viewMode === "tabla"}
+                >
+                  <Rows3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant={viewMode === "cards" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handleViewModeChange("cards")}
+                  className="h-8 px-2"
+                  aria-label="Vista tarjetas"
+                  aria-pressed={viewMode === "cards"}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Crear colaborador — gated */}
+              <PermissionGuard
+                permissions={[
+                  PermissionActions.colaboradores.crear,
+                  PermissionActions.colaboradores.gestionar,
+                ]}
+              >
+                <Button type="button" size="sm" onClick={openModal} className="h-8">
+                  <Plus className="h-4 w-4" />
+                  <span>Crear colaborador</span>
+                </Button>
+              </PermissionGuard>
+            </div>
+          </div>
 
           {/* ── Tabs (Todos / Activos / En licencia) ─────────────────────── */}
           <DataTableMultiTabs
@@ -244,6 +324,18 @@ export function ColaboradoresTablePage() {
                 onSortingChange={handleSortingChange}
                 onGlobalFilterChange={handleGlobalFilterChange}
               />
+            )}
+          </PermissionGuard>
+
+          {/* ── Create sheet — only mounted while open (lazy) ─────────────── */}
+          <PermissionGuard
+            permissions={[
+              PermissionActions.colaboradores.crear,
+              PermissionActions.colaboradores.gestionar,
+            ]}
+          >
+            {isOpen && (
+              <CreateColaboradorSheet isOpen={true} onClose={closeModal} />
             )}
           </PermissionGuard>
         </div>
