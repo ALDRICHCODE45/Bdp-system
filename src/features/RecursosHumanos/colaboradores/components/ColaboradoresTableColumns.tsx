@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/core/shared/ui/badge";
 import {
@@ -63,18 +64,22 @@ export const colaboradoresColumns: ColumnDef<ColaboradorDto>[] = [
     accessorKey: "name",
     header: "Colaborador",
     cell: ({ row }) => {
+      const id = row.original.id;
       const name = row.original.name;
       const correo = row.original.correo;
       return (
         <div className="flex flex-col min-w-0">
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-sm font-medium truncate max-w-[220px] block">
+              <Link
+                href={`/colaboradores/${id}`}
+                className="text-sm font-medium truncate max-w-[220px] block hover:text-primary hover:underline underline-offset-2 focus-visible:outline-none focus-visible:text-primary focus-visible:underline"
+              >
                 {name}
-              </span>
+              </Link>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-xs">{name}</p>
+              <p className="text-xs">Ver perfil de {name}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>

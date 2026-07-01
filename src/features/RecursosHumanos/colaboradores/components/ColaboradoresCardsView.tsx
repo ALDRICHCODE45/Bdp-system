@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -56,12 +57,15 @@ export function ColaboradoresCardsView({ data }: ColaboradoresCardsViewProps) {
                 <div className="min-w-0 flex-1">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <h3 className="text-sm font-semibold truncate">
+                      <Link
+                        href={`/colaboradores/${c.id}`}
+                        className="text-sm font-semibold truncate block hover:text-primary hover:underline underline-offset-2 focus-visible:outline-none focus-visible:text-primary focus-visible:underline"
+                      >
                         {c.name}
-                      </h3>
+                      </Link>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="text-xs">{c.name}</p>
+                      <p className="text-xs">Ver perfil de {c.name}</p>
                     </TooltipContent>
                   </Tooltip>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 min-w-0">
