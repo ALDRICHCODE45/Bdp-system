@@ -296,6 +296,9 @@ export const EditColaboradorForm = ({
                         <SelectItem value={ColaboradorEstado.CONTRATADO}>
                           Contratado
                         </SelectItem>
+                        <SelectItem value={ColaboradorEstado.EN_LICENCIA}>
+                          En licencia
+                        </SelectItem>
                         <SelectItem value={ColaboradorEstado.DESPEDIDO}>
                           Despedido
                         </SelectItem>

@@ -1,11 +1,26 @@
 "use client";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getPaginatedColaboradoresAction } from "../server/actions/getPaginatedColaboradoresAction";
-import { PaginationParams } from "@/core/shared/types/pagination.types";
+import type { ColaboradoresFilterParams } from "../types/ColaboradoresFilterParams";
 
-export const useColaboradores = (params: PaginationParams) => {
+/**
+ * Paginated colaboradores query (server-side filter + pagination).
+ *
+ * Accepts the full ColaboradoresFilterParams (page, pageSize, sortBy, sortOrder,
+ * status, search). Query key includes every filter field so cache invalidates
+ * on any change.
+ */
+export const useColaboradores = (params: ColaboradoresFilterParams) => {
   return useQuery({
-    queryKey: ["colaboradores", params.page, params.pageSize, params.sortBy, params.sortOrder],
+    queryKey: [
+      "colaboradores",
+      params.page,
+      params.pageSize,
+      params.sortBy,
+      params.sortOrder,
+      params.status,
+      params.search,
+    ],
     queryFn: async () => {
       const result = await getPaginatedColaboradoresAction(params);
       if (!result.ok) {
@@ -14,5 +29,6 @@ export const useColaboradores = (params: PaginationParams) => {
       return result.data;
     },
     placeholderData: keepPreviousData,
+    staleTime: 30_000,
   });
 };
