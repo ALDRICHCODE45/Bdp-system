@@ -2,14 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Clock } from "lucide-react";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/core/shared/ui/tabs";
-import { Card, CardContent } from "@/core/shared/ui/card";
 import { ProfileIdentityRail } from "../components/ProfileIdentityRail";
 import { ResumenTab } from "../components/ResumenTab";
 import { PersonalTab } from "../components/PersonalTab";
@@ -18,10 +16,12 @@ import { CompensacionTab } from "../components/CompensacionTab";
 import { OrganigramaTab } from "../components/OrganigramaTab";
 import { DocumentosTab } from "../components/DocumentosTab";
 import { CvTab } from "../components/CvTab";
+import { AusenciasTab } from "../components/AusenciasTab";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import type { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import type { OrgTreeDto } from "../server/dtos/OrgTreeDto.dto";
+import type { VacationBalanceDto } from "../server/dtos/VacationBalanceDto.dto";
 
 // EditColaboradorSheet uses forms that import server-only utilities; mount it
 // via next/dynamic with ssr:false so it stays out of the RSC critical path
@@ -40,10 +40,13 @@ const EditColaboradorSheet = dynamic(
 interface ProfilePayload {
   colaborador: ColaboradorDto;
   reportesDirectos: number;
-  vacaciones: {
-    diasDisponibles: number;
-    diasTomados: number;
-  } | null;
+  /**
+   * VacationBalance snapshot. `null` means "no row registered yet" —
+   * the Resumen KPI and the Ausencias donut both rely on this signal to
+   * render their empty states (cap3 req4 + cap9 req5). The canonical
+   * full DTO type lives in `VacationBalanceDto.dto.ts`.
+   */
+  vacaciones: VacationBalanceDto | null;
   orgTree: OrgTreeDto;
 }
 
@@ -178,12 +181,13 @@ export function ColaboradorProfilePage({ payload }: ColaboradorProfilePageProps)
           <CvTab colaboradorId={colaborador.id} />
         </TabsContent>
 
-        {/* ── Remaining placeholder (filled in P6) ─────────────────── */}
-        {TAB_DEFINITIONS.filter((t) => t.value === "ausencias").map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="mt-6">
-            <PlaceholderPanel label={tab.label} phase={tab.phase} />
-          </TabsContent>
-        ))}
+        {/* ── Ausencias (P6 — cap9 + cap13) ─────────────────────────── */}
+        <TabsContent value="ausencias" className="mt-6">
+          <AusenciasTab
+            colaboradorId={colaborador.id}
+            vacaciones={vacaciones}
+          />
+        </TabsContent>
       </Tabs>
 
       {/* Edit modal — only rendered when triggered (mounted lazily). */}
@@ -216,7 +220,7 @@ const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { value: "compensacion", label: "Compensación", phase: "P4 ✓" },
   { value: "organigrama", label: "Organigrama", phase: "P4 ✓" },
   { value: "documentos", label: "Documentos", phase: "P5 ✓" },
-  { value: "ausencias", label: "Ausencias", phase: "P6" },
+  { value: "ausencias", label: "Ausencias", phase: "P6 ✓" },
   { value: "cv", label: "CV", phase: "P5 ✓" },
 ] as const;
 
@@ -232,28 +236,4 @@ function readTabFromHash(): string | null {
   if (!raw) return null;
   const known = TAB_DEFINITIONS.find((t) => t.value === raw);
   return known ? raw : null;
-}
-
-/* ── Placeholder panel (P3–P6 fill in here) ─────────────────────────────── */
-
-function PlaceholderPanel({
-  label,
-  phase,
-}: {
-  label: string;
-  phase: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="py-10 text-center space-y-3">
-        <Clock className="h-8 w-8 mx-auto text-muted-foreground" />
-        <h2 className="text-lg font-semibold">{label}</h2>
-        <p className="text-sm text-muted-foreground max-w-md mx-auto">
-          El contenido de esta pestaña se implementa en la fase{" "}
-          <span className="font-medium">{phase}</span>.
-        </p>
-        <p className="text-xs text-muted-foreground">Próximamente.</p>
-      </CardContent>
-    </Card>
-  );
 }
