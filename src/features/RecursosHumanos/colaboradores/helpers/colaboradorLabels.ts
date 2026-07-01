@@ -30,6 +30,17 @@ export const MODALIDAD_LABELS: Record<string, string> = {
 };
 
 /**
+ * Tipo de contrato labels (used in LaboralTab and the identity rail).
+ */
+export const TIPO_CONTRATO_LABELS: Record<string, string> = {
+  INDEFINIDO: "Indefinido",
+  TEMPORAL: "Temporal",
+  POR_OBRA: "Por obra",
+  PRACTICAS: "Prácticas",
+  HONORARIOS: "Honorarios",
+};
+
+/**
  * Estado del colaborador labels (used in Estado badge, card view and export).
  */
 export const STATUS_LABELS: Record<string, string> = {

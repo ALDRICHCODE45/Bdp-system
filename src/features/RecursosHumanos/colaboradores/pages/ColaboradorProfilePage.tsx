@@ -12,6 +12,8 @@ import {
 import { Card, CardContent } from "@/core/shared/ui/card";
 import { ProfileIdentityRail } from "../components/ProfileIdentityRail";
 import { ResumenTab } from "../components/ResumenTab";
+import { PersonalTab } from "../components/PersonalTab";
+import { LaboralTab } from "../components/LaboralTab";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import type { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
@@ -55,9 +57,9 @@ interface ColaboradorProfilePageProps {
  * navigation (back/forward, direct `#personal` link) in sync with the local
  * `currentTab` state, while tab clicks push the new hash onto the URL.
  *
- * Resumen is the only tab with live content here; Personal/Laboral/Compensación
- * /Organigrama/Documentos/Ausencias/CV render a small "Próximamente" panel and
- * will be filled in P3–P6.
+ * Resumen (P2) and Personal/Laboral (P3) carry live content. Compensación /
+ * Organigrama (P4) / Documentos / Ausencias / CV (P5–P6) still render a small
+ * "Próximamente" panel and will be filled in their respective phases.
  *
  * The legacy `ColaboradorIndividualPage` is NOT deleted (CC10); it remains
  * reachable via its standalone import path until P7 cutover.
@@ -140,8 +142,23 @@ export function ColaboradorProfilePage({ payload }: ColaboradorProfilePageProps)
           </div>
         </TabsContent>
 
-        {/* ── Placeholder tabs (filled in P3–P6) ─────────────────────── */}
-        {TAB_DEFINITIONS.filter((t) => t.value !== "resumen").map((tab) => (
+        {/* ── Personal (P3 — cap4 + cap6 emergency-contact CRUD) ────── */}
+        <TabsContent value="personal" className="mt-6">
+          <PersonalTab colaborador={colaborador} />
+        </TabsContent>
+
+        {/* ── Laboral (P3 — cap5 position + responsabilidad CRUD) ────── */}
+        <TabsContent value="laboral" className="mt-6">
+          <LaboralTab colaborador={colaborador} />
+        </TabsContent>
+
+        {/* ── Remaining placeholders (filled in P4–P6) ─────────────── */}
+        {TAB_DEFINITIONS.filter(
+          (t) =>
+            t.value !== "resumen" &&
+            t.value !== "personal" &&
+            t.value !== "laboral"
+        ).map((tab) => (
           <TabsContent key={tab.value} value={tab.value} className="mt-6">
             <PlaceholderPanel label={tab.label} phase={tab.phase} />
           </TabsContent>
@@ -173,8 +190,8 @@ interface TabDefinition {
 
 const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { value: "resumen", label: "Resumen", phase: "P2" },
-  { value: "personal", label: "Personal", phase: "P3" },
-  { value: "laboral", label: "Laboral", phase: "P3" },
+  { value: "personal", label: "Personal", phase: "P3 ✓" },
+  { value: "laboral", label: "Laboral", phase: "P3 ✓" },
   { value: "compensacion", label: "Compensación", phase: "P4" },
   { value: "organigrama", label: "Organigrama", phase: "P4" },
   { value: "documentos", label: "Documentos", phase: "P5" },
