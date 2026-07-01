@@ -30,6 +30,8 @@ const createSchema = emergencyContactSchema.and(
   z.object({ colaboradorId: z.string().uuid("ID de colaborador inválido") })
 );
 
+const updateSchema = idSchema.and(emergencyContactSchema);
+
 /**
  * List all emergency contacts attached to a given colaborador.
  *
@@ -97,6 +99,52 @@ export async function createEmergencyContactAction(input: FormData) {
   const service = makeEmergencyContactService({ prisma });
   const result = await service.create({
     colaboradorId: parsed.data.colaboradorId,
+    nombre: parsed.data.nombre,
+    parentesco: parsed.data.parentesco,
+    telefono: parsed.data.telefono,
+    email: parsed.data.email ?? null,
+    notas: parsed.data.notas ?? null,
+  });
+
+  if (!result.ok) {
+    return { ok: false as const, error: result.error.message };
+  }
+  return { ok: true as const, data: result.value };
+}
+
+/**
+ * Patch an existing emergency contact (nombre / parentesco / telefono /
+ * email / notas). Mutating: gated by `colaboradores:editar` (CC1/CC8).
+ */
+export async function updateEmergencyContactAction(input: FormData) {
+  await requireAnyPermission(
+    [
+      PermissionActions.colaboradores.editar,
+      PermissionActions.colaboradores.gestionar,
+    ],
+    "No tienes permiso para editar contactos de emergencia"
+  );
+
+  const raw = {
+    id: input.get("id"),
+    nombre: input.get("nombre"),
+    parentesco: input.get("parentesco"),
+    telefono: input.get("telefono"),
+    email: input.get("email"),
+    notas: input.get("notas"),
+  };
+
+  const parsed = updateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      ok: false as const,
+      error: parsed.error.issues[0]?.message || "Error de validación",
+    };
+  }
+
+  const service = makeEmergencyContactService({ prisma });
+  const result = await service.update({
+    id: parsed.data.id,
     nombre: parsed.data.nombre,
     parentesco: parsed.data.parentesco,
     telefono: parsed.data.telefono,

@@ -7,6 +7,7 @@ import {
   createEmergencyContactAction,
   deleteEmergencyContactAction,
   listEmergencyContactsAction,
+  updateEmergencyContactAction,
 } from "../server/actions/emergencyContactActions";
 import type { EmergencyContactDto } from "../server/dtos/EmergencyContactDto.dto";
 
@@ -69,6 +70,28 @@ export function useCreateEmergencyContact(colaboradorId: string) {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Error al crear contacto");
+    },
+  });
+}
+
+export function useUpdateEmergencyContact(colaboradorId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const result = await updateEmergencyContactAction(formData);
+      if (!result.ok) {
+        throw new Error(result.error || "Error al actualizar contacto");
+      }
+      return result.data;
+    },
+    onSuccess: async () => {
+      toast.success("Contacto de emergencia actualizado");
+      await queryClient.invalidateQueries({
+        queryKey: emergencyContactsQueryKey(colaboradorId),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Error al actualizar contacto");
     },
   });
 }

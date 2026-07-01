@@ -56,6 +56,30 @@ export class EmergencyContactService {
     }
   }
 
+  async update(data: {
+    id: string;
+    nombre: string;
+    parentesco: string;
+    telefono: string;
+    email?: string | null;
+    notas?: string | null;
+  }): Promise<Result<EmergencyContactDto, Error>> {
+    try {
+      const existing = await this.repository.findById({ id: data.id });
+      if (!existing) {
+        return Err(new Error("Contacto de emergencia no encontrado"));
+      }
+      const row = await this.repository.update(data);
+      return Ok(toEmergencyContactDto(row));
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al actualizar contacto de emergencia")
+      );
+    }
+  }
+
   async delete(id: string): Promise<Result<void, Error>> {
     try {
       const existing = await this.repository.findById({ id });
