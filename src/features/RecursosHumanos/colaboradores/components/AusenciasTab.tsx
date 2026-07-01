@@ -42,6 +42,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/shared/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/shared/ui/dialog";
 import { Badge } from "@/core/shared/ui/badge";
 import { Separator } from "@/core/shared/ui/separator";
 import {
@@ -557,21 +565,9 @@ function AbsenceGroup({
 
 function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
   const [open, setOpen] = useState(false);
-  const [errors, setErrors] = useState<{
-    tipo?: string;
-    fechaInicio?: string;
-    fechaFin?: string;
-    motivo?: string;
-  }>({});
 
-  const create = useCreateAbsence(colaboradorId);
-
-  const reset = () => {
-    setErrors({});
-  };
-
-  if (!open) {
-    return (
+  return (
+    <>
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
           <div>
@@ -591,18 +587,55 @@ function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
           </Button>
         </CardHeader>
       </Card>
-    );
-  }
+      {open ? (
+        <CreateAbsenceDialog
+          open={open}
+          onOpenChange={setOpen}
+          colaboradorId={colaboradorId}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function CreateAbsenceDialog({
+  open,
+  onOpenChange,
+  colaboradorId,
+}: {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+  colaboradorId: string;
+}) {
+  const [tipo, setTipo] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [motivo, setMotivo] = useState("");
+  const [errors, setErrors] = useState<{
+    tipo?: string;
+    fechaInicio?: string;
+    fechaFin?: string;
+    motivo?: string;
+  }>({});
+
+  const create = useCreateAbsence(colaboradorId);
+
+  const reset = () => {
+    setTipo("");
+    setFechaInicio("");
+    setFechaFin("");
+    setMotivo("");
+    setErrors({});
+  };
+
+  const handleClose = (next: boolean) => {
+    if (create.isPending) return;
+    if (!next) reset();
+    onOpenChange(next);
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
-
-    const tipo = (fd.get("tipo") as string | null)?.trim() ?? "";
-    const fechaInicio = (fd.get("fechaInicio") as string | null)?.trim() ?? "";
-    const fechaFin = (fd.get("fechaFin") as string | null)?.trim() ?? "";
-    const motivo = (fd.get("motivo") as string | null)?.trim() ?? "";
 
     const newErrors: typeof errors = {};
     if (!tipo) newErrors.tipo = "Selecciona un tipo";
@@ -637,34 +670,38 @@ function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
+    const fd = new FormData();
+    fd.set("tipo", tipo);
+    fd.set("fechaInicio", fechaInicio);
+    fd.set("fechaFin", fechaFin);
+    fd.set("motivo", motivo);
     fd.set("dias", String(computedDias));
     fd.set("colaboradorId", colaboradorId);
 
     create.mutate(fd, {
       onSuccess: () => {
-        form.reset();
-        setOpen(false);
         reset();
+        onOpenChange(false);
       },
     });
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Registrar ausencia</CardTitle>
-        <CardDescription>
-          Captura el tipo, las fechas y un motivo opcional. El servidor
-          recalcula los días para garantizar la regla inclusiva.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Registrar ausencia</DialogTitle>
+          <DialogDescription>
+            Captura el tipo, las fechas y un motivo opcional. El servidor
+            recalcula los días para garantizar la regla inclusiva.
+          </DialogDescription>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <FieldGroup>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <Field data-invalid={Boolean(errors.tipo)}>
                 <FieldLabel>Tipo</FieldLabel>
-                <Select name="tipo" defaultValue="">
+                <Select value={tipo} onValueChange={setTipo}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona…" />
                   </SelectTrigger>
@@ -683,7 +720,12 @@ function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
 
               <Field data-invalid={Boolean(errors.fechaInicio)}>
                 <FieldLabel>Fecha de inicio</FieldLabel>
-                <Input name="fechaInicio" type="date" />
+                <Input
+                  name="fechaInicio"
+                  type="date"
+                  value={fechaInicio}
+                  onChange={(e) => setFechaInicio(e.target.value)}
+                />
                 {errors.fechaInicio ? (
                   <FieldError
                     errors={[{ message: errors.fechaInicio } as never]}
@@ -693,7 +735,12 @@ function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
 
               <Field data-invalid={Boolean(errors.fechaFin)}>
                 <FieldLabel>Fecha de fin</FieldLabel>
-                <Input name="fechaFin" type="date" />
+                <Input
+                  name="fechaFin"
+                  type="date"
+                  value={fechaFin}
+                  onChange={(e) => setFechaFin(e.target.value)}
+                />
                 {errors.fechaFin ? (
                   <FieldError
                     errors={[{ message: errors.fechaFin } as never]}
@@ -706,6 +753,8 @@ function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
                 <Input
                   name="motivo"
                   placeholder="Ej. Vacaciones anuales"
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
                 />
                 {errors.motivo ? (
                   <FieldError
@@ -716,15 +765,12 @@ function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
             </div>
           </FieldGroup>
 
-          <div className="flex items-center justify-end gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => {
-                setOpen(false);
-                reset();
-              }}
+              onClick={() => handleClose(false)}
               disabled={create.isPending}
             >
               Cancelar
@@ -732,10 +778,10 @@ function CreateAbsenceCard({ colaboradorId }: { colaboradorId: string }) {
             <Button type="submit" size="sm" disabled={create.isPending}>
               {create.isPending ? "Registrando…" : "Registrar ausencia"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -42,6 +42,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/core/shared/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/shared/ui/dialog";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
@@ -341,92 +349,140 @@ function ResponsabilidadRow({
 
 function AddResponsabilidadForm({ colaboradorId }: { colaboradorId: string }) {
   const [open, setOpen] = useState(false);
-  const [descripcionError, setDescripcionError] = useState<string | null>(null);
-
-  const create = useCreateResponsabilidadCargo(colaboradorId);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
-    const descripcion = (fd.get("descripcion") as string | null)?.trim() ?? "";
-
-    if (!descripcion) {
-      setDescripcionError("La descripción es requerida");
-      return;
-    }
-    setDescripcionError(null);
-
-    fd.set("colaboradorId", colaboradorId);
-
-    create.mutate(fd, {
-      onSuccess: () => {
-        form.reset();
-        setOpen(false);
-        setDescripcionError(null);
-      },
-    });
-  };
-
-  if (!open) {
-    return (
+  return (
+    <>
       <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
         <Plus className="h-4 w-4" />
         Agregar
       </Button>
-    );
-  }
+      {open ? (
+        <AddResponsabilidadDialog
+          open={open}
+          onOpenChange={setOpen}
+          colaboradorId={colaboradorId}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function AddResponsabilidadDialog({
+  open,
+  onOpenChange,
+  colaboradorId,
+}: {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+  colaboradorId: string;
+}) {
+  const [descripcion, setDescripcion] = useState("");
+  const [orden, setOrden] = useState(0);
+  const [errors, setErrors] = useState<{
+    descripcion?: string;
+  }>({});
+
+  const create = useCreateResponsabilidadCargo(colaboradorId);
+
+  const reset = () => {
+    setDescripcion("");
+    setOrden(0);
+    setErrors({});
+  };
+
+  const handleClose = (next: boolean) => {
+    if (create.isPending) return;
+    if (!next) reset();
+    onOpenChange(next);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!descripcion.trim()) {
+      setErrors({ descripcion: "La descripción es requerida" });
+      return;
+    }
+    setErrors({});
+
+    const fd = new FormData();
+    fd.set("descripcion", descripcion.trim());
+    fd.set("orden", String(orden));
+    fd.set("colaboradorId", colaboradorId);
+
+    create.mutate(fd, {
+      onSuccess: () => {
+        reset();
+        onOpenChange(false);
+      },
+    });
+  };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full mt-3 rounded-md border bg-muted/30 p-4 space-y-3"
-    >
-      <FieldGroup>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Field
-            className="sm:col-span-2"
-            data-invalid={Boolean(descripcionError)}
-          >
-            <FieldLabel>Descripción</FieldLabel>
-            <Input
-              name="descripcion"
-              placeholder="Ej. Cerrar reporte financiero mensual"
-            />
-            {descripcionError ? (
-              <FieldError errors={[{ message: descripcionError } as never]} />
-            ) : null}
-          </Field>
-          <Field>
-            <FieldLabel>Orden (opcional)</FieldLabel>
-            <Input
-              name="orden"
-              type="number"
-              min={0}
-              placeholder="0"
-              defaultValue={0}
-            />
-          </Field>
-        </div>
-      </FieldGroup>
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setOpen(false);
-            setDescripcionError(null);
-          }}
-          disabled={create.isPending}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit" size="sm" disabled={create.isPending}>
-          {create.isPending ? "Guardando…" : "Guardar"}
-        </Button>
-      </div>
-    </form>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Agregar responsabilidad</DialogTitle>
+          <DialogDescription>
+            Define una nueva responsabilidad del cargo. Puedes ajustar el orden
+            manualmente o dejarlo en 0 para que aparezca al final.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <FieldGroup>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Field
+                className="sm:col-span-2"
+                data-invalid={Boolean(errors.descripcion)}
+              >
+                <FieldLabel>Descripción</FieldLabel>
+                <Input
+                  name="descripcion"
+                  placeholder="Ej. Cerrar reporte financiero mensual"
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                />
+                {errors.descripcion ? (
+                  <FieldError
+                    errors={[{ message: errors.descripcion } as never]}
+                  />
+                ) : null}
+              </Field>
+              <Field>
+                <FieldLabel>Orden (opcional)</FieldLabel>
+                <Input
+                  name="orden"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={orden}
+                  onChange={(e) =>
+                    setOrden(
+                      Number.isFinite(Number(e.target.value))
+                        ? Number(e.target.value)
+                        : 0
+                    )
+                  }
+                />
+              </Field>
+            </div>
+          </FieldGroup>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleClose(false)}
+              disabled={create.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" size="sm" disabled={create.isPending}>
+              {create.isPending ? "Guardando…" : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -37,6 +37,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/core/shared/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/shared/ui/dialog";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 
@@ -318,115 +326,179 @@ function AddEmergencyContactForm({
   colaboradorId: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [nombreError, setNombreError] = useState<string | null>(null);
-  const [parentescoError, setParentescoError] = useState<string | null>(null);
-  const [telefonoError, setTelefonoError] = useState<string | null>(null);
+  return (
+    <>
+      <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
+        <UserPlus className="h-4 w-4" />
+        Agregar contacto
+      </Button>
+      {open ? (
+        <AddEmergencyContactDialog
+          open={open}
+          onOpenChange={setOpen}
+          colaboradorId={colaboradorId}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function AddEmergencyContactDialog({
+  open,
+  onOpenChange,
+  colaboradorId,
+}: {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+  colaboradorId: string;
+}) {
+  const [nombre, setNombre] = useState("");
+  const [parentesco, setParentesco] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [email, setEmail] = useState("");
+  const [notas, setNotas] = useState("");
+  const [errors, setErrors] = useState<{
+    nombre?: string;
+    parentesco?: string;
+    telefono?: string;
+  }>({});
 
   const create = useCreateEmergencyContact(colaboradorId);
 
+  const reset = () => {
+    setNombre("");
+    setParentesco("");
+    setTelefono("");
+    setEmail("");
+    setNotas("");
+    setErrors({});
+  };
+
+  const handleClose = (next: boolean) => {
+    if (create.isPending) return;
+    if (!next) reset();
+    onOpenChange(next);
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
-    const nombre = (fd.get("nombre") as string | null)?.trim() ?? "";
-    const parentesco = (fd.get("parentesco") as string | null)?.trim() ?? "";
-    const telefono = (fd.get("telefono") as string | null)?.trim() ?? "";
 
-    const newNombreError = nombre ? null : "El nombre es requerido";
-    const newParentescoError = parentesco ? null : "El parentesco es requerido";
-    const newTelefonoError = telefono ? null : "El teléfono es requerido";
-    setNombreError(newNombreError);
-    setParentescoError(newParentescoError);
-    setTelefonoError(newTelefonoError);
-    if (newNombreError || newParentescoError || newTelefonoError) {
-      return;
-    }
+    const newErrors: typeof errors = {};
+    if (!nombre.trim()) newErrors.nombre = "El nombre es requerido";
+    if (!parentesco.trim())
+      newErrors.parentesco = "El parentesco es requerido";
+    if (!telefono.trim()) newErrors.telefono = "El teléfono es requerido";
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
+    const fd = new FormData();
+    fd.set("nombre", nombre.trim());
+    fd.set("parentesco", parentesco.trim());
+    fd.set("telefono", telefono.trim());
+    fd.set("email", email.trim());
+    fd.set("notas", notas.trim());
     // Ensure route-bound id is always present in the FormData
     fd.set("colaboradorId", colaboradorId);
 
     create.mutate(fd, {
       onSuccess: () => {
-        form.reset();
-        setOpen(false);
-        setNombreError(null);
-        setParentescoError(null);
-        setTelefonoError(null);
+        reset();
+        onOpenChange(false);
       },
     });
   };
 
-  if (!open) {
-    return (
-      <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
-        <UserPlus className="h-4 w-4" />
-        Agregar contacto
-      </Button>
-    );
-  }
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full mt-3 rounded-md border bg-muted/30 p-4 space-y-3"
-    >
-      <FieldGroup>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Field data-invalid={Boolean(nombreError)}>
-            <FieldLabel>Nombre</FieldLabel>
-            <Input name="nombre" placeholder="Ej. María López" />
-            {nombreError ? (
-              <FieldError errors={[{ message: nombreError } as never]} />
-            ) : null}
-          </Field>
-          <Field data-invalid={Boolean(parentescoError)}>
-            <FieldLabel>Parentesco</FieldLabel>
-            <Input name="parentesco" placeholder="Ej. Madre" />
-            {parentescoError ? (
-              <FieldError errors={[{ message: parentescoError } as never]} />
-            ) : null}
-          </Field>
-          <Field data-invalid={Boolean(telefonoError)}>
-            <FieldLabel>Teléfono</FieldLabel>
-            <Input name="telefono" placeholder="55 0000 0000" />
-            {telefonoError ? (
-              <FieldError errors={[{ message: telefonoError } as never]} />
-            ) : null}
-          </Field>
-          <Field>
-            <FieldLabel>Email (opcional)</FieldLabel>
-            <Input
-              name="email"
-              type="email"
-              placeholder="maria@correo.com"
-            />
-          </Field>
-          <Field className="sm:col-span-2">
-            <FieldLabel>Notas (opcional)</FieldLabel>
-            <Input name="notas" placeholder="Información adicional" />
-          </Field>
-        </div>
-      </FieldGroup>
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setOpen(false);
-            setNombreError(null);
-            setParentescoError(null);
-            setTelefonoError(null);
-          }}
-          disabled={create.isPending}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit" size="sm" disabled={create.isPending}>
-          {create.isPending ? "Guardando…" : "Guardar"}
-        </Button>
-      </div>
-    </form>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Agregar contacto de emergencia</DialogTitle>
+          <DialogDescription>
+            Registra una persona de contacto para este colaborador. El nombre,
+            parentesco y teléfono son obligatorios.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <FieldGroup>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Field data-invalid={Boolean(errors.nombre)}>
+                <FieldLabel>Nombre</FieldLabel>
+                <Input
+                  name="nombre"
+                  placeholder="Ej. María López"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                />
+                {errors.nombre ? (
+                  <FieldError errors={[{ message: errors.nombre } as never]} />
+                ) : null}
+              </Field>
+              <Field data-invalid={Boolean(errors.parentesco)}>
+                <FieldLabel>Parentesco</FieldLabel>
+                <Input
+                  name="parentesco"
+                  placeholder="Ej. Madre"
+                  value={parentesco}
+                  onChange={(e) => setParentesco(e.target.value)}
+                />
+                {errors.parentesco ? (
+                  <FieldError
+                    errors={[{ message: errors.parentesco } as never]}
+                  />
+                ) : null}
+              </Field>
+              <Field data-invalid={Boolean(errors.telefono)}>
+                <FieldLabel>Teléfono</FieldLabel>
+                <Input
+                  name="telefono"
+                  placeholder="55 0000 0000"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+                {errors.telefono ? (
+                  <FieldError
+                    errors={[{ message: errors.telefono } as never]}
+                  />
+                ) : null}
+              </Field>
+              <Field>
+                <FieldLabel>Email (opcional)</FieldLabel>
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder="maria@correo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Field>
+              <Field className="sm:col-span-2">
+                <FieldLabel>Notas (opcional)</FieldLabel>
+                <Input
+                  name="notas"
+                  placeholder="Información adicional"
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
+                />
+              </Field>
+            </div>
+          </FieldGroup>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleClose(false)}
+              disabled={create.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" size="sm" disabled={create.isPending}>
+              {create.isPending ? "Guardando…" : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

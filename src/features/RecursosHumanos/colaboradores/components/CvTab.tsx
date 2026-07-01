@@ -40,6 +40,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/core/shared/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/shared/ui/dialog";
 import { Separator } from "@/core/shared/ui/separator";
 import {
   Empty,
@@ -387,114 +395,160 @@ function AddEducationEntryForm({
   colaboradorId: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [institucionError, setInstitucionError] = useState<string | null>(null);
-  const [tituloError, setTituloError] = useState<string | null>(null);
-  const [anioError, setAnioError] = useState<string | null>(null);
+  return (
+    <>
+      <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
+        <Plus className="h-4 w-4" />
+        Agregar entrada
+      </Button>
+      {open ? (
+        <AddEducationEntryDialog
+          open={open}
+          onOpenChange={setOpen}
+          colaboradorId={colaboradorId}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function AddEducationEntryDialog({
+  open,
+  onOpenChange,
+  colaboradorId,
+}: {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+  colaboradorId: string;
+}) {
+  const [institucion, setInstitucion] = useState("");
+  const [titulo, setTitulo] = useState("");
+  const [anio, setAnio] = useState("");
+  const [errors, setErrors] = useState<{
+    institucion?: string;
+    titulo?: string;
+    anio?: string;
+  }>({});
 
   const create = useCreateEducationEntry(colaboradorId);
 
+  const reset = () => {
+    setInstitucion("");
+    setTitulo("");
+    setAnio("");
+    setErrors({});
+  };
+
+  const handleClose = (next: boolean) => {
+    if (create.isPending) return;
+    if (!next) reset();
+    onOpenChange(next);
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
 
-    const institucion = (fd.get("institucion") as string | null)?.trim() ?? "";
-    const titulo = (fd.get("titulo") as string | null)?.trim() ?? "";
-    const anioRaw = (fd.get("anio") as string | null)?.trim() ?? "";
-    const anioParsed = Number(anioRaw);
+    const anioParsed = Number(anio.trim());
     const anioValid =
       Number.isInteger(anioParsed) && anioParsed >= 1900 && anioParsed <= 2100;
 
-    const newInstitucionError = institucion ? null : "La institución es requerida";
-    const newTituloError = titulo ? null : "El título es requerido";
-    const newAnioError = anioValid ? null : "El año debe estar entre 1900 y 2100";
+    const newErrors: typeof errors = {};
+    if (!institucion.trim())
+      newErrors.institucion = "La institución es requerida";
+    if (!titulo.trim()) newErrors.titulo = "El título es requerido";
+    if (!anioValid) newErrors.anio = "El año debe estar entre 1900 y 2100";
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
-    setInstitucionError(newInstitucionError);
-    setTituloError(newTituloError);
-    setAnioError(newAnioError);
-    if (newInstitucionError || newTituloError || newAnioError) {
-      return;
-    }
-
+    const fd = new FormData();
+    fd.set("institucion", institucion.trim());
+    fd.set("titulo", titulo.trim());
     fd.set("anio", String(anioParsed));
     fd.set("colaboradorId", colaboradorId);
 
     create.mutate(fd, {
       onSuccess: () => {
-        form.reset();
-        setOpen(false);
-        setInstitucionError(null);
-        setTituloError(null);
-        setAnioError(null);
+        reset();
+        onOpenChange(false);
       },
     });
   };
 
-  if (!open) {
-    return (
-      <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
-        <Plus className="h-4 w-4" />
-        Agregar entrada
-      </Button>
-    );
-  }
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full mt-3 rounded-md border bg-muted/30 p-4 space-y-3"
-    >
-      <FieldGroup>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Field data-invalid={Boolean(institucionError)}>
-            <FieldLabel>Institución</FieldLabel>
-            <Input name="institucion" placeholder="Ej. UNAM" />
-            {institucionError ? (
-              <FieldError errors={[{ message: institucionError } as never]} />
-            ) : null}
-          </Field>
-          <Field data-invalid={Boolean(tituloError)}>
-            <FieldLabel>Título</FieldLabel>
-            <Input name="titulo" placeholder="Ej. Ingeniería en Sistemas" />
-            {tituloError ? (
-              <FieldError errors={[{ message: tituloError } as never]} />
-            ) : null}
-          </Field>
-          <Field data-invalid={Boolean(anioError)}>
-            <FieldLabel>Año</FieldLabel>
-            <Input
-              name="anio"
-              type="number"
-              min={1900}
-              max={2100}
-              placeholder="2024"
-            />
-            {anioError ? (
-              <FieldError errors={[{ message: anioError } as never]} />
-            ) : null}
-          </Field>
-        </div>
-      </FieldGroup>
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setOpen(false);
-            setInstitucionError(null);
-            setTituloError(null);
-            setAnioError(null);
-          }}
-          disabled={create.isPending}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit" size="sm" disabled={create.isPending}>
-          {create.isPending ? "Guardando…" : "Guardar"}
-        </Button>
-      </div>
-    </form>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Agregar formación académica</DialogTitle>
+          <DialogDescription>
+            Registra una nueva entrada de formación con institución, título y
+            año.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <FieldGroup>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Field data-invalid={Boolean(errors.institucion)}>
+                <FieldLabel>Institución</FieldLabel>
+                <Input
+                  name="institucion"
+                  placeholder="Ej. UNAM"
+                  value={institucion}
+                  onChange={(e) => setInstitucion(e.target.value)}
+                />
+                {errors.institucion ? (
+                  <FieldError
+                    errors={[{ message: errors.institucion } as never]}
+                  />
+                ) : null}
+              </Field>
+              <Field data-invalid={Boolean(errors.titulo)}>
+                <FieldLabel>Título</FieldLabel>
+                <Input
+                  name="titulo"
+                  placeholder="Ej. Ingeniería en Sistemas"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                />
+                {errors.titulo ? (
+                  <FieldError
+                    errors={[{ message: errors.titulo } as never]}
+                  />
+                ) : null}
+              </Field>
+              <Field data-invalid={Boolean(errors.anio)}>
+                <FieldLabel>Año</FieldLabel>
+                <Input
+                  name="anio"
+                  type="number"
+                  min={1900}
+                  max={2100}
+                  placeholder="2024"
+                  value={anio}
+                  onChange={(e) => setAnio(e.target.value)}
+                />
+                {errors.anio ? (
+                  <FieldError errors={[{ message: errors.anio } as never]} />
+                ) : null}
+              </Field>
+            </div>
+          </FieldGroup>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleClose(false)}
+              disabled={create.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" size="sm" disabled={create.isPending}>
+              {create.isPending ? "Guardando…" : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
