@@ -17,6 +17,43 @@ datasource db {
 enum ColaboradorEstado {
   CONTRATADO
   DESPEDIDO
+  EN_LICENCIA
+}
+
+enum ModalidadTrabajo {
+  REMOTO
+  HIBRIDO
+  PRESENCIAL
+}
+
+enum TipoContrato {
+  INDEFINIDO
+  TEMPORAL
+  POR_OBRA
+  PRACTICAS
+  HONORARIOS
+}
+
+enum NivelSeniority {
+  JUNIOR
+  SEMI_SENIOR
+  SENIOR
+  LEAD
+  GERENCIAL
+}
+
+enum AusenciaTipo {
+  VACACIONES
+  LICENCIA
+  INCAPACIDAD
+}
+
+enum DocumentCategory {
+  CONTRATO
+  INE
+  RFC
+  COMPROBANTE_DOMICILIO
+  OTRO
 }
 
 enum ClienteProveedorTipo {
@@ -130,7 +167,26 @@ model Colaborador {
   clabe                        String
   sueldo                       Decimal                @db.Decimal(15, 3)
   activos                      String[]
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos nullable)
+  departamento                 String?
+  nivel                        NivelSeniority?
+  modalidad                    ModalidadTrabajo?
+  tipoContrato                 TipoContrato?
+  lugarTrabajo                 String?
+  horario                      String?
+  fechaSalida                  DateTime?
+  nombrePreferido              String?
+  documentoIdentidad           String?
+  emailPersonal                String?
+  bio                          String?
   historial                    ColaboradorHistorial[]
+  emergencyContacts            EmergencyContact[]
+  responsabilidades            ResponsabilidadCargo[]
+  salaryHistory                ColaboradorSalaryHistory[]
+  positionHistory              ColaboradorPositionHistory[]
+  education                    EducationEntry[]
+  absences                     AbsenceRecord[]
+  vacationBalance              VacationBalance?
   createdAt                    DateTime               @default(now())
   updatedAt                    DateTime               @updatedAt
   asistencias                  Asistencia[]
@@ -375,6 +431,7 @@ enum FileAttachmentEntityType {
   FACTURA
   MOVIMIENTO
   CLIENTE_PROVEEDOR
+  COLABORADOR
 }
 
 model Factura {
@@ -485,6 +542,8 @@ model FileAttachment {
   entityType FileAttachmentEntityType
   entityId   String
   uploadedBy String?
+  expiryDate DateTime?
+  category   DocumentCategory?
   createdAt  DateTime                 @default(now())
   updatedAt  DateTime                 @updatedAt
 
@@ -507,6 +566,109 @@ model Asistencia {
   @@index([correo])
   @@index([fecha])
   @@index([tipo])
+}
+
+// ─── rh-colaboradores-completo · P0 (schema foundation) ────────────────────
+
+model EmergencyContact {
+  id            String      @id @default(uuid())
+  colaboradorId String
+  colaborador   Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  nombre        String
+  parentesco    String
+  telefono      String
+  email         String?
+  notas         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([colaboradorId])
+}
+
+model ResponsabilidadCargo {
+  id            String      @id @default(uuid())
+  colaboradorId String
+  colaborador   Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  descripcion   String
+  orden         Int         @default(0)
+  completada    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([colaboradorId])
+}
+
+model ColaboradorSalaryHistory {
+  id            String      @id @default(uuid())
+  colaboradorId String
+  colaborador   Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  fechaEfectiva DateTime
+  monto         Decimal     @db.Decimal(15, 3)
+  moneda        String      @default("MXN")
+  motivo        String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([colaboradorId])
+  @@index([colaboradorId, fechaEfectiva])
+}
+
+model ColaboradorPositionHistory {
+  id            String          @id @default(uuid())
+  colaboradorId String
+  colaborador   Colaborador     @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  fechaEfectiva DateTime
+  cargo         String
+  departamento  String?
+  nivel         NivelSeniority?
+  motivo        String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([colaboradorId])
+  @@index([colaboradorId, fechaEfectiva])
+}
+
+model EducationEntry {
+  id            String      @id @default(uuid())
+  colaboradorId String
+  colaborador   Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  institucion   String
+  titulo        String
+  anio          Int
+  orden         Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([colaboradorId])
+}
+
+model AbsenceRecord {
+  id             String      @id @default(uuid())
+  colaboradorId  String
+  colaborador    Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  tipo           AusenciaTipo
+  fechaInicio    DateTime
+  fechaFin       DateTime
+  dias           Int
+  motivo         String?
+  registradoPorId String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([colaboradorId])
+  @@index([colaboradorId, tipo])
+  @@index([fechaInicio])
+}
+
+model VacationBalance {
+  id              String      @id @default(uuid())
+  colaboradorId   String      @unique
+  colaborador     Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  diasDisponibles Int         @default(0)
+  diasTomados     Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 // ─── Módulo Jurídico ────────────────────────────────────────────────────────

@@ -27,6 +27,32 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
         clabe: data.clabe,
         sueldo: data.sueldo,
         activos: data.activos,
+        // Perfil extendido (rh-colaboradores-completo · P0)
+        ...(data.departamento !== undefined && {
+          departamento: data.departamento,
+        }),
+        ...(data.nivel !== undefined && { nivel: data.nivel }),
+        ...(data.modalidad !== undefined && { modalidad: data.modalidad }),
+        ...(data.tipoContrato !== undefined && {
+          tipoContrato: data.tipoContrato,
+        }),
+        ...(data.lugarTrabajo !== undefined && {
+          lugarTrabajo: data.lugarTrabajo,
+        }),
+        ...(data.horario !== undefined && { horario: data.horario }),
+        ...(data.fechaSalida !== undefined && {
+          fechaSalida: data.fechaSalida,
+        }),
+        ...(data.nombrePreferido !== undefined && {
+          nombrePreferido: data.nombrePreferido,
+        }),
+        ...(data.documentoIdentidad !== undefined && {
+          documentoIdentidad: data.documentoIdentidad,
+        }),
+        ...(data.emailPersonal !== undefined && {
+          emailPersonal: data.emailPersonal,
+        }),
+        ...(data.bio !== undefined && { bio: data.bio }),
       },
       include: {
         socio: {
@@ -100,6 +126,32 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
         ...(data.telefonoReferenciaLaboral !== undefined && {
           telefonoReferenciaLaboral: data.telefonoReferenciaLaboral,
         }),
+        // Perfil extendido (rh-colaboradores-completo · P0)
+        ...(data.departamento !== undefined && {
+          departamento: data.departamento,
+        }),
+        ...(data.nivel !== undefined && { nivel: data.nivel }),
+        ...(data.modalidad !== undefined && { modalidad: data.modalidad }),
+        ...(data.tipoContrato !== undefined && {
+          tipoContrato: data.tipoContrato,
+        }),
+        ...(data.lugarTrabajo !== undefined && {
+          lugarTrabajo: data.lugarTrabajo,
+        }),
+        ...(data.horario !== undefined && { horario: data.horario }),
+        ...(data.fechaSalida !== undefined && {
+          fechaSalida: data.fechaSalida,
+        }),
+        ...(data.nombrePreferido !== undefined && {
+          nombrePreferido: data.nombrePreferido,
+        }),
+        ...(data.documentoIdentidad !== undefined && {
+          documentoIdentidad: data.documentoIdentidad,
+        }),
+        ...(data.emailPersonal !== undefined && {
+          emailPersonal: data.emailPersonal,
+        }),
+        ...(data.bio !== undefined && { bio: data.bio }),
       },
       include: {
         socio: {

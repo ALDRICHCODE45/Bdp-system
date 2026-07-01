@@ -1,4 +1,11 @@
-import { ColaboradorEstado, Prisma, PrismaClient } from "@prisma/client";
+import {
+  ColaboradorEstado,
+  ModalidadTrabajo,
+  NivelSeniority,
+  Prisma,
+  PrismaClient,
+  TipoContrato,
+} from "@prisma/client";
 import {
   ColaboradorRepository,
   ColaboradorWithSocio,
@@ -18,6 +25,18 @@ type CreateColaboradorInput = {
   sueldo: number;
   activos: string[];
   usuarioId?: string | null;
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales/nullable)
+  departamento?: string | null;
+  nivel?: NivelSeniority | null;
+  modalidad?: ModalidadTrabajo | null;
+  tipoContrato?: TipoContrato | null;
+  lugarTrabajo?: string | null;
+  horario?: string | null;
+  fechaSalida?: Date | null;
+  nombrePreferido?: string | null;
+  documentoIdentidad?: string | null;
+  emailPersonal?: string | null;
+  bio?: string | null;
 };
 
 type UpdateColaboradorInput = {
@@ -57,6 +76,18 @@ type UpdateColaboradorInput = {
   // Referencias laborales
   nombreReferenciaLaboral?: string | null;
   telefonoReferenciaLaboral?: string | null;
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales/nullable)
+  departamento?: string | null;
+  nivel?: NivelSeniority | null;
+  modalidad?: ModalidadTrabajo | null;
+  tipoContrato?: TipoContrato | null;
+  lugarTrabajo?: string | null;
+  horario?: string | null;
+  fechaSalida?: Date | null;
+  nombrePreferido?: string | null;
+  documentoIdentidad?: string | null;
+  emailPersonal?: string | null;
+  bio?: string | null;
 };
 
 export class ColaboradorService {
@@ -92,6 +123,18 @@ export class ColaboradorService {
         clabe: input.clabe,
         sueldo: new Prisma.Decimal(input.sueldo),
         activos: input.activos,
+        // Perfil extendido (rh-colaboradores-completo · P0)
+        departamento: input.departamento,
+        nivel: input.nivel,
+        modalidad: input.modalidad,
+        tipoContrato: input.tipoContrato,
+        lugarTrabajo: input.lugarTrabajo,
+        horario: input.horario,
+        fechaSalida: input.fechaSalida,
+        nombrePreferido: input.nombrePreferido,
+        documentoIdentidad: input.documentoIdentidad,
+        emailPersonal: input.emailPersonal,
+        bio: input.bio,
       });
 
       // Crear historial para el nuevo colaborador
@@ -188,6 +231,18 @@ export class ColaboradorService {
           // Referencias laborales
           nombreReferenciaLaboral: input.nombreReferenciaLaboral,
           telefonoReferenciaLaboral: input.telefonoReferenciaLaboral,
+          // Perfil extendido (rh-colaboradores-completo · P0)
+          departamento: input.departamento,
+          nivel: input.nivel,
+          modalidad: input.modalidad,
+          tipoContrato: input.tipoContrato,
+          lugarTrabajo: input.lugarTrabajo,
+          horario: input.horario,
+          fechaSalida: input.fechaSalida,
+          nombrePreferido: input.nombrePreferido,
+          documentoIdentidad: input.documentoIdentidad,
+          emailPersonal: input.emailPersonal,
+          bio: input.bio,
         });
 
         // Crear historial para los cambios

@@ -1,4 +1,11 @@
-import { Colaborador, ColaboradorEstado, Prisma } from "@prisma/client";
+import {
+  Colaborador,
+  ColaboradorEstado,
+  ModalidadTrabajo,
+  NivelSeniority,
+  Prisma,
+  TipoContrato,
+} from "@prisma/client";
 
 export type ColaboradorWithSocio = Colaborador & {
   socio: {
@@ -19,6 +26,18 @@ export type CreateColaboradorArgs = {
   clabe: string;
   sueldo: Prisma.Decimal | number;
   activos: string[];
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales/nullable)
+  departamento?: string | null;
+  nivel?: NivelSeniority | null;
+  modalidad?: ModalidadTrabajo | null;
+  tipoContrato?: TipoContrato | null;
+  lugarTrabajo?: string | null;
+  horario?: string | null;
+  fechaSalida?: Date | null;
+  nombrePreferido?: string | null;
+  documentoIdentidad?: string | null;
+  emailPersonal?: string | null;
+  bio?: string | null;
 };
 
 export type UpdateColaboradorArgs = {
@@ -57,6 +76,18 @@ export type UpdateColaboradorArgs = {
   // Referencias laborales
   nombreReferenciaLaboral?: string | null;
   telefonoReferenciaLaboral?: string | null;
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales/nullable)
+  departamento?: string | null;
+  nivel?: NivelSeniority | null;
+  modalidad?: ModalidadTrabajo | null;
+  tipoContrato?: TipoContrato | null;
+  lugarTrabajo?: string | null;
+  horario?: string | null;
+  fechaSalida?: Date | null;
+  nombrePreferido?: string | null;
+  documentoIdentidad?: string | null;
+  emailPersonal?: string | null;
+  bio?: string | null;
 };
 
 export interface ColaboradorRepository {

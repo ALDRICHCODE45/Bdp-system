@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { ColaboradorEstado } from "@prisma/client";
+import {
+  ColaboradorEstado,
+  ModalidadTrabajo,
+  NivelSeniority,
+  TipoContrato,
+} from "@prisma/client";
 
 export const updateColaboradorSchema = z.object({
   id: z.string().uuid(),
@@ -37,6 +42,18 @@ export const updateColaboradorSchema = z.object({
   // Referencias laborales
   nombreReferenciaLaboral: z.string().nullable().optional(),
   telefonoReferenciaLaboral: z.string().nullable().optional(),
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales/nullable)
+  departamento: z.string().nullable().optional(),
+  nivel: z.nativeEnum(NivelSeniority).nullable().optional(),
+  modalidad: z.nativeEnum(ModalidadTrabajo).nullable().optional(),
+  tipoContrato: z.nativeEnum(TipoContrato).nullable().optional(),
+  lugarTrabajo: z.string().nullable().optional(),
+  horario: z.string().nullable().optional(),
+  fechaSalida: z.date().nullable().optional(),
+  nombrePreferido: z.string().nullable().optional(),
+  documentoIdentidad: z.string().nullable().optional(),
+  emailPersonal: z.string().email("Email inválido").nullable().optional(),
+  bio: z.string().nullable().optional(),
 });
 
 export type UpdateColaboradorSchema = z.infer<typeof updateColaboradorSchema>;

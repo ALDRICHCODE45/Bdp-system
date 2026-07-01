@@ -49,6 +49,20 @@ export function toColaboradorDto(
     clabe: colaborador.clabe,
     sueldo: colaborador.sueldo.toString(), // Convertir Decimal a string
     activos: colaborador.activos,
+    // Perfil extendido (rh-colaboradores-completo · P0)
+    departamento: colaborador.departamento ?? null,
+    nivel: colaborador.nivel ?? null,
+    modalidad: colaborador.modalidad ?? null,
+    tipoContrato: colaborador.tipoContrato ?? null,
+    lugarTrabajo: colaborador.lugarTrabajo ?? null,
+    horario: colaborador.horario ?? null,
+    fechaSalida: colaborador.fechaSalida
+      ? colaborador.fechaSalida.toISOString()
+      : null,
+    nombrePreferido: colaborador.nombrePreferido ?? null,
+    documentoIdentidad: colaborador.documentoIdentidad ?? null,
+    emailPersonal: colaborador.emailPersonal ?? null,
+    bio: colaborador.bio ?? null,
     createdAt: colaborador.createdAt.toISOString(),
     updatedAt: colaborador.updatedAt.toISOString(),
   };
