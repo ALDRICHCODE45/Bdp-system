@@ -3,6 +3,7 @@ import { makeColaboradorService } from "@/features/RecursosHumanos/colaboradores
 import { toColaboradorDto } from "@/features/RecursosHumanos/colaboradores/server/mappers/colaboradorMapper";
 import prisma from "@/core/lib/prisma";
 import { ColaboradorProfilePage } from "@/features/RecursosHumanos/colaboradores/pages/ColaboradorProfilePage";
+import type { OrgTreeDto } from "@/features/RecursosHumanos/colaboradores/server/dtos/OrgTreeDto.dto";
 
 type Params = Promise<{ colaboradorId: string }>;
 
@@ -19,24 +20,25 @@ type ProfilePayload = {
   colaborador: ReturnType<typeof toColaboradorDto>;
   reportesDirectos: number;
   vacaciones: VacationBalanceDto | null;
+  orgTree: OrgTreeDto;
 };
 
 /**
- * P2 (rh-colaboradores-completo):
+ * P2 + P4 (rh-colaboradores-completo):
  *
  * Replaces the legacy render target at the SAME `[colaboradorId]` route with
- * the new 8-tab profile shell + Resumen KPIs.
+ * the new 8-tab profile shell + Resumen KPIs + Organigrama tree.
  *
  * Resolves pre-fetched data with a single `Promise.all`, including:
  * - colaborador DTO (getById)
  * - reportes-directos count (getReportesDirectos, by socioId)
  * - VacationBalance snapshot (getVacationBalance) — null is the expected state
  *   for collaborators who have never had a balance set (spec cap3 req4).
+ * - Organigrama tree grouped by socioId (cap7 — P4).
  *
  * On missing id we hand off to Next.js' 404 page via `notFound()` instead of
- * raising a generic Error (design FLAG-1). Other tabs prefetch their own data
- * in their respective phases — we DO NOT load emergencyContacts, salaryHistory,
- * etc. here on purpose.
+ * raising a generic Error (design FLAG-1). Per-tab data (emergencyContacts,
+ * salaryHistory, etc.) is fetched lazily by each tab via TanStack Query.
  */
 async function loadProfile(colaboradorId: string): Promise<ProfilePayload | "not-found"> {
   const colaboradorService = makeColaboradorService({ prisma });
@@ -49,20 +51,25 @@ async function loadProfile(colaboradorId: string): Promise<ProfilePayload | "not
   }
   const colaborador = toColaboradorDto(byId.value);
 
-  const [reportesResult, vacacionesResult] = await Promise.all([
+  const [reportesResult, vacacionesResult, orgTreeResult] = await Promise.all([
     colaboradorService.getReportesDirectos(colaborador.socioId),
     colaboradorService.getVacationBalance(colaborador.id),
+    colaboradorService.getOrgTreeBySocio(colaborador.id),
   ]);
 
   const reportesDirectos = reportesResult.ok ? reportesResult.value : 0;
   const vacaciones = vacacionesResult.ok
     ? (vacacionesResult.value as VacationBalanceDto | null)
     : null;
+  const orgTree = orgTreeResult.ok
+    ? orgTreeResult.value
+    : { currentColaboradorId: colaborador.id, nodes: [] };
 
   return {
     colaborador,
     reportesDirectos,
     vacaciones,
+    orgTree,
   };
 }
 

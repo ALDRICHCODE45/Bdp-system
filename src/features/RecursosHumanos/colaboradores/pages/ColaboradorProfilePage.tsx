@@ -14,9 +14,12 @@ import { ProfileIdentityRail } from "../components/ProfileIdentityRail";
 import { ResumenTab } from "../components/ResumenTab";
 import { PersonalTab } from "../components/PersonalTab";
 import { LaboralTab } from "../components/LaboralTab";
+import { CompensacionTab } from "../components/CompensacionTab";
+import { OrganigramaTab } from "../components/OrganigramaTab";
 import { useModalState } from "@/core/shared/hooks/useModalState";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import type { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
+import type { OrgTreeDto } from "../server/dtos/OrgTreeDto.dto";
 
 // EditColaboradorSheet uses forms that import server-only utilities; mount it
 // via next/dynamic with ssr:false so it stays out of the RSC critical path
@@ -39,6 +42,7 @@ interface ProfilePayload {
     diasDisponibles: number;
     diasTomados: number;
   } | null;
+  orgTree: OrgTreeDto;
 }
 
 interface ColaboradorProfilePageProps {
@@ -57,15 +61,15 @@ interface ColaboradorProfilePageProps {
  * navigation (back/forward, direct `#personal` link) in sync with the local
  * `currentTab` state, while tab clicks push the new hash onto the URL.
  *
- * Resumen (P2) and Personal/Laboral (P3) carry live content. Compensación /
- * Organigrama (P4) / Documentos / Ausencias / CV (P5–P6) still render a small
- * "Próximamente" panel and will be filled in their respective phases.
+ * Resumen (P2) / Personal / Laboral (P3) / Compensación + Organigrama (P4)
+ * carry live content. Documentos / Ausencias / CV (P5–P6) still render a
+ * small "Próximamente" panel and will be filled in their respective phases.
  *
  * The legacy `ColaboradorIndividualPage` is NOT deleted (CC10); it remains
  * reachable via its standalone import path until P7 cutover.
  */
 export function ColaboradorProfilePage({ payload }: ColaboradorProfilePageProps) {
-  const { colaborador, reportesDirectos, vacaciones } = payload;
+  const { colaborador, reportesDirectos, vacaciones, orgTree } = payload;
 
   // Edit flow (cap2 req3): the "Editar" rail button reuses the existing
   // EditColaboradorSheet via dynamic import. The rail owns the click; the
@@ -152,12 +156,24 @@ export function ColaboradorProfilePage({ payload }: ColaboradorProfilePageProps)
           <LaboralTab colaborador={colaborador} />
         </TabsContent>
 
-        {/* ── Remaining placeholders (filled in P4–P6) ─────────────── */}
+        {/* ── Compensación (P4 — cap6 compensation-history) ─────────── */}
+        <TabsContent value="compensacion" className="mt-6">
+          <CompensacionTab colaborador={colaborador} />
+        </TabsContent>
+
+        {/* ── Organigrama (P4 — cap7 employee-org-tree) ─────────────── */}
+        <TabsContent value="organigrama" className="mt-6">
+          <OrganigramaTab tree={orgTree} />
+        </TabsContent>
+
+        {/* ── Remaining placeholders (filled in P5–P6) ──────────────── */}
         {TAB_DEFINITIONS.filter(
           (t) =>
             t.value !== "resumen" &&
             t.value !== "personal" &&
-            t.value !== "laboral"
+            t.value !== "laboral" &&
+            t.value !== "compensacion" &&
+            t.value !== "organigrama"
         ).map((tab) => (
           <TabsContent key={tab.value} value={tab.value} className="mt-6">
             <PlaceholderPanel label={tab.label} phase={tab.phase} />
@@ -192,8 +208,8 @@ const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { value: "resumen", label: "Resumen", phase: "P2" },
   { value: "personal", label: "Personal", phase: "P3 ✓" },
   { value: "laboral", label: "Laboral", phase: "P3 ✓" },
-  { value: "compensacion", label: "Compensación", phase: "P4" },
-  { value: "organigrama", label: "Organigrama", phase: "P4" },
+  { value: "compensacion", label: "Compensación", phase: "P4 ✓" },
+  { value: "organigrama", label: "Organigrama", phase: "P4 ✓" },
   { value: "documentos", label: "Documentos", phase: "P5" },
   { value: "ausencias", label: "Ausencias", phase: "P6" },
   { value: "cv", label: "CV", phase: "P5" },
