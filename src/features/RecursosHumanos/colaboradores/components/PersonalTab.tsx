@@ -110,11 +110,6 @@ function PersonalDataGrid({ colaborador }: { colaborador: ColaboradorDto }) {
             placeholder="Sin registrar"
           />
           <PersonalField
-            label="Documento de identidad"
-            value={colaborador.documentoIdentidad}
-            placeholder="Sin registrar"
-          />
-          <PersonalField
             label="Nacionalidad"
             value={colaborador.nacionalidad}
             placeholder="Sin registrar"

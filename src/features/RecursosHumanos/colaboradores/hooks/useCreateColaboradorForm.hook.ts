@@ -48,7 +48,6 @@ export const useCreateColaboradorForm = (onSuccess?: () => void) => {
       horario: "",
       fechaSalida: "",
       nombrePreferido: "",
-      documentoIdentidad: "",
       emailPersonal: "",
       bio: "",
       banco: "",
@@ -120,7 +119,6 @@ export const useCreateColaboradorForm = (onSuccess?: () => void) => {
       formData.append("horario", value.horario || "");
       formData.append("fechaSalida", value.fechaSalida || "");
       formData.append("nombrePreferido", value.nombrePreferido || "");
-      formData.append("documentoIdentidad", value.documentoIdentidad || "");
       formData.append("emailPersonal", value.emailPersonal || "");
       formData.append("bio", value.bio || "");
       formData.append("banco", value.banco);

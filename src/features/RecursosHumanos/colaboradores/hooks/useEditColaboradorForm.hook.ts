@@ -60,7 +60,6 @@ export const useEditColaboradorForm = (
         ? colaborador.fechaSalida.slice(0, 10)
         : "",
       nombrePreferido: colaborador.nombrePreferido || "",
-      documentoIdentidad: colaborador.documentoIdentidad || "",
       emailPersonal: colaborador.emailPersonal || "",
       bio: colaborador.bio || "",
       banco: colaborador.banco,
@@ -133,7 +132,6 @@ export const useEditColaboradorForm = (
       formData.append("horario", value.horario || "");
       formData.append("fechaSalida", value.fechaSalida || "");
       formData.append("nombrePreferido", value.nombrePreferido || "");
-      formData.append("documentoIdentidad", value.documentoIdentidad || "");
       formData.append("emailPersonal", value.emailPersonal || "");
       formData.append("bio", value.bio || "");
       formData.append("banco", value.banco);

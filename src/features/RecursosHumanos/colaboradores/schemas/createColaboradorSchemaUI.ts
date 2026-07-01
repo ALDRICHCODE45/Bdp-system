@@ -41,7 +41,6 @@ export const createColaboradorSchemaUI = z.object({
   horario: z.string().optional().default(""),
   fechaSalida: z.string().optional().default(""),
   nombrePreferido: z.string().optional().default(""),
-  documentoIdentidad: z.string().optional().default(""),
   emailPersonal: z.string().optional().default(""),
   bio: z.string().optional().default(""),
   banco: z.string().min(1, "El banco es requerido"),
