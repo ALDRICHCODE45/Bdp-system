@@ -32,6 +32,18 @@ export const createColaboradorSchemaUI = z.object({
   // Referencias laborales
   nombreReferenciaLaboral: z.string().optional().default(""),
   telefonoReferenciaLaboral: z.string().optional().default(""),
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales)
+  departamento: z.string().optional().default(""),
+  nivel: z.string().optional().default(""),
+  modalidad: z.string().optional().default(""),
+  tipoContrato: z.string().optional().default(""),
+  lugarTrabajo: z.string().optional().default(""),
+  horario: z.string().optional().default(""),
+  fechaSalida: z.string().optional().default(""),
+  nombrePreferido: z.string().optional().default(""),
+  documentoIdentidad: z.string().optional().default(""),
+  emailPersonal: z.string().optional().default(""),
+  bio: z.string().optional().default(""),
   banco: z.string().min(1, "El banco es requerido"),
   clabe: z.string().min(1, "La CLABE es requerida"),
   sueldo: z.string().min(1, "El sueldo es requerido"),

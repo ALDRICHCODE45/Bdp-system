@@ -39,6 +39,18 @@ export const useCreateColaboradorForm = (onSuccess?: () => void) => {
       // Referencias laborales
       nombreReferenciaLaboral: "",
       telefonoReferenciaLaboral: "",
+      // Perfil extendido (rh-colaboradores-completo · P0)
+      departamento: "",
+      nivel: "",
+      modalidad: "",
+      tipoContrato: "",
+      lugarTrabajo: "",
+      horario: "",
+      fechaSalida: "",
+      nombrePreferido: "",
+      documentoIdentidad: "",
+      emailPersonal: "",
+      bio: "",
       banco: "",
       clabe: "",
       sueldo: "",
@@ -99,6 +111,18 @@ export const useCreateColaboradorForm = (onSuccess?: () => void) => {
         "telefonoReferenciaLaboral",
         value.telefonoReferenciaLaboral || ""
       );
+      // Perfil extendido (rh-colaboradores-completo · P0)
+      formData.append("departamento", value.departamento || "");
+      formData.append("nivel", value.nivel || "");
+      formData.append("modalidad", value.modalidad || "");
+      formData.append("tipoContrato", value.tipoContrato || "");
+      formData.append("lugarTrabajo", value.lugarTrabajo || "");
+      formData.append("horario", value.horario || "");
+      formData.append("fechaSalida", value.fechaSalida || "");
+      formData.append("nombrePreferido", value.nombrePreferido || "");
+      formData.append("documentoIdentidad", value.documentoIdentidad || "");
+      formData.append("emailPersonal", value.emailPersonal || "");
+      formData.append("bio", value.bio || "");
       formData.append("banco", value.banco);
       formData.append("clabe", value.clabe);
       formData.append("sueldo", value.sueldo);

@@ -49,6 +49,20 @@ export const useEditColaboradorForm = (
       // Referencias laborales
       nombreReferenciaLaboral: colaborador.nombreReferenciaLaboral || "",
       telefonoReferenciaLaboral: colaborador.telefonoReferenciaLaboral || "",
+      // Perfil extendido (rh-colaboradores-completo · P0)
+      departamento: colaborador.departamento || "",
+      nivel: colaborador.nivel || "",
+      modalidad: colaborador.modalidad || "",
+      tipoContrato: colaborador.tipoContrato || "",
+      lugarTrabajo: colaborador.lugarTrabajo || "",
+      horario: colaborador.horario || "",
+      fechaSalida: colaborador.fechaSalida
+        ? colaborador.fechaSalida.slice(0, 10)
+        : "",
+      nombrePreferido: colaborador.nombrePreferido || "",
+      documentoIdentidad: colaborador.documentoIdentidad || "",
+      emailPersonal: colaborador.emailPersonal || "",
+      bio: colaborador.bio || "",
       banco: colaborador.banco,
       clabe: colaborador.clabe,
       sueldo: colaborador.sueldo,
@@ -110,6 +124,18 @@ export const useEditColaboradorForm = (
         "telefonoReferenciaLaboral",
         value.telefonoReferenciaLaboral || ""
       );
+      // Perfil extendido (rh-colaboradores-completo · P0)
+      formData.append("departamento", value.departamento || "");
+      formData.append("nivel", value.nivel || "");
+      formData.append("modalidad", value.modalidad || "");
+      formData.append("tipoContrato", value.tipoContrato || "");
+      formData.append("lugarTrabajo", value.lugarTrabajo || "");
+      formData.append("horario", value.horario || "");
+      formData.append("fechaSalida", value.fechaSalida || "");
+      formData.append("nombrePreferido", value.nombrePreferido || "");
+      formData.append("documentoIdentidad", value.documentoIdentidad || "");
+      formData.append("emailPersonal", value.emailPersonal || "");
+      formData.append("bio", value.bio || "");
       formData.append("banco", value.banco);
       formData.append("clabe", value.clabe);
       formData.append("sueldo", value.sueldo);

@@ -62,6 +62,19 @@ export const updateColaboradorAction = async (input: FormData) => {
   const nombreReferenciaLaboral = input.get("nombreReferenciaLaboral");
   const telefonoReferenciaLaboral = input.get("telefonoReferenciaLaboral");
 
+  // Perfil extendido (rh-colaboradores-completo · P0)
+  const departamento = input.get("departamento");
+  const nivel = input.get("nivel");
+  const modalidad = input.get("modalidad");
+  const tipoContrato = input.get("tipoContrato");
+  const lugarTrabajo = input.get("lugarTrabajo");
+  const horario = input.get("horario");
+  const fechaSalida = input.get("fechaSalida");
+  const nombrePreferido = input.get("nombrePreferido");
+  const documentoIdentidad = input.get("documentoIdentidad");
+  const emailPersonal = input.get("emailPersonal");
+  const bio = input.get("bio");
+
   let activos: string[] = [];
   try {
     const activosString = input.get("activos");
@@ -131,6 +144,20 @@ export const updateColaboradorAction = async (input: FormData) => {
     telefonoReferenciaLaboral: telefonoReferenciaLaboral && typeof telefonoReferenciaLaboral === "string" && telefonoReferenciaLaboral.trim() !== ""
       ? telefonoReferenciaLaboral
       : null,
+    // Perfil extendido (rh-colaboradores-completo · P0)
+    departamento: departamento && typeof departamento === "string" && departamento.trim() !== "" ? departamento : null,
+    nivel: nivel && typeof nivel === "string" && nivel.trim() !== "" ? nivel : null,
+    modalidad: modalidad && typeof modalidad === "string" && modalidad.trim() !== "" ? modalidad : null,
+    tipoContrato: tipoContrato && typeof tipoContrato === "string" && tipoContrato.trim() !== "" ? tipoContrato : null,
+    lugarTrabajo: lugarTrabajo && typeof lugarTrabajo === "string" && lugarTrabajo.trim() !== "" ? lugarTrabajo : null,
+    horario: horario && typeof horario === "string" && horario.trim() !== "" ? horario : null,
+    fechaSalida: fechaSalida && typeof fechaSalida === "string" && fechaSalida.trim() !== ""
+      ? new Date(fechaSalida)
+      : null,
+    nombrePreferido: nombrePreferido && typeof nombrePreferido === "string" && nombrePreferido.trim() !== "" ? nombrePreferido : null,
+    documentoIdentidad: documentoIdentidad && typeof documentoIdentidad === "string" && documentoIdentidad.trim() !== "" ? documentoIdentidad : null,
+    emailPersonal: emailPersonal && typeof emailPersonal === "string" && emailPersonal.trim() !== "" ? emailPersonal : null,
+    bio: bio && typeof bio === "string" && bio.trim() !== "" ? bio : null,
   });
 
   const colaboradorService = makeColaboradorService({ prisma });
