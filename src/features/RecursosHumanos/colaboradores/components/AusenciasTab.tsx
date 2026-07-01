@@ -29,6 +29,8 @@ import {
 } from "@/core/shared/ui/chart";
 import { Button } from "@/core/shared/ui/button";
 import { Input } from "@/core/shared/ui/input";
+import { DatePicker } from "@/core/shared/ui/date-picker";
+import { formatDateToYmd, parseYmdToDate } from "../helpers/dateField";
 import {
   Field,
   FieldError,
@@ -698,33 +700,32 @@ function CreateAbsenceDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <Field data-invalid={Boolean(errors.tipo)}>
-                <FieldLabel>Tipo</FieldLabel>
-                <Select value={tipo} onValueChange={setTipo}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AUSENCIA_ORDER.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {AUSENCIA_LABELS[t].label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.tipo ? (
-                  <FieldError errors={[{ message: errors.tipo } as never]} />
-                ) : null}
-              </Field>
+            <Field data-invalid={Boolean(errors.tipo)}>
+              <FieldLabel>Tipo</FieldLabel>
+              <Select value={tipo} onValueChange={setTipo}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AUSENCIA_ORDER.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {AUSENCIA_LABELS[t].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.tipo ? (
+                <FieldError errors={[{ message: errors.tipo } as never]} />
+              ) : null}
+            </Field>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field data-invalid={Boolean(errors.fechaInicio)}>
                 <FieldLabel>Fecha de inicio</FieldLabel>
-                <Input
-                  name="fechaInicio"
-                  type="date"
-                  value={fechaInicio}
-                  onChange={(e) => setFechaInicio(e.target.value)}
+                <DatePicker
+                  date={parseYmdToDate(fechaInicio)}
+                  onDateChange={(d) => setFechaInicio(formatDateToYmd(d))}
+                  placeholder="Selecciona una fecha"
                 />
                 {errors.fechaInicio ? (
                   <FieldError
@@ -735,11 +736,10 @@ function CreateAbsenceDialog({
 
               <Field data-invalid={Boolean(errors.fechaFin)}>
                 <FieldLabel>Fecha de fin</FieldLabel>
-                <Input
-                  name="fechaFin"
-                  type="date"
-                  value={fechaFin}
-                  onChange={(e) => setFechaFin(e.target.value)}
+                <DatePicker
+                  date={parseYmdToDate(fechaFin)}
+                  onDateChange={(d) => setFechaFin(formatDateToYmd(d))}
+                  placeholder="Selecciona una fecha"
                 />
                 {errors.fechaFin ? (
                   <FieldError
@@ -747,22 +747,22 @@ function CreateAbsenceDialog({
                   />
                 ) : null}
               </Field>
-
-              <Field data-invalid={Boolean(errors.motivo)}>
-                <FieldLabel>Motivo (opcional)</FieldLabel>
-                <Input
-                  name="motivo"
-                  placeholder="Ej. Vacaciones anuales"
-                  value={motivo}
-                  onChange={(e) => setMotivo(e.target.value)}
-                />
-                {errors.motivo ? (
-                  <FieldError
-                    errors={[{ message: errors.motivo } as never]}
-                  />
-                ) : null}
-              </Field>
             </div>
+
+            <Field data-invalid={Boolean(errors.motivo)}>
+              <FieldLabel>Motivo (opcional)</FieldLabel>
+              <Input
+                name="motivo"
+                placeholder="Ej. Vacaciones anuales"
+                value={motivo}
+                onChange={(e) => setMotivo(e.target.value)}
+              />
+              {errors.motivo ? (
+                <FieldError
+                  errors={[{ message: errors.motivo } as never]}
+                />
+              ) : null}
+            </Field>
           </FieldGroup>
 
           <DialogFooter>

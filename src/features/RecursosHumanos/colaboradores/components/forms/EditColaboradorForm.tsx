@@ -12,6 +12,8 @@ import {
 import { Input } from "@/core/shared/ui/input";
 import { Textarea } from "@/core/shared/ui/textarea";
 import { Checkbox } from "@/core/shared/ui/checkbox";
+import { DatePicker } from "@/core/shared/ui/date-picker";
+import { formatDateToYmd, parseYmdToDate } from "../../helpers/dateField";
 import {
   Select,
   SelectContent,
@@ -148,14 +150,12 @@ export const EditColaboradorForm = ({
                     <FieldLabel htmlFor={field.name}>
                       Fecha de ingreso
                     </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="date"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
+                    <DatePicker
+                      date={parseYmdToDate(field.state.value)}
+                      onDateChange={(d) =>
+                        field.handleChange(formatDateToYmd(d))
+                      }
+                      placeholder="Selecciona una fecha"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -198,14 +198,12 @@ export const EditColaboradorForm = ({
                     <FieldLabel htmlFor={field.name}>
                       Fecha de nacimiento
                     </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="date"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
+                    <DatePicker
+                      date={parseYmdToDate(field.state.value)}
+                      onDateChange={(d) =>
+                        field.handleChange(formatDateToYmd(d))
+                      }
+                      placeholder="Selecciona una fecha"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -909,14 +907,12 @@ export const EditColaboradorForm = ({
                     <FieldLabel htmlFor={field.name}>
                       Fecha de salida
                     </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="date"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
+                    <DatePicker
+                      date={parseYmdToDate(field.state.value)}
+                      onDateChange={(d) =>
+                        field.handleChange(formatDateToYmd(d))
+                      }
+                      placeholder="Selecciona una fecha"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
