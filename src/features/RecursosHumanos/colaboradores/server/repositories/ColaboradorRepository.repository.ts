@@ -90,6 +90,18 @@ export type UpdateColaboradorArgs = {
   bio?: string | null;
 };
 
+/**
+ * Read-only POJO for a Colaborador's VacationBalance row.
+ *
+ * Decoupled from the Prisma model so the service→DTO boundary does not leak
+ * Prisma types (CC7). The full row is small + flat, so a typed shape is enough.
+ */
+export type VacationBalanceRead = {
+  colaboradorId: string;
+  diasDisponibles: number;
+  diasTomados: number;
+};
+
 export interface ColaboradorRepository {
   create(data: CreateColaboradorArgs): Promise<ColaboradorWithSocio>;
   update(data: UpdateColaboradorArgs): Promise<ColaboradorWithSocio>;
@@ -107,4 +119,17 @@ export interface ColaboradorRepository {
     DESPEDIDO: number;
     EN_LICENCIA: number;
   }>;
+  /**
+   * Count colaboradores that report to the same socio. Returns 0 when
+   * `socioId` is null (spec cap3 req5 — a colaborador without a socio has no
+   * "reportes directos" by definition).
+   */
+  countBySocioId(data: { socioId: string | null }): Promise<number>;
+  /**
+   * Find the VacationBalance row for a colaborador (1:1). Returns null when
+   * no balance has been registered (spec cap3 req4 → "Sin registrar", NOT 0/0).
+   */
+  findVacationBalance(data: {
+    colaboradorId: string;
+  }): Promise<VacationBalanceRead | null>;
 }

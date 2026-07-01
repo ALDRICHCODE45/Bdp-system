@@ -1,0 +1,221 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { Clock } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/core/shared/ui/tabs";
+import { Card, CardContent } from "@/core/shared/ui/card";
+import { ProfileIdentityRail } from "../components/ProfileIdentityRail";
+import { ResumenTab } from "../components/ResumenTab";
+import { useModalState } from "@/core/shared/hooks/useModalState";
+import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
+import type { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
+
+// EditColaboradorSheet uses forms that import server-only utilities; mount it
+// via next/dynamic with ssr:false so it stays out of the RSC critical path
+// (mirrors the legacy ColaboradorIndividualPage wiring).
+const EditColaboradorSheet = dynamic(
+  () =>
+    import("../components/EditColaboradorSheet").then((mod) => ({
+      default: mod.EditColaboradorSheet,
+    })),
+  {
+    ssr: false,
+    loading: () => <LoadingModalState />,
+  }
+);
+
+interface ProfilePayload {
+  colaborador: ColaboradorDto;
+  reportesDirectos: number;
+  vacaciones: {
+    diasDisponibles: number;
+    diasTomados: number;
+  } | null;
+}
+
+interface ColaboradorProfilePageProps {
+  payload: ProfilePayload;
+}
+
+/**
+ * P2 — ColaboradorProfilePage (client shell).
+ *
+ * Mounts the 8-tab profile as required by spec cap2 req2:
+ *   Resumen / Personal / Laboral / Compensación / Organigrama /
+ *   Documentos / Ausencias / CV
+ *
+ * Tab state is held in `window.location.hash` so deep-links and reloads
+ * restore the same tab (cap2 req5). The hashchange listener keeps external
+ * navigation (back/forward, direct `#personal` link) in sync with the local
+ * `currentTab` state, while tab clicks push the new hash onto the URL.
+ *
+ * Resumen is the only tab with live content here; Personal/Laboral/Compensación
+ * /Organigrama/Documentos/Ausencias/CV render a small "Próximamente" panel and
+ * will be filled in P3–P6.
+ *
+ * The legacy `ColaboradorIndividualPage` is NOT deleted (CC10); it remains
+ * reachable via its standalone import path until P7 cutover.
+ */
+export function ColaboradorProfilePage({ payload }: ColaboradorProfilePageProps) {
+  const { colaborador, reportesDirectos, vacaciones } = payload;
+
+  // Edit flow (cap2 req3): the "Editar" rail button reuses the existing
+  // EditColaboradorSheet via dynamic import. The rail owns the click; the
+  // modal opens on demand from page state.
+  const { isOpen, openModal, closeModal } = useModalState();
+
+  const [currentTab, setCurrentTab] = useState<string>(() =>
+    readTabFromHash() ?? DEFAULT_TAB
+  );
+
+  // ── hash change listener (cap2 req5) ──────────────────────────────────
+  useEffect(() => {
+    const onHashChange = () => {
+      const next = readTabFromHash();
+      if (next && next !== currentTab) {
+        setCurrentTab(next);
+      } else if (!next) {
+        // Hash got removed entirely — fall back to default without pushing
+        // a URL write, so we don't trigger another hashchange cycle.
+        setCurrentTab(DEFAULT_TAB);
+      }
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [currentTab]);
+
+  const handleTabChange = useCallback((value: string) => {
+    setCurrentTab(value);
+    const newHash = `#${value}`;
+    if (typeof window !== "undefined" && window.location.hash !== newHash) {
+      // Use replaceState when landing on the default to keep the URL clean;
+      // otherwise pushState so each tab move is part of the history stack.
+      const target = window.location.pathname + newHash;
+      if (value === DEFAULT_TAB) {
+        window.history.replaceState(null, "", window.location.pathname);
+      } else {
+        window.history.pushState(null, "", target);
+      }
+    }
+  }, []);
+
+  return (
+    <div className="space-y-6 pb-8">
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
+        {/* Mobile-friendly horizontal scroll wrapper for the tab list. */}
+        <div className="overflow-x-auto scrollbar-thin -mx-2 px-2 md:mx-0 md:px-0">
+          <TabsList className="w-max min-w-full md:w-auto md:min-w-2/3">
+            {TAB_DEFINITIONS.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="whitespace-nowrap"
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+
+        {/* ── Resumen (only tab with real content in P2) ────────────── */}
+        <TabsContent value="resumen" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
+            <ProfileIdentityRail
+              colaborador={colaborador}
+              onEdit={openModal}
+            />
+            <div className="min-w-0">
+              <ResumenTab
+                colaborador={colaborador}
+                reportesDirectos={reportesDirectos}
+                vacaciones={vacaciones}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ── Placeholder tabs (filled in P3–P6) ─────────────────────── */}
+        {TAB_DEFINITIONS.filter((t) => t.value !== "resumen").map((tab) => (
+          <TabsContent key={tab.value} value={tab.value} className="mt-6">
+            <PlaceholderPanel label={tab.label} phase={tab.phase} />
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      {/* Edit modal — only rendered when triggered (mounted lazily). */}
+      {isOpen && (
+        <EditColaboradorSheet
+          isOpen={isOpen}
+          onClose={closeModal}
+          colaborador={colaborador}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Constants (module-scope) ────────────────────────────────────────────── */
+
+const DEFAULT_TAB = "resumen";
+
+interface TabDefinition {
+  value: string;
+  label: string;
+  /** Which SDD phase will fill this tab in. */
+  phase: string;
+}
+
+const TAB_DEFINITIONS: readonly TabDefinition[] = [
+  { value: "resumen", label: "Resumen", phase: "P2" },
+  { value: "personal", label: "Personal", phase: "P3" },
+  { value: "laboral", label: "Laboral", phase: "P3" },
+  { value: "compensacion", label: "Compensación", phase: "P4" },
+  { value: "organigrama", label: "Organigrama", phase: "P4" },
+  { value: "documentos", label: "Documentos", phase: "P5" },
+  { value: "ausencias", label: "Ausencias", phase: "P6" },
+  { value: "cv", label: "CV", phase: "P5" },
+] as const;
+
+/**
+ * Read the current URL hash and map it to a known tab value. Anything we
+ * don't recognize is ignored (we keep the previously selected tab) — this
+ * prevents arbitrary URLs from kicking the user off the Resumen page on a
+ * cold load. Returns null when there's no hash or only "#" is present.
+ */
+function readTabFromHash(): string | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.location.hash.replace(/^#/, "").toLowerCase().trim();
+  if (!raw) return null;
+  const known = TAB_DEFINITIONS.find((t) => t.value === raw);
+  return known ? raw : null;
+}
+
+/* ── Placeholder panel (P3–P6 fill in here) ─────────────────────────────── */
+
+function PlaceholderPanel({
+  label,
+  phase,
+}: {
+  label: string;
+  phase: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="py-10 text-center space-y-3">
+        <Clock className="h-8 w-8 mx-auto text-muted-foreground" />
+        <h2 className="text-lg font-semibold">{label}</h2>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          El contenido de esta pestaña se implementa en la fase{" "}
+          <span className="font-medium">{phase}</span>.
+        </p>
+        <p className="text-xs text-muted-foreground">Próximamente.</p>
+      </CardContent>
+    </Card>
+  );
+}

@@ -4,6 +4,7 @@ import {
   ColaboradorWithSocio,
   CreateColaboradorArgs,
   UpdateColaboradorArgs,
+  VacationBalanceRead,
 } from "./ColaboradorRepository.repository";
 import type { ColaboradoresFilterParams } from "../../types/ColaboradoresFilterParams";
 
@@ -356,5 +357,40 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
         createdAt: "desc",
       },
     });
+  }
+
+  async countBySocioId(data: { socioId: string | null }): Promise<number> {
+    // Spec cap3 req5: colaboradores without a socio have no reportes directos.
+    // Returning 0 here keeps the UI single-state ("cero reportes") and avoids
+    // counting the entire null-socio bucket as a single "Sin socio" group.
+    if (data.socioId === null) {
+      return 0;
+    }
+    return await this.prisma.colaborador.count({
+      where: { socioId: data.socioId },
+    });
+  }
+
+  async findVacationBalance(data: {
+    colaboradorId: string;
+  }): Promise<VacationBalanceRead | null> {
+    // 1:1 relation, mapped to a typed POJO so we don't leak Prisma's
+    // generated VacationBalance type past the repo boundary (CC7).
+    const row = await this.prisma.vacationBalance.findUnique({
+      where: { colaboradorId: data.colaboradorId },
+      select: {
+        colaboradorId: true,
+        diasDisponibles: true,
+        diasTomados: true,
+      },
+    });
+    if (!row) {
+      return null;
+    }
+    return {
+      colaboradorId: row.colaboradorId,
+      diasDisponibles: row.diasDisponibles,
+      diasTomados: row.diasTomados,
+    };
   }
 }

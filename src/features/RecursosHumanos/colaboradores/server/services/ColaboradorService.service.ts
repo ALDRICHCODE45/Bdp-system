@@ -9,6 +9,7 @@ import {
 import {
   ColaboradorRepository,
   ColaboradorWithSocio,
+  VacationBalanceRead,
 } from "../repositories/ColaboradorRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { ColaboradorHistorialService } from "./ColaboradorHistorialService.service";
@@ -358,9 +359,55 @@ export class ColaboradorService {
       return Ok(counts);
     } catch (error) {
       return Err(
+        error instanceof Error ? error : new Error("Error al obtener conteos por estado"),
+      );
+    }
+  }
+
+  /**
+   * Count colaboradores that report to the same socio.
+   *
+   * Spec cap3 req5: MUST equal the number of colaboradores sharing `socioId`;
+   * MUST be 0 when `socioId` is null. The count is computed server-side and
+   * returned as a plain number — the client KPI card never derives it.
+   */
+  async getReportesDirectos(
+    socioId: string | null
+  ): Promise<Result<number, Error>> {
+    try {
+      const count = await this.colaboradorRepository.countBySocioId({
+        socioId,
+      });
+      return Ok(count);
+    } catch (error) {
+      return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener conteos por estado"),
+          : new Error("Error al obtener reportes directos")
+      );
+    }
+  }
+
+  /**
+   * Read-only fetch of a colaborador's VacationBalance row.
+   *
+   * Returns `Result.ok(null)` when no balance has been registered — the UI
+   * renders that as "Sin registrar" (spec cap3 req4, NEVER 0/0). The shape
+   * stays a typed POJO (no Prisma leak past the repo boundary, CC7).
+   */
+  async getVacationBalance(
+    colaboradorId: string
+  ): Promise<Result<VacationBalanceRead | null, Error>> {
+    try {
+      const balance = await this.colaboradorRepository.findVacationBalance({
+        colaboradorId,
+      });
+      return Ok(balance);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener balance de vacaciones")
       );
     }
   }
