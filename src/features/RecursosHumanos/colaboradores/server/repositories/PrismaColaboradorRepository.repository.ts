@@ -1,15 +1,71 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, ColaboradorEstado } from "@prisma/client";
 import {
   ColaboradorRepository,
   ColaboradorWithSocio,
   CreateColaboradorArgs,
   UpdateColaboradorArgs,
 } from "./ColaboradorRepository.repository";
+import type { ColaboradoresFilterParams } from "../../types/ColaboradoresFilterParams";
 
 type PrismaTransactionClient = Omit<
   PrismaClient,
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
+
+// Columns allowed for ORDER BY — keep tight to avoid Prisma type explosions.
+const ALLOWED_SORT_COLUMNS = new Set([
+  "name",
+  "correo",
+  "puesto",
+  "status",
+  "departamento",
+  "nivel",
+  "modalidad",
+  "fechaIngreso",
+  "createdAt",
+  "updatedAt",
+]);
+
+// Statuses accepted from client (Prisma enum already validated, but belt-and-suspenders)
+const VALID_STATUSES = new Set<string>([
+  "CONTRATADO",
+  "DESPEDIDO",
+  "EN_LICENCIA",
+]);
+
+/**
+ * Build the WHERE clause for colaborador queries.
+ *
+ * - search: case-insensitive contains over name + correo + puesto
+ * - status: IN-list over validated enum values
+ */
+export function buildColaboradoresWhereClause(
+  params: Omit<ColaboradoresFilterParams, "page" | "pageSize" | "sortBy" | "sortOrder">
+): Prisma.ColaboradorWhereInput {
+  const andConditions: Prisma.ColaboradorWhereInput[] = [];
+
+  if (params.search && params.search.trim().length > 0) {
+    const q = params.search.trim();
+    andConditions.push({
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { correo: { contains: q, mode: "insensitive" } },
+        { puesto: { contains: q, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (params.status && params.status.length > 0) {
+    const validStatuses = params.status
+      .map((s) => s.toUpperCase())
+      .filter((s): s is ColaboradorEstado => VALID_STATUSES.has(s));
+    if (validStatuses.length > 0) {
+      andConditions.push({ status: { in: validStatuses } });
+    }
+  }
+
+  return andConditions.length > 0 ? { AND: andConditions } : {};
+}
 
 export class PrismaColaboradorRepository implements ColaboradorRepository {
   constructor(private prisma: PrismaClient | PrismaTransactionClient) {}
@@ -27,6 +83,32 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
         clabe: data.clabe,
         sueldo: data.sueldo,
         activos: data.activos,
+        // Perfil extendido (rh-colaboradores-completo · P0)
+        ...(data.departamento !== undefined && {
+          departamento: data.departamento,
+        }),
+        ...(data.nivel !== undefined && { nivel: data.nivel }),
+        ...(data.modalidad !== undefined && { modalidad: data.modalidad }),
+        ...(data.tipoContrato !== undefined && {
+          tipoContrato: data.tipoContrato,
+        }),
+        ...(data.lugarTrabajo !== undefined && {
+          lugarTrabajo: data.lugarTrabajo,
+        }),
+        ...(data.horario !== undefined && { horario: data.horario }),
+        ...(data.fechaSalida !== undefined && {
+          fechaSalida: data.fechaSalida,
+        }),
+        ...(data.nombrePreferido !== undefined && {
+          nombrePreferido: data.nombrePreferido,
+        }),
+        ...(data.documentoIdentidad !== undefined && {
+          documentoIdentidad: data.documentoIdentidad,
+        }),
+        ...(data.emailPersonal !== undefined && {
+          emailPersonal: data.emailPersonal,
+        }),
+        ...(data.bio !== undefined && { bio: data.bio }),
       },
       include: {
         socio: {
@@ -100,6 +182,32 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
         ...(data.telefonoReferenciaLaboral !== undefined && {
           telefonoReferenciaLaboral: data.telefonoReferenciaLaboral,
         }),
+        // Perfil extendido (rh-colaboradores-completo · P0)
+        ...(data.departamento !== undefined && {
+          departamento: data.departamento,
+        }),
+        ...(data.nivel !== undefined && { nivel: data.nivel }),
+        ...(data.modalidad !== undefined && { modalidad: data.modalidad }),
+        ...(data.tipoContrato !== undefined && {
+          tipoContrato: data.tipoContrato,
+        }),
+        ...(data.lugarTrabajo !== undefined && {
+          lugarTrabajo: data.lugarTrabajo,
+        }),
+        ...(data.horario !== undefined && { horario: data.horario }),
+        ...(data.fechaSalida !== undefined && {
+          fechaSalida: data.fechaSalida,
+        }),
+        ...(data.nombrePreferido !== undefined && {
+          nombrePreferido: data.nombrePreferido,
+        }),
+        ...(data.documentoIdentidad !== undefined && {
+          documentoIdentidad: data.documentoIdentidad,
+        }),
+        ...(data.emailPersonal !== undefined && {
+          emailPersonal: data.emailPersonal,
+        }),
+        ...(data.bio !== undefined && { bio: data.bio }),
       },
       include: {
         socio: {
@@ -168,17 +276,27 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
     });
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }> {
+  async getPaginated(
+    params: ColaboradoresFilterParams,
+  ): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }> {
     const skip = (params.page - 1) * params.pageSize;
-    const orderBy = params.sortBy
-      ? { [params.sortBy]: params.sortOrder || "desc" }
+
+    const sortColumn =
+      params.sortBy && ALLOWED_SORT_COLUMNS.has(params.sortBy)
+        ? params.sortBy
+        : undefined;
+    const orderBy = sortColumn
+      ? { [sortColumn]: params.sortOrder ?? "desc" }
       : { createdAt: "desc" as const };
+
+    const where = buildColaboradoresWhereClause(params);
 
     const [data, totalCount] = await Promise.all([
       this.prisma.colaborador.findMany({
         skip,
         take: params.pageSize,
         orderBy,
+        where,
         include: {
           socio: {
             select: {
@@ -189,10 +307,35 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
           },
         },
       }),
-      this.prisma.colaborador.count(),
+      this.prisma.colaborador.count({ where }),
     ]);
 
     return { data, totalCount };
+  }
+
+  async countByStatus(): Promise<{
+    CONTRATADO: number;
+    DESPEDIDO: number;
+    EN_LICENCIA: number;
+  }> {
+    const rows = await this.prisma.colaborador.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    });
+
+    const counts = {
+      CONTRATADO: 0,
+      DESPEDIDO: 0,
+      EN_LICENCIA: 0,
+    };
+
+    for (const row of rows) {
+      const key = row.status as keyof typeof counts;
+      if (key in counts) {
+        counts[key] = row._count._all;
+      }
+    }
+    return counts;
   }
 
   async findBySocioId(data: {
@@ -213,5 +356,36 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
         createdAt: "desc",
       },
     });
+  }
+
+  async countBySocioId(data: { socioId: string | null }): Promise<number> {
+    // Spec cap3 req5: colaboradores without a socio have no reportes directos.
+    // Returning 0 here keeps the UI single-state ("cero reportes") and avoids
+    // counting the entire null-socio bucket as a single "Sin socio" group.
+    if (data.socioId === null) {
+      return 0;
+    }
+    return await this.prisma.colaborador.count({
+      where: { socioId: data.socioId },
+    });
+  }
+
+  async findForOrgTree() {
+    // Flat fetch over the fields the tree needs. We do NOT join on `socio`
+    // here — the service layer (ColaboradorService.getOrgTreeBySocio)
+    // resolves socio display names through a single batched `socio.findMany`
+    // to keep this query tight.
+    const rows = await this.prisma.colaborador.findMany({
+      select: {
+        id: true,
+        name: true,
+        correo: true,
+        puesto: true,
+        status: true,
+        socioId: true,
+      },
+      orderBy: { name: "asc" },
+    });
+    return rows;
   }
 }

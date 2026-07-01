@@ -1,10 +1,42 @@
-import { ColaboradorEstado, Prisma, PrismaClient } from "@prisma/client";
+import {
+  ColaboradorEstado,
+  ModalidadTrabajo,
+  NivelSeniority,
+  Prisma,
+  PrismaClient,
+  TipoContrato,
+} from "@prisma/client";
 import {
   ColaboradorRepository,
   ColaboradorWithSocio,
 } from "../repositories/ColaboradorRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { ColaboradorHistorialService } from "./ColaboradorHistorialService.service";
+import type {
+  OrgTreeDto,
+  OrgTreeNode,
+} from "../dtos/OrgTreeDto.dto";
+
+/**
+ * Detects a position change between the previously-fetched `before` snapshot
+ * and the freshly-updated `after` snapshot. The three fields tracked by
+ * ColaboradorPositionHistory (cargo, departamento, nivel) are compared with
+ * strict equality + null-safe normalization.
+ *
+ * Spec cap5 req6: "Position changes (cargo, departamento, nivel) MUST append
+ * a PositionHistory entry in the same transaction as the Colaborador update."
+ */
+function hasPositionChanged(
+  before: ColaboradorWithSocio,
+  after: ColaboradorWithSocio
+): boolean {
+  if (before.puesto !== after.puesto) return true;
+  const beforeDept = before.departamento ?? null;
+  const afterDept = after.departamento ?? null;
+  if (beforeDept !== afterDept) return true;
+  if ((before.nivel ?? null) !== (after.nivel ?? null)) return true;
+  return false;
+}
 
 type CreateColaboradorInput = {
   name: string;
@@ -18,6 +50,18 @@ type CreateColaboradorInput = {
   sueldo: number;
   activos: string[];
   usuarioId?: string | null;
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales/nullable)
+  departamento?: string | null;
+  nivel?: NivelSeniority | null;
+  modalidad?: ModalidadTrabajo | null;
+  tipoContrato?: TipoContrato | null;
+  lugarTrabajo?: string | null;
+  horario?: string | null;
+  fechaSalida?: Date | null;
+  nombrePreferido?: string | null;
+  documentoIdentidad?: string | null;
+  emailPersonal?: string | null;
+  bio?: string | null;
 };
 
 type UpdateColaboradorInput = {
@@ -57,6 +101,18 @@ type UpdateColaboradorInput = {
   // Referencias laborales
   nombreReferenciaLaboral?: string | null;
   telefonoReferenciaLaboral?: string | null;
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos opcionales/nullable)
+  departamento?: string | null;
+  nivel?: NivelSeniority | null;
+  modalidad?: ModalidadTrabajo | null;
+  tipoContrato?: TipoContrato | null;
+  lugarTrabajo?: string | null;
+  horario?: string | null;
+  fechaSalida?: Date | null;
+  nombrePreferido?: string | null;
+  documentoIdentidad?: string | null;
+  emailPersonal?: string | null;
+  bio?: string | null;
 };
 
 export class ColaboradorService {
@@ -92,6 +148,18 @@ export class ColaboradorService {
         clabe: input.clabe,
         sueldo: new Prisma.Decimal(input.sueldo),
         activos: input.activos,
+        // Perfil extendido (rh-colaboradores-completo · P0)
+        departamento: input.departamento,
+        nivel: input.nivel,
+        modalidad: input.modalidad,
+        tipoContrato: input.tipoContrato,
+        lugarTrabajo: input.lugarTrabajo,
+        horario: input.horario,
+        fechaSalida: input.fechaSalida,
+        nombrePreferido: input.nombrePreferido,
+        documentoIdentidad: input.documentoIdentidad,
+        emailPersonal: input.emailPersonal,
+        bio: input.bio,
       });
 
       // Crear historial para el nuevo colaborador
@@ -188,6 +256,18 @@ export class ColaboradorService {
           // Referencias laborales
           nombreReferenciaLaboral: input.nombreReferenciaLaboral,
           telefonoReferenciaLaboral: input.telefonoReferenciaLaboral,
+          // Perfil extendido (rh-colaboradores-completo · P0)
+          departamento: input.departamento,
+          nivel: input.nivel,
+          modalidad: input.modalidad,
+          tipoContrato: input.tipoContrato,
+          lugarTrabajo: input.lugarTrabajo,
+          horario: input.horario,
+          fechaSalida: input.fechaSalida,
+          nombrePreferido: input.nombrePreferido,
+          documentoIdentidad: input.documentoIdentidad,
+          emailPersonal: input.emailPersonal,
+          bio: input.bio,
         });
 
         // Crear historial para los cambios
@@ -202,6 +282,31 @@ export class ColaboradorService {
           throw new Error(
             `Error al crear historial: ${historialResult.error.message}`
           );
+        }
+
+        // ── Posición: append a ColaboradorPositionHistory row when the
+        // position-related fields changed (CC5 / cap5 req6 / cap6 req5).
+        //
+        // We do this INSIDE the same $transaction as the Colaborador update
+        // so the two writes commit atomically. Any throw here propagates to
+        // the $transaction callback and triggers a full rollback — neither
+        // the Colaborador row nor a PositionHistory row leaks out as a
+        // partial write when validation/insertion fails downstream.
+        //
+        // The history captures the PREVIOUS cargo/departamento/nivel values
+        // (i.e., the snapshot BEFORE the update), with fechaEfectiva = now.
+        // We rely on `?? null` semantics so nullable fields stay nullable.
+        if (hasPositionChanged(existingColaborador, updatedColaborador)) {
+          await tx.colaboradorPositionHistory.create({
+            data: {
+              colaboradorId: input.id,
+              fechaEfectiva: new Date(),
+              cargo: existingColaborador.puesto,
+              departamento: existingColaborador.departamento ?? null,
+              nivel: existingColaborador.nivel ?? null,
+              motivo: null,
+            },
+          });
         }
 
         return updatedColaborador;
@@ -288,12 +393,162 @@ export class ColaboradorService {
     }
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: ColaboradorWithSocio[]; totalCount: number }, Error>> {
+  async getPaginated(params: import("@/features/RecursosHumanos/colaboradores/types/ColaboradoresFilterParams").ColaboradoresFilterParams): Promise<Result<{ data: ColaboradorWithSocio[]; totalCount: number }, Error>> {
     try {
       const result = await this.colaboradorRepository.getPaginated(params);
       return Ok(result);
     } catch (error) {
       return Err(error instanceof Error ? error : new Error("Error al obtener colaboradores paginados"));
+    }
+  }
+
+  async countByStatus(): Promise<Result<{ CONTRATADO: number; DESPEDIDO: number; EN_LICENCIA: number }, Error>> {
+    try {
+      const counts = await this.colaboradorRepository.countByStatus();
+      return Ok(counts);
+    } catch (error) {
+      return Err(
+        error instanceof Error ? error : new Error("Error al obtener conteos por estado"),
+      );
+    }
+  }
+
+  /**
+   * Count colaboradores that report to the same socio.
+   *
+   * Spec cap3 req5: MUST equal the number of colaboradores sharing `socioId`;
+   * MUST be 0 when `socioId` is null. The count is computed server-side and
+   * returned as a plain number — the client KPI card never derives it.
+   */
+  async getReportesDirectos(
+    socioId: string | null
+  ): Promise<Result<number, Error>> {
+    try {
+      const count = await this.colaboradorRepository.countBySocioId({
+        socioId,
+      });
+      return Ok(count);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener reportes directos")
+      );
+    }
+  }
+
+  /**
+   * Build the 2-level Organigrama tree (cap7 req1).
+   *
+   * Groups every colaborador by `socioId` and produces one `OrgTreeNode` per
+   * bucket:
+   *
+   * - One bucket per existing Socio (with display name resolved via a single
+   *   batched `socio.findMany` lookup).
+   * - An additional "Sin socio asignado" bucket when at least one
+   *   colaborador has `socioId === null` (cap7 req3 scenario).
+   *
+   * The current colaborador's own bucket is flagged with `isCurrentBucket =
+   * true` so the UI can mark the relevant node (cap7 req2). Collaboradores
+   * with no `socioId` fall into the synthetic "Sin socio asignado" bucket —
+   * this is exactly the case cap7 covers with the `socio FK onDelete: SetNull`
+   * design: when a Socio is deleted, those colaboradores naturally roll into
+   * the null bucket with no orphan / error.
+   */
+  async getOrgTreeBySocio(
+    currentColaboradorId: string
+  ): Promise<Result<OrgTreeDto, Error>> {
+    try {
+      // Look up the current colaborador first so we know which bucket to
+      // flag. This is a single-row read; if the id is stale we return the
+      // not-found error rather than producing a misflagged tree.
+      const current = await this.colaboradorRepository.findById({
+        id: currentColaboradorId,
+      });
+      if (!current) {
+        return Err(new Error("Colaborador no encontrado"));
+      }
+
+      const [rows, socios] = await Promise.all([
+        this.colaboradorRepository.findForOrgTree(),
+        this.prisma.socio.findMany({
+          select: { id: true, nombre: true, email: true },
+          orderBy: { nombre: "asc" },
+        }),
+      ]);
+
+      // Bucket colaboradores by socioId (string|null).
+      const buckets = new Map<string | null, typeof rows>();
+      for (const row of rows) {
+        const key = row.socioId ?? null;
+        const existing = buckets.get(key);
+        if (existing) {
+          existing.push(row);
+        } else {
+          buckets.set(key, [row]);
+        }
+      }
+
+      const currentSocioKey = current.socioId ?? null;
+      const nodes: OrgTreeNode[] = [];
+
+      // One node per known socio, in socio.nombre order (already ordered by
+      // the findMany above). We include the bucket even if it's empty AFTER
+      // filtering out the current row, to keep the tree stable across
+      // navigation; but in practice every socio referenced has at least one
+      // colaborador (FK constraint), so the count is always >= 1 here.
+      for (const socio of socios) {
+        const colaboradores = buckets.get(socio.id) ?? [];
+        if (colaboradores.length === 0) continue;
+        nodes.push({
+          socioId: socio.id,
+          label: socio.nombre,
+          subLabel: socio.email,
+          count: colaboradores.length,
+          colaboradores: colaboradores.map((c) => ({
+            id: c.id,
+            name: c.name,
+            correo: c.correo,
+            puesto: c.puesto,
+            status: c.status,
+          })),
+          isCurrentBucket: socio.id === currentSocioKey,
+        });
+      }
+
+      // Synthetic bucket for null socioId — labelled "Sin socio asignado"
+      // (cap7 req3 wording). Sorted AFTER the named-socio nodes so the
+      // current colaborador's own bucket (when their socioId is null) lands
+      // at the bottom; the UI flags it via isCurrentBucket regardless of
+      // position.
+      const nullBucket = buckets.get(null) ?? [];
+      if (nullBucket.length > 0) {
+        nodes.push({
+          socioId: null,
+          label: "Sin socio asignado",
+          subLabel: "",
+          count: nullBucket.length,
+          colaboradores: nullBucket.map((c) => ({
+            id: c.id,
+            name: c.name,
+            correo: c.correo,
+            puesto: c.puesto,
+            status: c.status,
+          })),
+          isCurrentBucket: currentSocioKey === null,
+        });
+      }
+
+      return Ok({
+        currentColaboradorId,
+        nodes,
+      });
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener el organigrama")
+      );
     }
   }
 }

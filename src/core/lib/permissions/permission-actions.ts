@@ -33,6 +33,7 @@ export const PermissionActions = {
     editar: "colaboradores:editar",
     eliminar: "colaboradores:eliminar",
     "ver-historial": "colaboradores:ver-historial",
+    "gestionar-ausencias": "colaboradores:gestionar-ausencias",
     gestionar: "colaboradores:gestionar",
   },
   socios: {

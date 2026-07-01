@@ -172,6 +172,13 @@ const RH_PERMISSIONS: PermissionDefinition[] = [
     description:
       "Gestionar completamente el módulo de colaboradores (incluye todas las acciones)",
   },
+  {
+    name: "colaboradores:gestionar-ausencias",
+    resource: "colaboradores",
+    action: "gestionar-ausencias",
+    description:
+      "Registrar y gestionar las ausencias (vacaciones, licencias, incapacidades) de los colaboradores",
+  },
   // Asistencias - Granulares
   {
     name: "asistencias:acceder",

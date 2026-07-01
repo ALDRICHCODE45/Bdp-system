@@ -3,7 +3,7 @@ export type ColaboradorDto = {
   name: string;
   correo: string;
   puesto: string;
-  status: string; // ColaboradorEstado serializado como string
+  status: "CONTRATADO" | "DESPEDIDO" | "EN_LICENCIA"; // ColaboradorEstado serializado como string
   imss: boolean;
   socioId: string | null;
   socio: {
@@ -39,6 +39,24 @@ export type ColaboradorDto = {
   clabe: string;
   sueldo: string; // Decimal as string para el frontend
   activos: string[];
+  // Perfil extendido (rh-colaboradores-completo · P0 — todos nullable)
+  departamento: string | null;
+  nivel: "JUNIOR" | "SEMI_SENIOR" | "SENIOR" | "LEAD" | "GERENCIAL" | null;
+  modalidad: "REMOTO" | "HIBRIDO" | "PRESENCIAL" | null;
+  tipoContrato:
+    | "INDEFINIDO"
+    | "TEMPORAL"
+    | "POR_OBRA"
+    | "PRACTICAS"
+    | "HONORARIOS"
+    | null;
+  lugarTrabajo: string | null;
+  horario: string | null;
+  fechaSalida: string | null;
+  nombrePreferido: string | null;
+  documentoIdentidad: string | null;
+  emailPersonal: string | null;
+  bio: string | null;
   createdAt: string;
   updatedAt: string;
 };
