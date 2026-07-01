@@ -132,4 +132,26 @@ export interface ColaboradorRepository {
   findVacationBalance(data: {
     colaboradorId: string;
   }): Promise<VacationBalanceRead | null>;
+  /**
+   * Build the raw rows for the Organigrama tree (cap7 req1).
+   *
+   * Returns ALL colaboradores with `select` only on the fields needed by the
+   * tree (id, name, correo, puesto, status, socioId) — no join on `socio`
+   * here on purpose; the socio display name is resolved client-side via the
+   * `Socio` table which the orchestrator pre-fetches via `getAllSocios`.
+   *
+   * The grouping + bucket rendering happens in the service layer
+   * (`ColaboradorService.getOrgTreeBySocio`); this repo method just returns
+   * the flat dataset the service needs.
+   */
+  findForOrgTree(): Promise<
+    {
+      id: string;
+      name: string;
+      correo: string;
+      puesto: string;
+      status: ColaboradorEstado;
+      socioId: string | null;
+    }[]
+  >;
 }

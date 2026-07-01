@@ -393,4 +393,23 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
       diasTomados: row.diasTomados,
     };
   }
+
+  async findForOrgTree() {
+    // Flat fetch over the fields the tree needs. We do NOT join on `socio`
+    // here — the service layer (ColaboradorService.getOrgTreeBySocio)
+    // resolves socio display names through a single batched `socio.findMany`
+    // to keep this query tight.
+    const rows = await this.prisma.colaborador.findMany({
+      select: {
+        id: true,
+        name: true,
+        correo: true,
+        puesto: true,
+        status: true,
+        socioId: true,
+      },
+      orderBy: { name: "asc" },
+    });
+    return rows;
+  }
 }
