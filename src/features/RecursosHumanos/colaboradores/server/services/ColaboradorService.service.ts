@@ -14,6 +14,27 @@ import {
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { ColaboradorHistorialService } from "./ColaboradorHistorialService.service";
 
+/**
+ * Detects a position change between the previously-fetched `before` snapshot
+ * and the freshly-updated `after` snapshot. The three fields tracked by
+ * ColaboradorPositionHistory (cargo, departamento, nivel) are compared with
+ * strict equality + null-safe normalization.
+ *
+ * Spec cap5 req6: "Position changes (cargo, departamento, nivel) MUST append
+ * a PositionHistory entry in the same transaction as the Colaborador update."
+ */
+function hasPositionChanged(
+  before: ColaboradorWithSocio,
+  after: ColaboradorWithSocio
+): boolean {
+  if (before.puesto !== after.puesto) return true;
+  const beforeDept = before.departamento ?? null;
+  const afterDept = after.departamento ?? null;
+  if (beforeDept !== afterDept) return true;
+  if ((before.nivel ?? null) !== (after.nivel ?? null)) return true;
+  return false;
+}
+
 type CreateColaboradorInput = {
   name: string;
   correo: string;
@@ -258,6 +279,31 @@ export class ColaboradorService {
           throw new Error(
             `Error al crear historial: ${historialResult.error.message}`
           );
+        }
+
+        // ── Posición: append a ColaboradorPositionHistory row when the
+        // position-related fields changed (CC5 / cap5 req6 / cap6 req5).
+        //
+        // We do this INSIDE the same $transaction as the Colaborador update
+        // so the two writes commit atomically. Any throw here propagates to
+        // the $transaction callback and triggers a full rollback — neither
+        // the Colaborador row nor a PositionHistory row leaks out as a
+        // partial write when validation/insertion fails downstream.
+        //
+        // The history captures the PREVIOUS cargo/departamento/nivel values
+        // (i.e., the snapshot BEFORE the update), with fechaEfectiva = now.
+        // We rely on `?? null` semantics so nullable fields stay nullable.
+        if (hasPositionChanged(existingColaborador, updatedColaborador)) {
+          await tx.colaboradorPositionHistory.create({
+            data: {
+              colaboradorId: input.id,
+              fechaEfectiva: new Date(),
+              cargo: existingColaborador.puesto,
+              departamento: existingColaborador.departamento ?? null,
+              nivel: existingColaborador.nivel ?? null,
+              motivo: null,
+            },
+          });
         }
 
         return updatedColaborador;

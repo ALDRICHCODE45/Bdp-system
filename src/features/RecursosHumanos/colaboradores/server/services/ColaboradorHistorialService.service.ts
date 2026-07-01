@@ -1,8 +1,28 @@
 import { ColaboradorHistorialRepository } from "../repositories/ColaboradorHistorialRepository.repository";
 import { ColaboradorWithSocio } from "../repositories/ColaboradorRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
-import { Prisma, ColaboradorHistorial } from "@prisma/client";
+import { Prisma, ColaboradorHistorial, ModalidadTrabajo, TipoContrato } from "@prisma/client";
 
+/**
+ * Typed shape of the fields we track in `ColaboradorHistorial`.
+ *
+ * Layout notes:
+ * - Includes the original legacy fields (name, correo, puesto, …) so existing
+ *   history rows continue to compare without drift.
+ * - Adds the personal fields from cap4 (fechaNacimiento, genero, estadoCivil,
+ *   nacionalidad, documentoIdentidad, tipoSangre, rfc, curp,
+ *   nombrePreferido, emailPersonal, direccion, telefono) and the profile-
+ *   shaped fields from cap5 (modalidad, tipoContrato, lugarTrabajo, horario,
+ *   fechaSalida, bio).
+ * - Deliberately EXCLUDES `departamento` and `nivel`: those go through
+ *   `ColaboradorPositionHistory` (P3 task 4.11 / P4 task 5.x — CC5 / cap5
+ *   req6 / cap6 req5). Tracking them in BOTH places would be a duplicate.
+ * - `sueldo` is intentionally retained here even though ADR-1 says
+ *   SalaryHistory is the canonical home for salary audits: the current
+ *   behaviour already tracks it, and removing it now would orphan legacy
+ *   history. P4 will own the SalaryHistory UI; the canonical audit row is
+ *   SalaryHistory for new writes.
+ */
 type ColaboradorData = {
   name: string;
   correo: string;
@@ -14,6 +34,41 @@ type ColaboradorData = {
   clabe: string;
   sueldo: Prisma.Decimal | number;
   activos: string[];
+  // Datos personales (P3 task 4.13)
+  fechaIngreso: Date;
+  fechaNacimiento: Date | null;
+  genero: string | null;
+  nacionalidad: string | null;
+  estadoCivil: string | null;
+  tipoSangre: string | null;
+  // Datos fiscales
+  rfc: string | null;
+  curp: string | null;
+  // Contacto y dirección
+  direccion: string | null;
+  telefono: string | null;
+  // Académicos y laborales previos
+  ultimoGradoEstudios: string | null;
+  escuela: string | null;
+  ultimoTrabajo: string | null;
+  // Referencias personales
+  nombreReferenciaPersonal: string | null;
+  telefonoReferenciaPersonal: string | null;
+  parentescoReferenciaPersonal: string | null;
+  // Referencias laborales
+  nombreReferenciaLaboral: string | null;
+  telefonoReferenciaLaboral: string | null;
+  // Perfil extendido (P0 — P3 task 4.13)
+  nombrePreferido: string | null;
+  documentoIdentidad: string | null;
+  emailPersonal: string | null;
+  // Perfil laboral (P3 task 4.13 — excludes departamento/nivel, see comment above)
+  modalidad: ModalidadTrabajo | null;
+  tipoContrato: TipoContrato | null;
+  lugarTrabajo: string | null;
+  horario: string | null;
+  fechaSalida: Date | null;
+  bio: string | null;
 };
 
 export class ColaboradorHistorialService {
@@ -22,7 +77,12 @@ export class ColaboradorHistorialService {
   ) {}
 
   /**
-   * Formatea un valor a string para almacenamiento en el historial
+   * Formatea un valor a string para almacenamiento en el historial.
+   *
+   * P3 task 4.13: extended to handle `Date` instances (was relying on
+   * `String(date)` which yields a verbose, locale-dependent representation).
+   * We always serialize Dates with `.toISOString()` so equality comparisons
+   * are deterministic across renders.
    */
   private formatValue(value: unknown): string {
     if (value === null || value === undefined) {
@@ -32,6 +92,15 @@ export class ColaboradorHistorialService {
     // Decimal de Prisma
     if (value instanceof Prisma.Decimal) {
       return value.toString();
+    }
+
+    // Date → ISO string for stable comparison
+    if (value instanceof Date) {
+      try {
+        return value.toISOString();
+      } catch {
+        return "";
+      }
     }
 
     // Arrays
@@ -54,7 +123,11 @@ export class ColaboradorHistorialService {
   }
 
   /**
-   * Detecta cambios entre dos objetos de colaborador
+   * Detecta cambios entre dos objetos de colaborador.
+   *
+   * P3 task 4.13: extended to include the personal and profile fields added
+   * in P0 + cap4. `departamento` and `nivel` are intentionally NOT tracked
+   * here — those go through ColaboradorPositionHistory (P3 4.11).
    */
   private detectChanges(
     oldData: ColaboradorData,
@@ -71,6 +144,7 @@ export class ColaboradorHistorialService {
     }> = [];
 
     const fields: (keyof ColaboradorData)[] = [
+      // Legacy fields kept so existing history rows keep comparing cleanly.
       "name",
       "correo",
       "puesto",
@@ -81,6 +155,41 @@ export class ColaboradorHistorialService {
       "clabe",
       "sueldo",
       "activos",
+      // Datos personales (cap4 / P3 4.13)
+      "fechaIngreso",
+      "fechaNacimiento",
+      "genero",
+      "nacionalidad",
+      "estadoCivil",
+      "tipoSangre",
+      // Datos fiscales (cap4 / P3 4.13)
+      "rfc",
+      "curp",
+      // Contacto y dirección (cap4 / P3 4.13)
+      "direccion",
+      "telefono",
+      // Académicos y laborales previos (already in entity, now also tracked)
+      "ultimoGradoEstudios",
+      "escuela",
+      "ultimoTrabajo",
+      // Referencias personales
+      "nombreReferenciaPersonal",
+      "telefonoReferenciaPersonal",
+      "parentescoReferenciaPersonal",
+      // Referencias laborales
+      "nombreReferenciaLaboral",
+      "telefonoReferenciaLaboral",
+      // Perfil extendido (P0 — P3 4.13)
+      "nombrePreferido",
+      "documentoIdentidad",
+      "emailPersonal",
+      // Perfil laboral shape (P0 — P3 4.13, sin departamento/nivel)
+      "modalidad",
+      "tipoContrato",
+      "lugarTrabajo",
+      "horario",
+      "fechaSalida",
+      "bio",
     ];
 
     for (const field of fields) {
@@ -104,6 +213,63 @@ export class ColaboradorHistorialService {
   }
 
   /**
+   * Extracts a `ColaboradorData` snapshot from a Prisma `Colaborador`
+   * row (which always carries a `socioId`/`socio` relation but never has the
+   * P0/lifecycle fields optional-shaped).
+   */
+  private toColaboradorData(
+    colaborador: ColaboradorWithSocio
+  ): ColaboradorData {
+    return {
+      name: colaborador.name,
+      correo: colaborador.correo,
+      puesto: colaborador.puesto,
+      status: colaborador.status,
+      imss: colaborador.imss,
+      socioId: colaborador.socioId,
+      banco: colaborador.banco,
+      clabe: colaborador.clabe,
+      sueldo: colaborador.sueldo,
+      activos: colaborador.activos,
+      // Datos personales
+      fechaIngreso: colaborador.fechaIngreso,
+      fechaNacimiento: colaborador.fechaNacimiento,
+      genero: colaborador.genero,
+      nacionalidad: colaborador.nacionalidad,
+      estadoCivil: colaborador.estadoCivil,
+      tipoSangre: colaborador.tipoSangre,
+      // Datos fiscales
+      rfc: colaborador.rfc,
+      curp: colaborador.curp,
+      // Contacto y dirección
+      direccion: colaborador.direccion,
+      telefono: colaborador.telefono,
+      // Académicos y laborales previos
+      ultimoGradoEstudios: colaborador.ultimoGradoEstudios,
+      escuela: colaborador.escuela,
+      ultimoTrabajo: colaborador.ultimoTrabajo,
+      // Referencias personales
+      nombreReferenciaPersonal: colaborador.nombreReferenciaPersonal,
+      telefonoReferenciaPersonal: colaborador.telefonoReferenciaPersonal,
+      parentescoReferenciaPersonal: colaborador.parentescoReferenciaPersonal,
+      // Referencias laborales
+      nombreReferenciaLaboral: colaborador.nombreReferenciaLaboral,
+      telefonoReferenciaLaboral: colaborador.telefonoReferenciaLaboral,
+      // Perfil extendido (P0)
+      nombrePreferido: colaborador.nombrePreferido,
+      documentoIdentidad: colaborador.documentoIdentidad,
+      emailPersonal: colaborador.emailPersonal,
+      // Perfil laboral (P0)
+      modalidad: colaborador.modalidad,
+      tipoContrato: colaborador.tipoContrato,
+      lugarTrabajo: colaborador.lugarTrabajo,
+      horario: colaborador.horario,
+      fechaSalida: colaborador.fechaSalida,
+      bio: colaborador.bio,
+    };
+  }
+
+  /**
    * Crea registros de historial para un colaborador recién creado
    */
   async createHistorialForNewColaborador(
@@ -111,18 +277,7 @@ export class ColaboradorHistorialService {
     usuarioId?: string | null
   ): Promise<Result<void, Error>> {
     try {
-      const colaboradorData: ColaboradorData = {
-        name: colaborador.name,
-        correo: colaborador.correo,
-        puesto: colaborador.puesto,
-        status: colaborador.status,
-        imss: colaborador.imss,
-        socioId: colaborador.socioId,
-        banco: colaborador.banco,
-        clabe: colaborador.clabe,
-        sueldo: colaborador.sueldo,
-        activos: colaborador.activos,
-      };
+      const colaboradorData = this.toColaboradorData(colaborador);
 
       // Crear registros de historial para todos los campos iniciales
       const historialRecords = Object.keys(colaboradorData).map((field) => ({
@@ -159,31 +314,8 @@ export class ColaboradorHistorialService {
     usuarioId?: string | null
   ): Promise<Result<void, Error>> {
     try {
-      const oldData: ColaboradorData = {
-        name: oldColaborador.name,
-        correo: oldColaborador.correo,
-        puesto: oldColaborador.puesto,
-        status: oldColaborador.status,
-        imss: oldColaborador.imss,
-        socioId: oldColaborador.socioId,
-        banco: oldColaborador.banco,
-        clabe: oldColaborador.clabe,
-        sueldo: oldColaborador.sueldo,
-        activos: oldColaborador.activos,
-      };
-
-      const newData: ColaboradorData = {
-        name: newColaborador.name,
-        correo: newColaborador.correo,
-        puesto: newColaborador.puesto,
-        status: newColaborador.status,
-        imss: newColaborador.imss,
-        socioId: newColaborador.socioId,
-        banco: newColaborador.banco,
-        clabe: newColaborador.clabe,
-        sueldo: newColaborador.sueldo,
-        activos: newColaborador.activos,
-      };
+      const oldData = this.toColaboradorData(oldColaborador);
+      const newData = this.toColaboradorData(newColaborador);
 
       const changes = this.detectChanges(oldData, newData);
 
