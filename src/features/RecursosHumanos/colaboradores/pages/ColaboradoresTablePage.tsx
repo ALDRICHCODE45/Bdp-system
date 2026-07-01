@@ -45,7 +45,11 @@ export function ColaboradoresTablePage() {
 
   // ── Tabs (cap1 req2: Todos / Activos / En licencia) ────────────────────
   const [activeTabs, setActiveTabs] = useState<string[]>([]);
-  const status = tabIdsToStatusFilter(activeTabs);
+  // Memoized: `tabIdsToStatusFilter` returns a NEW array each call. Without
+  // memoization it destabilizes every downstream useMemo/useCallback that
+  // depends on `status` (handleExport → tableConfig), which in server-side
+  // mode cascades into a setState loop ("Maximum update depth exceeded").
+  const status = useMemo(() => tabIdsToStatusFilter(activeTabs), [activeTabs]);
 
   // ── Cards vs Tabla toggle (cap1 req4) ─────────────────────────────────
   const [viewMode, setViewMode] = useState<ColaboradoresViewMode>("tabla");
@@ -152,23 +156,6 @@ export function ColaboradoresTablePage() {
     [data?.totalCount, data?.pageCount, handleExport, viewMode],
   );
 
-  // Server config override — keep tableConfig immutable across renders where possible.
-  const serverConfig = useMemo(
-    () => ({
-      ...tableConfig,
-      pagination: {
-        ...tableConfig.pagination,
-        manualPagination: true,
-        pageCount: data?.pageCount ?? 0,
-        totalCount: data?.totalCount ?? 0,
-        onPaginationChange: setPagination,
-      },
-      manualSorting: true,
-      onSortingChange: setSorting,
-    }),
-    [tableConfig, data?.pageCount, data?.totalCount],
-  );
-
   return (
     <Card className="p-2 m-1">
       <CardContent>
@@ -248,7 +235,7 @@ export function ColaboradoresTablePage() {
               <DataTable
                 columns={colaboradoresColumns}
                 data={data?.data ?? []}
-                config={serverConfig}
+                config={tableConfig}
                 isLoading={isPending && !data}
                 isFetching={isFetching && !!data}
                 pagination={pagination}

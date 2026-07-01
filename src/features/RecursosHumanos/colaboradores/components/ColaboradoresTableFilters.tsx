@@ -2,7 +2,7 @@
 
 import { Table } from "@tanstack/react-table";
 import { Search, FileSpreadsheet, LayoutGrid, Rows3 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
 import { Badge } from "@/core/shared/ui/badge";
 import { Button } from "@/core/shared/ui/button";
@@ -59,12 +59,27 @@ export function ColaboradoresTableFilters({
   const [searchValue, setSearchValue] = useState<string>("");
   const debouncedSearch = useDebounce(searchValue, 300);
 
-  // Re-emit debounced value to caller — server-driven, so caller
-  // forwards via onGlobalFilterChange. Avoid feedback loops by skipping
-  // emit when the value hasn't changed.
+  // Re-emit debounced value to caller — server-driven, so caller forwards via
+  // onGlobalFilterChange.
+  //
+  // IMPORTANT — infinite-loop guard:
+  //   `onGlobalFilterChange` is `DataTable`'s `setGlobalFilter`, which is NOT
+  //   memoized and therefore gets a fresh identity on every render. If it were
+  //   part of this effect's dependency array, the effect would re-run every
+  //   render, call setGlobalFilter → the page's handler (setDebouncedSearch +
+  //   resetPage, which returns a NEW pagination object) → re-render → new
+  //   setGlobalFilter identity → effect again … producing "Maximum update depth
+  //   exceeded". We keep the callback in a ref and only emit when the debounced
+  //   VALUE actually changes (skipping the initial empty mount).
+  const onGlobalFilterChangeRef = useRef(onGlobalFilterChange);
+  onGlobalFilterChangeRef.current = onGlobalFilterChange;
+
+  const lastEmittedSearch = useRef<string | null>(null);
   useEffect(() => {
-    onGlobalFilterChange?.(debouncedSearch);
-  }, [debouncedSearch, onGlobalFilterChange]);
+    if (lastEmittedSearch.current === debouncedSearch) return;
+    lastEmittedSearch.current = debouncedSearch;
+    onGlobalFilterChangeRef.current?.(debouncedSearch);
+  }, [debouncedSearch]);
 
   // ── Cards toggle (cap1 req4: persisted in localStorage['colaboradores-view']) ──
   const [internalViewMode, setInternalViewMode] =
