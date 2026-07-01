@@ -1,20 +1,17 @@
 import { notFound } from "next/navigation";
 import { makeColaboradorService } from "@/features/RecursosHumanos/colaboradores/server/services/makeColaboradorService";
+import { makeVacationBalanceService } from "@/features/RecursosHumanos/colaboradores/server/services/makeVacationBalanceService";
 import { toColaboradorDto } from "@/features/RecursosHumanos/colaboradores/server/mappers/colaboradorMapper";
 import prisma from "@/core/lib/prisma";
 import { ColaboradorProfilePage } from "@/features/RecursosHumanos/colaboradores/pages/ColaboradorProfilePage";
 import type { OrgTreeDto } from "@/features/RecursosHumanos/colaboradores/server/dtos/OrgTreeDto.dto";
+import type { VacationBalanceDto } from "@/features/RecursosHumanos/colaboradores/server/dtos/VacationBalanceDto.dto";
 
 type Params = Promise<{ colaboradorId: string }>;
 
 interface PageProps {
   params: Params;
 }
-
-type VacationBalanceDto = {
-  diasDisponibles: number;
-  diasTomados: number;
-};
 
 type ProfilePayload = {
   colaborador: ReturnType<typeof toColaboradorDto>;
@@ -24,16 +21,18 @@ type ProfilePayload = {
 };
 
 /**
- * P2 + P4 (rh-colaboradores-completo):
+ * P2 + P4 + P6 (rh-colaboradores-completo):
  *
  * Replaces the legacy render target at the SAME `[colaboradorId]` route with
- * the new 8-tab profile shell + Resumen KPIs + Organigrama tree.
+ * the new 8-tab profile shell + Resumen KPIs + Organigrama tree + Ausencias.
  *
  * Resolves pre-fetched data with a single `Promise.all`, including:
  * - colaborador DTO (getById)
  * - reportes-directos count (getReportesDirectos, by socioId)
- * - VacationBalance snapshot (getVacationBalance) — null is the expected state
- *   for collaborators who have never had a balance set (spec cap3 req4).
+ * - VacationBalance snapshot (vacationBalanceService.getByColaborador) — null
+ *   is the expected state for collaborators who have never had a balance set
+ *   (spec cap3 req4 + cap9 req5). P6 swapped the slim P2 read for the new
+ *   P6 service so the canonical full DTO is what reaches the client.
  * - Organigrama tree grouped by socioId (cap7 — P4).
  *
  * On missing id we hand off to Next.js' 404 page via `notFound()` instead of
@@ -42,6 +41,7 @@ type ProfilePayload = {
  */
 async function loadProfile(colaboradorId: string): Promise<ProfilePayload | "not-found"> {
   const colaboradorService = makeColaboradorService({ prisma });
+  const vacationBalanceService = makeVacationBalanceService({ prisma });
 
   const byId = await colaboradorService.getById(colaboradorId);
   if (!byId.ok) {
@@ -53,14 +53,12 @@ async function loadProfile(colaboradorId: string): Promise<ProfilePayload | "not
 
   const [reportesResult, vacacionesResult, orgTreeResult] = await Promise.all([
     colaboradorService.getReportesDirectos(colaborador.socioId),
-    colaboradorService.getVacationBalance(colaborador.id),
+    vacationBalanceService.getByColaborador(colaborador.id),
     colaboradorService.getOrgTreeBySocio(colaborador.id),
   ]);
 
   const reportesDirectos = reportesResult.ok ? reportesResult.value : 0;
-  const vacaciones = vacacionesResult.ok
-    ? (vacacionesResult.value as VacationBalanceDto | null)
-    : null;
+  const vacaciones = vacacionesResult.ok ? vacacionesResult.value : null;
   const orgTree = orgTreeResult.ok
     ? orgTreeResult.value
     : { currentColaboradorId: colaborador.id, nodes: [] };

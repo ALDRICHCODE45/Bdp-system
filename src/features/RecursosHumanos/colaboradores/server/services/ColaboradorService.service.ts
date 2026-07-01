@@ -9,7 +9,6 @@ import {
 import {
   ColaboradorRepository,
   ColaboradorWithSocio,
-  VacationBalanceRead,
 } from "../repositories/ColaboradorRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { ColaboradorHistorialService } from "./ColaboradorHistorialService.service";
@@ -438,31 +437,7 @@ export class ColaboradorService {
     }
   }
 
-  /**
-   * Read-only fetch of a colaborador's VacationBalance row.
-   *
-   * Returns `Result.ok(null)` when no balance has been registered — the UI
-   * renders that as "Sin registrar" (spec cap3 req4, NEVER 0/0). The shape
-   * stays a typed POJO (no Prisma leak past the repo boundary, CC7).
-   */
-  async getVacationBalance(
-    colaboradorId: string
-  ): Promise<Result<VacationBalanceRead | null, Error>> {
-    try {
-      const balance = await this.colaboradorRepository.findVacationBalance({
-        colaboradorId,
-      });
-      return Ok(balance);
-    } catch (error) {
-      return Err(
-        error instanceof Error
-          ? error
-          : new Error("Error al obtener balance de vacaciones")
-      );
-    }
-  }
-
-  /**
+/**
    * Build the 2-level Organigrama tree (cap7 req1).
    *
    * Groups every colaborador by `socioId` and produces one `OrgTreeNode` per

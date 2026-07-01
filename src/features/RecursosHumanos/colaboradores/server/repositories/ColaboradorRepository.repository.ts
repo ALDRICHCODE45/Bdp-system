@@ -93,14 +93,13 @@ export type UpdateColaboradorArgs = {
 /**
  * Read-only POJO for a Colaborador's VacationBalance row.
  *
- * Decoupled from the Prisma model so the service→DTO boundary does not leak
- * Prisma types (CC7). The full row is small + flat, so a typed shape is enough.
+ * NOTE: the canonical type now lives in
+ * `@/features/RecursosHumanos/colaboradores/server/dtos/VacationBalanceDto.dto.ts`
+ * (introduced in P6 — see `VacationBalanceService`). The dedicated
+ * `findVacationBalance` repo method was removed in P6 since the new service
+ * owns its own repo (`PrismaVacationBalanceRepository`) for the 1:1
+ * upsert/read surface.
  */
-export type VacationBalanceRead = {
-  colaboradorId: string;
-  diasDisponibles: number;
-  diasTomados: number;
-};
 
 export interface ColaboradorRepository {
   create(data: CreateColaboradorArgs): Promise<ColaboradorWithSocio>;
@@ -125,13 +124,6 @@ export interface ColaboradorRepository {
    * "reportes directos" by definition).
    */
   countBySocioId(data: { socioId: string | null }): Promise<number>;
-  /**
-   * Find the VacationBalance row for a colaborador (1:1). Returns null when
-   * no balance has been registered (spec cap3 req4 → "Sin registrar", NOT 0/0).
-   */
-  findVacationBalance(data: {
-    colaboradorId: string;
-  }): Promise<VacationBalanceRead | null>;
   /**
    * Build the raw rows for the Organigrama tree (cap7 req1).
    *
