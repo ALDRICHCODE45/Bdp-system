@@ -343,12 +343,25 @@ export class ColaboradorService {
     }
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: ColaboradorWithSocio[]; totalCount: number }, Error>> {
+  async getPaginated(params: import("@/features/RecursosHumanos/colaboradores/types/ColaboradoresFilterParams").ColaboradoresFilterParams): Promise<Result<{ data: ColaboradorWithSocio[]; totalCount: number }, Error>> {
     try {
       const result = await this.colaboradorRepository.getPaginated(params);
       return Ok(result);
     } catch (error) {
       return Err(error instanceof Error ? error : new Error("Error al obtener colaboradores paginados"));
+    }
+  }
+
+  async countByStatus(): Promise<Result<{ CONTRATADO: number; DESPEDIDO: number; EN_LICENCIA: number }, Error>> {
+    try {
+      const counts = await this.colaboradorRepository.countByStatus();
+      return Ok(counts);
+    } catch (error) {
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener conteos por estado"),
+      );
     }
   }
 }

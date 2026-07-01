@@ -1,15 +1,71 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, ColaboradorEstado } from "@prisma/client";
 import {
   ColaboradorRepository,
   ColaboradorWithSocio,
   CreateColaboradorArgs,
   UpdateColaboradorArgs,
 } from "./ColaboradorRepository.repository";
+import type { ColaboradoresFilterParams } from "../../types/ColaboradoresFilterParams";
 
 type PrismaTransactionClient = Omit<
   PrismaClient,
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
+
+// Columns allowed for ORDER BY — keep tight to avoid Prisma type explosions.
+const ALLOWED_SORT_COLUMNS = new Set([
+  "name",
+  "correo",
+  "puesto",
+  "status",
+  "departamento",
+  "nivel",
+  "modalidad",
+  "fechaIngreso",
+  "createdAt",
+  "updatedAt",
+]);
+
+// Statuses accepted from client (Prisma enum already validated, but belt-and-suspenders)
+const VALID_STATUSES = new Set<string>([
+  "CONTRATADO",
+  "DESPEDIDO",
+  "EN_LICENCIA",
+]);
+
+/**
+ * Build the WHERE clause for colaborador queries.
+ *
+ * - search: case-insensitive contains over name + correo + puesto
+ * - status: IN-list over validated enum values
+ */
+export function buildColaboradoresWhereClause(
+  params: Omit<ColaboradoresFilterParams, "page" | "pageSize" | "sortBy" | "sortOrder">
+): Prisma.ColaboradorWhereInput {
+  const andConditions: Prisma.ColaboradorWhereInput[] = [];
+
+  if (params.search && params.search.trim().length > 0) {
+    const q = params.search.trim();
+    andConditions.push({
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { correo: { contains: q, mode: "insensitive" } },
+        { puesto: { contains: q, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (params.status && params.status.length > 0) {
+    const validStatuses = params.status
+      .map((s) => s.toUpperCase())
+      .filter((s): s is ColaboradorEstado => VALID_STATUSES.has(s));
+    if (validStatuses.length > 0) {
+      andConditions.push({ status: { in: validStatuses } });
+    }
+  }
+
+  return andConditions.length > 0 ? { AND: andConditions } : {};
+}
 
 export class PrismaColaboradorRepository implements ColaboradorRepository {
   constructor(private prisma: PrismaClient | PrismaTransactionClient) {}
@@ -220,17 +276,27 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
     });
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }> {
+  async getPaginated(
+    params: ColaboradoresFilterParams,
+  ): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }> {
     const skip = (params.page - 1) * params.pageSize;
-    const orderBy = params.sortBy
-      ? { [params.sortBy]: params.sortOrder || "desc" }
+
+    const sortColumn =
+      params.sortBy && ALLOWED_SORT_COLUMNS.has(params.sortBy)
+        ? params.sortBy
+        : undefined;
+    const orderBy = sortColumn
+      ? { [sortColumn]: params.sortOrder ?? "desc" }
       : { createdAt: "desc" as const };
+
+    const where = buildColaboradoresWhereClause(params);
 
     const [data, totalCount] = await Promise.all([
       this.prisma.colaborador.findMany({
         skip,
         take: params.pageSize,
         orderBy,
+        where,
         include: {
           socio: {
             select: {
@@ -241,10 +307,35 @@ export class PrismaColaboradorRepository implements ColaboradorRepository {
           },
         },
       }),
-      this.prisma.colaborador.count(),
+      this.prisma.colaborador.count({ where }),
     ]);
 
     return { data, totalCount };
+  }
+
+  async countByStatus(): Promise<{
+    CONTRATADO: number;
+    DESPEDIDO: number;
+    EN_LICENCIA: number;
+  }> {
+    const rows = await this.prisma.colaborador.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    });
+
+    const counts = {
+      CONTRATADO: 0,
+      DESPEDIDO: 0,
+      EN_LICENCIA: 0,
+    };
+
+    for (const row of rows) {
+      const key = row.status as keyof typeof counts;
+      if (key in counts) {
+        counts[key] = row._count._all;
+      }
+    }
+    return counts;
   }
 
   async findBySocioId(data: {

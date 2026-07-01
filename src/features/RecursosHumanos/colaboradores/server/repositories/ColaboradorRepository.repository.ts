@@ -98,5 +98,13 @@ export interface ColaboradorRepository {
   findByCorreo(data: { correo: string }): Promise<ColaboradorWithSocio | null>;
   getAll(): Promise<ColaboradorWithSocio[]>;
   findBySocioId(data: { socioId: string }): Promise<ColaboradorWithSocio[]>;
-  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }>;
+  getPaginated(
+    params: import("@/features/RecursosHumanos/colaboradores/types/ColaboradoresFilterParams").ColaboradoresFilterParams
+  ): Promise<{ data: ColaboradorWithSocio[]; totalCount: number }>;
+  /** Count rows per status (single groupBy). Used for tab badges. */
+  countByStatus(): Promise<{
+    CONTRATADO: number;
+    DESPEDIDO: number;
+    EN_LICENCIA: number;
+  }>;
 }
