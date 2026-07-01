@@ -1,3 +1,4 @@
+import type { DocumentCategory } from "@prisma/client";
 import { FileRepository } from "../repositories/FileRespository.repository";
 import { DigitalOceanSpacesService } from "./DigitalOceanSpacesService";
 import { CreateFileDto } from "../dtos/CreateFileDto";
@@ -12,12 +13,21 @@ export class FileService {
 
   /**
    * Sube un archivo a Digital Ocean Spaces y guarda la referencia en la base de datos
+   *
+   * P5 — accepts COLABORADOR entityType + optional `expiryDate` / `category`
+   * for the Documentos / CV tabs (cap8 + cap10). Existing entityTypes
+   * continue to work unchanged (cap12 req3).
    */
   async uploadFile(
     file: File,
-    entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR",
+    entityType:
+      | "FACTURA"
+      | "MOVIMIENTO"
+      | "CLIENTE_PROVEEDOR"
+      | "COLABORADOR",
     entityId: string,
     uploadedBy?: string | null,
+    extras?: { expiryDate?: Date | string | null; category?: DocumentCategory | null },
   ): Promise<Result<FileEntity, Error>> {
     try {
       // Determinar la carpeta según el tipo de entidad
@@ -35,6 +45,8 @@ export class FileService {
         entityType,
         entityId,
         uploadedBy: uploadedBy || null,
+        expiryDate: extras?.expiryDate ?? null,
+        category: extras?.category ?? null,
       };
 
       const fileEntity = await this.fileRepository.create(createFileDto);
@@ -79,7 +91,11 @@ export class FileService {
    * Obtiene todos los archivos asociados a una entidad
    */
   async getFilesByEntity(
-    entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR",
+    entityType:
+      | "FACTURA"
+      | "MOVIMIENTO"
+      | "CLIENTE_PROVEEDOR"
+      | "COLABORADOR",
     entityId: string,
   ): Promise<Result<FileEntity[], Error>> {
     try {

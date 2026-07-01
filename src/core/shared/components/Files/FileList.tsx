@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { FileEntity } from "@/features/Files/server/entities/File.entity";
 import { Button } from "@/core/shared/ui/button";
+import { Badge } from "@/core/shared/ui/badge";
 import { Trash2, Download, File } from "lucide-react";
 import { deleteFileAction } from "@/features/Files/server/actions/deleteFileAction";
+import { DocumentExpiryBadge } from "@/core/shared/components/DocumentExpiryBadge";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -17,9 +19,19 @@ import {
   AlertDialogTrigger,
 } from "@/core/shared/ui/alert-dialog";
 
+/**
+ * P5 — widened entityType union to include COLABORADOR (cap12 req1). The
+ * list now renders the expiry badge (`DocumentExpiryBadge`, CC9) and a
+ * category chip whenever those fields are populated. Existing entityTypes
+ * are unaffected because both fields are nullable.
+ */
 interface FileListProps {
   files: FileEntity[];
-  entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR";
+  entityType:
+    | "FACTURA"
+    | "MOVIMIENTO"
+    | "CLIENTE_PROVEEDOR"
+    | "COLABORADOR";
   onFileDeleted?: () => void;
 }
 
@@ -88,8 +100,19 @@ export function FileList({ files, entityType, onFileDeleted }: FileListProps) {
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <span className="text-2xl">{getFileIcon(file.mimeType)}</span>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{file.fileName}</p>
+            <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-sm truncate">{file.fileName}</p>
+                {file.category ? (
+                  <Badge variant="secondary" className="text-[10px]">
+                    {categoryLabel(file.category)}
+                  </Badge>
+                ) : null}
+                <DocumentExpiryBadge
+                  expiryDate={file.expiryDate}
+                  className="text-[10px]"
+                />
+              </div>
               <p className="text-xs text-muted-foreground">
                 {formatFileSize(file.fileSize)} •{" "}
                 {new Date(file.createdAt).toLocaleDateString("es-MX")}
@@ -140,4 +163,26 @@ export function FileList({ files, entityType, onFileDeleted }: FileListProps) {
       ))}
     </div>
   );
+}
+
+/**
+ * Display label for the `DocumentCategory` enum. Used by the badge chip in
+ * each file row of the Documentos tab. Kept here (next to the render code
+ * that uses it) so the labels stay in lockstep with the enum from Prisma.
+ */
+function categoryLabel(category: string): string {
+  switch (category) {
+    case "CONTRATO":
+      return "Contrato";
+    case "INE":
+      return "INE";
+    case "RFC":
+      return "RFC";
+    case "COMPROBANTE_DOMICILIO":
+      return "Comprobante de domicilio";
+    case "OTRO":
+      return "Otro";
+    default:
+      return category;
+  }
 }
