@@ -54,7 +54,7 @@ const formatDate = (isoString: string | null | undefined) => {
  * P1 — Slim 7-col table for colaboradores (cap1 req1).
  *
  * Order: Colaborador · Cargo(+nivel) · Departamento · Jefe · FechaIngreso · Modalidad · Estado
- * Exactly 7 columns. No checkbox / actions (CC10: legacy reachable until P7).
+ * Exactly 7 columns. No checkbox / actions.
  */
 export const colaboradoresColumns: ColumnDef<ColaboradorDto>[] = [
   // ── 1. Colaborador ──────────────────────────────────────────────────────

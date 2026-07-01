@@ -437,7 +437,7 @@ export class ColaboradorService {
     }
   }
 
-/**
+  /**
    * Build the 2-level Organigrama tree (cap7 req1).
    *
    * Groups every colaborador by `socioId` and produces one `OrgTreeNode` per

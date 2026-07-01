@@ -24,8 +24,7 @@ import type { OrgTreeDto } from "../server/dtos/OrgTreeDto.dto";
 import type { VacationBalanceDto } from "../server/dtos/VacationBalanceDto.dto";
 
 // EditColaboradorSheet uses forms that import server-only utilities; mount it
-// via next/dynamic with ssr:false so it stays out of the RSC critical path
-// (mirrors the legacy ColaboradorIndividualPage wiring).
+// via next/dynamic with ssr:false so it stays out of the RSC critical path.
 const EditColaboradorSheet = dynamic(
   () =>
     import("../components/EditColaboradorSheet").then((mod) => ({
@@ -66,12 +65,10 @@ interface ColaboradorProfilePageProps {
  * navigation (back/forward, direct `#personal` link) in sync with the local
  * `currentTab` state, while tab clicks push the new hash onto the URL.
  *
- * Resumen (P2) / Personal / Laboral (P3) / Compensación + Organigrama (P4)
- * carry live content. Documentos / CV (P5) are now live; Ausencias (P6)
- * still renders a "Próximamente" panel and will be filled in its phase.
- *
- * The legacy `ColaboradorIndividualPage` is NOT deleted (CC10); it remains
- * reachable via its standalone import path until P7 cutover.
+ * Resumen (P2) / Personal / Laboral (P3) / Compensación + Organigrama (P4) /
+ * Documentos / CV (P5) / Ausencias (P6) all carry live content. P7 cutover
+ * removed the legacy `ColaboradorIndividualPage`; this slim 8-tab profile is
+ * now the only colaborador detail view in the app (CC10 honored).
  */
 export function ColaboradorProfilePage({ payload }: ColaboradorProfilePageProps) {
   const { colaborador, reportesDirectos, vacaciones, orgTree } = payload;

@@ -23,8 +23,11 @@ type ProfilePayload = {
 /**
  * P2 + P4 + P6 (rh-colaboradores-completo):
  *
- * Replaces the legacy render target at the SAME `[colaboradorId]` route with
- * the new 8-tab profile shell + Resumen KPIs + Organigrama tree + Ausencias.
+ * The collaborator detail route at `[colaboradorId]`. Renders the 8-tab
+ * profile shell (Resumen KPIs + Personal/Laboral/Compensación/Organigrama/
+ * Documentos/Ausencias/CV tabs). History: P2 landed the shell + Resumen,
+ * P4 added the Organigrama prefetch + tree, P6 swapped Vacations prefetch
+ * to the canonical full DTO and added the Ausencias tab.
  *
  * Resolves pre-fetched data with a single `Promise.all`, including:
  * - colaborador DTO (getById)
