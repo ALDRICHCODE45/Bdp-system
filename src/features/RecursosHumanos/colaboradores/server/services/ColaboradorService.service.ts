@@ -161,56 +161,92 @@ export class ColaboradorService {
         return Err(new Error("Ya existe un colaborador con ese correo"));
       }
 
-      const colaborador = await this.colaboradorRepository.create({
-        name: input.name,
-        correo: input.correo,
-        puesto: input.puesto,
-        status: input.status,
-        imss: input.imss,
-        socioId: input.socioId,
-        banco: input.banco,
-        clabe: input.clabe,
-        sueldo: new Prisma.Decimal(input.sueldo),
-        activos: input.activos,
-        // Datos personales
-        fechaIngreso: input.fechaIngreso,
-        genero: input.genero,
-        fechaNacimiento: input.fechaNacimiento,
-        nacionalidad: input.nacionalidad,
-        estadoCivil: input.estadoCivil,
-        tipoSangre: input.tipoSangre,
-        // Contacto y dirección
-        direccion: input.direccion,
-        telefono: input.telefono,
-        // Datos fiscales
-        rfc: input.rfc,
-        curp: input.curp,
-        // Académicos y laborales previos
-        ultimoGradoEstudios: input.ultimoGradoEstudios,
-        escuela: input.escuela,
-        ultimoTrabajo: input.ultimoTrabajo,
-        // Referencias personales
-        nombreReferenciaPersonal: input.nombreReferenciaPersonal,
-        telefonoReferenciaPersonal: input.telefonoReferenciaPersonal,
-        parentescoReferenciaPersonal: input.parentescoReferenciaPersonal,
-        // Referencias laborales
-        nombreReferenciaLaboral: input.nombreReferenciaLaboral,
-        telefonoReferenciaLaboral: input.telefonoReferenciaLaboral,
-        // Perfil extendido (rh-colaboradores-completo · P0)
-        departamento: input.departamento,
-        nivel: input.nivel,
-        modalidad: input.modalidad,
-        tipoContrato: input.tipoContrato,
-        lugarTrabajo: input.lugarTrabajo,
-        horario: input.horario,
-        fechaSalida: input.fechaSalida,
-        nombrePreferido: input.nombrePreferido,
-        documentoIdentidad: input.documentoIdentidad,
-        emailPersonal: input.emailPersonal,
-        bio: input.bio,
+      // Create the Colaborador and seed its baseline SalaryHistory row inside a
+      // single $transaction so the two writes commit atomically. The seed row
+      // is the "Contratación inicial" entry that anchors the salary history at
+      // the hire-time sueldo — without it the "Historial de sueldo" tab would
+      // only ever show later adjustments, never the starting compensation.
+      //
+      // We reinstantiate PrismaColaboradorRepository with the tx client (its
+      // constructor accepts PrismaClient | PrismaTransactionClient) so the
+      // Colaborador insert participates in the same transaction. Any throw
+      // rolls back BOTH writes: we never persist a Colaborador without its
+      // baseline salary row.
+      const colaborador = await this.prisma.$transaction(async (tx) => {
+        const { PrismaColaboradorRepository } = await import(
+          "../repositories/PrismaColaboradorRepository.repository"
+        );
+        const txColaboradorRepository = new PrismaColaboradorRepository(tx);
+
+        const created = await txColaboradorRepository.create({
+          name: input.name,
+          correo: input.correo,
+          puesto: input.puesto,
+          status: input.status,
+          imss: input.imss,
+          socioId: input.socioId,
+          banco: input.banco,
+          clabe: input.clabe,
+          sueldo: new Prisma.Decimal(input.sueldo),
+          activos: input.activos,
+          // Datos personales
+          fechaIngreso: input.fechaIngreso,
+          genero: input.genero,
+          fechaNacimiento: input.fechaNacimiento,
+          nacionalidad: input.nacionalidad,
+          estadoCivil: input.estadoCivil,
+          tipoSangre: input.tipoSangre,
+          // Contacto y dirección
+          direccion: input.direccion,
+          telefono: input.telefono,
+          // Datos fiscales
+          rfc: input.rfc,
+          curp: input.curp,
+          // Académicos y laborales previos
+          ultimoGradoEstudios: input.ultimoGradoEstudios,
+          escuela: input.escuela,
+          ultimoTrabajo: input.ultimoTrabajo,
+          // Referencias personales
+          nombreReferenciaPersonal: input.nombreReferenciaPersonal,
+          telefonoReferenciaPersonal: input.telefonoReferenciaPersonal,
+          parentescoReferenciaPersonal: input.parentescoReferenciaPersonal,
+          // Referencias laborales
+          nombreReferenciaLaboral: input.nombreReferenciaLaboral,
+          telefonoReferenciaLaboral: input.telefonoReferenciaLaboral,
+          // Perfil extendido (rh-colaboradores-completo · P0)
+          departamento: input.departamento,
+          nivel: input.nivel,
+          modalidad: input.modalidad,
+          tipoContrato: input.tipoContrato,
+          lugarTrabajo: input.lugarTrabajo,
+          horario: input.horario,
+          fechaSalida: input.fechaSalida,
+          nombrePreferido: input.nombrePreferido,
+          documentoIdentidad: input.documentoIdentidad,
+          emailPersonal: input.emailPersonal,
+          bio: input.bio,
+        });
+
+        // Seed the baseline "Contratación inicial" SalaryHistory row. Effective
+        // date defaults to the hire date (fechaIngreso); when it's absent we
+        // fall back to "now" so the row is never left without a fechaEfectiva.
+        // monto = the initial sueldo, moneda = "MXN" (schema default, set
+        // explicitly for clarity — mirrors SalaryHistoryService.adjustSalary).
+        await tx.colaboradorSalaryHistory.create({
+          data: {
+            colaboradorId: created.id,
+            fechaEfectiva: input.fechaIngreso ?? new Date(),
+            monto: new Prisma.Decimal(input.sueldo),
+            moneda: "MXN",
+            motivo: "Contratación inicial",
+          },
+        });
+
+        return created;
       });
 
-      // Crear historial para el nuevo colaborador
+      // Crear historial para el nuevo colaborador (best-effort, fuera de la tx:
+      // conserva la semántica previa — un fallo aquí NO revierte la creación).
       const historialResult =
         await this.historialService.createHistorialForNewColaborador(
           colaborador,
