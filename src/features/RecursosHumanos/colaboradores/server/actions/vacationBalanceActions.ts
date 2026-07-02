@@ -6,7 +6,6 @@ import prisma from "@/core/lib/prisma";
 import { requireAnyPermission } from "@/core/lib/permissions/server-permissions-guard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { makeVacationBalanceService } from "../services/makeVacationBalanceService";
-import { vacationBalanceSchema } from "../validators/vacationBalanceSchema";
 
 /**
  * Server actions for the VacationBalance feature (cap9 req1 + cap13).
@@ -80,7 +79,6 @@ export async function setVacationBalanceAction(input: FormData) {
   const raw = {
     colaboradorId: input.get("colaboradorId"),
     diasDisponibles: input.get("diasDisponibles"),
-    diasTomados: input.get("diasTomados"),
   };
 
   const parsedId = idSchema.safeParse({ colaboradorId: raw.colaboradorId });
@@ -101,22 +99,21 @@ export async function setVacationBalanceAction(input: FormData) {
     return Number.isFinite(n) ? Math.trunc(n) : undefined;
   };
 
-  const parsed = vacationBalanceSchema.safeParse({
-    diasDisponibles: parseNonNegativeInt(raw.diasDisponibles),
-    diasTomados: parseNonNegativeInt(raw.diasTomados),
-  });
-  if (!parsed.success) {
+  // Only the annual quota (`diasDisponibles`) is entered by hand now.
+  // `diasTomados` is derived server-side from the absence registry, so we
+  // no longer read it from the form.
+  const parsedDisponibles = parseNonNegativeInt(raw.diasDisponibles);
+  if (parsedDisponibles === undefined || parsedDisponibles < 0) {
     return {
       ok: false as const,
-      error: parsed.error.issues[0]?.message || "Error de validación",
+      error: "El cupo de vacaciones debe ser un número entero no negativo",
     };
   }
 
   const service = makeVacationBalanceService({ prisma });
   const result = await service.set({
     colaboradorId: parsedId.data.colaboradorId,
-    diasDisponibles: parsed.data.diasDisponibles,
-    diasTomados: parsed.data.diasTomados,
+    diasDisponibles: parsedDisponibles,
   });
   if (!result.ok) {
     return { ok: false as const, error: result.error.message };

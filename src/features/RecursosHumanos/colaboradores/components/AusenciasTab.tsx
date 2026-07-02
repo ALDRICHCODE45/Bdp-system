@@ -167,6 +167,21 @@ function BalanceCard({
   const balance = data ?? null;
   const [editing, setEditing] = useState(false);
 
+  // Total vacation days ALREADY registered in the absence registry below.
+  // Reuses the same TanStack Query cache key as `AbsenceRegistry`, so this
+  // is not a duplicate fetch and stays in sync with the list. This is a
+  // read-only, informational figure: the balance is manual (cap9 req5) and
+  // is NOT auto-decremented from this number — we only surface it so the
+  // registered vacation days are not orphaned from the balance card.
+  const { data: absenceRecords } = useAbsenceRecords(colaboradorId);
+  const diasVacacionesRegistrados = useMemo(
+    () =>
+      (absenceRecords ?? [])
+        .filter((r) => r.tipo === "VACACIONES")
+        .reduce((acc, r) => acc + r.dias, 0),
+    [absenceRecords]
+  );
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
@@ -176,8 +191,9 @@ function BalanceCard({
             Balance de vacaciones
           </CardTitle>
           <CardDescription>
-            Días disponibles y días tomados. Se configura manualmente; no hay
-            reglas de acumulación automática.
+            Cupo anual y días tomados. El cupo se configura manualmente; los
+            días tomados se descuentan automáticamente al registrar
+            vacaciones.
           </CardDescription>
         </div>
         <PermissionGuard
@@ -186,7 +202,7 @@ function BalanceCard({
             PermissionActions.colaboradores.gestionar,
           ]}
         >
-          {balance && !editing ? (
+          {balance ? (
             <Button
               size="sm"
               variant="outline"
@@ -203,18 +219,27 @@ function BalanceCard({
         {isLoading && !balance ? (
           <p className="text-sm text-muted-foreground">Cargando balance…</p>
         ) : !balance ? (
-          <BalanceEmptyState />
-        ) : editing ? (
-          <SetBalanceForm
-            colaboradorId={colaboradorId}
-            initial={balance}
-            onDone={() => setEditing(false)}
-            onCancel={() => setEditing(false)}
+          <BalanceEmptyState
+            diasVacacionesRegistrados={diasVacacionesRegistrados}
+            onRegister={() => setEditing(true)}
           />
         ) : (
-          <BalanceDonut balance={balance} />
+          <BalanceDonut
+            balance={balance}
+            diasTomadosLive={diasVacacionesRegistrados}
+          />
         )}
       </CardContent>
+
+      {editing ? (
+        <SetBalanceDialog
+          open={editing}
+          onOpenChange={setEditing}
+          colaboradorId={colaboradorId}
+          initial={balance}
+          diasVacacionesRegistrados={diasVacacionesRegistrados}
+        />
+      ) : null}
     </Card>
   );
 }
@@ -225,23 +250,50 @@ function BalanceCard({
  * 0/0 chart — the user explicitly hasn't set a balance, and the donut
  * shouldn't imply one exists.
  */
-function BalanceEmptyState() {
+function BalanceEmptyState({
+  diasVacacionesRegistrados,
+  onRegister,
+}: {
+  diasVacacionesRegistrados: number;
+  onRegister: () => void;
+}) {
   return (
     <Empty className="border border-dashed">
       <EmptyHeader>
         <EmptyTitle>Sin balance registrado</EmptyTitle>
         <EmptyDescription>
-          Aún no se ha registrado un balance de vacaciones para este
-          colaborador. Usa la sección &quot;Registrar ausencia&quot; abajo
-          para registrar eventos individuales.
+          Aún no se ha definido un cupo de vacaciones para este colaborador.
+          Registra el cupo anual para activar el descuento automático al
+          registrar vacaciones.
         </EmptyDescription>
       </EmptyHeader>
+      {diasVacacionesRegistrados > 0 ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Ya hay{" "}
+          <span className="font-medium text-foreground tabular-nums">
+            {formatDias(diasVacacionesRegistrados)}
+          </span>{" "}
+          de vacaciones registrados abajo. Al definir el cupo se tomarán
+          como días ya consumidos.
+        </p>
+      ) : null}
+      <PermissionGuard
+        permissions={[
+          PermissionActions.colaboradores["gestionar-ausencias"],
+          PermissionActions.colaboradores.gestionar,
+        ]}
+      >
+        <Button size="sm" onClick={onRegister} className="mt-4 gap-1">
+          <Plus className="h-4 w-4" />
+          Registrar cupo
+        </Button>
+      </PermissionGuard>
     </Empty>
   );
 }
 
 const balanceChartConfig = {
-  disponibles: {
+  restantes: {
     label: "Disponibles",
     color: "hsl(142, 71%, 45%)",
   },
@@ -251,10 +303,24 @@ const balanceChartConfig = {
   },
 } satisfies ChartConfig;
 
-function BalanceDonut({ balance }: { balance: VacationBalanceDto }) {
+function BalanceDonut({
+  balance,
+  diasTomadosLive,
+}: {
+  balance: VacationBalanceDto;
+  diasTomadosLive: number;
+}) {
+  // `diasDisponibles` is the annual QUOTA. For "tomados" we use the LIVE sum
+  // computed from the absence registry (`diasTomadosLive`) rather than the
+  // stored `balance.diasTomados`. The stored value is a secondary cache that
+  // can lag (e.g. an absence registered before auto-decrement existed), so
+  // deriving the displayed figure from the registry keeps the card honest and
+  // impossible to desync — regardless of when each absence was recorded.
+  const diasTomados = diasTomadosLive;
+  const restantes = Math.max(balance.diasDisponibles - diasTomados, 0);
   const chartData = [
-    { name: "disponibles", value: balance.diasDisponibles },
-    { name: "tomados", value: balance.diasTomados },
+    { name: "restantes", value: restantes },
+    { name: "tomados", value: diasTomados },
   ];
 
   return (
@@ -306,18 +372,21 @@ function BalanceDonut({ balance }: { balance: VacationBalanceDto }) {
       <div className="space-y-3">
         <DonutLegend
           label="Disponibles"
-          value={balance.diasDisponibles}
+          value={restantes}
           colorClass="bg-emerald-500"
         />
         <DonutLegend
           label="Tomados"
-          value={balance.diasTomados}
+          value={diasTomados}
           colorClass="bg-amber-500"
         />
         <Separator />
         <p className="text-xs text-muted-foreground">
-          {balance.diasTomados} tomados · {balance.diasDisponibles}{" "}
-          disponibles
+          Cupo anual:{" "}
+          <span className="font-medium text-foreground tabular-nums">
+            {balance.diasDisponibles} días
+          </span>{" "}
+          · {diasTomados} tomados · {restantes} disponibles
         </p>
       </div>
     </div>
@@ -347,96 +416,140 @@ function DonutLegend({
 }
 
 /**
- * Manual setter for the VacationBalance. The Service uses Prisma's atomic
- * `upsert` so this form simply overwrites the current (diasDisponibles,
- * diasTomados) tuple on submit.
+ * Dialog to set the annual vacation QUOTA (`diasDisponibles`).
+ *
+ * The user only edits the quota. `diasTomados` is NOT a form field anymore:
+ * it is derived server-side from the sum of every VACACIONES absence, so the
+ * dialog shows it as a read-only, informational figure. On submit the server
+ * re-derives the taken days and upserts the balance.
+ *
+ * `initial` is null when no quota exists yet — the dialog seeds the quota
+ * input to the days already registered (a sensible default) and creates the
+ * row via the upsert action.
  */
-function SetBalanceForm({
+function SetBalanceDialog({
+  open,
+  onOpenChange,
   colaboradorId,
   initial,
-  onDone,
-  onCancel,
+  diasVacacionesRegistrados,
 }: {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
   colaboradorId: string;
-  initial: VacationBalanceDto;
-  onDone: () => void;
-  onCancel: () => void;
+  initial: VacationBalanceDto | null;
+  diasVacacionesRegistrados: number;
 }) {
-  const [disponiblesError, setDisponiblesError] = useState<string | null>(
-    null
+  const [cupo, setCupo] = useState(
+    String(initial?.diasDisponibles ?? diasVacacionesRegistrados)
   );
-  const [tomadosError, setTomadosError] = useState<string | null>(null);
+  const [cupoError, setCupoError] = useState<string | null>(null);
 
   const setBalance = useSetVacationBalance(colaboradorId);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
-
-    const disponibles = Number(fd.get("diasDisponibles") ?? "");
-    const tomados = Number(fd.get("diasTomados") ?? "");
-
-    const newDispError =
-      Number.isInteger(disponibles) && disponibles >= 0
-        ? null
-        : "Días disponibles inválido";
-    const newTomError =
-      Number.isInteger(tomados) && tomados >= 0 ? null : "Días tomados inválido";
-
-    setDisponiblesError(newDispError);
-    setTomadosError(newTomError);
-    if (newDispError || newTomError) return;
-
-    fd.set("colaboradorId", colaboradorId);
-    setBalance.mutate(fd, { onSuccess: () => onDone() });
+  const handleClose = (next: boolean) => {
+    if (setBalance.isPending) return;
+    onOpenChange(next);
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const parsed = Number(cupo);
+    if (!Number.isInteger(parsed) || parsed < 0) {
+      setCupoError("Ingresa un número entero de días (0 o mayor)");
+      return;
+    }
+    if (parsed < diasVacacionesRegistrados) {
+      setCupoError(
+        `El cupo no puede ser menor a los ${diasVacacionesRegistrados} días ya tomados. ` +
+          `Reduce las vacaciones registradas o sube el cupo.`
+      );
+      return;
+    }
+    setCupoError(null);
+
+    const fd = new FormData();
+    fd.set("colaboradorId", colaboradorId);
+    fd.set("diasDisponibles", String(parsed));
+    setBalance.mutate(fd, { onSuccess: () => onOpenChange(false) });
+  };
+
+  const cupoNum = Number(cupo);
+  const restante =
+    Number.isInteger(cupoNum) && cupoNum >= diasVacacionesRegistrados
+      ? cupoNum - diasVacacionesRegistrados
+      : null;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <FieldGroup>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field data-invalid={Boolean(disponiblesError)}>
-            <FieldLabel>Días disponibles</FieldLabel>
-            <Input
-              name="diasDisponibles"
-              type="number"
-              min={0}
-              defaultValue={initial.diasDisponibles}
-            />
-            {disponiblesError ? (
-              <FieldError errors={[{ message: disponiblesError } as never]} />
-            ) : null}
-          </Field>
-          <Field data-invalid={Boolean(tomadosError)}>
-            <FieldLabel>Días tomados</FieldLabel>
-            <Input
-              name="diasTomados"
-              type="number"
-              min={0}
-              defaultValue={initial.diasTomados}
-            />
-            {tomadosError ? (
-              <FieldError errors={[{ message: tomadosError } as never]} />
-            ) : null}
-          </Field>
-        </div>
-      </FieldGroup>
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onCancel}
-          disabled={setBalance.isPending}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit" size="sm" disabled={setBalance.isPending}>
-          {setBalance.isPending ? "Guardando…" : "Guardar balance"}
-        </Button>
-      </div>
-    </form>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {initial ? "Ajustar cupo de vacaciones" : "Registrar cupo de vacaciones"}
+          </DialogTitle>
+          <DialogDescription>
+            Define el cupo anual de vacaciones. Los días tomados se calculan
+            automáticamente a partir de las ausencias registradas.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FieldGroup>
+            <Field data-invalid={Boolean(cupoError)}>
+              <FieldLabel>Días de vacaciones al año</FieldLabel>
+              <Input
+                name="diasDisponibles"
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={cupo}
+                onChange={(e) =>
+                  setCupo(e.target.value.replace(/[^\d]/g, ""))
+                }
+                placeholder="Ej. 12"
+              />
+              {cupoError ? (
+                <FieldError errors={[{ message: cupoError } as never]} />
+              ) : null}
+            </Field>
+          </FieldGroup>
+
+          <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">
+                Días ya tomados (registrados)
+              </span>
+              <span className="font-medium tabular-nums">
+                {formatDias(diasVacacionesRegistrados)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">
+                Días disponibles restantes
+              </span>
+              <span className="font-medium tabular-nums">
+                {restante === null ? "—" : formatDias(restante)}
+              </span>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleClose(false)}
+              disabled={setBalance.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" size="sm" disabled={setBalance.isPending}>
+              {setBalance.isPending ? "Guardando…" : "Guardar cupo"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
