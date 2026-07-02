@@ -114,78 +114,91 @@ export function ColaboradorProfilePage({ payload }: ColaboradorProfilePageProps)
   }, []);
 
   return (
-    <div className="space-y-6 pb-8">
-      <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
-        {/* Mobile-friendly horizontal scroll wrapper for the tab list. */}
-        <div className="overflow-x-auto scrollbar-thin -mx-2 px-2 md:mx-0 md:px-0">
-          <TabsList className="w-max min-w-full md:w-auto md:min-w-2/3">
-            {TAB_DEFINITIONS.map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="whitespace-nowrap"
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+    // Cap the content width and center it. On ultrawide monitors the profile
+    // would otherwise stretch edge-to-edge — long lines and far-apart KPIs hurt
+    // readability. 1800px keeps the 4-column KPI row comfortable while leaving
+    // the overflow as side margin (mx-auto). Narrower viewports are unaffected.
+    <div className="mx-auto w-full max-w-[1800px] pb-8">
+      {/* Persistent two-column shell: the identity rail is a FIXED left column
+          that stays visible across every tab (previously it lived inside the
+          Resumen TabsContent only, so it vanished on any other tab). On
+          desktop the rail is sticky so it tracks the content scroll; on mobile
+          the grid collapses to a single column and the rail stacks on top. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
+        <div className="lg:sticky lg:top-6">
+          <ProfileIdentityRail colaborador={colaborador} onEdit={openModal} />
         </div>
 
-        {/* ── Resumen (only tab with real content in P2) ────────────── */}
-        <TabsContent value="resumen" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
-            <ProfileIdentityRail
-              colaborador={colaborador}
-              onEdit={openModal}
-            />
-            <div className="min-w-0">
+        <div className="min-w-0">
+          <Tabs
+            value={currentTab}
+            onValueChange={handleTabChange}
+            className="w-full"
+          >
+            {/* Mobile-friendly horizontal scroll wrapper for the tab list. */}
+            <div className="overflow-x-auto scrollbar-thin -mx-2 px-2 md:mx-0 md:px-0">
+              <TabsList className="w-max min-w-full md:w-auto">
+                {TAB_DEFINITIONS.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="whitespace-nowrap"
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+
+            {/* ── Resumen ───────────────────────────────────────────── */}
+            <TabsContent value="resumen" className="mt-6">
               <ResumenTab
                 colaborador={colaborador}
                 reportesDirectos={reportesDirectos}
                 vacaciones={vacaciones}
               />
-            </div>
-          </div>
-        </TabsContent>
+            </TabsContent>
 
-        {/* ── Personal (P3 — cap4 + cap6 emergency-contact CRUD) ────── */}
-        <TabsContent value="personal" className="mt-6">
-          <PersonalTab colaborador={colaborador} />
-        </TabsContent>
+            {/* ── Personal (P3 — cap4 + cap6 emergency-contact CRUD) ── */}
+            <TabsContent value="personal" className="mt-6">
+              <PersonalTab colaborador={colaborador} />
+            </TabsContent>
 
-        {/* ── Laboral (P3 — cap5 position + responsabilidad CRUD) ────── */}
-        <TabsContent value="laboral" className="mt-6">
-          <LaboralTab colaborador={colaborador} />
-        </TabsContent>
+            {/* ── Laboral (P3 — cap5 position + responsabilidad CRUD) ── */}
+            <TabsContent value="laboral" className="mt-6">
+              <LaboralTab colaborador={colaborador} />
+            </TabsContent>
 
-        {/* ── Compensación (P4 — cap6 compensation-history) ─────────── */}
-        <TabsContent value="compensacion" className="mt-6">
-          <CompensacionTab colaborador={colaborador} />
-        </TabsContent>
+            {/* ── Compensación (P4 — cap6 compensation-history) ─────── */}
+            <TabsContent value="compensacion" className="mt-6">
+              <CompensacionTab colaborador={colaborador} />
+            </TabsContent>
 
-        {/* ── Organigrama (P4 — cap7 employee-org-tree) ─────────────── */}
-        <TabsContent value="organigrama" className="mt-6">
-          <OrganigramaTab tree={orgTree} />
-        </TabsContent>
+            {/* ── Organigrama (P4 — cap7 employee-org-tree) ─────────── */}
+            <TabsContent value="organigrama" className="mt-6">
+              <OrganigramaTab tree={orgTree} />
+            </TabsContent>
 
-        {/* ── Documentos (P5 — cap8 + cap12) ────────────────────────── */}
-        <TabsContent value="documentos" className="mt-6">
-          <DocumentosTab colaboradorId={colaborador.id} />
-        </TabsContent>
+            {/* ── Documentos (P5 — cap8 + cap12) ────────────────────── */}
+            <TabsContent value="documentos" className="mt-6">
+              <DocumentosTab colaboradorId={colaborador.id} />
+            </TabsContent>
 
-        {/* ── CV (P5 — cap10) ───────────────────────────────────────── */}
-        <TabsContent value="cv" className="mt-6">
-          <CvTab colaboradorId={colaborador.id} />
-        </TabsContent>
+            {/* ── CV (P5 — cap10) ───────────────────────────────────── */}
+            <TabsContent value="cv" className="mt-6">
+              <CvTab colaboradorId={colaborador.id} />
+            </TabsContent>
 
-        {/* ── Ausencias (P6 — cap9 + cap13) ─────────────────────────── */}
-        <TabsContent value="ausencias" className="mt-6">
-          <AusenciasTab
-            colaboradorId={colaborador.id}
-            vacaciones={vacaciones}
-          />
-        </TabsContent>
-      </Tabs>
+            {/* ── Ausencias (P6 — cap9 + cap13) ─────────────────────── */}
+            <TabsContent value="ausencias" className="mt-6">
+              <AusenciasTab
+                colaboradorId={colaborador.id}
+                vacaciones={vacaciones}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
 
       {/* Edit modal — only rendered when triggered (mounted lazily). */}
       {isOpen && (

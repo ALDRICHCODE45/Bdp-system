@@ -42,7 +42,7 @@ export function ProfileIdentityRail({
   const initials = getInitials(colaborador.name);
 
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader className="items-center text-center">
         <Avatar className="h-20 w-20 mx-auto">
           <AvatarImage src="" alt={colaborador.name} />
