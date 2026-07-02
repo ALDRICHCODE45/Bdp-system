@@ -38,7 +38,7 @@ export function EditColaboradorSheet({
             Modifica la información del colaborador:
           </SheetDescription>
         </SheetHeader>
-        <div className="h-[80vh] overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <EditColaboradorForm colaborador={colaborador} onSuccess={onClose} />
         </div>
         <SheetFooter>
