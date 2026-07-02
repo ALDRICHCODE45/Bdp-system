@@ -11,14 +11,16 @@ import { Button } from "@/core/shared/ui/button";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/core/shared/ui/card";
 import { Separator } from "@/core/shared/ui/separator";
+import { cn } from "@/core/lib/utils";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { ColaboradorStatusBadge } from "./ColaboradorStatusBadge";
-import { MODALIDAD_LABELS, NIVEL_LABELS } from "../helpers/colaboradorLabels";
+import {
+  MODALIDAD_LABELS,
+  NIVEL_LABELS,
+} from "../helpers/colaboradorLabels";
 import type { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 
 interface ProfileIdentityRailProps {
@@ -40,25 +42,70 @@ export function ProfileIdentityRail({
   onEdit,
 }: ProfileIdentityRailProps) {
   const initials = getInitials(colaborador.name);
+  const isActive = colaborador.status === "CONTRATADO";
 
   return (
-    <Card>
-      <CardHeader className="items-center text-center">
-        <Avatar className="h-20 w-20 mx-auto">
-          <AvatarImage src="" alt={colaborador.name} />
-          <AvatarFallback className="text-xl font-semibold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="space-y-2 w-full">
-          <CardTitle className="text-lg">{colaborador.name}</CardTitle>
-          <div className="flex justify-center">
-            <ColaboradorStatusBadge status={colaborador.status} />
+    <Card className="overflow-hidden pt-0">
+      {/* Header banner: a subtle navy gradient stripe behind the avatar — the
+          "soul" accent that replaces the flat monochrome header. Navy conveys
+          the trust/authority a law firm brand wants (vs. HoundFe's tech
+          orange). The avatar overlaps the banner bottom edge for depth. */}
+      <div className="relative h-20 bg-gradient-to-br from-blue-900 via-blue-800 to-slate-700 dark:from-blue-950 dark:via-blue-900 dark:to-slate-800">
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+          <div className="relative">
+            <Avatar className="h-20 w-20 ring-4 ring-card">
+              <AvatarImage src="" alt={colaborador.name} />
+              <AvatarFallback className="bg-blue-900 text-lg font-semibold text-white dark:bg-blue-800">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            {/* Status dot: green when active, muted otherwise (HoundFe cue). */}
+            <span
+              className={cn(
+                "absolute bottom-1 right-1 h-4 w-4 rounded-full ring-2 ring-card",
+                isActive ? "bg-emerald-500" : "bg-muted-foreground"
+              )}
+              aria-hidden
+            />
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <Separator />
+      <div className="mt-12 px-6 text-center">
+        <h2 className="text-lg font-semibold leading-tight">
+          {colaborador.name}
+        </h2>
+        {colaborador.puesto && (
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {colaborador.puesto}
+          </p>
+        )}
+
+        {/* Category badge row (HoundFe cue): departamento / estado / modalidad,
+            each with soft semantic color. Only rendered when the field exists —
+            no fabricated placeholders. */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+          {colaborador.departamento && (
+            <Badge
+              variant="secondary"
+              className="rounded-full border-0 bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+            >
+              {colaborador.departamento}
+            </Badge>
+          )}
+          <ColaboradorStatusBadge status={colaborador.status} />
+          {colaborador.modalidad && (
+            <Badge
+              variant="secondary"
+              className="rounded-full border-0 bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300"
+            >
+              {MODALIDAD_LABELS[colaborador.modalidad] ?? colaborador.modalidad}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <Separator className="mt-4" />
 
       <CardContent className="space-y-4">
         {/* Corporate email — kept in the rail because it's the canonical
@@ -128,10 +175,9 @@ export function ProfileIdentityRail({
           permissions={[PermissionActions.colaboradores.editar]}
         >
           <Button
-            variant="outline"
             size="sm"
             onClick={onEdit}
-            className="w-full gap-2"
+            className="w-full gap-2 bg-blue-900 text-white hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700"
           >
             <Edit className="h-4 w-4" />
             Editar
