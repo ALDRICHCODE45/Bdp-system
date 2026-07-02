@@ -414,7 +414,7 @@ function AddEmergencyContactDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Agregar contacto de emergencia</DialogTitle>
           <DialogDescription>
@@ -422,9 +422,9 @@ function AddEmergencyContactDialog({
             parentesco y teléfono son obligatorios.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field data-invalid={Boolean(errors.nombre)}>
                 <FieldLabel>Nombre</FieldLabel>
                 <Input
@@ -595,7 +595,7 @@ function EditEmergencyContactDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Editar contacto de emergencia</DialogTitle>
           <DialogDescription>
@@ -603,9 +603,9 @@ function EditEmergencyContactDialog({
             parentesco y teléfono son obligatorios.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field data-invalid={Boolean(errors.nombre)}>
                 <FieldLabel>Nombre</FieldLabel>
                 <Input
