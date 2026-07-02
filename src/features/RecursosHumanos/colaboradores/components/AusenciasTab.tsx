@@ -646,12 +646,15 @@ function CreateAbsenceDialog({
 
     let computedDias = 0;
     if (!newErrors.fechaInicio && !newErrors.fechaFin) {
-      const start = new Date(fechaInicio);
-      const end = new Date(fechaFin);
-      if (
-        !Number.isFinite(start.getTime()) ||
-        !Number.isFinite(end.getTime())
-      ) {
+      // Parse the "YYYY-MM-DD" form strings through LOCAL parts. Using
+      // `new Date("YYYY-MM-DD")` here parsed as UTC midnight, which in a
+      // negative-offset timezone (America/Mexico_City, UTC-6) lands on the
+      // PREVIOUS day at 18:00 local — that shifted the inclusive-days count
+      // by one. `parseYmdToDate` builds the Date from local parts, so the
+      // count matches the calendar days the user actually picked.
+      const start = parseYmdToDate(fechaInicio);
+      const end = parseYmdToDate(fechaFin);
+      if (!start || !end) {
         if (!newErrors.fechaInicio) newErrors.fechaInicio = "Fecha inválida";
         if (!newErrors.fechaFin) newErrors.fechaFin = "Fecha inválida";
       } else if (end.getTime() < start.getTime()) {
@@ -790,15 +793,23 @@ function CreateAbsenceDialog({
 /**
  * Format a date range as `dd MMM yyyy – dd MMM yyyy` using the es locale.
  * Falls back to the raw ISO if either value is unparseable.
+ *
+ * The DTO serializes these dates with `Date.toISOString()`, i.e. the absence
+ * dates are stored as UTC-midnight of the picked "YYYY-MM-DD" day. Reading
+ * them back with LOCAL formatting (the previous `format(new Date(iso), …)`)
+ * shifted the displayed day backwards in negative-offset timezones
+ * (America/Mexico_City, UTC-6). We rebuild each Date from its UTC parts so the
+ * rendered day always equals the day the user originally selected, regardless
+ * of the viewer's timezone.
  */
 function formatDateRange(startIso: string, endIso: string): string {
   try {
-    const start = new Date(startIso);
-    const end = new Date(endIso);
-    if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
+    const start = utcDateFromIso(startIso);
+    const end = utcDateFromIso(endIso);
+    if (!start || !end) {
       return `${startIso} – ${endIso}`;
     }
-    const sameYear = start.getUTCFullYear() === end.getUTCFullYear();
+    const sameYear = start.getFullYear() === end.getFullYear();
     const startStr = format(start, sameYear ? "d MMM" : "d MMM yyyy", {
       locale: es,
     });
@@ -807,6 +818,22 @@ function formatDateRange(startIso: string, endIso: string): string {
   } catch {
     return `${startIso} – ${endIso}`;
   }
+}
+
+/**
+ * Rebuild a local Date carrying the UTC calendar day of an ISO string. This
+ * cancels the timezone shift for dates that were stored as UTC-midnight of a
+ * "YYYY-MM-DD" value, so the displayed day matches the stored day. Returns
+ * `undefined` when the ISO is unparseable.
+ */
+function utcDateFromIso(iso: string): Date | undefined {
+  const parsed = new Date(iso);
+  if (!Number.isFinite(parsed.getTime())) return undefined;
+  return new Date(
+    parsed.getUTCFullYear(),
+    parsed.getUTCMonth(),
+    parsed.getUTCDate()
+  );
 }
 
 function formatDias(dias: number): string {
