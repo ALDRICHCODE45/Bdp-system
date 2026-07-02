@@ -44,6 +44,9 @@
 }
 
 :root {
+  /* BDP Legal palette — navy (hue ~250) as the brand accent. Neutrals stay a
+     clean white/gray (appropriate for a law firm); only the interactive
+     accent tokens carry the navy. */
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -51,7 +54,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  /* Navy — primary action color: buttons, active tabs, links. */
+  --primary: oklch(0.35 0.09 250);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -62,7 +66,8 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Focus ring picks up the navy accent for coherence. */
+  --ring: oklch(0.35 0.09 250);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -70,47 +75,55 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  /* Active sidebar item in navy. */
+  --sidebar-primary: oklch(0.35 0.09 250);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.35 0.09 250);
 }
 
 .dark {
-  /* Warm Slate — hue 25 (cálido, tipo papel/cuero), chroma muy sutil */
-  --background: oklch(0.16 0.012 25);
-  --foreground: oklch(0.94 0.006 60);
-  --card: oklch(0.20 0.014 25);
-  --card-foreground: oklch(0.94 0.006 60);
-  --popover: oklch(0.20 0.014 25);
-  --popover-foreground: oklch(0.94 0.006 60);
-  --primary: oklch(0.90 0.008 60);
-  --primary-foreground: oklch(0.18 0.012 25);
-  --secondary: oklch(0.26 0.016 25);
-  --secondary-foreground: oklch(0.94 0.006 60);
-  --muted: oklch(0.23 0.014 25);
-  --muted-foreground: oklch(0.62 0.010 40);
-  --accent: oklch(0.26 0.016 25);
-  --accent-foreground: oklch(0.94 0.006 60);
+  /* Neutral near-black base (soft, not pure black) with only a whisper of cool
+     tint so it never reads as "café" — but the fondo must stay essentially
+     NEUTRAL. The navy is reserved for the accent (--primary), so blue only
+     shows up on interactive/highlight elements, giving dynamism without
+     tinting the whole surface. Low chroma (~0.004-0.008) keeps the base gray. */
+  --background: oklch(0.17 0.004 250);
+  --foreground: oklch(0.96 0.003 250);
+  --card: oklch(0.205 0.005 250);
+  --card-foreground: oklch(0.96 0.003 250);
+  --popover: oklch(0.205 0.005 250);
+  --popover-foreground: oklch(0.96 0.003 250);
+  /* Navy accent — vivid, this is where the blue lives. */
+  --primary: oklch(0.60 0.13 255);
+  --primary-foreground: oklch(0.98 0.005 250);
+  --secondary: oklch(0.26 0.006 250);
+  --secondary-foreground: oklch(0.96 0.003 250);
+  --muted: oklch(0.23 0.005 250);
+  --muted-foreground: oklch(0.66 0.008 250);
+  --accent: oklch(0.26 0.006 250);
+  --accent-foreground: oklch(0.96 0.003 250);
   --destructive: oklch(0.65 0.20 22);
-  --border: oklch(0.94 0.006 60 / 10%);
-  --input: oklch(0.94 0.006 60 / 12%);
-  --ring: oklch(0.62 0.010 40);
+  --border: oklch(0.96 0.003 250 / 10%);
+  --input: oklch(0.96 0.003 250 / 12%);
+  --ring: oklch(0.60 0.13 255);
+  /* Charts stay multicolor — data series need distinct hues, independent of
+     the navy brand accent. */
   --chart-1: oklch(0.72 0.15 55);
   --chart-2: oklch(0.65 0.13 162);
   --chart-3: oklch(0.70 0.14 85);
   --chart-4: oklch(0.60 0.18 304);
   --chart-5: oklch(0.68 0.17 22);
-  --sidebar: oklch(0.18 0.013 25);
-  --sidebar-foreground: oklch(0.94 0.006 60);
-  --sidebar-primary: oklch(0.72 0.15 55);
-  --sidebar-primary-foreground: oklch(0.16 0.012 25);
-  --sidebar-accent: oklch(0.23 0.014 25);
-  --sidebar-accent-foreground: oklch(0.94 0.006 60);
-  --sidebar-border: oklch(0.94 0.006 60 / 8%);
-  --sidebar-ring: oklch(0.62 0.010 40);
+  --sidebar: oklch(0.15 0.004 250);
+  --sidebar-foreground: oklch(0.96 0.003 250);
+  --sidebar-primary: oklch(0.60 0.13 255);
+  --sidebar-primary-foreground: oklch(0.98 0.005 250);
+  --sidebar-accent: oklch(0.23 0.005 250);
+  --sidebar-accent-foreground: oklch(0.96 0.003 250);
+  --sidebar-border: oklch(0.96 0.003 250 / 8%);
+  --sidebar-ring: oklch(0.60 0.13 255);
 }
 
 @layer base {
