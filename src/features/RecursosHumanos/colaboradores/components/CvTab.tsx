@@ -476,7 +476,7 @@ function AddEducationEntryDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Agregar formación académica</DialogTitle>
           <DialogDescription>
@@ -484,9 +484,9 @@ function AddEducationEntryDialog({
             año.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field data-invalid={Boolean(errors.institucion)}>
                 <FieldLabel>Institución</FieldLabel>
                 <Input

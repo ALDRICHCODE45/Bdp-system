@@ -419,7 +419,7 @@ function AddResponsabilidadDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Agregar responsabilidad</DialogTitle>
           <DialogDescription>
@@ -427,9 +427,9 @@ function AddResponsabilidadDialog({
             manualmente o dejarlo en 0 para que aparezca al final.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field
                 className="sm:col-span-2"
                 data-invalid={Boolean(errors.descripcion)}

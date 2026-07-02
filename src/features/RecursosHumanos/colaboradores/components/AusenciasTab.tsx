@@ -693,7 +693,7 @@ function CreateAbsenceDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Registrar ausencia</DialogTitle>
           <DialogDescription>
@@ -701,7 +701,7 @@ function CreateAbsenceDialog({
             recalcula los días para garantizar la regla inclusiva.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <FieldGroup>
             <Field data-invalid={Boolean(errors.tipo)}>
               <FieldLabel>Tipo</FieldLabel>
@@ -722,7 +722,7 @@ function CreateAbsenceDialog({
               ) : null}
             </Field>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field data-invalid={Boolean(errors.fechaInicio)}>
                 <FieldLabel>Fecha de inicio</FieldLabel>
                 <DatePicker
