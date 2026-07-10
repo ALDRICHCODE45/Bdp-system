@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "bunx tsx src/core/seed/seed.ts",
+    "migrate:file-acl": "bunx tsx scripts/migrate-file-acl.ts",
     "prisma:deploy": "bunx prisma migrate deploy && bunx prisma generate",
     "prisma:studio": "bunx prisma studio"
   },

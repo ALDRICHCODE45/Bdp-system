@@ -107,39 +107,39 @@ enum MovimientoFacturadoPor {
 }
 
 model Socio {
-  id                      String             @id @default(uuid())
-  nombre                  String
-  email                   String             @unique
-  telefono                String?
-  activo                  Boolean            @default(true)
-  fechaIngreso            DateTime           @default(now())
-  departamento            String?
-  numeroEmpleados         Int                @default(0)
-  notas                   String?
-  colaboradores           Colaborador[]
-  clientesProveedores     ClienteProveedor[]
-  movimientosComoSolicitante Movimiento[] @relation("MovimientoSolicitante")
-  movimientosComoAutorizador Movimiento[] @relation("MovimientoAutorizador")
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
-  asuntosJuridicos        AsuntoJuridico[]
-  registrosHoraJuridico   RegistroHora[]
+  id                         String             @id @default(uuid())
+  nombre                     String
+  email                      String             @unique
+  telefono                   String?
+  activo                     Boolean            @default(true)
+  fechaIngreso               DateTime           @default(now())
+  departamento               String?
+  numeroEmpleados            Int                @default(0)
+  notas                      String?
+  colaboradores              Colaborador[]
+  clientesProveedores        ClienteProveedor[]
+  movimientosComoSolicitante Movimiento[]       @relation("MovimientoSolicitante")
+  movimientosComoAutorizador Movimiento[]       @relation("MovimientoAutorizador")
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+  asuntosJuridicos           AsuntoJuridico[]
+  registrosHoraJuridico      RegistroHora[]
 
   @@index([email])
   @@index([activo])
 }
 
 model Colaborador {
-  id                           String                 @id @default(uuid())
+  id                           String                       @id @default(uuid())
   name                         String
-  correo                       String                 @unique
+  correo                       String                       @unique
   puesto                       String
-  status                       ColaboradorEstado      @default(CONTRATADO)
-  imss                         Boolean                @default(true)
+  status                       ColaboradorEstado            @default(CONTRATADO)
+  imss                         Boolean                      @default(true)
   socioId                      String?
-  socio                        Socio?                 @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  socio                        Socio?                       @relation(fields: [socioId], references: [id], onDelete: SetNull)
   // Datos personales
-  fechaIngreso                 DateTime               @default(now())
+  fechaIngreso                 DateTime                     @default(now())
   genero                       String?
   fechaNacimiento              DateTime?
   nacionalidad                 String?
@@ -165,7 +165,7 @@ model Colaborador {
   // Datos financieros actuales
   banco                        String
   clabe                        String
-  sueldo                       Decimal                @db.Decimal(15, 3)
+  sueldo                       Decimal                      @db.Decimal(15, 3)
   activos                      String[]
   // Perfil extendido (rh-colaboradores-completo · P0 — todos nullable)
   departamento                 String?
@@ -187,8 +187,8 @@ model Colaborador {
   education                    EducationEntry[]
   absences                     AbsenceRecord[]
   vacationBalance              VacationBalance?
-  createdAt                    DateTime               @default(now())
-  updatedAt                    DateTime               @updatedAt
+  createdAt                    DateTime                     @default(now())
+  updatedAt                    DateTime                     @updatedAt
   asistencias                  Asistencia[]
 
   @@index([socioId])
@@ -244,21 +244,21 @@ model EntradasSalidas {
 }
 
 model User {
-  id                         String             @id @default(uuid())
-  email                      String             @unique
+  id                         String                  @id @default(uuid())
+  email                      String                  @unique
   name                       String
   password                   String
   roles                      UserRole[]
-  isActive                   Boolean            @default(true)
-  createdAt                  DateTime           @default(now())
-  updatedAt                  DateTime           @updatedAt
-  clientesProveedoresCreados ClienteProveedor[] @relation("ClienteProveedorIngresadoPor")
-  movimientosCreados         Movimiento[]       @relation("MovimientoIngresadoPor")
-  facturasCreadas            Factura[]          @relation("FacturaIngresadoPor")
+  isActive                   Boolean                 @default(true)
+  createdAt                  DateTime                @default(now())
+  updatedAt                  DateTime                @updatedAt
+  clientesProveedoresCreados ClienteProveedor[]      @relation("ClienteProveedorIngresadoPor")
+  movimientosCreados         Movimiento[]            @relation("MovimientoIngresadoPor")
+  facturasCreadas            Factura[]               @relation("FacturaIngresadoPor")
   equiposJuridicos           EquipoJuridicoUsuario[]
   registrosHora              RegistroHora[]
-  autorizacionesSolicitadas  AutorizacionEdicion[]  @relation("AutorizacionSolicitante")
-  autorizacionesResueltas    AutorizacionEdicion[]  @relation("AutorizacionAutorizador")
+  autorizacionesSolicitadas  AutorizacionEdicion[]   @relation("AutorizacionSolicitante")
+  autorizacionesResueltas    AutorizacionEdicion[]   @relation("AutorizacionAutorizador")
 }
 
 model Role {
@@ -311,29 +311,29 @@ model UserRole {
 }
 
 model ClienteProveedor {
-  id                      String                      @id @default(uuid())
-  nombre                  String
-  rfc                     String
-  tipo                    ClienteProveedorTipo
-  direccion               String
-  telefono                String
-  email                   String
-  contacto                String
-  numeroCuenta            String?
-  clabe                   String?
-  banco                   String?
-  activo                  Boolean                     @default(true)
-  fechaRegistro           DateTime                    @default(now())
-  notas                   String?
-  socioId                 String?
-  socio                   Socio?                      @relation(fields: [socioId], references: [id], onDelete: SetNull)
-  ingresadoPor            String?
-  ingresadoPorRef         User?                       @relation("ClienteProveedorIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
-  movimientosComoProveedor Movimiento[]               @relation("MovimientoProveedor")
-  movimientosComoCliente   Movimiento[]               @relation("MovimientoCliente")
-  historial               ClienteProveedorHistorial[]
-  createdAt               DateTime                    @default(now())
-  updatedAt               DateTime                    @updatedAt
+  id                       String                      @id @default(uuid())
+  nombre                   String
+  rfc                      String
+  tipo                     ClienteProveedorTipo
+  direccion                String
+  telefono                 String
+  email                    String
+  contacto                 String
+  numeroCuenta             String?
+  clabe                    String?
+  banco                    String?
+  activo                   Boolean                     @default(true)
+  fechaRegistro            DateTime                    @default(now())
+  notas                    String?
+  socioId                  String?
+  socio                    Socio?                      @relation(fields: [socioId], references: [id], onDelete: SetNull)
+  ingresadoPor             String?
+  ingresadoPorRef          User?                       @relation("ClienteProveedorIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
+  movimientosComoProveedor Movimiento[]                @relation("MovimientoProveedor")
+  movimientosComoCliente   Movimiento[]                @relation("MovimientoCliente")
+  historial                ClienteProveedorHistorial[]
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
 
   @@unique([rfc, tipo])
   @@index([activo])
@@ -342,15 +342,15 @@ model ClienteProveedor {
 }
 
 model Movimiento {
-  id                        String                 @id @default(uuid())
-  tipo                      MovimientoTipo
-  titular                   String
-  estadoCuenta              String
-  fechaCorte                DateTime
-  fechaOperacion            DateTime
-  descripcionLiteral        String
-  monto                     Decimal                @db.Decimal(15, 2)
-  dedupHash                 String                 @unique
+  id                 String         @id @default(uuid())
+  tipo               MovimientoTipo
+  titular            String
+  estadoCuenta       String
+  fechaCorte         DateTime
+  fechaOperacion     DateTime
+  descripcionLiteral String
+  monto              Decimal        @db.Decimal(15, 2)
+  dedupHash          String         @unique
 
   // Optional fields
   concepto                  String?
@@ -364,32 +364,32 @@ model Movimiento {
   folioFiscal               String?
 
   // Proveedor (text + optional FK)
-  proveedor                 String?
-  proveedorId               String?
-  proveedorRef              ClienteProveedor?      @relation("MovimientoProveedor", fields: [proveedorId], references: [id], onDelete: SetNull)
+  proveedor    String?
+  proveedorId  String?
+  proveedorRef ClienteProveedor? @relation("MovimientoProveedor", fields: [proveedorId], references: [id], onDelete: SetNull)
 
   // Cliente (text + optional FK)
-  cliente                   String?
-  clienteId                 String?
-  clienteRef                ClienteProveedor?      @relation("MovimientoCliente", fields: [clienteId], references: [id], onDelete: SetNull)
+  cliente    String?
+  clienteId  String?
+  clienteRef ClienteProveedor? @relation("MovimientoCliente", fields: [clienteId], references: [id], onDelete: SetNull)
 
   // People references
-  solicitanteId             String?
-  solicitanteRef            Socio?                 @relation("MovimientoSolicitante", fields: [solicitanteId], references: [id], onDelete: SetNull)
-  autorizadorId             String?
-  autorizadorRef            Socio?                 @relation("MovimientoAutorizador", fields: [autorizadorId], references: [id], onDelete: SetNull)
+  solicitanteId  String?
+  solicitanteRef Socio?  @relation("MovimientoSolicitante", fields: [solicitanteId], references: [id], onDelete: SetNull)
+  autorizadorId  String?
+  autorizadorRef Socio?  @relation("MovimientoAutorizador", fields: [autorizadorId], references: [id], onDelete: SetNull)
 
   // Other optional
-  notas                     String?
-  facturaId                 String?
-  ingresadoPor              String?
-  ingresadoPorRef           User?                  @relation("MovimientoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
-  estado                    MovimientoEstado       @default(PAGADO)
+  notas           String?
+  facturaId       String?
+  ingresadoPor    String?
+  ingresadoPorRef User?            @relation("MovimientoIngresadoPor", fields: [ingresadoPor], references: [id], onDelete: SetNull)
+  estado          MovimientoEstado @default(PAGADO)
 
   // Relations
-  historial                 MovimientoHistorial[]
-  createdAt                 DateTime               @default(now())
-  updatedAt                 DateTime               @updatedAt
+  historial MovimientoHistorial[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
 
   @@index([tipo])
   @@index([estado])
@@ -408,15 +408,15 @@ model Movimiento {
 }
 
 model MovimientoHistorial {
-  id              String      @id @default(uuid())
-  movimientoId    String
-  movimiento      Movimiento  @relation(fields: [movimientoId], references: [id], onDelete: Cascade)
-  campo           String
-  valorAnterior   String?
-  valorNuevo      String
-  usuarioId       String?
-  motivo          String?
-  fechaCambio     DateTime    @default(now())
+  id            String     @id @default(uuid())
+  movimientoId  String
+  movimiento    Movimiento @relation(fields: [movimientoId], references: [id], onDelete: Cascade)
+  campo         String
+  valorAnterior String?
+  valorNuevo    String
+  usuarioId     String?
+  motivo        String?
+  fechaCambio   DateTime   @default(now())
 
   @@index([movimientoId])
   @@index([fechaCambio])
@@ -442,20 +442,20 @@ model Factura {
   serie                      String?
   folio                      String?
   fechaEmision               DateTime?
-  subtotal                   Decimal          @db.Decimal(15, 2)
-  iva                        Decimal?         @db.Decimal(15, 2)
-  totalImpuestosTransladados Decimal?         @db.Decimal(15, 2)
-  totalImpuestosRetenidos    Decimal?         @db.Decimal(15, 2)
-  total                      Decimal          @db.Decimal(15, 2)
-  uuid                       String           @unique
+  subtotal                   Decimal       @db.Decimal(15, 2)
+  iva                        Decimal?      @db.Decimal(15, 2)
+  totalImpuestosTransladados Decimal?      @db.Decimal(15, 2)
+  totalImpuestosRetenidos    Decimal?      @db.Decimal(15, 2)
+  total                      Decimal       @db.Decimal(15, 2)
+  uuid                       String        @unique
   rfcEmisor                  String
   nombreReceptor             String?
   rfcReceptor                String
   metodoPago                 String?
   medioPago                  String?
-  moneda                     String           @default("MXN")
+  moneda                     String        @default("MXN")
   usoCfdi                    String?
-  status                     FacturaEstado    @default(VIGENTE)
+  status                     FacturaEstado @default(VIGENTE)
   nombreEmisor               String?
   statusPago                 String?
   fechaPago                  DateTime?
@@ -534,18 +534,19 @@ model Empresa {
 }
 
 model FileAttachment {
-  id         String                   @id @default(uuid())
-  fileName   String
-  fileUrl    String
-  fileSize   Int
-  mimeType   String
-  entityType FileAttachmentEntityType
-  entityId   String
-  uploadedBy String?
-  expiryDate DateTime?
-  category   DocumentCategory?
-  createdAt  DateTime                 @default(now())
-  updatedAt  DateTime                 @updatedAt
+  id              String                   @id @default(uuid())
+  fileName        String
+  fileUrl         String
+  originalFileUrl String?
+  fileSize        Int
+  mimeType        String
+  entityType      FileAttachmentEntityType
+  entityId        String
+  uploadedBy      String?
+  expiryDate      DateTime?
+  category        DocumentCategory?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
 
   @@index([entityType, entityId])
   @@index([entityId])
@@ -644,17 +645,17 @@ model EducationEntry {
 }
 
 model AbsenceRecord {
-  id             String      @id @default(uuid())
-  colaboradorId  String
-  colaborador    Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
-  tipo           AusenciaTipo
-  fechaInicio    DateTime
-  fechaFin       DateTime
-  dias           Int
-  motivo         String?
+  id              String       @id @default(uuid())
+  colaboradorId   String
+  colaborador     Colaborador  @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  tipo            AusenciaTipo
+  fechaInicio     DateTime
+  fechaFin        DateTime
+  dias            Int
+  motivo          String?
   registradoPorId String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([colaboradorId])
   @@index([colaboradorId, tipo])

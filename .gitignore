@@ -48,3 +48,6 @@ next-env.d.ts
 openspec/
 sdd/
 prod.env
+
+# secure-file-access migration checkpoint (per-run, per-operator state)
+scripts/.migrate-file-acl.cp.json
