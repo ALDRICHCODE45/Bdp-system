@@ -460,6 +460,7 @@ model Factura {
   statusPago                 String?
   fechaPago                  DateTime?
   facturaUrl                 String?
+  originalFacturaUrl         String?
 
   // Auditoria
   ingresadoPor    String?

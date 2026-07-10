@@ -5,24 +5,37 @@
  *
  * What this script does
  * ---------------------
- * For every legacy `FileAttachment` row whose `fileUrl` starts with `http`,
- * this script:
+ * For every legacy row in any of the registered "direct-URL" columns
+ * (currently `FileAttachment.fileUrl` and `Factura.facturaUrl`) whose
+ * value still starts with `http`, this script:
  *   (a) derives the object KEY from the stored public URL,
- *   (b) persists the original public URL into `originalFileUrl` (idempotent —
- *       no-op if already set),
+ *   (b) persists the original public URL into the matching `originalXxx`
+ *       rollback column (idempotent — no-op if already set),
  *   (c) issues `PutObjectAclCommand(Bucket, Key=key, ACL="private")` against
  *       DigitalOcean Spaces (idempotent — re-issuing is harmless),
- *   (d) updates `fileUrl` to the bare key (idempotent — guarded by a
- *       `where: { fileUrl: legacyUrl }` Prisma clause so a re-run cannot
- *       clobber a row that already moved on).
+ *   (d) rewrites the live column to the bare key (idempotent — guarded by
+ *       a `where: { [column]: legacyUrl }` Prisma clause so a re-run
+ *       cannot clobber a row that already moved on).
+ *
+ * Why two columns (not just one)
+ * ------------------------------
+ * `Factura.facturaUrl` predates the `FileAttachment` system and was never
+ * refactored to go through it. The SAT PDF for a Factura is uploaded
+ * directly to Spaces via `uploadToSpacesAction` (see
+ * `src/features/Files/server/actions/uploadToSpacesAction.ts`) and the
+ * returned URL/key is written straight to `Factura.facturaUrl`. When the
+ * bucket ACL flips to private in Phase 7, those rows 401 unless we
+ * rewrite them to bare keys the same way `FileAttachment.fileUrl` was
+ * rewritten. This script treats both columns as parallel migration
+ * targets — single run, one summary, fail-soft per row.
  *
  * Crash-safety contract
  * ----------------------
  * If we crash between any two of (b)/(c)/(d), the row still has a
- * `fileUrl` that starts with `http`, so on re-run it is detected as legacy
- * and reprocessed end-to-end. Steps (b) and (d) are guarded at the SQL
- * level; step (c) is idempotent at the API level. Result: a re-run always
- * converges and is never destructive.
+ * live-column value that starts with `http`, so on re-run it is detected
+ * as legacy and reprocessed end-to-end. Steps (b) and (d) are guarded at
+ * the SQL level; step (c) is idempotent at the API level. Result: a
+ * re-run always converges and is never destructive.
  *
  * Modes
  * -----
@@ -30,10 +43,10 @@
  *                              (neither DB nor Spaces). Default-ish mode
  *                              for the user to inspect before going live.
  *   --revert                   Reverse an already-applied migration. Rows
- *                              with a non-null `originalFileUrl` get
- *                              `ACL="public-read"` and their `fileUrl`
+ *                              with a non-null `originalXxx` column get
+ *                              `ACL="public-read"` and their live column
  *                              restored to the original public URL, then
- *                              `originalFileUrl` is cleared. Idempotent —
+ *                              `originalXxx` is cleared. Idempotent —
  *                              running --revert twice is a no-op on the
  *                              second pass.
  *   --from-id N                Start scanning from id > N (manual resume
@@ -46,22 +59,29 @@
  * HARD ship-order prerequisite
  * ----------------------------
  * This script MUST be run ONLY AFTER:
- *   1. The slice-1 Prisma migration `20260709150000_add_file_original_url`
- *      has been deployed to prod via `bun run prisma:deploy`. The
- *      `FileAttachment.originalFileUrl` column must exist in prod BEFORE
- *      we flip any ACLs; otherwise the revert path is impossible and we
- *      would have to keep the legacy public ACL forever.
- *   2. The slice-3 presigned-read path (`getFilePresignedUrlAction`) is
- *      live in prod. Once we flip an ACL to private, the only way for a
- *      legitimate user to read that object is via the presign action —
+ *   1. BOTH slice-1 Prisma migrations have been deployed to prod via
+ *      `bun run prisma:deploy`:
+ *        - `20260709150000_add_file_original_url`
+ *            → `FileAttachment.originalFileUrl`
+ *        - `20260709205723_add_factura_original_url`
+ *            → `Factura.originalFacturaUrl`
+ *      These columns must exist in prod BEFORE we flip any ACLs;
+ *      otherwise the revert path is impossible and we would have to
+ *      keep the legacy public ACL forever.
+ *   2. BOTH presigned-read paths are live in prod:
+ *        - `getFilePresignedUrlAction(fileId)` for `FileAttachment` rows
+ *        - `getFacturaPdfPresignedUrlAction(facturaId)` for `Factura`
+ *          rows whose `facturaUrl` is a bare key
+ *      Once we flip an ACL to private, the only way for a legitimate
+ *      user to read that object is via the matching presign action —
  *      direct public URLs will return HTTP 403 (this is by design — see
  *      spec scenario "Old public link returns 403" and the
  *      "Cutover — Legacy Public Links 403" requirement).
  *
- * The CLI does a pre-flight check that `originalFileUrl` is selectable
- * through the Prisma client and aborts with a clear error if the column
- * does not exist. We do not auto-detect prod vs. local — the user is the
- * operator and reads the header above.
+ * The CLI does a pre-flight check that every `originalXxx` column is
+ * selectable through the Prisma client and aborts with a clear error if
+ * any one is missing. We do not auto-detect prod vs. local — the user
+ * is the operator and reads the header above.
  *
  * Exact command sequence the user runs
  * ------------------------------------
@@ -85,17 +105,59 @@
  * ------------
  * Idempotency alone makes every re-run safe. The checkpoint file
  * (scripts/.migrate-file-acl.cp.json) is written after every successful
- * batch and is INFORMATIONAL — it lets the user pass --from-id on a later
- * run. It is safe to delete; safe to leave around; safe to commit (no
- * secrets). Recommend adding `scripts/.migrate-file-acl.cp.json` to
- * .gitignore so each developer's last-id does not leak via git.
+ * batch and is INFORMATIONAL — it lets the user pass --from-id on a
+ * later run. It is safe to delete; safe to leave around; safe to commit
+ * (no secrets). It is gitignored so each developer's last-id does not
+ * leak via git.
  * --------------------------------------------------------------------------
  */
 
-import { Prisma, PrismaClient, FileAttachment } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PutObjectAclCommand, S3Client } from "@aws-sdk/client-s3";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
+
+// ---------------------------------------------------------------------------
+// Migration targets
+// ---------------------------------------------------------------------------
+//
+// One entry per direct-URL column. Adding a new target = add an entry
+// here + ship a Prisma migration that adds the matching `originalXxx`
+// rollback column. The target descriptor carries the Prisma accessor,
+// the live column, the rollback column, and a human label used in
+// summary logging.
+//
+// `legacyDetection` deliberately keeps using `startsWith("http")` (not
+// `startsWith("https")`) so we keep detecting the same rows the slice-5
+// script already migrated, even if a future change tightens the
+// presigned-URL helper to require https.
+// ---------------------------------------------------------------------------
+
+interface MigrationTarget {
+  /** Human label for summary logs and error messages. */
+  readonly label: string;
+  /** Prisma client accessor (camelCase of the model name). */
+  readonly model: "fileAttachment" | "factura";
+  /** Live URL/key column on the row. */
+  readonly urlField: "fileUrl" | "facturaUrl";
+  /** Nullable rollback column added by the matching Prisma migration. */
+  readonly originalUrlField: "originalFileUrl" | "originalFacturaUrl";
+}
+
+const TARGETS: readonly MigrationTarget[] = [
+  {
+    label: "FileAttachment.fileUrl",
+    model: "fileAttachment",
+    urlField: "fileUrl",
+    originalUrlField: "originalFileUrl",
+  },
+  {
+    label: "Factura.facturaUrl",
+    model: "factura",
+    urlField: "facturaUrl",
+    originalUrlField: "originalFacturaUrl",
+  },
+] as const;
 
 // ---------------------------------------------------------------------------
 // CLI parsing (no external dep — minimal flag surface)
@@ -189,6 +251,9 @@ Flags:
   --batch-size N              Rows per Prisma page (default 50, max 1000).
   --limit N                   Process at most N rows total.
   --confirm-prod-write        Required when NODE_ENV=production (non-dry).
+
+Targets:
+  ${TARGETS.map((t) => t.label).join("\n  ")}
 
 See header comment for the mandatory ship-order prerequisites.`);
 }
@@ -361,6 +426,7 @@ function sleep(ms: number): Promise<void> {
 interface Checkpoint {
   lastId: string | null;
   mode: "migrate" | "revert" | "dry-run";
+  targets: readonly string[];
   updatedAt: string;
 }
 
@@ -390,32 +456,41 @@ async function writeCheckpoint(cp: Checkpoint): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Row-level operations
+// Row-level operations — typed over a generic row shape so the same
+// helpers work for any target's (id, currentUrl, originalUrl) trio.
 // ---------------------------------------------------------------------------
 
+interface RowShape {
+  id: string;
+  currentUrl: string;
+  originalUrl: string | null;
+}
+
 async function migrateRow(
-  row: FileAttachment,
+  row: RowShape,
+  target: MigrationTarget,
   s3: S3Client,
   bucket: string,
   args: CliArgs,
   logger: (msg: string) => void
 ): Promise<{ newKey: string }> {
-  const legacyUrl = row.fileUrl;
+  const legacyUrl = row.currentUrl;
   const key = deriveKeyFromLegacyUrl(legacyUrl, bucket);
   if (!key) {
     throw new Error(`Could not derive key from legacy url: ${legacyUrl}`);
   }
 
   if (args.dryRun) {
-    logger(`[dry-run] WOULD migrate id=${row.id} key=${key}`);
+    logger(`[dry-run] WOULD migrate ${target.label} id=${row.id} key=${key}`);
     return { newKey: key };
   }
 
-  // (b) Save originalFileUrl (idempotent — only writes when currently null).
-  if (row.originalFileUrl == null) {
-    await prisma.fileAttachment.updateMany({
-      where: { id: row.id, originalFileUrl: null },
-      data: { originalFileUrl: legacyUrl },
+  // (b) Save originalUrl (idempotent — only writes when currently null).
+  if (row.originalUrl == null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (prisma as any)[target.model].updateMany({
+      where: { id: row.id, [target.originalUrlField]: null },
+      data: { [target.originalUrlField]: legacyUrl },
     });
   }
 
@@ -429,44 +504,47 @@ async function migrateRow(
           ACL: "private",
         })
       ),
-    `acl-flip id=${row.id}`,
+    `acl-flip ${target.label} id=${row.id}`,
     logger
   );
 
-  // (d) Update fileUrl to the bare key. Guarded by `fileUrl: legacyUrl` so
-  // a parallel run cannot clobber a row that already moved on.
-  await prisma.fileAttachment.updateMany({
-    where: { id: row.id, fileUrl: legacyUrl },
-    data: { fileUrl: key },
+  // (d) Update the live column to the bare key. Guarded by
+  // `currentUrl: legacyUrl` so a parallel run cannot clobber a row that
+  // already moved on.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (prisma as any)[target.model].updateMany({
+    where: { id: row.id, [target.urlField]: legacyUrl },
+    data: { [target.urlField]: key },
   });
 
-  logger(`migrated id=${row.id} key=${key}`);
+  logger(`migrated ${target.label} id=${row.id} key=${key}`);
   return { newKey: key };
 }
 
 async function revertRow(
-  row: FileAttachment,
+  row: RowShape,
+  target: MigrationTarget,
   s3: S3Client,
   bucket: string,
   args: CliArgs,
   logger: (msg: string) => void
 ): Promise<void> {
-  const originalUrl = row.originalFileUrl;
+  const originalUrl = row.originalUrl;
   if (!originalUrl) {
-    // Should not happen — caller filters on originalFileUrl != null — but
+    // Should not happen — caller filters on originalUrl != null — but
     // fail soft and skip rather than blow up.
-    logger(`[skip-revert] id=${row.id} has null originalFileUrl`);
+    logger(`[skip-revert] ${target.label} id=${row.id} has null ${target.originalUrlField}`);
     return;
   }
 
-  const key = deriveKeyFromLegacyUrl(row.fileUrl, bucket);
+  const key = deriveKeyFromLegacyUrl(row.currentUrl, bucket);
   if (!key) {
-    throw new Error(`Could not derive key from current fileUrl: ${row.fileUrl}`);
+    throw new Error(`Could not derive key from current ${target.urlField}: ${row.currentUrl}`);
   }
 
   if (args.dryRun) {
     logger(
-      `[dry-run] WOULD revert id=${row.id} key=${key} → url=${originalUrl.slice(0, 80)}...`
+      `[dry-run] WOULD revert ${target.label} id=${row.id} key=${key} → url=${originalUrl.slice(0, 80)}...`
     );
     return;
   }
@@ -481,21 +559,178 @@ async function revertRow(
           ACL: "public-read",
         })
       ),
-    `revert-acl id=${row.id}`,
+    `revert-acl ${target.label} id=${row.id}`,
     logger
   );
 
-  // (d) Restore fileUrl, clear originalFileUrl. Guarded so a concurrent run
-  // does not double-write.
-  await prisma.fileAttachment.updateMany({
-    where: { id: row.id, fileUrl: row.fileUrl },
+  // (d) Restore the live column, clear the rollback column. Guarded so a
+  // concurrent run does not double-write.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (prisma as any)[target.model].updateMany({
+    where: { id: row.id, [target.urlField]: row.currentUrl },
     data: {
-      fileUrl: originalUrl,
-      originalFileUrl: null,
+      [target.urlField]: originalUrl,
+      [target.originalUrlField]: null,
     },
   });
 
-  logger(`reverted id=${row.id} → ${originalUrl.slice(0, 80)}...`);
+  logger(`reverted ${target.label} id=${row.id} → ${originalUrl.slice(0, 80)}...`);
+}
+
+// ---------------------------------------------------------------------------
+// Target processing — one target end-to-end (migrate OR revert).
+// ---------------------------------------------------------------------------
+
+interface TargetStats {
+  label: string;
+  processed: number;
+  migrated: number;
+  failed: number;
+  samples: Array<Record<string, unknown>>;
+  failures: Array<{ id: string; reason: string }>;
+  lastCursor: string | null;
+}
+
+async function processTarget(
+  target: MigrationTarget,
+  args: CliArgs,
+  s3: S3Client,
+  env: SpacesEnv,
+  logger: (msg: string) => void
+): Promise<TargetStats> {
+  const stats: TargetStats = {
+    label: target.label,
+    processed: 0,
+    migrated: 0,
+    failed: 0,
+    samples: [],
+    failures: [],
+    lastCursor: null,
+  };
+
+  // Cursor scoping per target: --from-id applies to the FIRST target
+  // (FileAttachment, the historical one) and subsequent targets start
+  // fresh. This preserves the original script's resume semantics for
+  // existing operators while keeping Factura's migration deterministic.
+  let cursor: string | null = args.fromId;
+  const limitRemaining = (): boolean => args.limit == null || stats.processed < args.limit;
+
+  for (;;) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const accessor = (prisma as any)[target.model];
+
+    const where: Record<string, unknown> = args.revert
+      ? { [target.originalUrlField]: { not: null } }
+      : { [target.urlField]: { startsWith: "http" } };
+
+    const rows: Array<{ id: string }> = await accessor.findMany({
+      where,
+      orderBy: { id: "asc" },
+      take: args.batchSize,
+      ...(cursor != null ? { skip: 1, cursor: { id: cursor } } : {}),
+    });
+
+    if (rows.length === 0) break;
+
+    for (const row of rows) {
+      if (!limitRemaining()) {
+        logger(
+          `[limit=${args.limit}] reached on ${target.label}. stopping this target.`
+        );
+        break;
+      }
+
+      // Re-fetch each row individually so we get the up-to-date
+      // currentUrl / originalUrl without having to type the joined
+      // findMany return. Cheap (single-row PK lookup) and keeps the
+      // helper functions generic.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fresh: any = await accessor.findUnique({
+        where: { id: row.id },
+        select: {
+          id: true,
+          [target.urlField]: true,
+          [target.originalUrlField]: true,
+        },
+      });
+      if (!fresh) {
+        stats.failed++;
+        stats.failures.push({ id: row.id, reason: "row vanished between cursor and re-fetch" });
+        continue;
+      }
+
+      const shaped: RowShape = {
+        id: fresh.id,
+        currentUrl: fresh[target.urlField] ?? "",
+        originalUrl: fresh[target.originalUrlField] ?? null,
+      };
+
+      stats.processed++;
+
+      try {
+        if (args.revert) {
+          await revertRow(shaped, target, s3, env.bucket, args, logger);
+        } else {
+          const result = await migrateRow(shaped, target, s3, env.bucket, args, logger);
+          if (args.dryRun && stats.samples.length < 5) {
+            stats.samples.push({
+              id: shaped.id,
+              from: shaped.currentUrl,
+              toKey: result.newKey,
+            });
+          }
+        }
+        stats.migrated++;
+      } catch (err) {
+        stats.failed++;
+        const reason = (err as Error).message ?? String(err);
+        stats.failures.push({ id: shaped.id, reason });
+        logger(`[fail] ${target.label} id=${shaped.id} reason=${reason}`);
+        // Fail-soft: do not abort the whole run on a single row failure.
+        continue;
+      }
+
+      stats.lastCursor = shaped.id;
+      cursor = shaped.id;
+    }
+
+    if (!args.dryRun) {
+      await writeCheckpoint({
+        lastId: stats.lastCursor,
+        mode: args.revert ? "revert" : args.dryRun ? "dry-run" : "migrate",
+        targets: TARGETS.map((t) => t.label),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    if (!limitRemaining()) break;
+  }
+
+  return stats;
+}
+
+// ---------------------------------------------------------------------------
+// Pre-flight: every target's rollback column must be selectable.
+// ---------------------------------------------------------------------------
+
+async function preflightAllTargets(): Promise<void> {
+  for (const target of TARGETS) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const accessor = (prisma as any)[target.model];
+      await accessor.findFirst({
+        select: { id: true, [target.urlField]: true, [target.originalUrlField]: true },
+      });
+    } catch (err) {
+      throw new Error(
+        `Pre-flight failed: ${target.label} rollback column ` +
+          `(${target.originalUrlField}) is not selectable. ` +
+          `Run \`bun run prisma:deploy\` to deploy the matching migration ` +
+          `(see the header comment for the list) BEFORE running this script. ` +
+          `Underlying error: ${(err as Error).message}`
+      );
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -512,20 +747,7 @@ async function runMigrate(args: CliArgs, s3: S3Client, env: SpacesEnv): Promise<
     console.log(`[${ts}] ${msg}`);
   };
 
-  // Pre-flight: column must exist (i.e. Phase 1 migration was deployed +
-  // `bunx prisma generate` ran on this checkout).
-  try {
-    await prisma.fileAttachment.findFirst({
-      select: { id: true, fileUrl: true, originalFileUrl: true },
-    });
-  } catch (err) {
-    throw new Error(
-      `Pre-flight failed: FileAttachment.originalFileUrl is not selectable. ` +
-        `Run \`bun run prisma:deploy\` to deploy migration ` +
-        `20260709150000_add_file_original_url BEFORE running this script. ` +
-        `Underlying error: ${(err as Error).message}`
-    );
-  }
+  await preflightAllTargets();
 
   // Production write gate
   if (process.env.NODE_ENV === "production" && !args.dryRun && !args.confirmProdWrite) {
@@ -538,10 +760,11 @@ async function runMigrate(args: CliArgs, s3: S3Client, env: SpacesEnv): Promise<
   if (args.dryRun) {
     logger("[dry-run] no writes will be made to the DB or to Spaces");
   } else if (args.revert) {
-    logger("[revert] flipping ACL back to public-read and restoring fileUrl");
+    logger("[revert] flipping ACL back to public-read and restoring URLs");
   } else {
-    logger("[migrate] flipping ACL to private and rewriting fileUrl to bare keys");
+    logger("[migrate] flipping ACL to private and rewriting URLs to bare keys");
   }
+  logger(`targets: ${TARGETS.map((t) => t.label).join(", ")}`);
 
   // Inform the user about any pre-existing checkpoint.
   if (!args.dryRun) {
@@ -549,99 +772,61 @@ async function runMigrate(args: CliArgs, s3: S3Client, env: SpacesEnv): Promise<
     if (cp) {
       logger(
         `Found checkpoint ${CHECKPOINT_PATH}: lastId=${cp.lastId} mode=${cp.mode} ` +
-          `updatedAt=${cp.updatedAt}. Pass --from-id ${cp.lastId ?? 0} to skip it, ` +
-          `or omit it to reprocess (idempotency handles already-migrated rows).`
+          `targets=[${cp.targets.join(", ")}] updatedAt=${cp.updatedAt}. ` +
+          `Pass --from-id ${cp.lastId ?? 0} to skip it, or omit it to ` +
+          `reprocess (idempotency handles already-migrated rows).`
       );
     }
   }
 
-  let cursor: string | null = args.fromId;
-  let processed = 0;
-  let migrated = 0;
-  let failed = 0;
-  const failures: Array<{ id: string; reason: string }> = [];
-  const samples: Array<Record<string, unknown>> = [];
-
-  for (;;) {
-    const where: Prisma.FileAttachmentWhereInput = args.revert
-      ? { originalFileUrl: { not: null } }
-      : { fileUrl: { startsWith: "http" } };
-
-    const rows: FileAttachment[] = await prisma.fileAttachment.findMany({
-      where,
-      orderBy: { id: "asc" },
-      take: args.batchSize,
-      ...(cursor != null
-        ? { skip: 1, cursor: { id: cursor } }
-        : {}),
-    });
-
-    if (rows.length === 0) break;
-
-    for (const row of rows) {
-      if (args.limit != null && processed >= args.limit) {
-        logger(`[limit=${args.limit}] reached. stopping.`);
-        break;
-      }
-      processed++;
-
-      try {
-        if (args.revert) {
-          await revertRow(row, s3, env.bucket, args, logger);
-        } else {
-          const result = await migrateRow(row, s3, env.bucket, args, logger);
-          if (samples.length < 5 && args.dryRun) {
-            samples.push({
-              id: row.id,
-              from: row.fileUrl,
-              toKey: result.newKey,
-              entityType: row.entityType,
-            });
-          }
-        }
-        migrated++;
-      } catch (err) {
-        failed++;
-        const reason = (err as Error).message ?? String(err);
-        failures.push({ id: row.id, reason });
-        logger(`[fail] id=${row.id} reason=${reason}`);
-        // Fail-soft: do not abort the whole run on a single row failure.
-        continue;
-      }
-
-      cursor = row.id;
-    }
-
-    if (!args.dryRun) {
-      await writeCheckpoint({
-        lastId: cursor,
-        mode: args.revert ? "revert" : args.dryRun ? "dry-run" : "migrate",
-        updatedAt: new Date().toISOString(),
-      });
-    }
-
-    if (args.limit != null && processed >= args.limit) break;
+  // Process each target end-to-end. Targets run sequentially so a
+  // failure on one (e.g. Spaces rate-limit on a hot folder) does not
+  // skip the other — and so the summary log reads in a predictable
+  // order.
+  const allStats: TargetStats[] = [];
+  for (const target of TARGETS) {
+    logger(`--- target: ${target.label} ---`);
+    const stats = await processTarget(target, args, s3, env, logger);
+    allStats.push(stats);
   }
 
   logger("");
   logger("==== Summary ====");
   logger(`Mode:        ${args.dryRun ? "DRY-RUN" : args.revert ? "REVERT" : "MIGRATE"}`);
-  logger(`Processed:   ${processed}`);
-  logger(`Migrated:    ${migrated}`);
-  logger(`Failed:      ${failed}`);
+  logger(`Targets:     ${TARGETS.map((t) => t.label).join(", ")}`);
+  let totalProcessed = 0;
+  let totalMigrated = 0;
+  let totalFailed = 0;
+  for (const s of allStats) {
+    logger(
+      `  ${s.label.padEnd(28)} processed=${s.processed}  ` +
+        `${args.revert ? "reverted" : "migrated"}=${s.migrated}  failed=${s.failed}`
+    );
+    totalProcessed += s.processed;
+    totalMigrated += s.migrated;
+    totalFailed += s.failed;
+  }
+  logger(
+    `Totals:      processed=${totalProcessed}  ` +
+      `${args.revert ? "reverted" : "migrated"}=${totalMigrated}  failed=${totalFailed}`
+  );
 
-  if (args.dryRun && samples.length > 0) {
-    logger("");
-    logger("Sample would-change rows (first 5):");
-    for (const s of samples) {
-      logger(`  id=${s.id}  entityType=${s.entityType}  ${s.from}  →  ${s.toKey}`);
+  if (args.dryRun) {
+    const samples = allStats.flatMap((s) => s.samples);
+    if (samples.length > 0) {
+      logger("");
+      logger("Sample would-change rows (first 5 per target):");
+      for (const s of samples) {
+        logger(`  ${s.from}  →  ${s.toKey}`);
+      }
     }
   }
 
-  if (failures.length > 0) {
+  const allFailures = allStats.flatMap((s) => s.failures);
+  if (allFailures.length > 0) {
     logger("");
-    logger(`Failures (${failures.length}):`);
-    for (const f of failures) logger(`  id=${f.id}  reason=${f.reason}`);
+    logger(`Failures (${allFailures.length}):`);
+    for (const f of allFailures) logger(`  id=${f.id}  reason=${f.reason}`);
     process.exitCode = 1;
   }
 }
