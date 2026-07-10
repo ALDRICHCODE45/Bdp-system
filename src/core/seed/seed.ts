@@ -1,5 +1,6 @@
 import prisma from "@/core/lib/prisma";
 import bcrypt from "bcrypt";
+import { env } from "@/core/shared/config/env.config";
 import { seedPermissions } from "./seedPermissions";
 
 async function main() {
@@ -41,8 +42,24 @@ async function main() {
     console.log("✅ Permiso 'admin:all' asignado al rol administrador");
   }
 
-  // Hash de la contraseña (puedes cambiar "password" por la contraseña que desees)
-  const passwordHash = await bcrypt.hash("admin123", 10);
+  // Hash de la contraseña. En producción NUNCA se permite el valor por
+  // defecto "admin123": el operador debe inyectar SEED_ADMIN_PASSWORD
+  // (≥16 chars). El throw se canaliza a través del `main().catch(...)`
+  // existente para terminar con código de salida no-cero.
+  let adminPassword: string;
+  if (env.NODE_ENV === "production") {
+    const seeded = process.env.SEED_ADMIN_PASSWORD;
+    if (!seeded || seeded.length < 16) {
+      throw new Error(
+        "SEED_ADMIN_PASSWORD must be at least 16 chars in production"
+      );
+    }
+    adminPassword = seeded;
+  } else {
+    adminPassword = "admin123";
+  }
+
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
 
   // Crear el usuario "aldrich" si no existe
   const user = await prisma.user.upsert({

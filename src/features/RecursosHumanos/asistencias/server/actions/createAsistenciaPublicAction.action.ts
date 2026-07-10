@@ -3,6 +3,11 @@ import { revalidatePath } from "next/cache";
 import { CreateAsistenciaDto } from "../Dtos/CreateAsistenciaDto.Dto";
 import { makeAsistenciaService } from "../services/makeAsistenciaService";
 import prisma from "@/core/lib/prisma";
+import { createAsistenciaServerSchema } from "../../schemas/createAsistenciaServerSchema.schema";
+import {
+  asistenciaPublicThrottle,
+  normalizeEmail,
+} from "@/core/shared/security/rate-limit";
 
 /**
  * Server action pública para registro de asistencia via QR
@@ -10,6 +15,22 @@ import prisma from "@/core/lib/prisma";
  */
 export const createAsistenciaPublicAction = async (input: CreateAsistenciaDto) => {
   try {
+    // Server-side shape validation so malformed input never reaches the
+    // service or the DB.
+    const parsed = createAsistenciaServerSchema.safeParse(input);
+    if (!parsed.success) {
+      return { ok: false, message: parsed.error.issues[0].message };
+    }
+
+    // Per-correo throttle (2/min) — kiosk-side flood guard. Keys on the
+    // normalized correo because the DTO does not carry a colaborador id.
+    if (!asistenciaPublicThrottle.check(normalizeEmail(input.correo))) {
+      return {
+        ok: false,
+        message: "Demasiadas solicitudes, intenta de nuevo mas tarde",
+      };
+    }
+
     const asistenciaService = makeAsistenciaService({ prisma });
     const result = await asistenciaService.create(input);
 

@@ -5,6 +5,10 @@ import { env } from "@/core/shared/config/env.config";
 import prisma from "@/core/lib/prisma";
 import { PrismaUserRepository } from "@/features/sistema/usuarios/server/repositories/PrismaUserRepository.repository";
 import { BcryptPasswordHasher } from "@/core/shared/security/hasher";
+import {
+  loginLimiter,
+  normalizeEmail,
+} from "@/core/shared/security/rate-limit";
 
 // Extender los tipos de NextAuth para incluir el rol y permisos
 declare module "next-auth" {
@@ -39,7 +43,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const parsedCredentials = z
           .object({ email: z.string().email(), password: z.string().min(1) })
           .safeParse(credentials);
@@ -50,12 +54,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const { email, password } = parsedCredentials.data;
 
+        // Rate-limit gate: extract caller IP and a normalized email, then
+        // consult the login limiter BEFORE bcrypt so a blocked caller
+        // never reaches the password hasher (no user enumeration).
+        //
+        // NOTE: x-forwarded-for trust depends on Dockploy proxy being the
+        // sole ingress — operator must verify deploy topology before
+        // relying on per-IP throttling.
+        const ip = (
+          request.headers.get("x-forwarded-for")?.split(",")[0] ??
+          request.headers.get("x-real-ip") ??
+          "unknown"
+        ).trim();
+        const normalizedEmail = normalizeEmail(email);
+        const limiterKey = `${ip}|${normalizedEmail}`;
+
+        if (!loginLimiter.check(limiterKey)) {
+          return null;
+        }
+
         // Lazy initialization: crear instancias solo cuando se necesiten
         const userRepository = new PrismaUserRepository(prisma);
         const passwordHasher = new BcryptPasswordHasher();
 
         // Buscar usuario por email con contraseña y roles
-        const user = await userRepository.findByEmailWithPassword({ email });
+        const user = await userRepository.findByEmailWithPassword({
+          email: normalizedEmail,
+        });
 
         if (!user) {
           return null;
@@ -75,6 +100,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!isPasswordValid) {
           return null;
         }
+
+        // Successful authentication — clear the bucket so the next failure
+        // sequence starts fresh.
+        loginLimiter.reset(limiterKey);
 
         // Obtener los roles del usuario
         const roles = user.roles.map((userRole) => userRole.role.name);
@@ -131,6 +160,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: {
     strategy: "jwt",
+    maxAge: 86400,
+    updateAge: 3600,
   },
-  secret: env.AUTH_SECRET, // TODO: Agregar NEXTAUTH_SECRET a .env.local
+  secret: env.AUTH_SECRET,
 });
