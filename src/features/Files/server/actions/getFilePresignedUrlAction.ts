@@ -9,6 +9,7 @@ import prisma from "@/core/lib/prisma";
 import { makeFileService } from "../services/makeFileService";
 import { makeFacturaService } from "@/features/finanzas/facturas/server/services/makeFacturaService";
 import { DigitalOceanSpacesService } from "../services/DigitalOceanSpacesService";
+import { entityTypeToAccessPermission } from "../helpers/fileEntityPermissions";
 
 /**
  * secure-file-access — Phase 3: presigned READ action.
@@ -89,6 +90,10 @@ export async function getFilePresignedUrlAction(
   }
 
   // ── 3. entityType → required module permission ────────────────────────
+  // Phase 4: the entityType→permission map lives in
+  // `helpers/fileEntityPermissions.ts` so the read (presign), upload, list,
+  // and delete guards all resolve to the same string. Adding a new entityType
+  // only needs one switch updated.
   const modulePerm = entityTypeToAccessPermission(file.entityType);
   if (!modulePerm) {
     return { ok: false, error: "Tipo de entidad no soportado" };
@@ -145,29 +150,8 @@ export async function getFilePresignedUrlAction(
   }
 }
 
-/**
- * Map `FileAttachment.entityType` to the module-level access permission
- * required to read the file. Returns `null` for unknown entity types
- * (the caller treats that as deny).
- *
- * Verbatim copy of the module→permission table in
- * `openspec/changes/secure-file-access/design.md`. The misspelling
- * `clientes-proovedores:acceder` is intentional — it matches the real
- * constant in `permissions.constant.ts:99`.
- */
-function entityTypeToAccessPermission(
-  entityType: "FACTURA" | "MOVIMIENTO" | "CLIENTE_PROVEEDOR" | "COLABORADOR"
-): string | null {
-  switch (entityType) {
-    case "FACTURA":
-      return "facturas:acceder";
-    case "MOVIMIENTO":
-      return "movimientos:acceder";
-    case "CLIENTE_PROVEEDOR":
-      return "clientes-proovedores:acceder";
-    case "COLABORADOR":
-      return "colaboradores:acceder";
-    default:
-      return null;
-  }
-}
+// Phase 4: the local `entityTypeToAccessPermission` switch was extracted to
+// `src/features/Files/server/helpers/fileEntityPermissions.ts` so the read
+// (presign), upload, list, and delete guards all resolve permissions from a
+// single source of truth. The `:acceder` map still owns the misspelled
+// `clientes-proovedores:acceder` to match `permissions.constant.ts:99`.
