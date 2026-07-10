@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { Separator } from "@/core/shared/ui/separator";
 import { Card, CardContent, CardFooter } from "@/core/shared/ui/card";
 
-const QREntradasPage = () => {
+type QREntradasPageProps = {
+  entradaUrl: string;
+  salidaUrl: string;
+};
+
+const QREntradasPage = ({ entradaUrl, salidaUrl }: QREntradasPageProps) => {
   const router = useRouter();
 
   return (
@@ -38,7 +43,7 @@ const QREntradasPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 w-full">
           <Card className="w-md ">
             <CardContent>
-              <QRCode data="https://bdp-system-production.up.railway.app/registro-automatico?tipo=Entrada" />
+              <QRCode data={entradaUrl} />
             </CardContent>
             <Separator />
             <CardFooter className="flex justify-center font-semibold">
@@ -48,7 +53,7 @@ const QREntradasPage = () => {
 
           <Card className="w-md ">
             <CardContent>
-              <QRCode data="https://bdp-system-production.up.railway.app/registro-automatico?tipo=Salida" />
+              <QRCode data={salidaUrl} />
             </CardContent>
             <Separator />
             <CardFooter className="font-semibold flex justify-center ">
