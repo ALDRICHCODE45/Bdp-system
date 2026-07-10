@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
-  ExternalLink,
   FileText,
 } from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
@@ -104,8 +103,22 @@ export function FacturaSATUpload({
   const pendingFile = files[0];
   const inputId = "factura-sat-input";
 
-  // ── Estado: URL confirmada ────────────────────────────────────────────────
+  // ── Estado: archivo confirmado ───────────────────────────────────────────
   if (value && !uploading) {
+    // secure-file-access — Phase 3 RISK-A/C fix.
+    //
+    // `value` is now either a raw Spaces object key (post-Phase-2 new
+    // uploads) or, for legacy rows that haven't been migrated yet, a full
+    // public URL. Rendering it as `<a href={value}>` would either:
+    //   - 404 against the bucket host (key), or
+    //   - keep showing a public URL that Phase 7 will disable anyway.
+    //
+    // Authorized viewing now goes through `getFilePresignedUrlAction`,
+    // which is wired in `FileList.tsx`. This component is an *upload*
+    // widget, not a viewer — confirming the upload is enough here. The
+    // user opens the PDF from the FileList of the saved Factura once the
+    // form is submitted (the FileList row is the canonical place that
+    // knows the `FileAttachment.id`).
     return (
       <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30 px-4 py-3">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900">
@@ -115,15 +128,10 @@ export function FacturaSATUpload({
           <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
             PDF timbrado subido
           </p>
-          <a
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
-          >
-            <ExternalLink className="size-3 shrink-0" />
-            <span className="truncate max-w-[280px] block">{value}</span>
-          </a>
+          <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80">
+            Se asociará a la factura al guardar. La previsualización
+            autorizada está disponible desde la lista de archivos.
+          </p>
         </div>
         {!disabled && (
           <Button

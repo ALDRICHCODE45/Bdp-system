@@ -6,6 +6,7 @@ import { Button } from "@/core/shared/ui/button";
 import { Badge } from "@/core/shared/ui/badge";
 import { Trash2, Download, File } from "lucide-react";
 import { deleteFileAction } from "@/features/Files/server/actions/deleteFileAction";
+import { getFilePresignedUrlAction } from "@/features/Files/server/actions/getFilePresignedUrlAction";
 import { DocumentExpiryBadge } from "@/core/shared/components/DocumentExpiryBadge";
 import { toast } from "sonner";
 import {
@@ -37,6 +38,14 @@ interface FileListProps {
 
 export function FileList({ files, entityType, onFileDeleted }: FileListProps) {
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+  // secure-file-access Phase 3: track which file is currently being
+  // signed so the download button can disable itself during the in-flight
+  // `getFilePresignedUrlAction` request. Also surface the cache-bust state
+  // for any future refactor — without this, a user could spam the button
+  // and trigger multiple presign mints.
+  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(
+    null
+  );
 
   const handleDelete = async (fileId: string) => {
     setDeletingFileId(fileId);
@@ -61,8 +70,38 @@ export function FileList({ files, entityType, onFileDeleted }: FileListProps) {
     }
   };
 
-  const handleDownload = (fileUrl: string, _fileName: string) => {
-    window.open(fileUrl, "_blank");
+  // secure-file-access Phase 3: `fileUrl` is now a raw Spaces object key
+  // (Phase 2 storage contract), not a public URL. Calling `window.open(fileUrl)`
+  // would 404 against the bucket host. We must mint a short-lived signed
+  // GET URL through the authorized server action. Inline call (matching the
+  // project's pattern for one-shot click actions: see also
+  // `FacturaSATUpload.tsx` → `uploadToSpacesAction` and the delete handler
+  // above) — TanStack Query is intentionally NOT used: the URL expires in
+  // 600 s, so caching the result across renders would serve a stale
+  // signature. Fire-and-forget is the right shape here.
+  const handleDownload = async (fileId: string, fileName: string) => {
+    if (downloadingFileId !== null) return;
+    setDownloadingFileId(fileId);
+    try {
+      const result = await getFilePresignedUrlAction(fileId);
+      if (!result.ok) {
+        toast.error(result.error || "Error al abrir el archivo");
+        return;
+      }
+      // Open in a new tab. The signed URL is good for ~10 min so the
+      // user can refresh / re-download within that window; after that
+      // they click the row again to mint a fresh one.
+      window.open(result.data.url, "_blank", "noopener,noreferrer");
+      // `fileName` is reserved for a future improvement where the served
+      // URL suggests a filename via `Content-Disposition`. The action
+      // currently returns the bare URL; left here so the caller signature
+      // stays self-documenting and matches the old `handleDownload` arity.
+      void fileName;
+    } catch {
+      toast.error("Error al abrir el archivo");
+    } finally {
+      setDownloadingFileId(null);
+    }
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -123,10 +162,16 @@ export function FileList({ files, entityType, onFileDeleted }: FileListProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleDownload(file.fileUrl, file.fileName)}
+              onClick={() => handleDownload(file.id, file.fileName)}
+              disabled={downloadingFileId === file.id}
               className="h-8 w-8"
+              aria-label={`Descargar ${file.fileName}`}
             >
-              <Download className="h-4 w-4" />
+              {downloadingFileId === file.id ? (
+                <span className="inline-block size-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
