@@ -24,8 +24,9 @@ import { DigitalOceanSpacesService } from "@/features/Files/server/services/Digi
  * row, gates the request through the same fail-closed order as
  * `getFilePresignedUrlAction` (auth → load → module perm → capturador
  * ownership → mint), and mints a short-lived (600 s = 10 min) presigned
- * GET URL. Legacy rows whose `facturaUrl` is still a full http URL are
- * served as-is so the backfill hasn't run yet.
+ * GET URL. The ACL backfill has already run in production, so a row still
+ * holding a full http URL is a data anomaly — it is logged and rejected
+ * rather than served (see step 6).
  *
  * Fail-closed ordering (mirrors `getFilePresignedUrlAction.ts:65-151`):
  *
@@ -64,11 +65,11 @@ import { DigitalOceanSpacesService } from "@/features/Files/server/services/Digi
  *      consistent across both read paths and we do NOT leak whether the
  *      Factura exists.
  *
- *   6. Legacy-URL-vs-key branch:
- *        - If `facturaUrl.startsWith("http")` (legacy public URL, not yet
- *          backfilled to a key): return as-is. Public objects still work
- *          without a signature so the user can keep viewing them while
- *          the backfill is pending.
+ *   6. Defensive guard + mint presigned GET:
+ *        - If `facturaUrl.startsWith("http")` (unmigrated legacy URL): the
+ *          backfill already ran and the bucket is private, so this is a
+ *          data anomaly. Log a warning and return `{ ok: false }` instead
+ *          of serving a link that would 403 against the private bucket.
  *        - Otherwise: treat as raw object key and mint a presigned GET
  *          via `DigitalOceanSpacesService.getPresignedGetUrl(key, 600)`.
  *          TTL 600 s sits in the spec-banded 5–15 min window, matching
@@ -149,15 +150,25 @@ export async function getFacturaPdfPresignedUrlAction(
     }
   }
 
-  // ── 6. Legacy-URL-vs-key branch + mint presigned GET ──────────────────
-  // Legacy rows whose `facturaUrl` was never backfilled still hold a full
-  // public URL. We serve them as-is (public objects don't need a
-  // signature). New rows hold a raw Spaces key — mint a 600 s signed GET
-  // URL through the shared DigitalOceanSpacesService primitive so the
-  // signer config (endpoint, bucket, region, credentials) lives in one
-  // place across both read paths.
+  // ── 6. Defensive guard: unmigrated legacy URL ─────────────────────────
+  // The ACL backfill (scripts/migrate-file-acl.ts) already rewrote every
+  // `facturaUrl` from a public URL to a raw Spaces key, and Spaces objects
+  // are now private. A row still holding a full `http` URL therefore means
+  // the backfill missed it (dirty data or a write path that bypassed the
+  // storage contract). Serving it as-is would 403 against the now-private
+  // bucket, so instead of silently returning a broken link we fail loud and
+  // log it — this is the safety net that flags the anomaly for follow-up
+  // instead of surfacing a confusing 403 to the user.
   if (factura.facturaUrl.startsWith("http")) {
-    return { ok: true, data: { url: factura.facturaUrl } };
+    console.warn(
+      `[getFacturaPdfPresignedUrlAction] Factura ${facturaId} still holds a ` +
+        `legacy URL (not backfilled to an object key): ${factura.facturaUrl}. ` +
+        `Re-run scripts/migrate-file-acl.ts to migrate it.`
+    );
+    return {
+      ok: false,
+      error: "El PDF de esta factura requiere migración. Contactá al administrador.",
+    };
   }
 
   try {
