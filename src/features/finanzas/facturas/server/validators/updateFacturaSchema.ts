@@ -29,7 +29,9 @@ export const updateFacturaSchema = z.object({
   nombreEmisor: z.string().nullable().optional(),
   statusPago: z.string().nullable().optional(),
   fechaPago: z.date().optional().nullable(),
-  facturaUrl: z.string().url().nullable().optional(),
+  // Stores the private Spaces object key (e.g. "facturas/xxx.pdf"), not a URL.
+  // Reads go through getFilePresignedUrlAction. Do NOT re-add .url().
+  facturaUrl: z.string().nullable().optional(),
 });
 
 export type UpdateFacturaInput = z.infer<typeof updateFacturaSchema>;
