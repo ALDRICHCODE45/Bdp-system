@@ -2,7 +2,9 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/core/shared/config/env.config";
 import { randomUUID } from "crypto";
 
@@ -77,10 +79,16 @@ export class DigitalOceanSpacesService {
   }
 
   /**
-   * Sube un archivo a Digital Ocean Spaces
+   * Sube un archivo a Digital Ocean Spaces.
+   *
+   * El objeto se persiste como PRIVADO (sin `ACL: "public-read"`). El método
+   * devuelve la **clave** (key) cruda del objeto, NO una URL pública. La
+   * lectura posterior se hace vía `getPresignedGetUrl(key, ttl)` desde un
+   * server action con guard de permisos — nunca compartiendo la URL directa.
+   *
    * @param file - El archivo a subir
    * @param folder - La carpeta donde se guardará (ej: "facturas", "movimientos")
-   * @returns La URL del archivo subido
+   * @returns La clave cruda del objeto en Spaces (ej: "facturas/1715…-uuid.pdf")
    */
   async uploadFile(file: File, folder: string): Promise<string> {
     // Validar tipo MIME
@@ -103,22 +111,23 @@ export class DigitalOceanSpacesService {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Subir a Digital Ocean Spaces
+    // Subir a Digital Ocean Spaces — objeto privado (sin ACL pública).
+    // secure-file-access Phase 2: la lectura se hace por URL presignada
+    // corta (10 min), no por URL pública permanente.
     const command = new PutObjectCommand({
       Bucket: this.bucket,
       Key: fileName,
       Body: buffer,
       ContentType: file.type,
-      ACL: "public-read",
     });
 
     try {
       await this.s3Client.send(command);
 
-      // Construir la URL pública del archivo
-      // Con forcePathStyle: true, la URL es: endpoint/bucket/key
-      const fileUrl = `${this.endpoint}/${this.bucket}/${fileName}`;
-      return fileUrl;
+      // Devolvemos la clave cruda, NO una URL pública. La URL presignada
+      // se genera bajo demanda por `getPresignedGetUrl(key)` desde el
+      // server action autorizado (Phase 3).
+      return fileName;
     } catch (error) {
       throw new Error(
         `Error al subir el archivo a Digital Ocean Spaces: ${
@@ -129,21 +138,17 @@ export class DigitalOceanSpacesService {
   }
 
   /**
-   * Elimina un archivo de Digital Ocean Spaces
-   * @param fileUrl - La URL del archivo a eliminar
+   * Elimina un archivo de Digital Ocean Spaces.
+   *
+   * Recibe la **clave** del objeto directamente (no una URL). El caller
+   * (FileService) lee `FileAttachment.fileUrl`, que en filas nuevas ya es
+   * la clave — sin parsing. Filas legadas con URL completa aún no pasaron
+   * por la migración de Phase 7; ver apply-progress para el plan.
+   *
+   * @param key - La clave cruda del objeto en Spaces
    */
-  async deleteFile(fileUrl: string): Promise<void> {
+  async deleteFile(key: string): Promise<void> {
     try {
-      // Extraer el key del archivo desde la URL
-      // URL format con forcePathStyle: https://sfo3.digitaloceanspaces.com/bdpsystem/folder/timestamp-uuid.ext
-      const url = new URL(fileUrl);
-      // Remover el bucket del pathname: /bdpsystem/folder/file.ext -> /folder/file.ext
-      const pathParts = url.pathname.split("/").filter(Boolean);
-      if (pathParts[0] === this.bucket) {
-        pathParts.shift(); // Remover el bucket
-      }
-      const key = pathParts.join("/");
-
       const command = new DeleteObjectCommand({
         Bucket: this.bucket,
         Key: key,
@@ -153,6 +158,45 @@ export class DigitalOceanSpacesService {
     } catch (error) {
       throw new Error(
         `Error al eliminar el archivo de Digital Ocean Spaces: ${
+          error instanceof Error ? error.message : "Error desconocido"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Genera una URL presignada de GET para un objeto privado.
+   *
+   * Helper de bajo nivel (primitiva reutilizable). El control de acceso se
+   * aplica en el server action que invoca este método (Phase 3:
+   * `getFilePresignedUrlAction`), no acá. Esta función sólo firma el GET —
+   * no verifica permisos, identidad ni entidad dueña.
+   *
+   * La URL funciona tanto para objetos públicos como privados: si el
+   * objeto es público, la firma sigue siendo válida (DO Spaces la ignora);
+   * si es privado, la firma es obligatoria para autorizar la descarga.
+   *
+   * @param key - Clave cruda del objeto en Spaces
+   * @param ttlSeconds - Segundos hasta expiración (default 600s = 10 min,
+   *   dentro de la banda 5–15 min exigida por la spec)
+   * @returns URL presignada con query string de firma
+   */
+  async getPresignedGetUrl(
+    key: string,
+    ttlSeconds: number = 600
+  ): Promise<string> {
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
+
+      return await getSignedUrl(this.s3Client, command, {
+        expiresIn: ttlSeconds,
+      });
+    } catch (error) {
+      throw new Error(
+        `Error al generar URL presignada para el objeto: ${
           error instanceof Error ? error.message : "Error desconocido"
         }`
       );
