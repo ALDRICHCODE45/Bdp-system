@@ -12,9 +12,9 @@ import { cn } from "@/core/lib/utils";
 import { FacturaDto } from "../server/dtos/FacturaDto.dto";
 import { FacturaRowActions } from "./forms/FacturaRowActions";
 import { FacturaStatusBadge } from "./FacturaStatusBadge";
+import { FacturaPdfCell } from "./FacturaPdfCell";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { ExternalLink } from "lucide-react";
 
 /**
  * Returns a locale-aware currency formatter for the given currency code.
@@ -362,23 +362,20 @@ export function createFacturasColumns(
     },
 
     // ─── Factura URL ──────────────────────────────────────────────────────
+    // secure-file-access — fix: facturaUrl is now a raw Spaces object key
+    // (post-Phase-2 storage contract), not a public URL. Rendering the raw
+    // value as an `<a href>` would 401 against the bucket host. The cell
+    // is delegated to `FacturaPdfCell`, which mints a presigned GET URL
+    // through `getFacturaPdfPresignedUrlAction` on click. The visibility
+    // guard (`!url`) is UX-only; the server action re-runs auth + module
+    // perm + capturador ownership before minting the signature.
     {
       accessorKey: "facturaUrl",
       header: "Factura SAT",
       cell: ({ row }) => {
         const url = row.getValue("facturaUrl") as string | null;
         if (!url) return <EmptyCell />;
-        return (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-primary hover:underline"
-          >
-            <ExternalLink className="size-3 shrink-0" />
-            PDF
-          </a>
-        );
+        return <FacturaPdfCell facturaId={row.original.id} />;
       },
       size: 8,
     },

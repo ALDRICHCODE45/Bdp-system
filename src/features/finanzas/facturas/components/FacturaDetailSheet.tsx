@@ -47,7 +47,9 @@ import { FacturaStatusBadge } from "./FacturaStatusBadge";
 import { cn } from "@/core/lib/utils";
 import { formatFieldName } from "../helpers/formatHistorialField";
 import { formatChangeDescription } from "../helpers/formatHistorialChange";
-import { History, AlertCircle, Copy, Check, Paperclip, ExternalLink } from "lucide-react";
+import { History, AlertCircle, Copy, Check, Paperclip, ExternalLink, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { getFacturaPdfPresignedUrlAction } from "../server/actions/getFacturaPdfPresignedUrlAction";
 import type { FacturaDto } from "../server/dtos/FacturaDto.dto";
 
 const FileUploadDropZone = dynamic(
@@ -150,6 +152,53 @@ function CopyUUID({ uuid }: { uuid: string }) {
   );
 }
 
+// ─── FacturaSatLink ──────────────────────────────────────────────────────────
+/**
+ * secure-file-access — fix: inline button that opens the Factura SAT PDF
+ * through the RBAC-gated `getFacturaPdfPresignedUrlAction`. The
+ * `!isCapturador && factura.facturaUrl` visibility guard is UX-only; the
+ * server action re-runs the auth + module-perm + capturador-ownership
+ * checks before minting the URL, so the client guard is a convenience,
+ * not a security boundary.
+ */
+function FacturaSatLink({ facturaId }: { facturaId: string }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleOpen = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const result = await getFacturaPdfPresignedUrlAction(facturaId);
+      if (!result.ok) {
+        toast.error(result.error || "Error al abrir el PDF");
+        return;
+      }
+      window.open(result.data.url, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error("Error al abrir el PDF");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleOpen}
+      disabled={loading}
+      className="flex items-center gap-1 text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+      aria-label="Ver PDF timbrado"
+    >
+      {loading ? (
+        <Loader2 className="size-3.5 shrink-0 animate-spin" />
+      ) : (
+        <ExternalLink className="size-3.5 shrink-0" />
+      )}
+      {loading ? "Abriendo…" : "Ver PDF timbrado"}
+    </button>
+  );
+}
+
 // ─── InformacionTab ──────────────────────────────────────────────────────────
 function InformacionTab({
   factura,
@@ -204,15 +253,7 @@ function InformacionTab({
           {!isCapturador && factura.facturaUrl && (
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Factura SAT</span>
-              <a
-                href={factura.facturaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                <ExternalLink className="size-3.5 shrink-0" />
-                Ver PDF timbrado
-              </a>
+              <FacturaSatLink facturaId={factura.id} />
             </div>
           )}
         </div>
