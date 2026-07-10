@@ -53,6 +53,10 @@
  *                              after inspecting the checkpoint file).
  *   --batch-size N             Rows per Prisma page (default 50).
  *   --limit N                  Process at most N rows total (safety cap).
+ *   --self-test                Run the key-derivation self-check (no DB,
+ *                              no Spaces; exits 0 on pass / 1 on mismatch).
+ *                              Use to verify the path-style fix in any
+ *                              environment without external side effects.
  *   --confirm-prod-write       Required when NODE_ENV=production AND not a
  *                              dry run. Refuses to write otherwise.
  *
@@ -169,6 +173,7 @@ interface CliArgs {
   fromId: string | null;
   batchSize: number;
   limit: number | null;
+  selfTest: boolean;
   confirmProdWrite: boolean;
 }
 
@@ -179,6 +184,7 @@ function parseArgs(argv: readonly string[]): CliArgs {
     fromId: null,
     batchSize: 50,
     limit: null,
+    selfTest: false,
     confirmProdWrite: false,
   };
 
@@ -194,6 +200,9 @@ function parseArgs(argv: readonly string[]): CliArgs {
         break;
       case "--confirm-prod-write":
         args.confirmProdWrite = true;
+        break;
+      case "--self-test":
+        args.selfTest = true;
         break;
       case "--from-id": {
         if (!next) throw new Error("--from-id requires a value");
@@ -238,6 +247,13 @@ function parseArgs(argv: readonly string[]): CliArgs {
     throw new Error("--dry-run and --revert are mutually exclusive");
   }
 
+  if (args.selfTest && (args.dryRun || args.revert || args.fromId != null || args.limit != null)) {
+    throw new Error(
+      "--self-test must be used alone (no other mode flags) — " +
+        "it does not touch the DB or Spaces"
+    );
+  }
+
   return args;
 }
 
@@ -250,6 +266,7 @@ Flags:
   --from-id <uuid>            Start scanning from id > <uuid> (manual resume).
   --batch-size N              Rows per Prisma page (default 50, max 1000).
   --limit N                   Process at most N rows total.
+  --self-test                 Key-derivation self-check (no DB, no Spaces).
   --confirm-prod-write        Required when NODE_ENV=production (non-dry).
 
 Targets:
@@ -327,10 +344,35 @@ function buildSpacesClient(env: SpacesEnv): S3Client {
 // ---------------------------------------------------------------------------
 // Key derivation: legacy public URL → object key
 //
-// Legacy public URL shape (DO Spaces virtual-hosted style):
-//   https://<bucket>.<region>.digitaloceanspaces.com/<key>
-//   e.g. https://bdpsystem.sfo3.digitaloceanspaces.com/facturas/1234-abcd.pdf
-// We tolerate query strings (some legacy rows had ?versionId=...).
+// Production legacy rows have been written in TWO URL styles (this is the
+// bug fixed by the `fix(files): derive bucket-relative key from path-style
+// Spaces URLs in backfill` commit — see header comment for context):
+//
+//   1. Path-style (the form observed in prod by the dry-run that surfaced
+//      the original bug):
+//        https://<region>.digitaloceanspaces.com/<bucket>/<key>
+//        e.g. https://sfo3.digitaloceanspaces.com/bdpsystem/facturas/1774…pdf
+//      → strip the leading `/<bucket>/` segment so the returned key is
+//        bucket-relative. Returning `bdpsystem/facturas/1774…pdf` here
+//        would make PutObjectAclCommand target
+//        `bdpsystem/bdpsystem/facturas/…` which does not exist → NoSuchKey
+//        surfaced in prod as the cryptic `UnknownError`.
+//
+//   2. Virtual-hosted-style (the form the previous version of this script
+//      assumed, kept here for completeness):
+//        https://<bucket>.<region>.digitaloceanspaces.com/<key>
+//        e.g. https://bdpsystem.sfo3.digitaloceanspaces.com/facturas/1234-abcd.pdf
+//      → the path is already bucket-relative; use as-is.
+//
+// Style detection: virtual-hosted iff the hostname equals the bucket or
+// starts with `<bucket>.`. Everything else is path-style. This is the
+// disambiguation that the previous version of this function was missing.
+//
+// The returned key MUST match the canonical bucket-relative form that
+// `DigitalOceanSpacesService.uploadFile` returns and that
+// `getPresignedGetUrl(key)` (and `GetObjectCommand({ Key })`) consumes —
+// i.e. the same form the new-upload code stores in
+// `FileAttachment.fileUrl` / `Factura.facturaUrl` post-`1bf2216`.
 // ---------------------------------------------------------------------------
 
 function deriveKeyFromLegacyUrl(legacyUrl: string, bucket: string): string | null {
@@ -341,25 +383,295 @@ function deriveKeyFromLegacyUrl(legacyUrl: string, bucket: string): string | nul
     return null;
   }
 
-  // Pathname starts with "/<key>". Decode and trim leading slash.
-  let key = decodeURIComponent(parsed.pathname).replace(/^\/+/, "");
-  // Strip any trailing slash.
-  key = key.replace(/\/+$/, "");
-  if (key === "") return null;
+  // Trim leading/trailing slashes from the pathname. Query strings and
+  // fragments are discarded by `parsed.pathname` (URL class behaviour).
+  const rawPath = decodeURIComponent(parsed.pathname)
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
+  if (rawPath === "") return null;
 
   // Sanity: legacy key must NOT contain another URL — bare key only.
-  if (key.startsWith("http")) return null;
+  if (rawPath.startsWith("http")) return null;
 
-  // Optional defensive check: hostname should mention the bucket (virtual
-  // hosted) or the bucket-prefixed path (path style). We don't fail hard
-  // here — only warn — because some rows may have been written by an
-  // earlier toolchain that stored the path-style URL.
   const host = parsed.hostname.toLowerCase();
-  if (host && !host.startsWith(bucket.toLowerCase()) && !host.includes("digitaloceanspaces.com")) {
-    // Off-spec hostname. Warn but trust the path.
+  const bucketLc = bucket.toLowerCase();
+
+  // (1) Virtual-hosted: bucket is a subdomain prefix of the host. The
+  // path is already bucket-relative — use it as-is.
+  if (host === bucketLc || host.startsWith(`${bucketLc}.`)) {
+    return rawPath;
   }
 
-  return key;
+  // (2) Path-style: bucket is the first path segment. Strip it so the
+  // returned key is bucket-relative and matches what
+  // `DigitalOceanSpacesService` expects.
+  const segments = rawPath.split("/");
+  if (segments[0]?.toLowerCase() === bucketLc) {
+    const stripped = segments.slice(1).join("/");
+    return stripped === "" ? null : stripped;
+  }
+
+  // (3) Off-spec: hostname is neither virtual-hosted for this bucket nor
+  // path-style with this bucket as the first segment. Trust the raw path
+  // and let the S3 call surface the mismatch (NoSuchKey / AccessDenied)
+  // — better than a hard fail on a row that may have been written by an
+  // out-of-band toolchain. This preserves the original "warn but trust"
+  // behaviour for unexpected URL shapes.
+  return rawPath;
+}
+
+// ---------------------------------------------------------------------------
+// AWS SDK error formatter
+//
+// AWS SDK v3 errors (`S3ServiceException` / its subclasses like `NoSuchKey`,
+// `AccessDenied`, `SignatureDoesNotMatch`) carry the diagnostic info on
+// `name`, `$metadata.httpStatusCode`, and `message`. The previous version
+// of this script only surfaced `err.message`, which for a `NoSuchKey`
+// (the very error the path-style bug produced in prod) tends to be
+// opaque or empty and was being reported as `reason=UnknownError`. This
+// formatter collapses the structured fields into a single, grep-friendly
+// line so the operator can act on the next run without spelunking
+// through SDK internals.
+// ---------------------------------------------------------------------------
+
+function formatMigrationError(err: unknown): string {
+  if (err && typeof err === "object") {
+    const e = err as {
+      name?: string;
+      message?: string;
+      $metadata?: { httpStatusCode?: number; requestId?: string };
+      $fault?: "client" | "server";
+      Code?: string;
+    };
+    // AWS SDK v3 ServiceException fingerprint: the exception always
+    // carries `$metadata` (required by `MetadataBearer`) and/or `$fault`
+    // (required by `ServiceException`). Requiring one of those — rather
+    // than `name` — is what keeps a plain `new Error("boom")` from
+    // being mis-classified as an AWS error just because it has
+    // `Error.name === "Error"`.
+    if (e.$metadata || e.$fault) {
+      const name = e.Code ?? e.name ?? "UnknownError";
+      const status = e.$metadata?.httpStatusCode ?? 0;
+      const message = e.message ?? String(err);
+      const parts: string[] = [`aws=${name}`, `http=${status}`];
+      if (e.$fault) parts.push(`fault=${e.$fault}`);
+      if (e.$metadata?.requestId) parts.push(`requestId=${e.$metadata.requestId}`);
+      parts.push(`message=${message}`);
+      return parts.join(" ");
+    }
+    if (typeof e.message === "string" && e.message.length > 0) return e.message;
+  }
+  return String(err);
+}
+
+// ---------------------------------------------------------------------------
+// Self-test
+//
+// Runs a battery of URL→key derivations plus AWS-error formatting checks
+// without touching the DB or Spaces. Invoked via `bun run migrate:file-acl
+// --self-test`. Exits 0 on full pass, 1 on any mismatch. The operator can
+// re-run this in any environment to confirm the path-style fix is in
+// place after a deploy or a refactor.
+// ---------------------------------------------------------------------------
+
+interface SelfTestCase {
+  readonly name: string;
+  readonly run: () => void;
+}
+
+function runSelfTest(): void {
+  const bucket = "bdpsystem";
+  const cases: SelfTestCase[] = [
+    {
+      name: "path-style: actual prod URL (the regression case)",
+      run: () => {
+        const url =
+          "https://sfo3.digitaloceanspaces.com/bdpsystem/facturas/" +
+          "1774462619913-455222ea-36cb-4b91-9e1c-6d67d1769a9d.pdf";
+        const expected = "facturas/1774462619913-455222ea-36cb-4b91-9e1c-6d67d1769a9d.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== expected) {
+          throw new Error(`expected "${expected}", got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "virtual-hosted-style: bucket is a subdomain prefix",
+      run: () => {
+        const url = "https://bdpsystem.sfo3.digitaloceanspaces.com/facturas/1234-abcd.pdf";
+        const expected = "facturas/1234-abcd.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== expected) {
+          throw new Error(`expected "${expected}", got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "path-style: preserves nested key segments",
+      run: () => {
+        const url =
+          "https://sfo3.digitaloceanspaces.com/bdpsystem/movimientos/2026/07/123.pdf";
+        const expected = "movimientos/2026/07/123.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== expected) {
+          throw new Error(`expected "${expected}", got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "path-style: key that happens to start with the bucket name",
+      run: () => {
+        // Edge case: a top-level folder named `bdpsystem` inside the
+        // `bdpsystem` bucket. The first segment is the bucket, the second
+        // is the folder — strip exactly one segment.
+        const url = "https://sfo3.digitaloceanspaces.com/bdpsystem/bdpsystem/xxx.pdf";
+        const expected = "bdpsystem/xxx.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== expected) {
+          throw new Error(`expected "${expected}", got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "path-style: query string is discarded",
+      run: () => {
+        const url =
+          "https://sfo3.digitaloceanspaces.com/bdpsystem/facturas/abc.pdf?versionId=42";
+        const expected = "facturas/abc.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== expected) {
+          throw new Error(`expected "${expected}", got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "path-style: percent-encoded path is decoded",
+      run: () => {
+        const url =
+          "https://sfo3.digitaloceanspaces.com/bdpsystem/facturas/file%20with%20space.pdf";
+        const expected = "facturas/file with space.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== expected) {
+          throw new Error(`expected "${expected}", got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "virtual-hosted-style: case-insensitive bucket match",
+      run: () => {
+        const url = "https://BDPSystem.sfo3.digitaloceanspaces.com/facturas/abc.pdf";
+        const expected = "facturas/abc.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== expected) {
+          throw new Error(`expected "${expected}", got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "off-spec: first segment is not the bucket → trust raw path",
+      run: () => {
+        // E.g. a stale row from a toolchain that used a different bucket
+        // name. We don't fail hard; we trust the path so the S3 call
+        // surfaces NoSuchKey with the operator's actual key.
+        const url = "https://sfo3.digitaloceanspaces.com/legacy-bucket/facturas/abc.pdf";
+        const got = deriveKeyFromLegacyUrl(url, bucket);
+        if (got !== "legacy-bucket/facturas/abc.pdf") {
+          throw new Error(`expected off-spec passthrough, got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "invalid URL string returns null",
+      run: () => {
+        const got = deriveKeyFromLegacyUrl("not a url", bucket);
+        if (got !== null) {
+          throw new Error(`expected null, got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "empty pathname returns null",
+      run: () => {
+        const got = deriveKeyFromLegacyUrl("https://sfo3.digitaloceanspaces.com/", bucket);
+        if (got !== null) {
+          throw new Error(`expected null, got "${String(got)}"`);
+        }
+      },
+    },
+    {
+      name: "formatMigrationError surfaces AWS S3 NoSuchKey shape",
+      run: () => {
+        // Synthesise the shape AWS SDK v3 actually throws for NoSuchKey.
+        const fakeErr: { name: string; message: string; $metadata: { httpStatusCode: number; requestId: string }; $fault: "client" } = {
+          name: "NoSuchKey",
+          message: "The specified key does not exist.",
+          $metadata: { httpStatusCode: 404, requestId: "req-abc-123" },
+          $fault: "client",
+        };
+        const got = formatMigrationError(fakeErr);
+        if (!got.includes("aws=NoSuchKey")) {
+          throw new Error(`expected aws=NoSuchKey in formatted string, got: ${got}`);
+        }
+        if (!got.includes("http=404")) {
+          throw new Error(`expected http=404 in formatted string, got: ${got}`);
+        }
+        if (!got.includes("The specified key does not exist.")) {
+          throw new Error(`expected original message, got: ${got}`);
+        }
+      },
+    },
+    {
+      name: "formatMigrationError surfaces SignatureDoesNotMatch shape",
+      run: () => {
+        const fakeErr = {
+          name: "SignatureDoesNotMatch",
+          message: "The request signature we calculated does not match the signature you provided.",
+          $metadata: { httpStatusCode: 403, requestId: "req-def-456" },
+          $fault: "client",
+        };
+        const got = formatMigrationError(fakeErr);
+        if (!got.includes("aws=SignatureDoesNotMatch") || !got.includes("http=403")) {
+          throw new Error(`expected aws=SignatureDoesNotMatch http=403, got: ${got}`);
+        }
+      },
+    },
+    {
+      name: "formatMigrationError falls back for non-AWS errors",
+      run: () => {
+        const got = formatMigrationError(new Error("boom"));
+        if (got !== "boom") {
+          throw new Error(`expected "boom", got: ${got}`);
+        }
+      },
+    },
+    {
+      name: "formatMigrationError handles non-object throw values",
+      run: () => {
+        const got = formatMigrationError("plain string thrown");
+        if (got !== "plain string thrown") {
+          throw new Error(`expected passthrough, got: ${got}`);
+        }
+      },
+    },
+  ];
+
+  let pass = 0;
+  const failures: Array<{ name: string; message: string }> = [];
+  for (const c of cases) {
+    try {
+      c.run();
+      pass++;
+      console.log(`  ok   ${c.name}`);
+    } catch (err) {
+      failures.push({ name: c.name, message: formatMigrationError(err) });
+      console.error(`  FAIL ${c.name}: ${formatMigrationError(err)}`);
+    }
+  }
+  console.log("");
+  console.log(`Self-test: ${pass}/${cases.length} passed`);
+  if (failures.length > 0) {
+    process.exitCode = 1;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -404,8 +716,12 @@ async function withBackoff<T>(
       }
 
       const delay = Math.min(BASE_BACKOFF_MS * 2 ** attempt, MAX_BACKOFF_MS);
+      // Use the AWS-aware formatter so transient retry lines carry the
+      // same diagnostic shape (aws=<name> http=<status> …) as the
+      // final failure reason — the operator can grep one pattern across
+      // the whole run.
       logger(
-        `${label} transient error (${e.name ?? "Unknown"}, http=${status}); retry ${
+        `${label} transient error ${formatMigrationError(err)}; retry ${
           attempt + 1
         }/5 in ${delay}ms`
       );
@@ -683,7 +999,12 @@ async function processTarget(
         stats.migrated++;
       } catch (err) {
         stats.failed++;
-        const reason = (err as Error).message ?? String(err);
+        // AWS-aware formatter: surfaces `aws=<name> http=<status> ...`
+        // for S3 service exceptions (e.g. NoSuchKey, AccessDenied,
+        // SignatureDoesNotMatch) and falls back to a plain string for
+        // anything else. This replaces the prior `err.message ?? String(err)`
+        // line that surfaced prod failures as the cryptic `UnknownError`.
+        const reason = formatMigrationError(err);
         stats.failures.push({ id: shaped.id, reason });
         logger(`[fail] ${target.label} id=${shaped.id} reason=${reason}`);
         // Fail-soft: do not abort the whole run on a single row failure.
@@ -837,6 +1158,15 @@ async function runMigrate(args: CliArgs, s3: S3Client, env: SpacesEnv): Promise<
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv);
+
+  // Self-test is a pure unit check — no env, no DB, no Spaces. Run it
+  // before touching Prisma so an operator in a misconfigured shell can
+  // still verify the path-style fix landed correctly.
+  if (args.selfTest) {
+    runSelfTest();
+    return;
+  }
+
   const env = parseSpacesEnv();
   prisma = new PrismaClient();
   const s3 = buildSpacesClient(env);
