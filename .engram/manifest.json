@@ -88,6 +88,14 @@
       "sessions": 2,
       "memories": 21,
       "prompts": 14
+    },
+    {
+      "id": "254cee0f",
+      "created_by": "aldrich_coder45",
+      "created_at": "2026-07-10T20:08:41Z",
+      "sessions": 2,
+      "memories": 7,
+      "prompts": 12
     }
   ]
 }
