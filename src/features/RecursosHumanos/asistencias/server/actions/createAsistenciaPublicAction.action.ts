@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { CreateAsistenciaDto } from "../Dtos/CreateAsistenciaDto.Dto";
 import { makeAsistenciaService } from "../services/makeAsistenciaService";
 import prisma from "@/core/lib/prisma";
+import { createAsistenciaServerSchema } from "../../schemas/createAsistenciaServerSchema.schema";
 
 /**
  * Server action pública para registro de asistencia via QR
@@ -10,6 +11,13 @@ import prisma from "@/core/lib/prisma";
  */
 export const createAsistenciaPublicAction = async (input: CreateAsistenciaDto) => {
   try {
+    // Server-side shape validation so malformed input never reaches the
+    // service or the DB.
+    const parsed = createAsistenciaServerSchema.safeParse(input);
+    if (!parsed.success) {
+      return { ok: false, message: parsed.error.issues[0].message };
+    }
+
     const asistenciaService = makeAsistenciaService({ prisma });
     const result = await asistenciaService.create(input);
 
