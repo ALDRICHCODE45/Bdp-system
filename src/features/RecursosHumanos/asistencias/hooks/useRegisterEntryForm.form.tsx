@@ -2,6 +2,7 @@
 
 import { showToast } from "@/core/shared/helpers/CustomToast";
 import { useForm } from "@tanstack/react-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { createAsistenciaSchema } from "../schemas/createAsistenciaSchema.schema";
 import { createAsistenciaAction } from "../server/actions/createAsistenciaAction.action";
 import {
@@ -11,6 +12,7 @@ import {
 import { useSearchParams } from "next/navigation";
 
 export const useRegisterEntryForm = () => {
+  const queryClient = useQueryClient();
   const queryParameters = useSearchParams();
   const tipo = queryParameters.get("tipo") ?? undefined;
 
@@ -43,6 +45,16 @@ export const useRegisterEntryForm = () => {
         value.email = "";
         return;
       }
+
+      // Refrescar la tabla de asistencias en el cliente. La Server Action
+      // hace revalidatePath (caché de RSC), pero la tabla se hidrata vía
+      // TanStack Query, que con staleTime de 5 min no vuelve a pedir datos
+      // por su cuenta. Invalidamos su caché para forzar el refetch.
+      //
+      // Fire-and-forget a propósito: el registro ya se confirmó arriba. Si el
+      // refetch en segundo plano fallara, no debe convertir este éxito en un
+      // toast de error, así que no lo esperamos (await).
+      void queryClient.invalidateQueries({ queryKey: ["asistencias"] });
 
       showToast({
         title: `${value.tipo} Registrada satisfactoriamente`,

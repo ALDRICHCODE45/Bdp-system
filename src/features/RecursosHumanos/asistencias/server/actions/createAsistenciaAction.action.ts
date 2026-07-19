@@ -33,4 +33,5 @@ export const createAsistenciaAction = async (input: CreateAsistenciaDto) => {
     return { ok: false, message: result.error.message };
   }
   revalidatePath("/asistencias");
+  return { ok: true };
 };
