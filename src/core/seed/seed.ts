@@ -1,3 +1,6 @@
+// Debe ir primero: carga las variables de entorno antes de evaluar cualquier
+// módulo que lea process.env en tiempo de import (env.config.ts).
+import "./loadEnv";
 import prisma from "@/core/lib/prisma";
 import bcrypt from "bcrypt";
 import { env } from "@/core/shared/config/env.config";
