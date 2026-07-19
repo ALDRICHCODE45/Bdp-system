@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/shared/ui/select";
+import { Combobox } from "@/core/shared/ui/combobox";
 import { Button } from "@/core/shared/ui/button";
 import { Badge } from "@/core/shared/ui/badge";
 import { Label } from "@/core/shared/ui/label";
@@ -70,6 +71,10 @@ function FilterFields({
   weeks,
   triggerClass = "h-8 text-sm",
 }: FilterFieldsProps) {
+  const weekOptions = [
+    { value: TODOS_VALUE, label: "Todas" },
+    ...weeks.map((w) => ({ value: String(w), label: `Sem ${w}` })),
+  ];
   return (
     <>
       {/* Equipo */}
@@ -213,61 +218,47 @@ function FilterFields({
       {/* Semana Desde */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Semana desde</Label>
-        <Select
+        <Combobox
+          options={weekOptions}
           value={
             filters.semanaDesde !== undefined
               ? String(filters.semanaDesde)
               : TODOS_VALUE
           }
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange(
               "semanaDesde",
               val === TODOS_VALUE ? undefined : Number(val)
             )
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Desde" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todas</SelectItem>
-            {weeks.map((w) => (
-              <SelectItem key={w} value={String(w)}>
-                Sem {w}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Desde"
+          searchPlaceholder="Buscar semana..."
+          emptyMessage="Sin coincidencias."
+          className={triggerClass}
+        />
       </div>
 
       {/* Semana Hasta */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Semana hasta</Label>
-        <Select
+        <Combobox
+          options={weekOptions}
           value={
             filters.semanaHasta !== undefined
               ? String(filters.semanaHasta)
               : TODOS_VALUE
           }
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange(
               "semanaHasta",
               val === TODOS_VALUE ? undefined : Number(val)
             )
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Hasta" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todas</SelectItem>
-            {weeks.map((w) => (
-              <SelectItem key={w} value={String(w)}>
-                Sem {w}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Hasta"
+          searchPlaceholder="Buscar semana..."
+          emptyMessage="Sin coincidencias."
+          className={triggerClass}
+        />
       </div>
     </>
   );

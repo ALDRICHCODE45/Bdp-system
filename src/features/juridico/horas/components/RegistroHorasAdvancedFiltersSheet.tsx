@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/shared/ui/select";
+import { Combobox } from "@/core/shared/ui/combobox";
 import {
   Sheet,
   SheetContent,
@@ -74,6 +75,13 @@ export function RegistroHorasAdvancedFiltersSheet({
 
   const years = useMemo(generateYears, []);
   const weeks = useMemo(generateWeeks, []);
+  const weekOptions = useMemo(
+    () => [
+      { value: ALL_VALUE, label: "Todas" },
+      ...weeks.map((week) => ({ value: String(week), label: String(week) })),
+    ],
+    [weeks]
+  );
 
   const handleApply = () => {
     onApply(draft);
@@ -146,61 +154,47 @@ export function RegistroHorasAdvancedFiltersSheet({
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Semana desde</Label>
-              <Select
+              <Combobox
+                options={weekOptions}
                 value={
                   draft.semanaDesde !== undefined
                     ? String(draft.semanaDesde)
                     : ALL_VALUE
                 }
-                onValueChange={(value) =>
+                onChange={(value) =>
                   setDraft((prev) => ({
                     ...prev,
                     semanaDesde:
                       value === ALL_VALUE ? undefined : Number(value),
                   }))
                 }
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_VALUE}>Todas</SelectItem>
-                  {weeks.map((week) => (
-                    <SelectItem key={week} value={String(week)}>
-                      {week}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Todas"
+                searchPlaceholder="Buscar semana..."
+                emptyMessage="Sin coincidencias."
+                className="h-9 w-full"
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Semana hasta</Label>
-              <Select
+              <Combobox
+                options={weekOptions}
                 value={
                   draft.semanaHasta !== undefined
                     ? String(draft.semanaHasta)
                     : ALL_VALUE
                 }
-                onValueChange={(value) =>
+                onChange={(value) =>
                   setDraft((prev) => ({
                     ...prev,
                     semanaHasta:
                       value === ALL_VALUE ? undefined : Number(value),
                   }))
                 }
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_VALUE}>Todas</SelectItem>
-                  {weeks.map((week) => (
-                    <SelectItem key={week} value={String(week)}>
-                      {week}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Todas"
+                searchPlaceholder="Buscar semana..."
+                emptyMessage="Sin coincidencias."
+                className="h-9 w-full"
+              />
             </div>
           </div>
 
