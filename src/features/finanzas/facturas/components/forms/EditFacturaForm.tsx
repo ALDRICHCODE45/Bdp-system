@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/shared/ui/select";
+import { Combobox } from "@/core/shared/ui/combobox";
 import { Separator } from "@/core/shared/ui/separator";
 import { DatePicker } from "@/core/shared/ui/date-picker";
 import { format, parse } from "date-fns";
@@ -381,22 +382,16 @@ export const EditFacturaForm = ({
             <form.Field name="usoCfdi">
               {(field) => (
                 <FormField label="Uso CFDI" hint="Opcional">
-                  <Select
-                    name={field.name}
+                  <Combobox
+                    id="usoCfdi"
+                    options={USO_CFDI_OPTIONS}
                     value={field.state.value ?? ""}
-                    onValueChange={(v) => field.handleChange(v)}
-                  >
-                    <SelectTrigger id="usoCfdi" className="w-full overflow-hidden">
-                      <SelectValue placeholder="Seleccionar uso CFDI" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {USO_CFDI_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(v) => field.handleChange(v)}
+                    placeholder="Seleccionar uso CFDI"
+                    searchPlaceholder="Buscar uso CFDI..."
+                    emptyMessage="Sin coincidencias."
+                    clearable
+                  />
                 </FormField>
               )}
             </form.Field>

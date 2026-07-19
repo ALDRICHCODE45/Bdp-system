@@ -83,7 +83,13 @@ function CommandList({
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        "max-h-80 flex-1 overflow-x-hidden overflow-y-auto",
+        // No `flex-1`: inside an auto-height Popover (combobox), a `flex-1`
+        // list (flex-basis:0) stops `max-h-80` from capping the height, so it
+        // never overflows and can't scroll. As a plain flex item it sizes to
+        // content, `max-h-80` caps it, and `overflow-y-auto` scrolls. `min-h-0`
+        // keeps max-height authoritative over the flex min-size. (flex-1 was
+        // inert in the multiselect, whose CommandList parent is not a flexbox.)
+        "max-h-80 min-h-0 overflow-x-hidden overflow-y-auto",
         className
       )}
       {...props}
