@@ -2,7 +2,14 @@
 
 import { Button } from "@/core/shared/ui/button";
 import { Input } from "@/core/shared/ui/input";
-import { Label } from "@/core/shared/ui/label";
+import {
+  FieldGroup,
+  FieldSeparator,
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldDescription,
+} from "@/core/shared/ui/field";
 import {
   Select,
   SelectContent,
@@ -11,7 +18,6 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 import { Combobox } from "@/core/shared/ui/combobox";
-import { Separator } from "@/core/shared/ui/separator";
 import { DatePicker } from "@/core/shared/ui/date-picker";
 import { format, parse } from "date-fns";
 import { Plus } from "lucide-react";
@@ -20,59 +26,6 @@ import { useCreateFacturaForm } from "../../hooks/useCreateFacturaForm.hook";
 import { useStore } from "@tanstack/react-form";
 import { FacturaSATUpload } from "../FacturaSATUpload";
 import { CurrencyInput } from "@/core/shared/components/CurrencyInput";
-
-// ─── getFieldError — extrae el mensaje de un error de TanStack Form + Zod ────
-// ValidationError = unknown, puede ser string, objeto Zod, etc.
-function getFieldError(errors: unknown[]): string | null {
-  if (!errors || errors.length === 0) return null;
-  const err = errors[0];
-  if (!err) return null;
-  if (typeof err === "string") return err;
-  if (typeof err === "object" && err !== null && "message" in err) {
-    return String((err as { message: unknown }).message);
-  }
-  return String(err);
-}
-
-// ─── SectionHeader ────────────────────────────────────────────────────────────
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-      {title}
-    </p>
-  );
-}
-
-// ─── FormField ────────────────────────────────────────────────────────────────
-function FormField({
-  label,
-  hint,
-  error,
-  required,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  error?: string | null;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-baseline gap-1">
-        <Label className="text-sm font-medium">
-          {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
-        </Label>
-        {hint && !error && (
-          <span className="text-xs text-muted-foreground">{hint}</span>
-        )}
-      </div>
-      {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
-    </div>
-  );
-}
 
 // ─── USO CFDI options ─────────────────────────────────────────────────────────
 const USO_CFDI_OPTIONS = [
@@ -133,186 +86,193 @@ export const CreateFacturaForm = ({
   };
 
   return (
-    <form
-      id="create-factura-form"
-      autoComplete="off"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await form.handleSubmit();
-      }}
-      className="space-y-6"
-    >
-      {/* ── Datos Fiscales — PRIMERO ────────────────────────────────────── */}
-      <div>
-        <SectionHeader title="Datos Fiscales" />
-        <div className="space-y-4">
-          {/* RFC Emisor + Nombre Emisor */}
-          <div className="grid grid-cols-2 gap-4">
+    <div className="p-4">
+      <form
+        id="create-factura-form"
+        autoComplete="off"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          await form.handleSubmit();
+        }}
+      >
+        <FieldGroup>
+          {/* ── Datos fiscales ─────────────────────────────────────────── */}
+          <FieldSeparator>Datos fiscales</FieldSeparator>
+          <div className="grid gap-4 md:grid-cols-2">
             <form.Field name="rfcEmisor">
               {(field) => {
-                const error =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                    ? getFieldError(field.state.meta.errors)
-                    : null;
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <FormField label="RFC Emisor" hint="12–13 chars" error={error} required>
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor="rfcEmisor">RFC Emisor</FieldLabel>
                     <Input
                       id="rfcEmisor"
                       name={field.name}
                       value={field.state.value}
+                      onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value.toUpperCase())}
-                      aria-invalid={!!error}
+                      aria-invalid={isInvalid}
                       maxLength={13}
-                      className={cn("font-mono uppercase", error && "border-destructive")}
+                      className={cn("font-mono uppercase", isInvalid && "border-destructive")}
                     />
-                  </FormField>
+                    <FieldDescription>12–13 caracteres</FieldDescription>
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
                 );
               }}
             </form.Field>
 
             <form.Field name="nombreEmisor">
               {(field) => (
-                <FormField label="Nombre Emisor" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="nombreEmisor">
+                    Nombre Emisor (Opcional)
+                  </FieldLabel>
                   <Input
                     id="nombreEmisor"
                     name={field.name}
                     value={field.state.value}
+                    onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
-          </div>
 
-          {/* RFC Receptor + Nombre Receptor */}
-          <div className="grid grid-cols-2 gap-4">
             <form.Field name="rfcReceptor">
               {(field) => {
-                const error =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                    ? getFieldError(field.state.meta.errors)
-                    : null;
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <FormField label="RFC Receptor" hint="12–13 chars" error={error} required>
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor="rfcReceptor">RFC Receptor</FieldLabel>
                     <Input
                       id="rfcReceptor"
                       name={field.name}
                       value={field.state.value}
+                      onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value.toUpperCase())}
-                      aria-invalid={!!error}
+                      aria-invalid={isInvalid}
                       maxLength={13}
-                      className={cn("font-mono uppercase", error && "border-destructive")}
+                      className={cn("font-mono uppercase", isInvalid && "border-destructive")}
                     />
-                  </FormField>
+                    <FieldDescription>12–13 caracteres</FieldDescription>
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
                 );
               }}
             </form.Field>
 
             <form.Field name="nombreReceptor">
               {(field) => (
-                <FormField label="Nombre Receptor" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="nombreReceptor">
+                    Nombre Receptor (Opcional)
+                  </FieldLabel>
                   <Input
                     id="nombreReceptor"
                     name={field.name}
                     value={field.state.value}
+                    onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
           </div>
-        </div>
-      </div>
 
-      <Separator />
+          {/* ── Identificación ─────────────────────────────────────────── */}
+          <FieldSeparator>Identificación</FieldSeparator>
+          <div className="grid gap-4 md:grid-cols-2">
+            <form.Field name="uuid">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={isInvalid} className="md:col-span-2">
+                    <FieldLabel htmlFor="uuid">UUID</FieldLabel>
+                    <Input
+                      id="uuid"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      className={cn(
+                        "font-mono",
+                        isInvalid && "border-destructive focus-visible:ring-destructive",
+                      )}
+                      placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                      spellCheck={false}
+                    />
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
+                );
+              }}
+            </form.Field>
 
-      {/* ── Identificación ──────────────────────────────────────────────── */}
-      <div>
-        <SectionHeader title="Identificación" />
-        <div className="space-y-4">
-          {/* UUID — full width */}
-          <form.Field name="uuid">
-            {(field) => {
-              const error =
-                field.state.meta.isTouched && !field.state.meta.isValid
-                  ? getFieldError(field.state.meta.errors)
-                  : null;
-              return (
-                <FormField label="UUID" error={error} required>
-                  <Input
-                    id="uuid"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={!!error}
-                    className={cn(error && "border-destructive focus-visible:ring-destructive")}
-                    placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                    spellCheck={false}
-                  />
-                </FormField>
-              );
-            }}
-          </form.Field>
+            <form.Field name="concepto">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={isInvalid} className="md:col-span-2">
+                    <FieldLabel htmlFor="concepto">Concepto</FieldLabel>
+                    <Input
+                      id="concepto"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      className={cn(
+                        isInvalid && "border-destructive focus-visible:ring-destructive",
+                      )}
+                    />
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
+                );
+              }}
+            </form.Field>
 
-          {/* Concepto — full width */}
-          <form.Field name="concepto">
-            {(field) => {
-              const error =
-                field.state.meta.isTouched && !field.state.meta.isValid
-                  ? getFieldError(field.state.meta.errors)
-                  : null;
-              return (
-                <FormField label="Concepto" error={error} required>
-                  <Input
-                    id="concepto"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={!!error}
-                    className={cn(error && "border-destructive focus-visible:ring-destructive")}
-                  />
-                </FormField>
-              );
-            }}
-          </form.Field>
-
-          {/* Serie + Folio */}
-          <div className="grid grid-cols-2 gap-4">
             <form.Field name="serie">
               {(field) => (
-                <FormField label="Serie" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="serie">Serie (Opcional)</FieldLabel>
                   <Input
                     id="serie"
                     name={field.name}
                     value={field.state.value}
+                    onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="A"
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
 
             <form.Field name="folio">
               {(field) => (
-                <FormField label="Folio" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="folio">Folio (Opcional)</FieldLabel>
                   <Input
                     id="folio"
                     name={field.name}
                     value={field.state.value}
+                    onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="001"
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
-          </div>
 
-          {/* Uso CFDI + Moneda */}
-          <div className="grid grid-cols-2 gap-4">
             <form.Field name="usoCfdi">
               {(field) => (
-                <FormField label="Uso CFDI" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="usoCfdi">Uso CFDI (Opcional)</FieldLabel>
                   <Combobox
                     id="usoCfdi"
                     options={USO_CFDI_OPTIONS}
@@ -323,24 +283,23 @@ export const CreateFacturaForm = ({
                     emptyMessage="Sin coincidencias."
                     clearable
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
 
             <form.Field name="moneda">
               {(field) => {
-                const error =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                    ? getFieldError(field.state.meta.errors)
-                    : null;
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <FormField label="Moneda" error={error} required>
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor="moneda">Moneda</FieldLabel>
                     <Select
                       name={field.name}
                       value={field.state.value}
                       onValueChange={(v) => field.handleChange(v)}
                     >
-                      <SelectTrigger id="moneda" aria-invalid={!!error}>
+                      <SelectTrigger id="moneda" aria-invalid={isInvalid}>
                         <SelectValue placeholder="Moneda" />
                       </SelectTrigger>
                       <SelectContent>
@@ -349,30 +308,23 @@ export const CreateFacturaForm = ({
                         <SelectItem value="EUR">EUR — Euro</SelectItem>
                       </SelectContent>
                     </Select>
-                  </FormField>
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
                 );
               }}
             </form.Field>
           </div>
-        </div>
-      </div>
 
-      <Separator />
-
-      {/* ── Montos ──────────────────────────────────────────────────────── */}
-      <div>
-        <SectionHeader title="Montos" />
-        <div className="space-y-4">
-          {/* Subtotal + IVA */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* ── Montos ─────────────────────────────────────────────────── */}
+          <FieldSeparator>Montos</FieldSeparator>
+          <div className="grid gap-4 md:grid-cols-2">
             <form.Field name="subtotal">
               {(field) => {
-                const error =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                    ? getFieldError(field.state.meta.errors)
-                    : null;
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <FormField label="Subtotal" hint="Antes de impuestos" error={error} required>
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor="subtotal">Subtotal</FieldLabel>
                     <CurrencyInput
                       id="subtotal"
                       name={field.name}
@@ -381,17 +333,20 @@ export const CreateFacturaForm = ({
                         field.handleChange(val);
                         form.setFieldValue("total", calcularTotal(val, iva ?? 0, trasladados ?? 0, retenidos ?? 0));
                       }}
-                      aria-invalid={!!error}
-                      className={cn(error && "border-destructive")}
+                      aria-invalid={isInvalid}
+                      className={cn(isInvalid && "border-destructive")}
                     />
-                  </FormField>
+                    <FieldDescription>Antes de impuestos</FieldDescription>
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
                 );
               }}
             </form.Field>
 
             <form.Field name="iva">
               {(field) => (
-                <FormField label="IVA" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="iva">IVA (Opcional)</FieldLabel>
                   <CurrencyInput
                     id="iva"
                     name={field.name}
@@ -401,16 +356,16 @@ export const CreateFacturaForm = ({
                       form.setFieldValue("total", calcularTotal(subtotal ?? 0, val, trasladados ?? 0, retenidos ?? 0));
                     }}
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
-          </div>
 
-          {/* Imp. Trasladados + Imp. Retenidos */}
-          <div className="grid grid-cols-2 gap-4">
             <form.Field name="totalImpuestosTransladados">
               {(field) => (
-                <FormField label="Imp. Trasladados" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="totalImpuestosTransladados">
+                    Imp. Trasladados (Opcional)
+                  </FieldLabel>
                   <CurrencyInput
                     id="totalImpuestosTransladados"
                     name={field.name}
@@ -420,13 +375,16 @@ export const CreateFacturaForm = ({
                       form.setFieldValue("total", calcularTotal(subtotal ?? 0, iva ?? 0, val, retenidos ?? 0));
                     }}
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
 
             <form.Field name="totalImpuestosRetenidos">
               {(field) => (
-                <FormField label="Imp. Retenidos" hint="Opcional">
+                <Field>
+                  <FieldLabel htmlFor="totalImpuestosRetenidos">
+                    Imp. Retenidos (Opcional)
+                  </FieldLabel>
                   <CurrencyInput
                     id="totalImpuestosRetenidos"
                     name={field.name}
@@ -436,202 +394,202 @@ export const CreateFacturaForm = ({
                       form.setFieldValue("total", calcularTotal(subtotal ?? 0, iva ?? 0, trasladados ?? 0, val));
                     }}
                   />
-                </FormField>
+                </Field>
               )}
             </form.Field>
-          </div>
 
-          {/* Total — auto-calculado, read-only */}
-          <form.Field name="total">
-            {(field) => {
-              const error =
-                field.state.meta.isTouched && !field.state.meta.isValid
-                  ? getFieldError(field.state.meta.errors)
-                  : null;
-              return (
-                <FormField label="Total" hint="Calculado automáticamente" error={error} required>
-                  <CurrencyInput
-                    id="total"
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={() => {}}
-                    readOnly
-                    aria-invalid={!!error}
-                    className={cn(error && "border-destructive")}
-                  />
-                </FormField>
-              );
-            }}
-          </form.Field>
-        </div>
-      </div>
-
-      {!isCapturador && <Separator />}
-
-      {/* ── Status y Pago ────────────────────────────────────────────────── */}
-      {!isCapturador && <div>
-        <SectionHeader title="Status y Pago" />
-        <div className="space-y-4">
-          {/* Status + Método de Pago */}
-          <div className="grid grid-cols-2 gap-4">
-            <form.Field name="status">
+            <form.Field name="total">
               {(field) => {
-                const error =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                    ? getFieldError(field.state.meta.errors)
-                    : null;
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <FormField label="Status" error={error} required>
-                    <Select
+                  <Field data-invalid={isInvalid} className="md:col-span-2">
+                    <FieldLabel htmlFor="total">Total</FieldLabel>
+                    <CurrencyInput
+                      id="total"
                       name={field.name}
                       value={field.state.value}
-                      onValueChange={(v) =>
-                        field.handleChange(v as "vigente" | "cancelada")
-                      }
-                    >
-                      <SelectTrigger id="status" aria-invalid={!!error}>
-                        <SelectValue placeholder="Seleccionar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vigente">Vigente</SelectItem>
-                        <SelectItem value="cancelada">Cancelada</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormField>
+                      onChange={() => {}}
+                      readOnly
+                      aria-invalid={isInvalid}
+                      className={cn(isInvalid && "border-destructive")}
+                    />
+                    <FieldDescription>Calculado automáticamente</FieldDescription>
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
                 );
               }}
             </form.Field>
-
-            <form.Field name="metodoPago">
-              {(field) => (
-                <FormField label="Forma de Pago" hint="PUE / PPD">
-                  <Select
-                    name={field.name}
-                    value={field.state.value}
-                    onValueChange={(v) => field.handleChange(v)}
-                  >
-                    <SelectTrigger id="metodoPago">
-                      <SelectValue placeholder="Seleccionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PUE">PUE — Pago en una exhibición</SelectItem>
-                      <SelectItem value="PPD">PPD — Pago en parcialidades o diferido</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormField>
-              )}
-            </form.Field>
           </div>
 
-          {/* Método de Pago */}
-          <form.Field name="medioPago">
-            {(field) => (
-              <FormField label="Método de Pago">
-                <Select
-                  name={field.name}
-                  value={field.state.value}
-                  onValueChange={(v) => field.handleChange(v)}
-                >
-                  <SelectTrigger id="medioPago">
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Transferencia">Transferencia</SelectItem>
-                    <SelectItem value="Depósito">Depósito</SelectItem>
-                    <SelectItem value="Efectivo">Efectivo</SelectItem>
-                    <SelectItem value="Cheque">Cheque</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-            )}
-          </form.Field>
-
-          {/* Status Pago + Fecha de Pago */}
-          <div className="grid grid-cols-2 gap-4">
-            <form.Field name="statusPago">
-              {(field) => (
-                <FormField label="Status de Pago" hint="Opcional">
-                  <Select
-                    name={field.name}
-                    value={field.state.value}
-                    onValueChange={(v) => field.handleChange(v)}
-                  >
-                    <SelectTrigger id="statusPago">
-                      <SelectValue placeholder="Seleccionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Pagado">Pagado</SelectItem>
-                      <SelectItem value="Pendiente de pago">Pendiente de pago</SelectItem>
-                      <SelectItem value="Cancelada">Cancelada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormField>
-              )}
-            </form.Field>
-
-            <form.Field name="fechaPago">
-              {(field) => (
-                <FormField label="Fecha de Pago" hint="Opcional">
-                  <DatePicker
-                    date={
-                      field.state.value
-                        ? parse(field.state.value, "yyyy-MM-dd", new Date())
-                        : undefined
-                    }
-                    onDateChange={(date) => {
-                      field.handleChange(date ? format(date, "yyyy-MM-dd") : "");
-                    }}
-                  />
-                </FormField>
-              )}
-            </form.Field>
-          </div>
-
-          {/* Fecha de Emisión */}
-          <form.Field name="fechaEmision">
-            {(field) => (
-              <FormField label="Fecha de Emisión" hint="Fecha en que fue emitida la factura (Opcional)">
-                <DatePicker
-                  date={
-                    field.state.value
-                      ? parse(field.state.value, "yyyy-MM-dd", new Date())
-                      : undefined
-                  }
-                  onDateChange={(date) => {
-                    field.handleChange(date ? format(date, "yyyy-MM-dd") : "");
+          {/* ── Status y pago ──────────────────────────────────────────── */}
+          {!isCapturador && (
+            <>
+              <FieldSeparator>Status y pago</FieldSeparator>
+              <div className="grid gap-4 md:grid-cols-2">
+                <form.Field name="status">
+                  {(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor="status">Status</FieldLabel>
+                        <Select
+                          name={field.name}
+                          value={field.state.value}
+                          onValueChange={(v) =>
+                            field.handleChange(v as "vigente" | "cancelada")
+                          }
+                        >
+                          <SelectTrigger id="status" aria-invalid={isInvalid}>
+                            <SelectValue placeholder="Seleccionar" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="vigente">Vigente</SelectItem>
+                            <SelectItem value="cancelada">Cancelada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
                   }}
-                />
-              </FormField>
-            )}
-          </form.Field>
-        </div>
-      </div>}
+                </form.Field>
 
-      {!isCapturador && <Separator />}
+                <form.Field name="metodoPago">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel htmlFor="metodoPago">Forma de Pago</FieldLabel>
+                      <Select
+                        name={field.name}
+                        value={field.state.value}
+                        onValueChange={(v) => field.handleChange(v)}
+                      >
+                        <SelectTrigger id="metodoPago">
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PUE">PUE — Pago en una exhibición</SelectItem>
+                          <SelectItem value="PPD">PPD — Pago en parcialidades o diferido</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FieldDescription>PUE / PPD</FieldDescription>
+                    </Field>
+                  )}
+                </form.Field>
 
-      {/* ── Factura SAT — oculta para capturador ─────────────────────────── */}
-      {!isCapturador && (
-        <div>
-          <SectionHeader title="Factura SAT" />
-          <form.Field name="facturaUrl">
-            {(field) => (
-              <FormField label="PDF timbrado" hint="Subí el PDF de la factura timbrada por el SAT (Opcional)">
-                <FacturaSATUpload
-                  value={field.state.value}
-                  onChange={(url) => field.handleChange(url)}
-                  onClear={() => field.handleChange("")}
-                />
-              </FormField>
-            )}
-          </form.Field>
-        </div>
-      )}
+                <form.Field name="medioPago">
+                  {(field) => (
+                    <Field className="md:col-span-2">
+                      <FieldLabel htmlFor="medioPago">Método de Pago</FieldLabel>
+                      <Select
+                        name={field.name}
+                        value={field.state.value}
+                        onValueChange={(v) => field.handleChange(v)}
+                      >
+                        <SelectTrigger id="medioPago">
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Transferencia">Transferencia</SelectItem>
+                          <SelectItem value="Depósito">Depósito</SelectItem>
+                          <SelectItem value="Efectivo">Efectivo</SelectItem>
+                          <SelectItem value="Cheque">Cheque</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  )}
+                </form.Field>
 
-      {/* ── Submit ─────────────────────────────────────────────────────────── */}
-      <Button type="submit" form="create-factura-form" className="w-full gap-2">
-        <Plus className="size-4" />
-        Crear factura
-      </Button>
-    </form>
+                <form.Field name="statusPago">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel htmlFor="statusPago">Status de Pago</FieldLabel>
+                      <Select
+                        name={field.name}
+                        value={field.state.value}
+                        onValueChange={(v) => field.handleChange(v)}
+                      >
+                        <SelectTrigger id="statusPago">
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pagado">Pagado</SelectItem>
+                          <SelectItem value="Pendiente de pago">Pendiente de pago</SelectItem>
+                          <SelectItem value="Cancelada">Cancelada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  )}
+                </form.Field>
+
+                <form.Field name="fechaPago">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel htmlFor="fechaPago">Fecha de Pago (Opcional)</FieldLabel>
+                      <DatePicker
+                        date={
+                          field.state.value
+                            ? parse(field.state.value, "yyyy-MM-dd", new Date())
+                            : undefined
+                        }
+                        onDateChange={(date) => {
+                          field.handleChange(date ? format(date, "yyyy-MM-dd") : "");
+                        }}
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+
+                <form.Field name="fechaEmision">
+                  {(field) => (
+                    <Field className="md:col-span-2">
+                      <FieldLabel htmlFor="fechaEmision">Fecha de Emisión (Opcional)</FieldLabel>
+                      <DatePicker
+                        date={
+                          field.state.value
+                            ? parse(field.state.value, "yyyy-MM-dd", new Date())
+                            : undefined
+                        }
+                        onDateChange={(date) => {
+                          field.handleChange(date ? format(date, "yyyy-MM-dd") : "");
+                        }}
+                      />
+                      <FieldDescription>Fecha en que fue emitida la factura</FieldDescription>
+                    </Field>
+                  )}
+                </form.Field>
+              </div>
+            </>
+          )}
+
+          {/* ── Factura SAT — oculta para capturador ─────────────────────── */}
+          {!isCapturador && (
+            <>
+              <FieldSeparator>Factura SAT</FieldSeparator>
+              <form.Field name="facturaUrl">
+                {(field) => (
+                  <Field>
+                    <FieldLabel htmlFor="facturaUrl">PDF timbrado (Opcional)</FieldLabel>
+                    <FacturaSATUpload
+                      value={field.state.value}
+                      onChange={(url) => field.handleChange(url)}
+                      onClear={() => field.handleChange("")}
+                    />
+                    <FieldDescription>Subí el PDF de la factura timbrada por el SAT</FieldDescription>
+                  </Field>
+                )}
+              </form.Field>
+            </>
+          )}
+        </FieldGroup>
+      </form>
+
+      <Field orientation="horizontal" className="mt-3">
+        <Button type="submit" form="create-factura-form" className="w-full gap-2">
+          <Plus className="size-4" />
+          Crear factura
+        </Button>
+      </Field>
+    </div>
   );
 };
