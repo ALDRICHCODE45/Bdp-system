@@ -4,13 +4,7 @@ import { useMemo, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
 import { Input } from "@/core/shared/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/core/shared/ui/select";
+import { Combobox, type ComboboxOption } from "@/core/shared/ui/combobox";
 import { useDistinctTitulares } from "../hooks/useDistinctTitulares.hook";
 
 interface TitularSelectProps {
@@ -19,7 +13,11 @@ interface TitularSelectProps {
   options?: string[];
 }
 
-export function TitularSelect({ value, onChange, options: externalOptions }: TitularSelectProps) {
+export function TitularSelect({
+  value,
+  onChange,
+  options: externalOptions,
+}: TitularSelectProps) {
   const { data: fetchedTitulares = [] } = useDistinctTitulares();
   const [showNewInput, setShowNewInput] = useState(false);
   const [draft, setDraft] = useState("");
@@ -32,12 +30,15 @@ export function TitularSelect({ value, onChange, options: externalOptions }: Tit
     return Array.from(merged).sort((a, b) => a.localeCompare(b));
   }, [externalOptions, fetchedTitulares, localTitulares, value]);
 
+  const comboboxOptions: ComboboxOption[] = useMemo(
+    () => options.map((o) => ({ value: o, label: o })),
+    [options],
+  );
+
   const confirmNew = () => {
     const next = draft.trim();
     if (!next) return;
-    setLocalTitulares((prev) =>
-      prev.includes(next) ? prev : [...prev, next]
-    );
+    setLocalTitulares((prev) => (prev.includes(next) ? prev : [...prev, next]));
     onChange(next);
     setDraft("");
     setShowNewInput(false);
@@ -51,18 +52,14 @@ export function TitularSelect({ value, onChange, options: externalOptions }: Tit
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Select value={value || undefined} onValueChange={onChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Seleccioná un titular existente" />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Combobox
+          value={value}
+          onChange={onChange}
+          options={comboboxOptions}
+          placeholder="Seleccioná un titular existente"
+          searchPlaceholder="Buscar titular..."
+          className="w-full"
+        />
 
         {!showNewInput && (
           <Button
