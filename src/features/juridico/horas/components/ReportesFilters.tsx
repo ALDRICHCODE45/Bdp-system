@@ -48,7 +48,10 @@ function generateWeeks(): number[] {
 
 interface FilterFieldsProps {
   filters: ReporteHorasFilters;
-  onChange: (key: keyof ReporteHorasFilters, value: string | number | undefined) => void;
+  onChange: (
+    key: keyof ReporteHorasFilters,
+    value: string | number | undefined,
+  ) => void;
   equipos: { id: string; nombre: string }[] | undefined;
   clientes: { id: string; nombre: string }[] | undefined;
   asuntos: { id: string; nombre: string }[] | undefined;
@@ -80,116 +83,91 @@ function FilterFields({
       {/* Equipo */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Equipo</Label>
-        <Select
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(equipos?.map((e) => ({ value: e.id, label: e.nombre })) ?? []),
+          ]}
           value={filters.equipoJuridicoId ?? TODOS_VALUE}
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange("equipoJuridicoId", val === TODOS_VALUE ? undefined : val)
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los equipos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {equipos?.map((e) => (
-              <SelectItem key={e.id} value={e.id}>
-                {e.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los equipos"
+          searchPlaceholder="Buscar..."
+          className={triggerClass}
+        />
       </div>
 
       {/* Cliente */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Cliente</Label>
-        <Select
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(clientes?.map((c) => ({ value: c.id, label: c.nombre })) ?? []),
+          ]}
           value={filters.clienteJuridicoId ?? TODOS_VALUE}
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange("clienteJuridicoId", val === TODOS_VALUE ? undefined : val)
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los clientes" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {clientes?.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los clientes"
+          searchPlaceholder="Buscar..."
+          className={triggerClass}
+        />
       </div>
 
       {/* Asunto */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Asunto</Label>
-        <Select
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(asuntos?.map((a) => ({ value: a.id, label: a.nombre })) ?? []),
+          ]}
           value={filters.asuntoJuridicoId ?? TODOS_VALUE}
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange("asuntoJuridicoId", val === TODOS_VALUE ? undefined : val)
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los asuntos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {asuntos?.map((a) => (
-              <SelectItem key={a.id} value={a.id}>
-                {a.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los asuntos"
+          searchPlaceholder="Buscar..."
+          className={triggerClass}
+        />
       </div>
 
       {/* Socio */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Socio</Label>
-        <Select
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(socios?.map((s) => ({ value: s.id, label: s.nombre })) ?? []),
+          ]}
           value={filters.socioId ?? TODOS_VALUE}
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange("socioId", val === TODOS_VALUE ? undefined : val)
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los socios" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {socios?.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los socios"
+          searchPlaceholder="Buscar..."
+          className={triggerClass}
+        />
       </div>
 
       {/* Abogado / Usuario */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Abogado</Label>
-        <Select
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(usuarios?.map((u) => ({ value: u.id, label: u.name })) ?? []),
+          ]}
           value={filters.usuarioId ?? TODOS_VALUE}
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange("usuarioId", val === TODOS_VALUE ? undefined : val)
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los abogados" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {usuarios?.map((u) => (
-              <SelectItem key={u.id} value={u.id}>
-                {u.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los abogados"
+          searchPlaceholder="Buscar..."
+          className={triggerClass}
+        />
       </div>
 
       {/* Año */}
@@ -228,7 +206,7 @@ function FilterFields({
           onChange={(val) =>
             onChange(
               "semanaDesde",
-              val === TODOS_VALUE ? undefined : Number(val)
+              val === TODOS_VALUE ? undefined : Number(val),
             )
           }
           placeholder="Desde"
@@ -251,7 +229,7 @@ function FilterFields({
           onChange={(val) =>
             onChange(
               "semanaHasta",
-              val === TODOS_VALUE ? undefined : Number(val)
+              val === TODOS_VALUE ? undefined : Number(val),
             )
           }
           placeholder="Hasta"
@@ -284,7 +262,7 @@ export function ReportesFilters({
 
   const handleChange = (
     key: keyof ReporteHorasFilters,
-    value: string | number | undefined
+    value: string | number | undefined,
   ) => {
     onFiltersChange({ ...filters, [key]: value });
   };
@@ -294,7 +272,7 @@ export function ReportesFilters({
   };
 
   const activeFilterCount = Object.values(filters).filter(
-    (v) => v !== undefined && v !== ""
+    (v) => v !== undefined && v !== "",
   ).length;
 
   const hasActiveFilters = activeFilterCount > 0;
@@ -374,7 +352,10 @@ export function ReportesFilters({
 
             {/* Filter fields */}
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
-              <FilterFields {...sharedProps} triggerClass="h-9 text-sm w-full" />
+              <FilterFields
+                {...sharedProps}
+                triggerClass="h-9 text-sm w-full"
+              />
             </div>
 
             {/* Apply button */}

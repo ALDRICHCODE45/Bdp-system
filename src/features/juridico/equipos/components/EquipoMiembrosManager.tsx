@@ -2,20 +2,17 @@
 import { useState } from "react";
 import { Button } from "@/core/shared/ui/button";
 import { Label } from "@/core/shared/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/core/shared/ui/select";
+import { Combobox } from "@/core/shared/ui/combobox";
 import { Badge } from "@/core/shared/ui/badge";
 import { Separator } from "@/core/shared/ui/separator";
 import { UserMinus, UserPlus, Users } from "lucide-react";
 import { useGetActiveUsers } from "../hooks/useGetActiveUsers.hook";
 import { useAddMiembroEquipo } from "../hooks/useAddMiembroEquipo.hook";
 import { useRemoveMiembroEquipo } from "../hooks/useRemoveMiembroEquipo.hook";
-import type { EquipoJuridicoDto, EquipoJuridicoMiembroDto } from "../server/dtos/EquipoJuridicoDto.dto";
+import type {
+  EquipoJuridicoDto,
+  EquipoJuridicoMiembroDto,
+} from "../server/dtos/EquipoJuridicoDto.dto";
 
 interface EquipoMiembrosManagerProps {
   equipo: EquipoJuridicoDto;
@@ -31,7 +28,7 @@ export function EquipoMiembrosManager({ equipo }: EquipoMiembrosManagerProps) {
   // Filter out users already in the team
   const memberUserIds = new Set(equipo.miembros.map((m) => m.usuarioId));
   const availableUsers = (allUsers ?? []).filter(
-    (u) => !memberUserIds.has(u.id)
+    (u) => !memberUserIds.has(u.id),
   );
 
   const handleAddMiembro = async () => {
@@ -54,9 +51,7 @@ export function EquipoMiembrosManager({ equipo }: EquipoMiembrosManagerProps) {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">
-          Miembros del equipo
-        </span>
+        <span className="text-sm font-medium">Miembros del equipo</span>
         <Badge variant="secondary" className="text-xs">
           {equipo.miembros.length}
         </Badge>
@@ -103,35 +98,23 @@ export function EquipoMiembrosManager({ equipo }: EquipoMiembrosManagerProps) {
       <div className="space-y-2">
         <Label className="text-sm font-medium">Agregar miembro</Label>
         <div className="flex gap-2">
-          <Select
+          <Combobox
+            options={availableUsers.map((user) => ({
+              value: user.id,
+              label: `${user.name} (${user.email})`,
+            }))}
             value={selectedUserId}
-            onValueChange={setSelectedUserId}
+            onChange={setSelectedUserId}
+            placeholder={
+              isLoadingUsers
+                ? "Cargando usuarios..."
+                : availableUsers.length === 0
+                  ? "No hay usuarios disponibles"
+                  : "Selecciona un usuario"
+            }
+            searchPlaceholder="Buscar..."
             disabled={isLoadingUsers || availableUsers.length === 0}
-          >
-            <SelectTrigger className="flex-1">
-              <SelectValue
-                placeholder={
-                  isLoadingUsers
-                    ? "Cargando usuarios..."
-                    : availableUsers.length === 0
-                      ? "No hay usuarios disponibles"
-                      : "Selecciona un usuario"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {availableUsers.map((user) => (
-                <SelectItem key={user.id} value={user.id}>
-                  <div className="flex flex-col">
-                    <span>{user.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {user.email}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
           <Button
             type="button"
             size="sm"

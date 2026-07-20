@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { Combobox } from "@/core/shared/ui/combobox";
 import { useUpdateAsuntoJuridico } from "../hooks/useUpdateAsuntoJuridico.hook";
 import { updateAsuntoJuridicoSchemaUI } from "../schemas/updateAsuntoJuridicoSchema";
 import type { AsuntoJuridicoDto } from "../server/dtos/AsuntoJuridicoDto.dto";
@@ -89,12 +90,12 @@ export function EditAsuntoJuridicoSheet({
         if (clientesResult.ok) setClientes(clientesResult.data);
         if (sociosResult.ok && sociosResult.data) setSocios(sociosResult.data);
         setLoadingOptions(false);
-      }
+      },
     );
   }, [isOpen]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -197,22 +198,17 @@ export function EditAsuntoJuridicoSheet({
             <Label htmlFor="clienteJuridicoId">
               Cliente Jurídico <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={clientes.map((cliente) => ({
+                value: cliente.id,
+                label: cliente.nombre,
+              }))}
               value={form.clienteJuridicoId}
-              onValueChange={handleSelectChange("clienteJuridicoId")}
+              onChange={handleSelectChange("clienteJuridicoId")}
+              placeholder="Selecciona un cliente"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="clienteJuridicoId" className="w-full">
-                <SelectValue placeholder="Selecciona un cliente" />
-              </SelectTrigger>
-              <SelectContent>
-                {clientes.map((cliente) => (
-                  <SelectItem key={cliente.id} value={cliente.id}>
-                    {cliente.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.clienteJuridicoId && (
               <p className="text-xs text-red-500">{errors.clienteJuridicoId}</p>
             )}
@@ -223,22 +219,17 @@ export function EditAsuntoJuridicoSheet({
             <Label htmlFor="socioId">
               Socio <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={socios.map((socio) => ({
+                value: socio.id,
+                label: socio.nombre,
+              }))}
               value={form.socioId}
-              onValueChange={handleSelectChange("socioId")}
+              onChange={handleSelectChange("socioId")}
+              placeholder="Selecciona un socio"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="socioId" className="w-full">
-                <SelectValue placeholder="Selecciona un socio" />
-              </SelectTrigger>
-              <SelectContent>
-                {socios.map((socio) => (
-                  <SelectItem key={socio.id} value={socio.id}>
-                    {socio.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.socioId && (
               <p className="text-xs text-red-500">{errors.socioId}</p>
             )}

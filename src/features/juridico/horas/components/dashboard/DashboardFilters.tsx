@@ -43,7 +43,10 @@ function FilterFields({
   triggerClass,
 }: {
   filters: DashboardHorasFilters;
-  update: (key: keyof DashboardHorasFilters, value: string | number | undefined) => void;
+  update: (
+    key: keyof DashboardHorasFilters,
+    value: string | number | undefined,
+  ) => void;
   triggerClass: string;
 }) {
   const { data: equipos } = useGetEquiposJuridicos();
@@ -61,7 +64,9 @@ function FilterFields({
         <Label className="text-xs text-muted-foreground">Año</Label>
         <Select
           value={filters.ano !== undefined ? String(filters.ano) : TODOS_VALUE}
-          onValueChange={(value) => update("ano", value === TODOS_VALUE ? undefined : Number(value))}
+          onValueChange={(value) =>
+            update("ano", value === TODOS_VALUE ? undefined : Number(value))
+          }
         >
           <SelectTrigger className={triggerClass}>
             <SelectValue placeholder="Todos los años" />
@@ -81,9 +86,16 @@ function FilterFields({
         <Label className="text-xs text-muted-foreground">Semana desde</Label>
         <Combobox
           options={weekOptions}
-          value={filters.semanaDesde !== undefined ? String(filters.semanaDesde) : TODOS_VALUE}
+          value={
+            filters.semanaDesde !== undefined
+              ? String(filters.semanaDesde)
+              : TODOS_VALUE
+          }
           onChange={(value) =>
-            update("semanaDesde", value === TODOS_VALUE ? undefined : Number(value))
+            update(
+              "semanaDesde",
+              value === TODOS_VALUE ? undefined : Number(value),
+            )
           }
           placeholder="Desde"
           searchPlaceholder="Buscar semana..."
@@ -96,9 +108,16 @@ function FilterFields({
         <Label className="text-xs text-muted-foreground">Semana hasta</Label>
         <Combobox
           options={weekOptions}
-          value={filters.semanaHasta !== undefined ? String(filters.semanaHasta) : TODOS_VALUE}
+          value={
+            filters.semanaHasta !== undefined
+              ? String(filters.semanaHasta)
+              : TODOS_VALUE
+          }
           onChange={(value) =>
-            update("semanaHasta", value === TODOS_VALUE ? undefined : Number(value))
+            update(
+              "semanaHasta",
+              value === TODOS_VALUE ? undefined : Number(value),
+            )
           }
           placeholder="Hasta"
           searchPlaceholder="Buscar semana..."
@@ -109,46 +128,48 @@ function FilterFields({
 
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Equipo</Label>
-        <Select
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(equipos?.map((equipo) => ({
+              value: equipo.id,
+              label: equipo.nombre,
+            })) ?? []),
+          ]}
           value={filters.equipoJuridicoId ?? TODOS_VALUE}
-          onValueChange={(value) =>
-            update("equipoJuridicoId", value === TODOS_VALUE ? undefined : value)
+          onChange={(value) =>
+            update(
+              "equipoJuridicoId",
+              value === TODOS_VALUE ? undefined : value,
+            )
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los equipos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {equipos?.map((equipo) => (
-              <SelectItem key={equipo.id} value={equipo.id}>
-                {equipo.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los equipos"
+          searchPlaceholder="Buscar..."
+          className={triggerClass}
+        />
       </div>
 
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Cliente</Label>
-        <Select
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(clientes?.map((cliente) => ({
+              value: cliente.id,
+              label: cliente.nombre,
+            })) ?? []),
+          ]}
           value={filters.clienteJuridicoId ?? TODOS_VALUE}
-          onValueChange={(value) =>
-            update("clienteJuridicoId", value === TODOS_VALUE ? undefined : value)
+          onChange={(value) =>
+            update(
+              "clienteJuridicoId",
+              value === TODOS_VALUE ? undefined : value,
+            )
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los clientes" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {clientes?.map((cliente) => (
-              <SelectItem key={cliente.id} value={cliente.id}>
-                {cliente.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los clientes"
+          searchPlaceholder="Buscar..."
+          className={triggerClass}
+        />
       </div>
     </>
   );
@@ -158,13 +179,18 @@ export function DashboardFilters({ filters, onChange }: Props) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
-  const update = (key: keyof DashboardHorasFilters, value: string | number | undefined) => {
+  const update = (
+    key: keyof DashboardHorasFilters,
+    value: string | number | undefined,
+  ) => {
     onChange({ ...filters, [key]: value });
   };
 
   const currentYear = new Date().getFullYear();
   const resetFilters = () => onChange({ ano: currentYear });
-  const activeFilterCount = Object.values(filters).filter((value) => value !== undefined).length;
+  const activeFilterCount = Object.values(filters).filter(
+    (value) => value !== undefined,
+  ).length;
   const hasActiveFilters = activeFilterCount > 0;
 
   if (isMobile) {
@@ -179,10 +205,19 @@ export function DashboardFilters({ filters, onChange }: Props) {
           >
             <SlidersHorizontal className="h-4 w-4" />
             Filtros
-            {hasActiveFilters ? <Badge className="ml-auto size-5 p-0 text-[10px]">{activeFilterCount}</Badge> : null}
+            {hasActiveFilters ? (
+              <Badge className="ml-auto size-5 p-0 text-[10px]">
+                {activeFilterCount}
+              </Badge>
+            ) : null}
           </Button>
           {hasActiveFilters ? (
-            <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={resetFilters}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 text-xs"
+              onClick={resetFilters}
+            >
               <X className="h-3.5 w-3.5 mr-1" />
               Limpiar
             </Button>
@@ -190,16 +225,25 @@ export function DashboardFilters({ filters, onChange }: Props) {
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] p-0 flex flex-col">
+          <SheetContent
+            side="bottom"
+            className="rounded-t-2xl max-h-[85vh] p-0 flex flex-col"
+          >
             <div className="pt-3 pb-1 flex justify-center shrink-0">
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
             </div>
             <SheetHeader className="px-4 pb-2">
-              <SheetTitle className="text-base">Filtros del dashboard</SheetTitle>
+              <SheetTitle className="text-base">
+                Filtros del dashboard
+              </SheetTitle>
             </SheetHeader>
             <div className="overflow-y-auto px-4 pb-5">
               <div className="grid grid-cols-1 gap-3">
-                <FilterFields filters={filters} update={update} triggerClass="h-10" />
+                <FilterFields
+                  filters={filters}
+                  update={update}
+                  triggerClass="h-10"
+                />
               </div>
             </div>
           </SheetContent>
@@ -212,12 +256,21 @@ export function DashboardFilters({ filters, onChange }: Props) {
     <div className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">Filtros</h3>
-        <Button variant="ghost" size="sm" className="text-xs" onClick={resetFilters}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs"
+          onClick={resetFilters}
+        >
           Limpiar filtros
         </Button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <FilterFields filters={filters} update={update} triggerClass="h-10 text-sm" />
+        <FilterFields
+          filters={filters}
+          update={update}
+          triggerClass="h-10 text-sm"
+        />
       </div>
     </div>
   );

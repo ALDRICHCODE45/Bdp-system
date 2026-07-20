@@ -12,13 +12,7 @@ import {
 import { Button } from "@/core/shared/ui/button";
 import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/core/shared/ui/select";
+import { Combobox } from "@/core/shared/ui/combobox";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 import { useCreateAsuntoJuridico } from "../hooks/useCreateAsuntoJuridico.hook";
 import { createAsuntoJuridicoSchemaUI } from "../schemas/createAsuntoJuridicoSchema";
@@ -54,9 +48,9 @@ export function CreateAsuntoJuridicoSheet({
   const isMobile = useIsMobile();
   const sheetSide = isMobile ? "bottom" : "right";
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>(
-    {}
-  );
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof FormState, string>>
+  >({});
   const [clientes, setClientes] = useState<ClienteJuridicoDto[]>([]);
   const [socios, setSocios] = useState<SocioDto[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
@@ -72,12 +66,12 @@ export function CreateAsuntoJuridicoSheet({
         if (clientesResult.ok) setClientes(clientesResult.data);
         if (sociosResult.ok && sociosResult.data) setSocios(sociosResult.data);
         setLoadingOptions(false);
-      }
+      },
     );
   }, [isOpen]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -156,22 +150,17 @@ export function CreateAsuntoJuridicoSheet({
             <Label htmlFor="clienteJuridicoId">
               Cliente Jurídico <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={clientes.map((cliente) => ({
+                value: cliente.id,
+                label: cliente.nombre,
+              }))}
               value={form.clienteJuridicoId}
-              onValueChange={handleSelectChange("clienteJuridicoId")}
+              onChange={handleSelectChange("clienteJuridicoId")}
+              placeholder="Selecciona un cliente"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="clienteJuridicoId" className="w-full">
-                <SelectValue placeholder="Selecciona un cliente" />
-              </SelectTrigger>
-              <SelectContent>
-                {clientes.map((cliente) => (
-                  <SelectItem key={cliente.id} value={cliente.id}>
-                    {cliente.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.clienteJuridicoId && (
               <p className="text-xs text-red-500">{errors.clienteJuridicoId}</p>
             )}
@@ -182,22 +171,17 @@ export function CreateAsuntoJuridicoSheet({
             <Label htmlFor="socioId">
               Socio <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={socios.map((socio) => ({
+                value: socio.id,
+                label: socio.nombre,
+              }))}
               value={form.socioId}
-              onValueChange={handleSelectChange("socioId")}
+              onChange={handleSelectChange("socioId")}
+              placeholder="Selecciona un socio"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="socioId" className="w-full">
-                <SelectValue placeholder="Selecciona un socio" />
-              </SelectTrigger>
-              <SelectContent>
-                {socios.map((socio) => (
-                  <SelectItem key={socio.id} value={socio.id}>
-                    {socio.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.socioId && (
               <p className="text-xs text-red-500">{errors.socioId}</p>
             )}

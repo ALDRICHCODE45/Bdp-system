@@ -31,6 +31,7 @@ import type { EquipoJuridicoDto } from "@/features/juridico/equipos/server/dtos/
 import type { ClienteJuridicoDto } from "@/features/juridico/clientes/server/dtos/ClienteJuridicoDto.dto";
 import type { AsuntoJuridicoDto } from "@/features/juridico/asuntos/server/dtos/AsuntoJuridicoDto.dto";
 import type { SocioDto } from "@/features/RecursosHumanos/socios/server/dtos/SocioDto.dto";
+import { Combobox } from "@/core/shared/ui/combobox";
 import { CalendarClock } from "lucide-react";
 
 const MINUTOS_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
@@ -69,7 +70,9 @@ export function CreateRegistroHoraSheet({
   const isMobile = useIsMobile();
   const sheetSide = isMobile ? "bottom" : "right";
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof FormState, string>>
+  >({});
   const [equipos, setEquipos] = useState<EquipoJuridicoDto[]>([]);
   const [clientes, setClientes] = useState<ClienteJuridicoDto[]>([]);
   const [asuntos, setAsuntos] = useState<AsuntoJuridicoDto[]>([]);
@@ -162,26 +165,17 @@ export function CreateRegistroHoraSheet({
             <Label htmlFor="equipoJuridicoId">
               Equipo Jurídico <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={equipos.map((equipo) => ({
+                value: equipo.id,
+                label: equipo.nombre,
+              }))}
               value={form.equipoJuridicoId}
-              onValueChange={handleSelectChange("equipoJuridicoId")}
+              onChange={handleSelectChange("equipoJuridicoId")}
+              placeholder="Selecciona un equipo"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="equipoJuridicoId" className="w-full">
-                <SelectValue
-                  placeholder={
-                    loadingOptions ? "Cargando..." : "Selecciona un equipo"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {equipos.map((equipo) => (
-                  <SelectItem key={equipo.id} value={equipo.id}>
-                    {equipo.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.equipoJuridicoId && (
               <p className="text-xs text-red-500">{errors.equipoJuridicoId}</p>
             )}
@@ -192,26 +186,17 @@ export function CreateRegistroHoraSheet({
             <Label htmlFor="clienteJuridicoId">
               Cliente Jurídico <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={clientes.map((cliente) => ({
+                value: cliente.id,
+                label: cliente.nombre,
+              }))}
               value={form.clienteJuridicoId}
-              onValueChange={handleSelectChange("clienteJuridicoId")}
+              onChange={handleSelectChange("clienteJuridicoId")}
+              placeholder="Selecciona un cliente"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="clienteJuridicoId" className="w-full">
-                <SelectValue
-                  placeholder={
-                    loadingOptions ? "Cargando..." : "Selecciona un cliente"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {clientes.map((cliente) => (
-                  <SelectItem key={cliente.id} value={cliente.id}>
-                    {cliente.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.clienteJuridicoId && (
               <p className="text-xs text-red-500">{errors.clienteJuridicoId}</p>
             )}
@@ -222,26 +207,17 @@ export function CreateRegistroHoraSheet({
             <Label htmlFor="asuntoJuridicoId">
               Asunto Jurídico <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={asuntos.map((asunto) => ({
+                value: asunto.id,
+                label: asunto.nombre,
+              }))}
               value={form.asuntoJuridicoId}
-              onValueChange={handleSelectChange("asuntoJuridicoId")}
+              onChange={handleSelectChange("asuntoJuridicoId")}
+              placeholder="Selecciona un asunto"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="asuntoJuridicoId" className="w-full">
-                <SelectValue
-                  placeholder={
-                    loadingOptions ? "Cargando..." : "Selecciona un asunto"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {asuntos.map((asunto) => (
-                  <SelectItem key={asunto.id} value={asunto.id}>
-                    {asunto.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.asuntoJuridicoId && (
               <p className="text-xs text-red-500">{errors.asuntoJuridicoId}</p>
             )}
@@ -252,26 +228,17 @@ export function CreateRegistroHoraSheet({
             <Label htmlFor="socioId">
               Socio <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={socios.map((socio) => ({
+                value: socio.id,
+                label: socio.nombre,
+              }))}
               value={form.socioId}
-              onValueChange={handleSelectChange("socioId")}
+              onChange={handleSelectChange("socioId")}
+              placeholder="Selecciona un socio"
+              searchPlaceholder="Buscar..."
               disabled={loadingOptions}
-            >
-              <SelectTrigger id="socioId" className="w-full">
-                <SelectValue
-                  placeholder={
-                    loadingOptions ? "Cargando..." : "Selecciona un socio"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {socios.map((socio) => (
-                  <SelectItem key={socio.id} value={socio.id}>
-                    {socio.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
             {errors.socioId && (
               <p className="text-xs text-red-500">{errors.socioId}</p>
             )}
