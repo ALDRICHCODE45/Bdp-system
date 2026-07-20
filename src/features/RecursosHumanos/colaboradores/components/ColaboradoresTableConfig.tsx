@@ -3,9 +3,9 @@ import type { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import { ColaboradoresTableFilters } from "./ColaboradoresTableFilters";
 
 /**
- * Default visibility for the slim 7-col colaboradores table (cap1 req1).
+ * Default visibility for the colaboradores table.
  *
- * All 7 columns visible by default. The user can toggle via ColumnVisibilitySelector,
+ * All 8 columns visible by default. The user can toggle via ColumnVisibilitySelector,
  * and the choice is persisted under `table-preferences-colaboradores-table`.
  */
 export const colaboradorDefaultColumnVisibility = {
@@ -16,6 +16,7 @@ export const colaboradorDefaultColumnVisibility = {
   fechaIngreso: true,
   modalidad: true,
   estado: true,
+  actions: true,
 };
 
 /**

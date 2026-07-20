@@ -13,6 +13,7 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { ColaboradorDto } from "../server/dtos/ColaboradorDto.dto";
 import { ColaboradorStatusBadge } from "./ColaboradorStatusBadge";
+import { RhRowActions } from "./forms/RhFormRowActions";
 import { NIVEL_LABELS, MODALIDAD_LABELS } from "../helpers/colaboradorLabels";
 
 /**
@@ -52,10 +53,11 @@ const formatDate = (isoString: string | null | undefined) => {
 };
 
 /**
- * P1 — Slim 7-col table for colaboradores (cap1 req1).
+ * P1 — Table for colaboradores (cap1 req1).
  *
- * Order: Colaborador · Cargo(+nivel) · Departamento · Jefe · FechaIngreso · Modalidad · Estado
- * Exactly 7 columns. No checkbox / actions.
+ * Order: Colaborador · Cargo(+nivel) · Departamento · Jefe · FechaIngreso · Modalidad · Estado · Acciones
+ * 8 columns including the actions dropdown (edit · delete · history · profile).
+ * No checkbox / bulk actions.
  */
 export const colaboradoresColumns: ColumnDef<ColaboradorDto>[] = [
   // ── 1. Colaborador ──────────────────────────────────────────────────────
@@ -229,5 +231,14 @@ export const colaboradoresColumns: ColumnDef<ColaboradorDto>[] = [
     header: "Estado",
     cell: ({ row }) => <ColaboradorStatusBadge status={row.original.status} />,
     size: 10,
+  },
+
+  // ── 8. Acciones (edit · delete · history · profile) ────────────────────
+  {
+    id: "actions",
+    header: () => <span className="sr-only">Acciones</span>,
+    cell: ({ row }) => <RhRowActions row={row} />,
+    size: 5,
+    enableHiding: false,
   },
 ];
