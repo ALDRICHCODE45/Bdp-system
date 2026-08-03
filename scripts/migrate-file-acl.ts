@@ -116,6 +116,11 @@
  * --------------------------------------------------------------------------
  */
 
+// Debe ir primero: carga las variables de entorno antes de evaluar cualquier
+// módulo que lea process.env en tiempo de import. `bunx tsx` (runtime Node) no
+// carga .env.local/.env automáticamente — sin este preload, parseSpacesEnv()
+// falla con "Missing required env var" aunque las credenciales DO_* existan.
+import "../src/core/seed/loadEnv";
 import { PrismaClient } from "@prisma/client";
 import { PutObjectAclCommand, S3Client } from "@aws-sdk/client-s3";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
