@@ -22,21 +22,53 @@ const ESTADO_LABELS: Record<string, string> = {
   CERRADO: "Cerrado",
 };
 
+// ─── Etiquetas legibles para los filtros (id → nombre) ─────────────────────
+
+export interface ReportePdfFilterLabels {
+  usuarioId?: Record<string, string>;
+  asuntoJuridicoId?: Record<string, string>;
+  clienteJuridicoId?: Record<string, string>;
+  equipoJuridicoId?: Record<string, string>;
+  socioId?: Record<string, string>;
+}
+
 // ─── Filtrar etiquetas legibles para mostrar en el PDF ──────────────────────
 
 type FilterEntry = { label: string; value: string };
 
-function filtersToReadable(filters: ReporteAgrupadoFilters): FilterEntry[] {
+function filtersToReadable(
+  filters: ReporteAgrupadoFilters,
+  labels?: ReportePdfFilterLabels,
+): FilterEntry[] {
+  const idToName = (id: string, map?: Record<string, string>): string =>
+    map?.[id] ?? id;
+
   const out: FilterEntry[] = [];
   if (filters.usuarioId)
-    out.push({ label: "Abogado", value: filters.usuarioId });
+    out.push({
+      label: "Abogado",
+      value: idToName(filters.usuarioId, labels?.usuarioId),
+    });
   if (filters.asuntoJuridicoId)
-    out.push({ label: "Asunto", value: filters.asuntoJuridicoId });
+    out.push({
+      label: "Asunto",
+      value: idToName(filters.asuntoJuridicoId, labels?.asuntoJuridicoId),
+    });
   if (filters.clienteJuridicoId)
-    out.push({ label: "Cliente", value: filters.clienteJuridicoId });
+    out.push({
+      label: "Cliente",
+      value: idToName(filters.clienteJuridicoId, labels?.clienteJuridicoId),
+    });
   if (filters.equipoJuridicoId)
-    out.push({ label: "Equipo", value: filters.equipoJuridicoId });
-  if (filters.socioId) out.push({ label: "Socio", value: filters.socioId });
+    out.push({
+      label: "Equipo",
+      value: idToName(filters.equipoJuridicoId, labels?.equipoJuridicoId),
+    });
+  if (filters.socioId)
+    out.push({
+      label: "Socio",
+      value: idToName(filters.socioId, labels?.socioId),
+    });
   if (filters.estado)
     out.push({
       label: "Estado asunto",
@@ -120,6 +152,7 @@ function drawBreakdownTable(
 export const exportHorasResumenToPDF = async (
   filters: ReporteAgrupadoFilters,
   subtotales: SubtotalesDto,
+  labels?: ReportePdfFilterLabels,
 ): Promise<void> => {
   try {
     const doc = new jsPDF({ unit: "mm", format: "a4" });
@@ -196,7 +229,7 @@ export const exportHorasResumenToPDF = async (
     sectionLabel(doc, "Criterios aplicados", L, y);
     y += 5;
 
-    const criteria = filtersToReadable(filters);
+    const criteria = filtersToReadable(filters, labels);
     if (criteria.length === 0) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(F.label);

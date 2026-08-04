@@ -14,8 +14,16 @@ import { createReporteHorasAgrupadoColumns } from "./ReporteHorasAgrupadoColumns
 import { SubtotalesPanel } from "./SubtotalesPanel";
 import { useReporteHorasAgrupado } from "../hooks/useReporteHorasAgrupado.hook";
 import { useExportHorasAgrupadas } from "../hooks/useExportHorasAgrupadas.hook";
+import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
+import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
+import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
+import { useGetSocios } from "../hooks/useGetSocios.hook";
+import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
 import { exportHorasAgrupadasToExcel } from "../helpers/exportHorasAgrupadasToExcel";
-import { exportHorasResumenToPDF } from "../helpers/exportHorasResumenToPDF";
+import {
+  exportHorasResumenToPDF,
+  type ReportePdfFilterLabels,
+} from "../helpers/exportHorasResumenToPDF";
 import type {
   ReporteAgrupadoSortField,
   ReporteGrupoDto,
@@ -54,6 +62,29 @@ export function ReporteHorasAgrupadoView() {
 
   const exportMutation = useExportHorasAgrupadas();
 
+  // Datos de entidades (cacheados por TanStack Query — los mismos que usan
+  // los filtros) para resolver id → nombre en los criterios del PDF.
+  const { data: equipos } = useGetEquiposJuridicos();
+  const { data: clientes } = useGetClientesJuridicos();
+  const { data: asuntos } = useGetAsuntosJuridicos();
+  const { data: socios } = useGetSocios();
+  const { data: usuarios } = useGetActiveUsersForReporte();
+
+  const pdfLabels: ReportePdfFilterLabels = useMemo(() => {
+    const toMap = (rows: { id: string; nombre?: string; name?: string }[]) => {
+      const map: Record<string, string> = {};
+      for (const r of rows) map[r.id] = r.nombre ?? r.name ?? r.id;
+      return map;
+    };
+    return {
+      usuarioId: toMap(usuarios ?? []),
+      asuntoJuridicoId: toMap(asuntos ?? []),
+      clienteJuridicoId: toMap(clientes ?? []),
+      equipoJuridicoId: toMap(equipos ?? []),
+      socioId: toMap(socios ?? []),
+    };
+  }, [equipos, clientes, asuntos, socios, usuarios]);
+
   const grupos: ReporteGrupoDto[] = data?.grupos ?? [];
 
   const handleExportExcel = useCallback(async () => {
@@ -80,14 +111,14 @@ export function ReporteHorasAgrupadoView() {
     }
     const toastId = toast.loading("Generando resumen PDF...");
     try {
-      await exportHorasResumenToPDF(filters, data.subtotales);
+      await exportHorasResumenToPDF(filters, data.subtotales, pdfLabels);
       toast.dismiss(toastId);
       toast.success("Resumen PDF generado correctamente.");
     } catch (e) {
       toast.dismiss(toastId);
       toast.error(e instanceof Error ? e.message : "Error al generar el PDF.");
     }
-  }, [data?.subtotales, filters]);
+  }, [data?.subtotales, filters, pdfLabels]);
 
   // ── TanStack Table server-side state ────────────────────────────────────
   const paginationState: PaginationState = useMemo(
