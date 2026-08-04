@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, ReactNode } from "react";
 import { Spinner } from "@/core/shared/ui/spinner";
 import {
   ColumnDef,
@@ -43,6 +43,8 @@ interface DataTableProps<TData, TValue> {
   // Estado controlado desde el padre (server-side)
   pagination?: PaginationState;
   sorting?: SortingState;
+  /** Optional cells for a totals/summary <tfoot> row, in column display order. */
+  totalsRow?: ReactNode[];
 }
 
 /** Componente de overlay de carga sutil para refetches */
@@ -67,6 +69,7 @@ export function DataTable<TData, TValue>({
   // Estado controlado (server-side)
   pagination: paginationProp,
   sorting: sortingProp,
+  totalsRow,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -125,6 +128,9 @@ export function DataTable<TData, TValue>({
       manualFiltering: config.manualFiltering,
       onColumnFiltersChange: config.onColumnFiltersChange,
       defaultColumnVisibility: config.defaultColumnVisibility,
+      stickyHeader: config.stickyHeader ?? false,
+      showTotalsRow: config.showTotalsRow ?? false,
+      compactDensity: config.compactDensity ?? false,
     }),
     [config],
   );
@@ -399,6 +405,7 @@ export function DataTable<TData, TValue>({
                 columnOrder={columnOrder}
                 rowSelection={rowSelection}
                 columnVisibility={columnVisibility}
+                totalsRow={totalsRow}
               />
             </div>
           )}

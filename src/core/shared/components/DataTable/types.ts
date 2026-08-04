@@ -142,4 +142,11 @@ export interface TableConfig<TData> {
   // Server-side config
   serverSide?: ServerSideConfig;
   isFetching?: boolean;
+  // Presentation flags (opt-in, default false)
+  /** When true, the <thead> stays sticky inside the scroll container with an opaque background. */
+  stickyHeader?: boolean;
+  /** When true, renders a <tfoot> row from DataTableProps.totalsRow. */
+  showTotalsRow?: boolean;
+  /** When true, body cells use reduced vertical padding (py-2.5 vs py-4). */
+  compactDensity?: boolean;
 }

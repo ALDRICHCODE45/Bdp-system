@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useCallback } from "react";
+import { memo, useMemo, useCallback, ReactNode } from "react";
 import {
   ColumnDef,
   ColumnOrderState,
@@ -28,6 +28,7 @@ import {
   Table as TableComponent,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -63,6 +64,8 @@ interface TableBodyProps<TData, TValue> {
   rowSelection?: RowSelectionState;
   /** Estado de visibilidad para detectar cambios en memo */
   columnVisibility?: VisibilityState;
+  /** Optional cells for a totals/summary <tfoot> row, in column display order. */
+  totalsRow?: ReactNode[];
 }
 
 function TableBodyDataTableInner<TData, TValue>({
@@ -72,10 +75,14 @@ function TableBodyDataTableInner<TData, TValue>({
   columnOrder: columnOrderProp,
   rowSelection: rowSelectionProp,
   columnVisibility: columnVisibilityProp,
+  totalsRow,
 }: TableBodyProps<TData, TValue>) {
   // Determinar si las features están habilitadas
   const enableColumnPinning = config.columnPinning?.enabled ?? false;
   const enableColumnDrag = config.columnOrder?.enabled ?? false;
+  const stickyHeader = config.stickyHeader ?? false;
+  const compactDensity = config.compactDensity ?? false;
+  const showTotalsRow = config.showTotalsRow ?? false;
 
   // Usar props de estado si están disponibles (para reactividad con memo)
   const columnPinningState =
@@ -183,7 +190,10 @@ function TableBodyDataTableInner<TData, TValue>({
   const tableContent = (
     <div className="rounded-lg border shadow-sm w-full min-w-0 overflow-hidden">
       <div
-        className="overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 table-scroll-container"
+        className={cn(
+          "overflow-x-auto w-full min-w-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 table-scroll-container",
+          stickyHeader && "max-h-[65vh] overflow-y-auto"
+        )}
         role="region"
         aria-label="Tabla con scroll horizontal"
         tabIndex={0}
@@ -217,7 +227,8 @@ function TableBodyDataTableInner<TData, TValue>({
                         key={header.id}
                         className={cn(
                           "h-12 text-left font-medium whitespace-nowrap",
-                          isCompactColumn ? "px-2" : "px-2 sm:px-6"
+                          isCompactColumn ? "px-2" : "px-2 sm:px-6",
+                          stickyHeader && "sticky top-0 z-10 bg-background"
                         )}
                         style={{
                           width: proportionalWidth,
@@ -272,7 +283,8 @@ function TableBodyDataTableInner<TData, TValue>({
                       <TableCell
                         key={cell.id}
                         className={cn(
-                          "py-4 overflow-hidden whitespace-normal",
+                          "overflow-hidden whitespace-normal",
+                          compactDensity ? "py-2.5" : "py-4",
                           isCompactColumn ? "px-2" : "px-2 sm:px-6"
                         )}
                         style={{
@@ -312,6 +324,23 @@ function TableBodyDataTableInner<TData, TValue>({
               </TableRow>
             )}
           </TableBody>
+          {showTotalsRow && totalsRow && totalsRow.length > 0 && (
+            <TableFooter className="border-t-2 bg-muted/30 font-medium">
+              <TableRow>
+                {totalsRow.map((cell, i) => (
+                  <TableCell
+                    key={i}
+                    className={cn(
+                      "py-2",
+                      i === 0 ? "px-2" : "px-2 sm:px-6"
+                    )}
+                  >
+                    {cell}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableFooter>
+          )}
         </TableComponent>
       </div>
     </div>
