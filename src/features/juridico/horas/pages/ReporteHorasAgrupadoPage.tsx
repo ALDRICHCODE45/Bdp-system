@@ -3,6 +3,7 @@
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { ReporteHorasAgrupadoView } from "../components/ReporteHorasAgrupadoView";
+import { ReporteHorasAgrupadoProvider } from "../components/ReporteHorasAgrupadoProvider";
 
 export function ReporteHorasAgrupadoPage() {
   return (
@@ -30,7 +31,9 @@ export function ReporteHorasAgrupadoPage() {
           </div>
         }
       >
-        <ReporteHorasAgrupadoView />
+        <ReporteHorasAgrupadoProvider>
+          <ReporteHorasAgrupadoView />
+        </ReporteHorasAgrupadoProvider>
       </PermissionGuard>
     </div>
   );

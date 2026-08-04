@@ -15,11 +15,7 @@ import { Label } from "@/core/shared/ui/label";
 import { Badge } from "@/core/shared/ui/badge";
 import { X, SlidersHorizontal } from "lucide-react";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
-import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
-import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
-import { useGetSocios } from "../hooks/useGetSocios.hook";
-import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
+import { useReporteEntities } from "./ReporteHorasAgrupadoProvider";
 import {
   Sheet,
   SheetContent,
@@ -310,11 +306,7 @@ export function ReporteHorasAgrupadoFilters({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
-  const { data: asuntos } = useGetAsuntosJuridicos();
-  const { data: socios } = useGetSocios();
-  const { data: usuarios } = useGetActiveUsersForReporte();
+  const { equipos, clientes, asuntos, socios, usuarios } = useReporteEntities();
 
   const years = generateYears();
   const weeks = generateWeeks();

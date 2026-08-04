@@ -12,13 +12,9 @@ import { Card, CardContent } from "@/core/shared/ui/card";
 import { ReporteHorasAgrupadoFilters } from "./ReporteHorasAgrupadoFilters";
 import { createReporteHorasAgrupadoColumns } from "./ReporteHorasAgrupadoColumns";
 import { SubtotalesPanel } from "./SubtotalesPanel";
+import { useReporteEntities } from "./ReporteHorasAgrupadoProvider";
 import { useReporteHorasAgrupado } from "../hooks/useReporteHorasAgrupado.hook";
 import { useExportHorasAgrupadas } from "../hooks/useExportHorasAgrupadas.hook";
-import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
-import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
-import { useGetSocios } from "../hooks/useGetSocios.hook";
-import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
 import { exportHorasAgrupadasToExcel } from "../helpers/exportHorasAgrupadasToExcel";
 import {
   exportHorasResumenToPDF,
@@ -64,11 +60,7 @@ export function ReporteHorasAgrupadoView() {
 
   // Datos de entidades (cacheados por TanStack Query — los mismos que usan
   // los filtros) para resolver id → nombre en los criterios del PDF.
-  const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
-  const { data: asuntos } = useGetAsuntosJuridicos();
-  const { data: socios } = useGetSocios();
-  const { data: usuarios } = useGetActiveUsersForReporte();
+  const { equipos, clientes, asuntos, socios, usuarios } = useReporteEntities();
 
   const pdfLabels: ReportePdfFilterLabels = useMemo(() => {
     const toMap = (rows: { id: string; nombre?: string; name?: string }[]) => {
