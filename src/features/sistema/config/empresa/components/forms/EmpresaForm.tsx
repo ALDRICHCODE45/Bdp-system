@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { format } from "date-fns";
 import { Button } from "@/core/shared/ui/button";
 import {
   FieldGroup,
@@ -10,6 +11,7 @@ import {
   FieldDescription,
 } from "@/core/shared/ui/field";
 import { Input } from "@/core/shared/ui/input";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import { useEmpresaForm } from "../../hooks/useEmpresaForm.hook";
 import { EmpresaDto } from "../../server/dtos/EmpresaDto.dto";
 import { Separator } from "@/core/shared/ui/separator";
@@ -18,6 +20,12 @@ interface EmpresaFormProps {
   empresa: EmpresaDto | null;
   onSuccess?: () => void;
 }
+
+const strToDate = (s: string): Date | undefined =>
+  s ? new Date(`${s}T00:00:00`) : undefined;
+
+const dateToStr = (d: Date | undefined): string =>
+  d ? format(d, "yyyy-MM-dd") : "";
 
 export const EmpresaForm = ({ empresa, onSuccess }: EmpresaFormProps) => {
   const form = useEmpresaForm(empresa, onSuccess);
@@ -464,15 +472,12 @@ export const EmpresaForm = ({ empresa, onSuccess }: EmpresaFormProps) => {
                     <FieldDescription>
                       Fecha de expiración de la tarjeta (MM/AA)
                     </FieldDescription>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="date"
-                      value={field.state.value || ""}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      autoComplete="off"
+                    <DatePicker
+                      date={strToDate(field.state.value)}
+                      onDateChange={(d) =>
+                        field.handleChange(dateToStr(d))
+                      }
+                      placeholder="Selecciona una fecha"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -654,15 +659,12 @@ export const EmpresaForm = ({ empresa, onSuccess }: EmpresaFormProps) => {
                     <FieldDescription>
                       Fecha de expiración de la tarjeta secundaria (MM/AA)
                     </FieldDescription>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="date"
-                      value={field.state.value || ""}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      autoComplete="off"
+                    <DatePicker
+                      date={strToDate(field.state.value)}
+                      onDateChange={(d) =>
+                        field.handleChange(dateToStr(d))
+                      }
+                      placeholder="Selecciona una fecha"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />

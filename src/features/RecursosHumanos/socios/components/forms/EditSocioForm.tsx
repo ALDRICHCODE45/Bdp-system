@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { Button } from "@/core/shared/ui/button";
 import {
   FieldGroup,
@@ -10,6 +11,7 @@ import {
 import { Input } from "@/core/shared/ui/input";
 import { Textarea } from "@/core/shared/ui/textarea";
 import { Checkbox } from "@/core/shared/ui/checkbox";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import { useEditSocioForm } from "../../hooks/useEditSocioForm.hook";
 import { SocioDto } from "../../server/dtos/SocioDto.dto";
 
@@ -133,14 +135,15 @@ export const EditSocioForm = ({ socio, onSuccess }: EditSocioFormProps) => {
               return (
                 <Field data-invalid={isInvalid}>
                   <FieldLabel htmlFor={field.name}>Fecha de Ingreso</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="date"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
+                  <DatePicker
+                    date={
+                      field.state.value
+                        ? new Date(`${field.state.value}T00:00:00`)
+                        : undefined
+                    }
+                    onDateChange={(d) =>
+                      field.handleChange(d ? format(d, "yyyy-MM-dd") : "")
+                    }
                   />
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
 import { RotateCcw, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/core/shared/ui/button";
 import { Input } from "@/core/shared/ui/input";
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from "@/core/shared/ui/select";
 import { Combobox } from "@/core/shared/ui/combobox";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import {
   Sheet,
   SheetContent,
@@ -48,6 +50,12 @@ function generateWeeks(): number[] {
 }
 
 const ALL_VALUE = "__all__";
+
+const strToDate = (s: string): Date | undefined =>
+  s ? new Date(`${s}T00:00:00`) : undefined;
+
+const dateToStr = (d: Date | undefined): string =>
+  d ? format(d, "yyyy-MM-dd") : "";
 
 export function RegistroHorasAdvancedFiltersSheet({
   isOpen,
@@ -228,22 +236,28 @@ export function RegistroHorasAdvancedFiltersSheet({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Fecha desde</Label>
-              <Input
-                type="date"
-                value={draft.fechaRegistroDesde}
-                onChange={(e) =>
-                  setDraft((prev) => ({ ...prev, fechaRegistroDesde: e.target.value }))
+              <DatePicker
+                date={strToDate(draft.fechaRegistroDesde)}
+                onDateChange={(d) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    fechaRegistroDesde: dateToStr(d),
+                  }))
                 }
+                placeholder="Desde"
               />
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Fecha hasta</Label>
-              <Input
-                type="date"
-                value={draft.fechaRegistroHasta}
-                onChange={(e) =>
-                  setDraft((prev) => ({ ...prev, fechaRegistroHasta: e.target.value }))
+              <DatePicker
+                date={strToDate(draft.fechaRegistroHasta)}
+                onDateChange={(d) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    fechaRegistroHasta: dateToStr(d),
+                  }))
                 }
+                placeholder="Hasta"
               />
             </div>
           </div>

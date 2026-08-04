@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { Button } from "@/core/shared/ui/button";
 import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
@@ -9,6 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/core/shared/ui/sheet";
+import { DatePicker } from "@/core/shared/ui/date-picker";
 import { FilterMultiSelect } from "@/core/shared/components/DataTable/FilterMultiSelect";
 import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
 import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
@@ -44,6 +46,12 @@ function generateWeeks(): number[] {
 }
 
 const ALL_VALUE = "__all__";
+
+const strToDate = (s: string): Date | undefined =>
+  s ? new Date(`${s}T00:00:00`) : undefined;
+
+const dateToStr = (d: Date | undefined): string =>
+  d ? format(d, "yyyy-MM-dd") : "";
 
 export function RegistroHoraMobileFiltersDrawer({
   open,
@@ -249,28 +257,28 @@ export function RegistroHoraMobileFiltersDrawer({
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs">Fecha desde</Label>
-              <Input
-                type="date"
-                value={advancedFilters.fechaRegistroDesde}
-                onChange={(e) =>
+              <DatePicker
+                date={strToDate(advancedFilters.fechaRegistroDesde)}
+                onDateChange={(d) =>
                   onAdvancedFiltersChange({
                     ...advancedFilters,
-                    fechaRegistroDesde: e.target.value,
+                    fechaRegistroDesde: dateToStr(d),
                   })
                 }
+                placeholder="Desde"
               />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Fecha hasta</Label>
-              <Input
-                type="date"
-                value={advancedFilters.fechaRegistroHasta}
-                onChange={(e) =>
+              <DatePicker
+                date={strToDate(advancedFilters.fechaRegistroHasta)}
+                onDateChange={(d) =>
                   onAdvancedFiltersChange({
                     ...advancedFilters,
-                    fechaRegistroHasta: e.target.value,
+                    fechaRegistroHasta: dateToStr(d),
                   })
                 }
+                placeholder="Hasta"
               />
             </div>
           </div>
