@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import {
   Select,
@@ -9,14 +10,9 @@ import {
 } from "@/core/shared/ui/select";
 import { Combobox } from "@/core/shared/ui/combobox";
 import { Button } from "@/core/shared/ui/button";
-import { Badge } from "@/core/shared/ui/badge";
+import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/core/shared/ui/sheet";
+import { Badge } from "@/core/shared/ui/badge";
 import { X, SlidersHorizontal } from "lucide-react";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
@@ -24,32 +20,41 @@ import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useG
 import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
 import { useGetSocios } from "../hooks/useGetSocios.hook";
 import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
-import type { ReporteHorasFilters } from "../server/dtos/ReporteHorasDto.dto";
-
-interface ReportesFiltersProps {
-  filters: ReporteHorasFilters;
-  onFiltersChange: (filters: ReporteHorasFilters) => void;
-}
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/core/shared/ui/sheet";
+import type { ReporteHorasAgrupadoFiltersState } from "../types/ReporteHorasAgrupadoFilters.type";
 
 const TODOS_VALUE = "__todos__";
 
-// Generate last 5 years
+const ESTADO_OPTIONS = [
+  { value: TODOS_VALUE, label: "Todos" },
+  { value: "ACTIVO", label: "Activo" },
+  { value: "INACTIVO", label: "Inactivo" },
+  { value: "CERRADO", label: "Cerrado" },
+];
+
 function generateYears(): number[] {
   const currentYear = new Date().getFullYear();
   return Array.from({ length: 5 }, (_, i) => currentYear - i);
 }
 
-// Generate weeks 1-53
 function generateWeeks(): number[] {
   return Array.from({ length: 53 }, (_, i) => i + 1);
 }
 
-// ── Shared filter fields ──────────────────────────────────────────────────────
+interface ReporteHorasAgrupadoFiltersProps {
+  filters: ReporteHorasAgrupadoFiltersState;
+  onFiltersChange: (filters: ReporteHorasAgrupadoFiltersState) => void;
+}
 
 interface FilterFieldsProps {
-  filters: ReporteHorasFilters;
+  filters: ReporteHorasAgrupadoFiltersState;
   onChange: (
-    key: keyof ReporteHorasFilters,
+    key: keyof ReporteHorasAgrupadoFiltersState,
     value: string | number | undefined,
   ) => void;
   equipos: { id: string; nombre: string }[] | undefined;
@@ -78,40 +83,27 @@ function FilterFields({
     { value: TODOS_VALUE, label: "Todas" },
     ...weeks.map((w) => ({ value: String(w), label: `Sem ${w}` })),
   ];
+  const yearOptions = [
+    { value: TODOS_VALUE, label: "Todos" },
+    ...years.map((y) => ({ value: String(y), label: String(y) })),
+  ];
+
   return (
     <>
-      {/* Equipo */}
+      {/* Abogado / Usuario */}
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Equipo</Label>
+        <Label className="text-xs text-muted-foreground">Abogado</Label>
         <Combobox
           options={[
             { value: TODOS_VALUE, label: "Todos" },
-            ...(equipos?.map((e) => ({ value: e.id, label: e.nombre })) ?? []),
+            ...(usuarios?.map((u) => ({ value: u.id, label: u.name })) ?? []),
           ]}
-          value={filters.equipoJuridicoId ?? TODOS_VALUE}
+          value={filters.usuarioId ?? TODOS_VALUE}
           onChange={(val) =>
-            onChange("equipoJuridicoId", val === TODOS_VALUE ? undefined : val)
+            onChange("usuarioId", val === TODOS_VALUE ? undefined : val)
           }
-          placeholder="Todos los equipos"
-          searchPlaceholder="Buscar..."
-          className={triggerClass}
-        />
-      </div>
-
-      {/* Cliente */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Cliente</Label>
-        <Combobox
-          options={[
-            { value: TODOS_VALUE, label: "Todos" },
-            ...(clientes?.map((c) => ({ value: c.id, label: c.nombre })) ?? []),
-          ]}
-          value={filters.clienteJuridicoId ?? TODOS_VALUE}
-          onChange={(val) =>
-            onChange("clienteJuridicoId", val === TODOS_VALUE ? undefined : val)
-          }
-          placeholder="Todos los clientes"
-          searchPlaceholder="Buscar..."
+          placeholder="Todos los abogados"
+          searchPlaceholder="Buscar abogado..."
           className={triggerClass}
         />
       </div>
@@ -129,7 +121,43 @@ function FilterFields({
             onChange("asuntoJuridicoId", val === TODOS_VALUE ? undefined : val)
           }
           placeholder="Todos los asuntos"
-          searchPlaceholder="Buscar..."
+          searchPlaceholder="Buscar asunto..."
+          className={triggerClass}
+        />
+      </div>
+
+      {/* Cliente */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Cliente</Label>
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(clientes?.map((c) => ({ value: c.id, label: c.nombre })) ?? []),
+          ]}
+          value={filters.clienteJuridicoId ?? TODOS_VALUE}
+          onChange={(val) =>
+            onChange("clienteJuridicoId", val === TODOS_VALUE ? undefined : val)
+          }
+          placeholder="Todos los clientes"
+          searchPlaceholder="Buscar cliente..."
+          className={triggerClass}
+        />
+      </div>
+
+      {/* Equipo */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Equipo</Label>
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(equipos?.map((e) => ({ value: e.id, label: e.nombre })) ?? []),
+          ]}
+          value={filters.equipoJuridicoId ?? TODOS_VALUE}
+          onChange={(val) =>
+            onChange("equipoJuridicoId", val === TODOS_VALUE ? undefined : val)
+          }
+          placeholder="Todos los equipos"
+          searchPlaceholder="Buscar equipo..."
           className={triggerClass}
         />
       </div>
@@ -147,25 +175,68 @@ function FilterFields({
             onChange("socioId", val === TODOS_VALUE ? undefined : val)
           }
           placeholder="Todos los socios"
-          searchPlaceholder="Buscar..."
+          searchPlaceholder="Buscar socio..."
           className={triggerClass}
         />
       </div>
 
-      {/* Abogado / Usuario */}
+      {/* Estado del asunto */}
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Abogado</Label>
-        <Combobox
-          options={[
-            { value: TODOS_VALUE, label: "Todos" },
-            ...(usuarios?.map((u) => ({ value: u.id, label: u.name })) ?? []),
-          ]}
-          value={filters.usuarioId ?? TODOS_VALUE}
-          onChange={(val) =>
-            onChange("usuarioId", val === TODOS_VALUE ? undefined : val)
+        <Label className="text-xs text-muted-foreground">Estado asunto</Label>
+        <Select
+          value={filters.estado ?? TODOS_VALUE}
+          onValueChange={(val) =>
+            onChange(
+              "estado",
+              val === TODOS_VALUE
+                ? undefined
+                : (val as ReporteHorasAgrupadoFiltersState["estado"]),
+            )
           }
-          placeholder="Todos los abogados"
-          searchPlaceholder="Buscar..."
+        >
+          <SelectTrigger className={triggerClass}>
+            <SelectValue placeholder="Todos" />
+          </SelectTrigger>
+          <SelectContent>
+            {ESTADO_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Horas desde */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Horas mín.</Label>
+        <Input
+          type="number"
+          step="0.5"
+          min={0}
+          placeholder="0"
+          value={filters.horasDesde ?? ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            onChange("horasDesde", val === "" ? undefined : Number(val));
+          }}
+          className={triggerClass}
+        />
+      </div>
+
+      {/* Horas hasta */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Horas máx.</Label>
+        <Input
+          type="number"
+          step="0.5"
+          min={0}
+          placeholder="Sin tope"
+          value={filters.horasHasta ?? ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            onChange("horasHasta", val === "" ? undefined : Number(val));
+          }}
           className={triggerClass}
         />
       </div>
@@ -173,27 +244,19 @@ function FilterFields({
       {/* Año */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Año</Label>
-        <Select
+        <Combobox
+          options={yearOptions}
           value={filters.ano !== undefined ? String(filters.ano) : TODOS_VALUE}
-          onValueChange={(val) =>
+          onChange={(val) =>
             onChange("ano", val === TODOS_VALUE ? undefined : Number(val))
           }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos los años" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS_VALUE}>Todos</SelectItem>
-            {years.map((y) => (
-              <SelectItem key={y} value={String(y)}>
-                {y}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Todos los años"
+          searchPlaceholder="Buscar año..."
+          className={triggerClass}
+        />
       </div>
 
-      {/* Semana Desde */}
+      {/* Semana desde */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Semana desde</Label>
         <Combobox
@@ -211,12 +274,11 @@ function FilterFields({
           }
           placeholder="Desde"
           searchPlaceholder="Buscar semana..."
-          emptyMessage="Sin coincidencias."
           className={triggerClass}
         />
       </div>
 
-      {/* Semana Hasta */}
+      {/* Semana hasta */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Semana hasta</Label>
         <Combobox
@@ -234,7 +296,6 @@ function FilterFields({
           }
           placeholder="Hasta"
           searchPlaceholder="Buscar semana..."
-          emptyMessage="Sin coincidencias."
           className={triggerClass}
         />
       </div>
@@ -242,12 +303,10 @@ function FilterFields({
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-
-export function ReportesFilters({
+export function ReporteHorasAgrupadoFilters({
   filters,
   onFiltersChange,
-}: ReportesFiltersProps) {
+}: ReporteHorasAgrupadoFiltersProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -261,7 +320,7 @@ export function ReportesFilters({
   const weeks = generateWeeks();
 
   const handleChange = (
-    key: keyof ReporteHorasFilters,
+    key: keyof ReporteHorasAgrupadoFiltersState,
     value: string | number | undefined,
   ) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -289,7 +348,6 @@ export function ReportesFilters({
     weeks,
   };
 
-  // ── Mobile: compact bar + bottom sheet ────────────────────────────────────
   if (isMobile) {
     return (
       <>
@@ -326,12 +384,10 @@ export function ReportesFilters({
             side="bottom"
             className="rounded-t-2xl max-h-[85vh] flex flex-col p-0"
           >
-            {/* Handle visual */}
             <div className="pt-3 pb-1 flex justify-center shrink-0">
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
             </div>
 
-            {/* Header */}
             <SheetHeader className="px-4 pb-3 shrink-0">
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-base font-semibold">
@@ -350,7 +406,6 @@ export function ReportesFilters({
               </div>
             </SheetHeader>
 
-            {/* Filter fields */}
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
               <FilterFields
                 {...sharedProps}
@@ -358,7 +413,6 @@ export function ReportesFilters({
               />
             </div>
 
-            {/* Apply button */}
             <div className="px-4 pb-6 pt-3 border-t shrink-0">
               <Button className="w-full" onClick={() => setDrawerOpen(false)}>
                 Aplicar
@@ -370,7 +424,6 @@ export function ReportesFilters({
     );
   }
 
-  // ── Desktop: grid layout ──────────────────────────────────────────────────
   return (
     <div className="rounded-lg border bg-card p-4 space-y-4">
       <div className="flex items-center justify-between">
