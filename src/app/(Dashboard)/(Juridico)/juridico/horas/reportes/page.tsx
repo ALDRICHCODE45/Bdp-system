@@ -1,5 +1,5 @@
-import { ReportesHorasPage } from "@/features/juridico/horas/pages/ReportesHorasPage";
+import { ReporteHorasAgrupadoPage } from "@/features/juridico/horas/pages/ReporteHorasAgrupadoPage";
 
 export default function ReportesPage() {
-  return <ReportesHorasPage />;
+  return <ReporteHorasAgrupadoPage />;
 }
