@@ -49,5 +49,8 @@ openspec/
 sdd/
 prod.env
 
+# CodeGraph local index (machine-local; not for committing)
+.codegraph/
+
 # secure-file-access migration checkpoint (per-run, per-operator state)
 scripts/.migrate-file-acl.cp.json
