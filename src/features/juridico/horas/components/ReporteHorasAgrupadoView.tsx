@@ -190,8 +190,7 @@ export function ReporteHorasAgrupadoView() {
                 onClick={handleExportExcel}
                 disabled={
                   exportMutation.isPending ||
-                  isInitialLoading ||
-                  grupos.length === 0
+                  isInitialLoading
                 }
                 className="justify-start"
               >
