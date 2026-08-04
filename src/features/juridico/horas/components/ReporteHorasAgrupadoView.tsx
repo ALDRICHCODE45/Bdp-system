@@ -3,12 +3,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { toast } from "sonner";
-import { Loader2, FileSpreadsheet, FileText, BarChart3 } from "lucide-react";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import type { TableConfig } from "@/core/shared/components/DataTable/types";
-import { Button } from "@/core/shared/ui/button";
+import { ExportActions } from "@/core/shared/components/DataTable/ExportActions";
 import { Badge } from "@/core/shared/ui/badge";
-import { Card, CardContent } from "@/core/shared/ui/card";
 import { ReporteHorasAgrupadoFilters } from "./ReporteHorasAgrupadoFilters";
 import { createReporteHorasAgrupadoColumns } from "./ReporteHorasAgrupadoColumns";
 import { SubtotalesPanel } from "./SubtotalesPanel";
@@ -188,62 +186,31 @@ export function ReporteHorasAgrupadoView() {
         onFiltersChange={handleFiltersChange}
       />
 
-      {/* Subtotals panel + summary cards */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="xl:col-span-2">
-          <SubtotalesPanel
-            subtotales={data?.subtotales}
-            isLoading={isInitialLoading}
+      {/* Toolbar row: result count + ExportActions */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="font-normal">
+            {isInitialLoading
+              ? "Cargando…"
+              : `${(data?.totalCount ?? 0).toLocaleString("es-MX")} resultados`}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <ExportActions
+            onExportExcel={handleExportExcel}
+            onExportPDF={handleExportPDF}
+            isExporting={exportMutation.isPending}
+            resultCount={data?.totalCount}
+            disablePDF={!data?.subtotales || isInitialLoading}
           />
         </div>
-        <Card className="p-2">
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold">Exportar</h3>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Genera un Excel con todos los grupos que cumplen los filtros o un
-              resumen PDF con criterios, totales y breakdowns.
-            </p>
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportExcel}
-                disabled={
-                  exportMutation.isPending ||
-                  isInitialLoading
-                }
-                className="justify-start"
-              >
-                {exportMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                )}
-                Excel (todos los grupos)
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportPDF}
-                disabled={!data?.subtotales || isInitialLoading}
-                className="justify-start"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Resumen PDF
-              </Button>
-            </div>
-            {isFetchingMore && (
-              <Badge variant="secondary" className="text-xs w-fit">
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                Actualizando...
-              </Badge>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Subtotals panel */}
+      <SubtotalesPanel
+        subtotales={data?.subtotales}
+        isLoading={isInitialLoading}
+      />
 
       {/* Data table */}
       {errorMessage ? (
