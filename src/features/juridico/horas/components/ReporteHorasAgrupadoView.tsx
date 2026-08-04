@@ -1,29 +1,24 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { toast } from "sonner";
-import { Loader2, FileSpreadsheet, FileText, BarChart3 } from "lucide-react";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import type { TableConfig } from "@/core/shared/components/DataTable/types";
-import { Button } from "@/core/shared/ui/button";
+import { ExportActions } from "@/core/shared/components/DataTable/ExportActions";
 import { Badge } from "@/core/shared/ui/badge";
-import { Card, CardContent } from "@/core/shared/ui/card";
 import { ReporteHorasAgrupadoFilters } from "./ReporteHorasAgrupadoFilters";
 import { createReporteHorasAgrupadoColumns } from "./ReporteHorasAgrupadoColumns";
 import { SubtotalesPanel } from "./SubtotalesPanel";
+import { useReporteEntities } from "./ReporteHorasAgrupadoProvider";
 import { useReporteHorasAgrupado } from "../hooks/useReporteHorasAgrupado.hook";
 import { useExportHorasAgrupadas } from "../hooks/useExportHorasAgrupadas.hook";
-import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
-import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
-import { useGetSocios } from "../hooks/useGetSocios.hook";
-import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
 import { exportHorasAgrupadasToExcel } from "../helpers/exportHorasAgrupadasToExcel";
 import {
   exportHorasResumenToPDF,
   type ReportePdfFilterLabels,
 } from "../helpers/exportHorasResumenToPDF";
+import { formatHoras } from "../helpers/formatHoras";
 import type {
   ReporteAgrupadoSortField,
   ReporteGrupoDto,
@@ -64,11 +59,7 @@ export function ReporteHorasAgrupadoView() {
 
   // Datos de entidades (cacheados por TanStack Query — los mismos que usan
   // los filtros) para resolver id → nombre en los criterios del PDF.
-  const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
-  const { data: asuntos } = useGetAsuntosJuridicos();
-  const { data: socios } = useGetSocios();
-  const { data: usuarios } = useGetActiveUsersForReporte();
+  const { equipos, clientes, asuntos, socios, usuarios } = useReporteEntities();
 
   const pdfLabels: ReportePdfFilterLabels = useMemo(() => {
     const toMap = (rows: { id: string; nombre?: string; name?: string }[]) => {
@@ -158,6 +149,27 @@ export function ReporteHorasAgrupadoView() {
   // ── Columns ─────────────────────────────────────────────────────────────
   const columns = useMemo(() => createReporteHorasAgrupadoColumns(), []);
 
+  // ── Totals row (shows the row total across the whole filtered set) ─────
+  const totalsRow: ReactNode[] | undefined = useMemo(() => {
+    if (!data?.subtotales) return undefined;
+    const totalHoras = data.subtotales.totalHoras;
+    return [
+      "", // periodo
+      "Total",
+      "Total",
+      "Total",
+      "Total",
+      "Total",
+      "Total",
+      <span
+        key="horas"
+        className="font-mono tabular-nums"
+      >
+        {formatHoras(totalHoras)}
+      </span>,
+    ];
+  }, [data?.subtotales]);
+
   // ── Table config ────────────────────────────────────────────────────────
   const tableConfig: TableConfig<ReporteGrupoDto> = useMemo(
     () =>
@@ -175,6 +187,9 @@ export function ReporteHorasAgrupadoView() {
         enableSorting: true,
         enableColumnVisibility: true,
         enableRowSelection: false,
+        stickyHeader: true,
+        showTotalsRow: true,
+        compactDensity: true,
         serverSide: {
           enabled: true,
           totalCount: data?.totalCount ?? 0,
@@ -196,62 +211,31 @@ export function ReporteHorasAgrupadoView() {
         onFiltersChange={handleFiltersChange}
       />
 
-      {/* Subtotals panel + summary cards */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="xl:col-span-2">
-          <SubtotalesPanel
-            subtotales={data?.subtotales}
-            isLoading={isInitialLoading}
+      {/* Toolbar row: result count + ExportActions */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="font-normal">
+            {isInitialLoading
+              ? "Cargando…"
+              : `${(data?.totalCount ?? 0).toLocaleString("es-MX")} resultados`}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <ExportActions
+            onExportExcel={handleExportExcel}
+            onExportPDF={handleExportPDF}
+            isExporting={exportMutation.isPending}
+            resultCount={data?.totalCount}
+            disablePDF={!data?.subtotales || isInitialLoading}
           />
         </div>
-        <Card className="p-2">
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold">Exportar</h3>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Genera un Excel con todos los grupos que cumplen los filtros o un
-              resumen PDF con criterios, totales y breakdowns.
-            </p>
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportExcel}
-                disabled={
-                  exportMutation.isPending ||
-                  isInitialLoading
-                }
-                className="justify-start"
-              >
-                {exportMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                )}
-                Excel (todos los grupos)
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportPDF}
-                disabled={!data?.subtotales || isInitialLoading}
-                className="justify-start"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Resumen PDF
-              </Button>
-            </div>
-            {isFetchingMore && (
-              <Badge variant="secondary" className="text-xs w-fit">
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                Actualizando...
-              </Badge>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Subtotals panel */}
+      <SubtotalesPanel
+        subtotales={data?.subtotales}
+        isLoading={isInitialLoading}
+      />
 
       {/* Data table */}
       {errorMessage ? (
@@ -269,6 +253,7 @@ export function ReporteHorasAgrupadoView() {
           sorting={sortingState}
           onPaginationChange={handlePaginationChange}
           onSortingChange={handleSortingChange}
+          totalsRow={totalsRow}
         />
       )}
     </div>

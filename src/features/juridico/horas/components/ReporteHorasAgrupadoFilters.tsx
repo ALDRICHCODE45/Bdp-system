@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -13,13 +13,10 @@ import { Button } from "@/core/shared/ui/button";
 import { Input } from "@/core/shared/ui/input";
 import { Label } from "@/core/shared/ui/label";
 import { Badge } from "@/core/shared/ui/badge";
-import { X, SlidersHorizontal } from "lucide-react";
+import { X, SlidersHorizontal, RotateCcw } from "lucide-react";
 import { useIsMobile } from "@/core/shared/hooks/use-mobile";
-import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
-import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
-import { useGetSocios } from "../hooks/useGetSocios.hook";
-import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
+import { cn } from "@/core/lib/utils";
+import { useReporteEntities } from "./ReporteHorasAgrupadoProvider";
 import {
   Sheet,
   SheetContent,
@@ -51,46 +48,92 @@ interface ReporteHorasAgrupadoFiltersProps {
   onFiltersChange: (filters: ReporteHorasAgrupadoFiltersState) => void;
 }
 
-interface FilterFieldsProps {
+// ─── Advanced draft (the 7 non-quick controls) ──────────────────────────────
+
+interface AdvancedDraft {
+  asuntoJuridicoId: string | undefined;
+  clienteJuridicoId: string | undefined;
+  equipoJuridicoId: string | undefined;
+  socioId: string | undefined;
+  estado: ReporteHorasAgrupadoFiltersState["estado"];
+  horasDesde: number | undefined;
+  horasHasta: number | undefined;
+}
+
+function emptyDraft(): AdvancedDraft {
+  return {
+    asuntoJuridicoId: undefined,
+    clienteJuridicoId: undefined,
+    equipoJuridicoId: undefined,
+    socioId: undefined,
+    estado: undefined,
+    horasDesde: undefined,
+    horasHasta: undefined,
+  };
+}
+
+function draftFromFilters(f: ReporteHorasAgrupadoFiltersState): AdvancedDraft {
+  return {
+    asuntoJuridicoId: f.asuntoJuridicoId,
+    clienteJuridicoId: f.clienteJuridicoId,
+    equipoJuridicoId: f.equipoJuridicoId,
+    socioId: f.socioId,
+    estado: f.estado,
+    horasDesde: f.horasDesde,
+    horasHasta: f.horasHasta,
+  };
+}
+
+function countActiveAdvancedFilters(f: ReporteHorasAgrupadoFiltersState): number {
+  let count = 0;
+  if (f.asuntoJuridicoId) count++;
+  if (f.clienteJuridicoId) count++;
+  if (f.equipoJuridicoId) count++;
+  if (f.socioId) count++;
+  if (f.estado) count++;
+  if (f.horasDesde !== undefined) count++;
+  if (f.horasHasta !== undefined) count++;
+  return count;
+}
+
+// ─── Quick controls (Periodo + Abogado) ─────────────────────────────────────
+
+interface QuickFieldsProps {
   filters: ReporteHorasAgrupadoFiltersState;
   onChange: (
     key: keyof ReporteHorasAgrupadoFiltersState,
     value: string | number | undefined,
   ) => void;
-  equipos: { id: string; nombre: string }[] | undefined;
-  clientes: { id: string; nombre: string }[] | undefined;
-  asuntos: { id: string; nombre: string }[] | undefined;
-  socios: { id: string; nombre: string }[] | undefined;
   usuarios: { id: string; name: string }[] | undefined;
   years: number[];
   weeks: number[];
-  triggerClass?: string;
 }
 
-function FilterFields({
+function QuickFields({
   filters,
   onChange,
-  equipos,
-  clientes,
-  asuntos,
-  socios,
   usuarios,
   years,
   weeks,
-  triggerClass = "h-8 text-sm",
-}: FilterFieldsProps) {
-  const weekOptions = [
-    { value: TODOS_VALUE, label: "Todas" },
-    ...weeks.map((w) => ({ value: String(w), label: `Sem ${w}` })),
-  ];
-  const yearOptions = [
-    { value: TODOS_VALUE, label: "Todos" },
-    ...years.map((y) => ({ value: String(y), label: String(y) })),
-  ];
+}: QuickFieldsProps) {
+  const weekOptions = useMemo(
+    () => [
+      { value: TODOS_VALUE, label: "Todas" },
+      ...weeks.map((w) => ({ value: String(w), label: `Sem ${w}` })),
+    ],
+    [weeks],
+  );
+  const yearOptions = useMemo(
+    () => [
+      { value: TODOS_VALUE, label: "Todos" },
+      ...years.map((y) => ({ value: String(y), label: String(y) })),
+    ],
+    [years],
+  );
 
   return (
     <>
-      {/* Abogado / Usuario */}
+      {/* Abogado */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Abogado</Label>
         <Combobox
@@ -104,140 +147,7 @@ function FilterFields({
           }
           placeholder="Todos los abogados"
           searchPlaceholder="Buscar abogado..."
-          className={triggerClass}
-        />
-      </div>
-
-      {/* Asunto */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Asunto</Label>
-        <Combobox
-          options={[
-            { value: TODOS_VALUE, label: "Todos" },
-            ...(asuntos?.map((a) => ({ value: a.id, label: a.nombre })) ?? []),
-          ]}
-          value={filters.asuntoJuridicoId ?? TODOS_VALUE}
-          onChange={(val) =>
-            onChange("asuntoJuridicoId", val === TODOS_VALUE ? undefined : val)
-          }
-          placeholder="Todos los asuntos"
-          searchPlaceholder="Buscar asunto..."
-          className={triggerClass}
-        />
-      </div>
-
-      {/* Cliente */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Cliente</Label>
-        <Combobox
-          options={[
-            { value: TODOS_VALUE, label: "Todos" },
-            ...(clientes?.map((c) => ({ value: c.id, label: c.nombre })) ?? []),
-          ]}
-          value={filters.clienteJuridicoId ?? TODOS_VALUE}
-          onChange={(val) =>
-            onChange("clienteJuridicoId", val === TODOS_VALUE ? undefined : val)
-          }
-          placeholder="Todos los clientes"
-          searchPlaceholder="Buscar cliente..."
-          className={triggerClass}
-        />
-      </div>
-
-      {/* Equipo */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Equipo</Label>
-        <Combobox
-          options={[
-            { value: TODOS_VALUE, label: "Todos" },
-            ...(equipos?.map((e) => ({ value: e.id, label: e.nombre })) ?? []),
-          ]}
-          value={filters.equipoJuridicoId ?? TODOS_VALUE}
-          onChange={(val) =>
-            onChange("equipoJuridicoId", val === TODOS_VALUE ? undefined : val)
-          }
-          placeholder="Todos los equipos"
-          searchPlaceholder="Buscar equipo..."
-          className={triggerClass}
-        />
-      </div>
-
-      {/* Socio */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Socio</Label>
-        <Combobox
-          options={[
-            { value: TODOS_VALUE, label: "Todos" },
-            ...(socios?.map((s) => ({ value: s.id, label: s.nombre })) ?? []),
-          ]}
-          value={filters.socioId ?? TODOS_VALUE}
-          onChange={(val) =>
-            onChange("socioId", val === TODOS_VALUE ? undefined : val)
-          }
-          placeholder="Todos los socios"
-          searchPlaceholder="Buscar socio..."
-          className={triggerClass}
-        />
-      </div>
-
-      {/* Estado del asunto */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Estado asunto</Label>
-        <Select
-          value={filters.estado ?? TODOS_VALUE}
-          onValueChange={(val) =>
-            onChange(
-              "estado",
-              val === TODOS_VALUE
-                ? undefined
-                : (val as ReporteHorasAgrupadoFiltersState["estado"]),
-            )
-          }
-        >
-          <SelectTrigger className={triggerClass}>
-            <SelectValue placeholder="Todos" />
-          </SelectTrigger>
-          <SelectContent>
-            {ESTADO_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Horas desde */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Horas mín.</Label>
-        <Input
-          type="number"
-          step="0.5"
-          min={0}
-          placeholder="0"
-          value={filters.horasDesde ?? ""}
-          onChange={(e) => {
-            const val = e.target.value;
-            onChange("horasDesde", val === "" ? undefined : Number(val));
-          }}
-          className={triggerClass}
-        />
-      </div>
-
-      {/* Horas hasta */}
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Horas máx.</Label>
-        <Input
-          type="number"
-          step="0.5"
-          min={0}
-          placeholder="Sin tope"
-          value={filters.horasHasta ?? ""}
-          onChange={(e) => {
-            const val = e.target.value;
-            onChange("horasHasta", val === "" ? undefined : Number(val));
-          }}
-          className={triggerClass}
+          className="h-8 text-sm"
         />
       </div>
 
@@ -252,7 +162,7 @@ function FilterFields({
           }
           placeholder="Todos los años"
           searchPlaceholder="Buscar año..."
-          className={triggerClass}
+          className="h-8 text-sm"
         />
       </div>
 
@@ -274,7 +184,7 @@ function FilterFields({
           }
           placeholder="Desde"
           searchPlaceholder="Buscar semana..."
-          className={triggerClass}
+          className="h-8 text-sm"
         />
       </div>
 
@@ -296,28 +206,208 @@ function FilterFields({
           }
           placeholder="Hasta"
           searchPlaceholder="Buscar semana..."
-          className={triggerClass}
+          className="h-8 text-sm"
         />
       </div>
     </>
   );
 }
 
+// ─── Advanced controls (the 7 non-quick fields) ─────────────────────────────
+
+interface AdvancedFieldsProps {
+  draft: AdvancedDraft;
+  setDraft: React.Dispatch<React.SetStateAction<AdvancedDraft>>;
+  equipos: { id: string; nombre: string }[] | undefined;
+  clientes: { id: string; nombre: string }[] | undefined;
+  asuntos: { id: string; nombre: string }[] | undefined;
+  socios: { id: string; nombre: string }[] | undefined;
+}
+
+function AdvancedFields({
+  draft,
+  setDraft,
+  equipos,
+  clientes,
+  asuntos,
+  socios,
+}: AdvancedFieldsProps) {
+  const update = <K extends keyof AdvancedDraft>(
+    key: K,
+    value: AdvancedDraft[K],
+  ) => setDraft((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <>
+      {/* Asunto */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Asunto</Label>
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(asuntos?.map((a) => ({ value: a.id, label: a.nombre })) ?? []),
+          ]}
+          value={draft.asuntoJuridicoId ?? TODOS_VALUE}
+          onChange={(val) =>
+            update(
+              "asuntoJuridicoId",
+              val === TODOS_VALUE ? undefined : val,
+            )
+          }
+          placeholder="Todos los asuntos"
+          searchPlaceholder="Buscar asunto..."
+          className="h-9 text-sm w-full"
+        />
+      </div>
+
+      {/* Cliente */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Cliente</Label>
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(clientes?.map((c) => ({ value: c.id, label: c.nombre })) ?? []),
+          ]}
+          value={draft.clienteJuridicoId ?? TODOS_VALUE}
+          onChange={(val) =>
+            update(
+              "clienteJuridicoId",
+              val === TODOS_VALUE ? undefined : val,
+            )
+          }
+          placeholder="Todos los clientes"
+          searchPlaceholder="Buscar cliente..."
+          className="h-9 text-sm w-full"
+        />
+      </div>
+
+      {/* Equipo */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Equipo</Label>
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(equipos?.map((e) => ({ value: e.id, label: e.nombre })) ?? []),
+          ]}
+          value={draft.equipoJuridicoId ?? TODOS_VALUE}
+          onChange={(val) =>
+            update(
+              "equipoJuridicoId",
+              val === TODOS_VALUE ? undefined : val,
+            )
+          }
+          placeholder="Todos los equipos"
+          searchPlaceholder="Buscar equipo..."
+          className="h-9 text-sm w-full"
+        />
+      </div>
+
+      {/* Socio */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Socio</Label>
+        <Combobox
+          options={[
+            { value: TODOS_VALUE, label: "Todos" },
+            ...(socios?.map((s) => ({ value: s.id, label: s.nombre })) ?? []),
+          ]}
+          value={draft.socioId ?? TODOS_VALUE}
+          onChange={(val) =>
+            update("socioId", val === TODOS_VALUE ? undefined : val)
+          }
+          placeholder="Todos los socios"
+          searchPlaceholder="Buscar socio..."
+          className="h-9 text-sm w-full"
+        />
+      </div>
+
+      {/* Estado del asunto */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Estado asunto</Label>
+        <Select
+          value={draft.estado ?? TODOS_VALUE}
+          onValueChange={(val) =>
+            update(
+              "estado",
+              val === TODOS_VALUE
+                ? undefined
+                : (val as ReporteHorasAgrupadoFiltersState["estado"]),
+            )
+          }
+        >
+          <SelectTrigger className="h-9 text-sm w-full">
+            <SelectValue placeholder="Todos" />
+          </SelectTrigger>
+          <SelectContent>
+            {ESTADO_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Horas mín / máx */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Horas mín.</Label>
+        <Input
+          type="number"
+          step="0.5"
+          min={0}
+          placeholder="0"
+          value={draft.horasDesde ?? ""}
+          onChange={(e) =>
+            update(
+              "horasDesde",
+              e.target.value === "" ? undefined : Number(e.target.value),
+            )
+          }
+          className="h-9 text-sm w-full"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Horas máx.</Label>
+        <Input
+          type="number"
+          step="0.5"
+          min={0}
+          placeholder="Sin tope"
+          value={draft.horasHasta ?? ""}
+          onChange={(e) =>
+            update(
+              "horasHasta",
+              e.target.value === "" ? undefined : Number(e.target.value),
+            )
+          }
+          className="h-9 text-sm w-full"
+        />
+      </div>
+    </>
+  );
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
 export function ReporteHorasAgrupadoFilters({
   filters,
   onFiltersChange,
 }: ReporteHorasAgrupadoFiltersProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [draft, setDraft] = useState<AdvancedDraft>(emptyDraft());
   const isMobile = useIsMobile();
 
-  const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
-  const { data: asuntos } = useGetAsuntosJuridicos();
-  const { data: socios } = useGetSocios();
-  const { data: usuarios } = useGetActiveUsersForReporte();
+  const { equipos, clientes, asuntos, socios, usuarios } = useReporteEntities();
 
-  const years = generateYears();
-  const weeks = generateWeeks();
+  const years = useMemo(generateYears, []);
+  const weeks = useMemo(generateWeeks, []);
+
+  const advancedCount = countActiveAdvancedFilters(filters);
+
+  // Sync draft whenever the sheet reopens — edits without "Aplicar" never
+  // mutate the canonical filter state, so we restore from the active filters.
+  useEffect(() => {
+    if (sheetOpen) setDraft(draftFromFilters(filters));
+  }, [sheetOpen, filters]);
 
   const handleChange = (
     key: keyof ReporteHorasAgrupadoFiltersState,
@@ -326,28 +416,41 @@ export function ReporteHorasAgrupadoFilters({
     onFiltersChange({ ...filters, [key]: value });
   };
 
-  const handleReset = () => {
-    onFiltersChange({});
+  const handleReset = () => onFiltersChange({});
+
+  const handleApply = () => {
+    onFiltersChange({
+      ...filters,
+      asuntoJuridicoId: draft.asuntoJuridicoId,
+      clienteJuridicoId: draft.clienteJuridicoId,
+      equipoJuridicoId: draft.equipoJuridicoId,
+      socioId: draft.socioId,
+      estado: draft.estado,
+      horasDesde: draft.horasDesde,
+      horasHasta: draft.horasHasta,
+    });
+    setSheetOpen(false);
   };
 
-  const activeFilterCount = Object.values(filters).filter(
-    (v) => v !== undefined && v !== "",
-  ).length;
+  const handleResetDraft = () => setDraft(emptyDraft());
 
-  const hasActiveFilters = activeFilterCount > 0;
+  const hasActiveFilters = advancedCount > 0 || Object.values(filters).some(
+    (v) =>
+      v !== undefined &&
+      v !== "" &&
+      // Ignore the 7 advanced fields when counting here — they are summarized by advancedCount.
+      ![
+        filters.asuntoJuridicoId,
+        filters.clienteJuridicoId,
+        filters.equipoJuridicoId,
+        filters.socioId,
+        filters.estado,
+        filters.horasDesde,
+        filters.horasHasta,
+      ].includes(v),
+  );
 
-  const sharedProps = {
-    filters,
-    onChange: handleChange,
-    equipos,
-    clientes,
-    asuntos,
-    socios,
-    usuarios,
-    years,
-    weeks,
-  };
-
+  // ── Mobile: full Sheet with all 11 controls ─────────────────────────────
   if (isMobile) {
     return (
       <>
@@ -356,17 +459,31 @@ export function ReporteHorasAgrupadoFilters({
             variant="outline"
             size="sm"
             className="flex-1 gap-2 h-9 justify-start"
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => setSheetOpen(true)}
           >
             <SlidersHorizontal className="h-4 w-4 shrink-0" />
             <span className="text-sm">Filtros</span>
-            {hasActiveFilters && (
+            {(advancedCount > 0 || hasActiveFilters) && (
               <Badge className="ml-auto size-5 p-0 flex items-center justify-center text-[10px]">
-                {activeFilterCount}
+                {advancedCount +
+                  (Object.values(filters).filter(
+                    (v) =>
+                      v !== undefined &&
+                      v !== "" &&
+                      ![
+                        filters.asuntoJuridicoId,
+                        filters.clienteJuridicoId,
+                        filters.equipoJuridicoId,
+                        filters.socioId,
+                        filters.estado,
+                        filters.horasDesde,
+                        filters.horasHasta,
+                      ].includes(v),
+                  ).length)}
               </Badge>
             )}
           </Button>
-          {hasActiveFilters && (
+          {(advancedCount > 0 || hasActiveFilters) && (
             <Button
               variant="ghost"
               size="sm"
@@ -379,7 +496,7 @@ export function ReporteHorasAgrupadoFilters({
           )}
         </div>
 
-        <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetContent
             side="bottom"
             className="rounded-t-2xl max-h-[85vh] flex flex-col p-0"
@@ -389,33 +506,44 @@ export function ReporteHorasAgrupadoFilters({
             </div>
 
             <SheetHeader className="px-4 pb-3 shrink-0">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-base font-semibold">
-                  Filtros
-                </SheetTitle>
-                {hasActiveFilters && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs text-muted-foreground h-7 px-2"
-                    onClick={handleReset}
-                  >
-                    Limpiar
-                  </Button>
-                )}
-              </div>
+              <SheetTitle className="text-base font-semibold">Filtros</SheetTitle>
             </SheetHeader>
 
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
-              <FilterFields
-                {...sharedProps}
-                triggerClass="h-9 text-sm w-full"
+              <QuickFields
+                filters={filters}
+                onChange={handleChange}
+                usuarios={usuarios}
+                years={years}
+                weeks={weeks}
               />
+              <div className="border-t pt-4">
+                <p className="text-xs font-medium text-muted-foreground mb-3">
+                  Filtros avanzados
+                </p>
+                <AdvancedFields
+                  draft={draft}
+                  setDraft={setDraft}
+                  equipos={equipos}
+                  clientes={clientes}
+                  asuntos={asuntos}
+                  socios={socios}
+                />
+              </div>
             </div>
 
-            <div className="px-4 pb-6 pt-3 border-t shrink-0">
-              <Button className="w-full" onClick={() => setDrawerOpen(false)}>
-                Aplicar
+            <div className="border-t bg-background shrink-0 px-4 py-3 flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={handleResetDraft}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Limpiar
+              </Button>
+              <Button className="flex-1" onClick={handleApply}>
+                Aplicar filtros
               </Button>
             </div>
           </SheetContent>
@@ -424,26 +552,85 @@ export function ReporteHorasAgrupadoFilters({
     );
   }
 
+  // ── Desktop: quick row + "Más filtros" button → advanced Sheet ──────────
   return (
     <div className="rounded-lg border bg-card p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Filtros</h3>
-        {hasActiveFilters && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <QuickFields
+          filters={filters}
+          onChange={handleChange}
+          usuarios={usuarios}
+          years={years}
+          weeks={weeks}
+        />
+
+        {/* "Más filtros" trigger */}
+        <div className="space-y-1.5">
+          <span className="block text-xs text-muted-foreground">
+            Más filtros
+          </span>
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-            className="h-7 text-xs text-muted-foreground hover:text-foreground"
+            variant="outline"
+            className="w-full gap-2 relative"
+            onClick={() => setSheetOpen(true)}
           >
-            <X className="h-3 w-3 mr-1" />
-            Limpiar filtros
+            <SlidersHorizontal className="h-4 w-4" />
+            Filtros avanzados
+            {advancedCount > 0 && (
+              <Badge className="ml-auto h-5 min-w-5 px-1 text-xs flex items-center justify-center">
+                {advancedCount}
+              </Badge>
+            )}
           </Button>
-        )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <FilterFields {...sharedProps} />
-      </div>
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent
+          side="right"
+          className={cn(
+            "p-0 w-full sm:max-w-xl",
+            "rounded-2xl flex flex-col overflow-hidden",
+          )}
+        >
+          <SheetHeader className="px-6 pt-6 pb-4 border-b shrink-0">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              <SheetTitle>Filtros avanzados</SheetTitle>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Filtrá el reporte con criterios detallados. Los cambios aplican al
+              presionar &ldquo;Aplicar filtros&rdquo;.
+            </p>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <AdvancedFields
+              draft={draft}
+              setDraft={setDraft}
+              equipos={equipos}
+              clientes={clientes}
+              asuntos={asuntos}
+              socios={socios}
+            />
+          </div>
+
+          <div className="border-t px-6 py-4 flex gap-3 bg-background shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={handleResetDraft}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Limpiar
+            </Button>
+            <Button onClick={handleApply} className="flex-1">
+              Aplicar filtros
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

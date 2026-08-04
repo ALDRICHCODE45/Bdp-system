@@ -112,12 +112,9 @@ export const createReporteHorasAgrupadoColumns =
       header: "Horas",
       accessorFn: (row) => row.horas,
       cell: ({ row }) => (
-        <Badge
-          variant="secondary"
-          className="bg-blue-50 text-blue-800 font-mono text-xs whitespace-nowrap"
-        >
+        <span className="text-right font-mono tabular-nums block">
           {formatHoras(row.original.horas)}
-        </Badge>
+        </span>
       ),
       size: 10,
     },
