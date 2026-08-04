@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
@@ -18,6 +18,7 @@ import {
   exportHorasResumenToPDF,
   type ReportePdfFilterLabels,
 } from "../helpers/exportHorasResumenToPDF";
+import { formatHoras } from "../helpers/formatHoras";
 import type {
   ReporteAgrupadoSortField,
   ReporteGrupoDto,
@@ -148,6 +149,27 @@ export function ReporteHorasAgrupadoView() {
   // ── Columns ─────────────────────────────────────────────────────────────
   const columns = useMemo(() => createReporteHorasAgrupadoColumns(), []);
 
+  // ── Totals row (shows the row total across the whole filtered set) ─────
+  const totalsRow: ReactNode[] | undefined = useMemo(() => {
+    if (!data?.subtotales) return undefined;
+    const totalHoras = data.subtotales.totalHoras;
+    return [
+      "", // periodo
+      "Total",
+      "Total",
+      "Total",
+      "Total",
+      "Total",
+      "Total",
+      <span
+        key="horas"
+        className="font-mono tabular-nums"
+      >
+        {formatHoras(totalHoras)}
+      </span>,
+    ];
+  }, [data?.subtotales]);
+
   // ── Table config ────────────────────────────────────────────────────────
   const tableConfig: TableConfig<ReporteGrupoDto> = useMemo(
     () =>
@@ -165,6 +187,9 @@ export function ReporteHorasAgrupadoView() {
         enableSorting: true,
         enableColumnVisibility: true,
         enableRowSelection: false,
+        stickyHeader: true,
+        showTotalsRow: true,
+        compactDensity: true,
         serverSide: {
           enabled: true,
           totalCount: data?.totalCount ?? 0,
@@ -228,6 +253,7 @@ export function ReporteHorasAgrupadoView() {
           sorting={sortingState}
           onPaginationChange={handlePaginationChange}
           onSortingChange={handleSortingChange}
+          totalsRow={totalsRow}
         />
       )}
     </div>
