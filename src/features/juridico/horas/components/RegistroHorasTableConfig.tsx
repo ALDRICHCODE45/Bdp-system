@@ -27,7 +27,11 @@ export const RegistroHorasTableConfig: TableConfig<RegistroHoraDto> = {
     showSearch: true,
     customFilter: {
       component: RegistroHorasTableFilters,
-      props: {},
+      props: {
+        showAddButton: true,
+        addButtonText: "Registrar Horas",
+        addButtonIcon: Plus,
+      },
     },
   },
   actions: {
