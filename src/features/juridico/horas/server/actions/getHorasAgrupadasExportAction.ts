@@ -16,17 +16,16 @@ import type { ReporteGrupoDto } from "../dtos/ReporteHorasAgrupadoDto.dto";
  * Permisos: `juridico-horas:ver-reportes` OR `juridico-horas:gestionar`.
  */
 export const getHorasAgrupadasExportAction = async (
-  input: ReporteHorasExportSchemaInput
+  input: ReporteHorasExportSchemaInput,
 ): Promise<
-  | { ok: true; data: ReporteGrupoDto[] }
-  | { ok: false; error: string }
+  { ok: true; data: ReporteGrupoDto[] } | { ok: false; error: string }
 > => {
   await requireAnyPermission(
     [
       PermissionActions["juridico-horas"]["ver-reportes"],
       PermissionActions["juridico-horas"].gestionar,
     ],
-    "No tienes permiso para exportar reportes de horas"
+    "No tienes permiso para exportar reportes de horas",
   );
 
   const parsed = reporteHorasExportSchema.safeParse(input);

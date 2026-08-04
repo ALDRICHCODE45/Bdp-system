@@ -8,7 +8,11 @@ import type { ReporteHorasAgrupadoFiltersState } from "../types/ReporteHorasAgru
  * (sin paginación). Lo consume el botón "Exportar Excel" / "Exportar PDF".
  */
 export function useExportHorasAgrupadas() {
-  return useMutation<ReporteGrupoDto[], Error, ReporteHorasAgrupadoFiltersState>({
+  return useMutation<
+    ReporteGrupoDto[],
+    Error,
+    ReporteHorasAgrupadoFiltersState
+  >({
     mutationFn: async (filters) => {
       const result = await getHorasAgrupadasExportAction({ filters });
       if (!result.ok) throw new Error(result.error);

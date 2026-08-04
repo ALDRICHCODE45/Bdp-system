@@ -47,5 +47,9 @@ export const reporteHorasExportSchema = z.object({
   filters: exportFiltersSchema.default({}),
 });
 
-export type ReporteHorasExportSchemaInput = z.input<typeof reporteHorasExportSchema>;
-export type ReporteHorasExportSchemaOutput = z.output<typeof reporteHorasExportSchema>;
+export type ReporteHorasExportSchemaInput = z.input<
+  typeof reporteHorasExportSchema
+>;
+export type ReporteHorasExportSchemaOutput = z.output<
+  typeof reporteHorasExportSchema
+>;

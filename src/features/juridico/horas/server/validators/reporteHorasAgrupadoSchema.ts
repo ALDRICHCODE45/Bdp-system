@@ -61,8 +61,12 @@ export const reporteHorasAgrupadoSchema = z.object({
   filters: filtersSchema.default({}),
 });
 
-export type ReporteHorasAgrupadoSchemaInput = z.input<typeof reporteHorasAgrupadoSchema>;
-export type ReporteHorasAgrupadoSchemaOutput = z.output<typeof reporteHorasAgrupadoSchema>;
+export type ReporteHorasAgrupadoSchemaInput = z.input<
+  typeof reporteHorasAgrupadoSchema
+>;
+export type ReporteHorasAgrupadoSchemaOutput = z.output<
+  typeof reporteHorasAgrupadoSchema
+>;
 
 // ─── Helpers de tipado (server-side) ──────────────────────────────────────────
 export type ParsedReporteAgrupadoFilters = ReporteAgrupadoFilters;

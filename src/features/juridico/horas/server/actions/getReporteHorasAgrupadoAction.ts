@@ -18,17 +18,16 @@ import type {
  * Permisos: `juridico-horas:ver-reportes` OR `juridico-horas:gestionar`.
  */
 export const getReporteHorasAgrupadoAction = async (
-  input: ReporteHorasAgrupadoSchemaInput
+  input: ReporteHorasAgrupadoSchemaInput,
 ): Promise<
-  | { ok: true; data: ReporteAgrupadoPageDto }
-  | { ok: false; error: string }
+  { ok: true; data: ReporteAgrupadoPageDto } | { ok: false; error: string }
 > => {
   await requireAnyPermission(
     [
       PermissionActions["juridico-horas"]["ver-reportes"],
       PermissionActions["juridico-horas"].gestionar,
     ],
-    "No tienes permiso para ver reportes de horas"
+    "No tienes permiso para ver reportes de horas",
   );
 
   const parsed = reporteHorasAgrupadoSchema.safeParse(input);

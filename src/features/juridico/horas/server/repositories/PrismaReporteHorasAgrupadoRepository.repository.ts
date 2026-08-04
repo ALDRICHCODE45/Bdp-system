@@ -23,13 +23,18 @@ import {
  * Construye el `where` Prisma a partir de los filtros. Aplica cada filtro
  * de forma conjuntiva (AND). Cada rama ausente = sin restricción.
  */
-function buildWhere(filters: ReporteAgrupadoFilters): Prisma.RegistroHoraWhereInput {
+function buildWhere(
+  filters: ReporteAgrupadoFilters,
+): Prisma.RegistroHoraWhereInput {
   const where: Prisma.RegistroHoraWhereInput = {};
 
   if (filters.usuarioId) where.usuarioId = filters.usuarioId;
-  if (filters.asuntoJuridicoId) where.asuntoJuridicoId = filters.asuntoJuridicoId;
-  if (filters.clienteJuridicoId) where.clienteJuridicoId = filters.clienteJuridicoId;
-  if (filters.equipoJuridicoId) where.equipoJuridicoId = filters.equipoJuridicoId;
+  if (filters.asuntoJuridicoId)
+    where.asuntoJuridicoId = filters.asuntoJuridicoId;
+  if (filters.clienteJuridicoId)
+    where.clienteJuridicoId = filters.clienteJuridicoId;
+  if (filters.equipoJuridicoId)
+    where.equipoJuridicoId = filters.equipoJuridicoId;
   if (filters.socioId) where.socioId = filters.socioId;
   if (filters.estado) where.asuntoJuridico = { estado: filters.estado };
   if (filters.ano !== undefined) where.ano = filters.ano;
@@ -43,8 +48,12 @@ function buildWhere(filters: ReporteAgrupadoFilters): Prisma.RegistroHoraWhereIn
 
   if (filters.semanaDesde !== undefined || filters.semanaHasta !== undefined) {
     where.semana = {
-      ...(filters.semanaDesde !== undefined ? { gte: filters.semanaDesde } : {}),
-      ...(filters.semanaHasta !== undefined ? { lte: filters.semanaHasta } : {}),
+      ...(filters.semanaDesde !== undefined
+        ? { gte: filters.semanaDesde }
+        : {}),
+      ...(filters.semanaHasta !== undefined
+        ? { lte: filters.semanaHasta }
+        : {}),
     };
   }
 
@@ -64,9 +73,7 @@ type OrderByItem = Record<string, "asc" | "desc">;
  * - `horas`: NO está en `by` (solo en `_sum`). Prisma typing lo rechaza, pero el
  *   runtime lo soporta (`ORDER BY _sum.horas`). Lo casteamos al final del call site.
  */
-function buildOrderBy(
-  sort: ReporteAgrupadoSort | undefined,
-): OrderByItem[] {
+function buildOrderBy(sort: ReporteAgrupadoSort | undefined): OrderByItem[] {
   if (!sort) {
     return [{ ano: "desc" }, { semana: "desc" }];
   }
@@ -128,9 +135,7 @@ function uniqueGroupKeys(rows: ReporteAgrupadoGroupRow[]): {
 
 // ─── Implementation ──────────────────────────────────────────────────────────
 
-export class PrismaReporteHorasAgrupadoRepository
-  implements ReporteHorasAgrupadoRepository
-{
+export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupadoRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
@@ -173,7 +178,9 @@ export class PrismaReporteHorasAgrupadoRepository
     >;
   }
 
-  async getAgrupado(args: ReporteAgrupadoPageArgs): Promise<ReporteAgrupadoPageDto> {
+  async getAgrupado(
+    args: ReporteAgrupadoPageArgs,
+  ): Promise<ReporteAgrupadoPageDto> {
     const where = buildWhere(args.filters);
     const orderBy = buildOrderBy(args.sort);
     const skip = (args.page - 1) * args.pageSize;
@@ -224,7 +231,9 @@ export class PrismaReporteHorasAgrupadoRepository
     if (args.filters.estado) {
       for (const g of groupsWithEstado) g.estadoAsunto = args.filters.estado;
     } else {
-      const asuntoIds = [...new Set(groupsWithEstado.map((g) => g.asuntoJuridicoId))];
+      const asuntoIds = [
+        ...new Set(groupsWithEstado.map((g) => g.asuntoJuridicoId)),
+      ];
       if (asuntoIds.length > 0) {
         const asuntos = await this.prisma.asuntoJuridico.findMany({
           where: { id: { in: asuntoIds } },
@@ -238,7 +247,9 @@ export class PrismaReporteHorasAgrupadoRepository
     }
 
     // 2) Batch-load labels para los IDs únicos de la página
-    const labels = await this.findEntityLabels(uniqueGroupKeys(groupsWithEstado));
+    const labels = await this.findEntityLabels(
+      uniqueGroupKeys(groupsWithEstado),
+    );
 
     // 3) Map a DTO
     const grupos = toReporteGrupoDtoArray(groupsWithEstado, labels);
@@ -246,7 +257,9 @@ export class PrismaReporteHorasAgrupadoRepository
     return { grupos, totalCount, subtotales };
   }
 
-  async getAgrupadoAll(filters: ReporteAgrupadoFilters): Promise<ReporteGrupoDto[]> {
+  async getAgrupadoAll(
+    filters: ReporteAgrupadoFilters,
+  ): Promise<ReporteGrupoDto[]> {
     const where = buildWhere(filters);
     const groupsRaw = await this.callGroupBy({
       where,
