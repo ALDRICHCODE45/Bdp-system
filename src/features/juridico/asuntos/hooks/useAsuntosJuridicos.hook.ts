@@ -13,7 +13,7 @@ export const useAsuntosJuridicos = (params: AsuntosJuridicosFilterParams) => {
       params.sortOrder,
       params.search,
       params.estado,
-      params.clienteJuridicoId,
+      params.clienteProveedorId,
     ],
     queryFn: async () => {
       const result = await getPaginatedAsuntosJuridicosAction(params);

@@ -165,8 +165,8 @@ export function AsuntoJuridicoDetailSheet({
             {/* Relaciones */}
             <div className="grid grid-cols-2 gap-4">
               <InfoRow
-                label="Cliente Jurídico"
-                value={asunto.clienteJuridicoNombre}
+                label="Cliente"
+                value={asunto.clienteProveedorNombre}
               />
               <InfoRow
                 label="Socio Responsable"

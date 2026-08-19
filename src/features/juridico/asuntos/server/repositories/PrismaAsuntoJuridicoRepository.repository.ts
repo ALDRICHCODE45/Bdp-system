@@ -8,7 +8,7 @@ import type {
 import type { AsuntosJuridicosFilterParams } from "../../types/AsuntosJuridicosFilterParams";
 
 const asuntoIncludes = {
-  clienteJuridico: { select: { id: true, nombre: true } },
+  clienteProveedor: { select: { id: true, nombre: true } },
   socio: { select: { id: true, nombre: true } },
 } as const;
 
@@ -22,7 +22,7 @@ export class PrismaAsuntoJuridicoRepository
       data: {
         nombre: data.nombre,
         descripcion: data.descripcion ?? null,
-        clienteJuridicoId: data.clienteJuridicoId,
+        clienteProveedorId: data.clienteProveedorId,
         socioId: data.socioId,
       },
       include: asuntoIncludes,
@@ -35,7 +35,7 @@ export class PrismaAsuntoJuridicoRepository
       data: {
         nombre: data.nombre,
         descripcion: data.descripcion ?? null,
-        clienteJuridicoId: data.clienteJuridicoId,
+        clienteProveedorId: data.clienteProveedorId,
         socioId: data.socioId,
         estado: data.estado,
       },
@@ -75,10 +75,10 @@ export class PrismaAsuntoJuridicoRepository
   }
 
   async getAllByCliente(
-    clienteJuridicoId: string
+    clienteProveedorId: string
   ): Promise<AsuntoJuridicoEntity[]> {
     return await this.prisma.asuntoJuridico.findMany({
-      where: { clienteJuridicoId },
+      where: { clienteProveedorId },
       orderBy: { nombre: "asc" },
       include: asuntoIncludes,
     });
@@ -87,14 +87,14 @@ export class PrismaAsuntoJuridicoRepository
   async getPaginated(
     params: AsuntosJuridicosFilterParams
   ): Promise<{ data: AsuntoJuridicoEntity[]; totalCount: number }> {
-    const { page, pageSize, sortBy, sortOrder, search, estado, clienteJuridicoId } =
+    const { page, pageSize, sortBy, sortOrder, search, estado, clienteProveedorId } =
       params;
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.AsuntoJuridicoWhereInput = {};
 
-    if (clienteJuridicoId) {
-      where.clienteJuridicoId = clienteJuridicoId;
+    if (clienteProveedorId) {
+      where.clienteProveedorId = clienteProveedorId;
     }
 
     if (estado && estado.length > 0) {
@@ -106,7 +106,7 @@ export class PrismaAsuntoJuridicoRepository
         { nombre: { contains: search, mode: "insensitive" } },
         { descripcion: { contains: search, mode: "insensitive" } },
         {
-          clienteJuridico: {
+          clienteProveedor: {
             nombre: { contains: search, mode: "insensitive" },
           },
         },
@@ -117,10 +117,10 @@ export class PrismaAsuntoJuridicoRepository
     }
 
     const orderBy: Prisma.AsuntoJuridicoOrderByWithRelationInput = {};
-    if (sortBy && sortBy !== "clienteJuridicoNombre" && sortBy !== "socioNombre") {
+    if (sortBy && sortBy !== "clienteProveedorNombre" && sortBy !== "socioNombre") {
       (orderBy as Record<string, string>)[sortBy] = sortOrder ?? "asc";
-    } else if (sortBy === "clienteJuridicoNombre") {
-      orderBy.clienteJuridico = { nombre: sortOrder ?? "asc" };
+    } else if (sortBy === "clienteProveedorNombre") {
+      orderBy.clienteProveedor = { nombre: sortOrder ?? "asc" };
     } else if (sortBy === "socioNombre") {
       orderBy.socio = { nombre: sortOrder ?? "asc" };
     } else {

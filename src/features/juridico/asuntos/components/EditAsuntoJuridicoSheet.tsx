@@ -25,9 +25,8 @@ import { useUpdateAsuntoJuridico } from "../hooks/useUpdateAsuntoJuridico.hook";
 import { updateAsuntoJuridicoSchemaUI } from "../schemas/updateAsuntoJuridicoSchema";
 import type { AsuntoJuridicoDto } from "../server/dtos/AsuntoJuridicoDto.dto";
 import { ZodError } from "zod";
-import { getClientesJuridicosAction } from "@/features/juridico/clientes/server/actions/getClientesJuridicosAction";
+import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { getAllSociosAction } from "@/features/RecursosHumanos/socios/server/actions/getAllSociosAction";
-import type { ClienteJuridicoDto } from "@/features/juridico/clientes/server/dtos/ClienteJuridicoDto.dto";
 import type { SocioDto } from "@/features/RecursosHumanos/socios/server/dtos/SocioDto.dto";
 
 interface EditAsuntoJuridicoSheetProps {
@@ -39,7 +38,7 @@ interface EditAsuntoJuridicoSheetProps {
 type FormState = {
   nombre: string;
   descripcion: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   socioId: string;
   estado: "ACTIVO" | "INACTIVO" | "CERRADO";
 };
@@ -55,7 +54,7 @@ export function EditAsuntoJuridicoSheet({
   const [form, setForm] = useState<FormState>({
     nombre: asunto.nombre,
     descripcion: asunto.descripcion ?? "",
-    clienteJuridicoId: asunto.clienteJuridicoId,
+    clienteProveedorId: asunto.clienteProveedorId,
     socioId: asunto.socioId,
     estado: asunto.estado as "ACTIVO" | "INACTIVO" | "CERRADO",
   });
@@ -63,36 +62,38 @@ export function EditAsuntoJuridicoSheet({
   const [errors, setErrors] = useState<
     Partial<Record<keyof FormState, string>>
   >({});
-  const [clientes, setClientes] = useState<ClienteJuridicoDto[]>([]);
   const [socios, setSocios] = useState<SocioDto[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
   const updateMutation = useUpdateAsuntoJuridico();
+  const clientesQuery = useGetJuridicoClientes();
 
   // Sync form when asunto prop changes
   useEffect(() => {
     setForm({
       nombre: asunto.nombre,
       descripcion: asunto.descripcion ?? "",
-      clienteJuridicoId: asunto.clienteJuridicoId,
+      clienteProveedorId: asunto.clienteProveedorId,
       socioId: asunto.socioId,
       estado: asunto.estado as "ACTIVO" | "INACTIVO" | "CERRADO",
     });
     setErrors({});
   }, [asunto]);
 
-  // Load clientes and socios when sheet opens
+  // Load socios when sheet opens (clientes are reactively fetched by hook)
   useEffect(() => {
     if (!isOpen) return;
     setLoadingOptions(true);
-    Promise.all([getClientesJuridicosAction(), getAllSociosAction()]).then(
-      ([clientesResult, sociosResult]) => {
-        if (clientesResult.ok) setClientes(clientesResult.data);
+    Promise.all([getAllSociosAction()]).then(
+      ([sociosResult]) => {
         if (sociosResult.ok && sociosResult.data) setSocios(sociosResult.data);
         setLoadingOptions(false);
       },
     );
   }, [isOpen]);
+
+  const clientes = clientesQuery.data ?? [];
+  const clientesLoading = clientesQuery.isLoading || clientesQuery.isFetching;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -119,7 +120,7 @@ export function EditAsuntoJuridicoSheet({
       id: asunto.id,
       nombre: form.nombre,
       descripcion: form.descripcion || null,
-      clienteJuridicoId: form.clienteJuridicoId,
+      clienteProveedorId: form.clienteProveedorId,
       socioId: form.socioId,
       estado: form.estado,
     };
@@ -193,24 +194,24 @@ export function EditAsuntoJuridicoSheet({
             )}
           </div>
 
-          {/* Cliente Jurídico */}
+          {/* Cliente */}
           <div className="space-y-1">
-            <Label htmlFor="clienteJuridicoId">
-              Cliente Jurídico <span className="text-red-500">*</span>
+            <Label htmlFor="clienteProveedorId">
+              Cliente <span className="text-red-500">*</span>
             </Label>
             <Combobox
               options={clientes.map((cliente) => ({
                 value: cliente.id,
                 label: cliente.nombre,
               }))}
-              value={form.clienteJuridicoId}
-              onChange={handleSelectChange("clienteJuridicoId")}
+              value={form.clienteProveedorId}
+              onChange={handleSelectChange("clienteProveedorId")}
               placeholder="Selecciona un cliente"
               searchPlaceholder="Buscar..."
-              disabled={loadingOptions}
+              disabled={loadingOptions || clientesLoading}
             />
-            {errors.clienteJuridicoId && (
-              <p className="text-xs text-red-500">{errors.clienteJuridicoId}</p>
+            {errors.clienteProveedorId && (
+              <p className="text-xs text-red-500">{errors.clienteProveedorId}</p>
             )}
           </div>
 

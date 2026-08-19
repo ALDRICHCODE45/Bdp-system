@@ -20,9 +20,9 @@ export interface AsuntoJuridico {
   estado: "ACTIVO" | "INACTIVO" | "CERRADO";
 
   /**
-   * ID del cliente jurídico asociado
+   * ID del cliente/proveedor asociado (juridico uses ClienteProveedor tipo CLIENTE)
    */
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
 
   /**
    * ID del socio responsable del asunto
@@ -43,7 +43,7 @@ export interface AsuntoJuridico {
 export type CreateAsuntoJuridicoInput = {
   nombre: string;
   descripcion?: string | null;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   socioId: string;
 };
 
@@ -51,7 +51,7 @@ export type UpdateAsuntoJuridicoInput = {
   id: string;
   nombre: string;
   descripcion?: string | null;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   socioId: string;
   estado: "ACTIVO" | "INACTIVO" | "CERRADO";
 };
