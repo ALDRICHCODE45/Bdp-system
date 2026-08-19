@@ -30,6 +30,9 @@ export type DashboardHorasPorUsuarioDto = {
   email: string;
   horas: number;
   registros: number;
+  /** REQ-DH-100: total importe (MXN) earned by this user in the
+   *  filtered set. Persisted sum, NOT recomputed. */
+  importe: number;
 };
 
 export type DashboardHorasPorSemanaDto = {
@@ -49,4 +52,18 @@ export type DashboardHorasDto = {
   horasPorAsunto: DashboardHorasPorAsuntoDto[];
   horasPorUsuario: DashboardHorasPorUsuarioDto[];
   horasPorSemana: DashboardHorasPorSemanaDto[];
+  /** REQ-DH-100: total importe summed across all rows in the set. */
+  totalImporte: number;
+  /** REQ-DH-100: importe per user (already role-scoped by the service). */
+  importePorUsuario: DashboardHorasPorUsuarioDto[];
+};
+
+/**
+ * Scope parameter for `DashboardHorasService.getDashboardData`.
+ * The service uses it to restrict the per-user lists to `usuarioId`
+ * when the role is NOT administrador/socio.
+ */
+export type DashboardHorasScope = {
+  role: string;
+  usuarioId: string;
 };

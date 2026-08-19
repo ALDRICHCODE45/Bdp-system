@@ -8,6 +8,7 @@ import { DashboardHorasPorClienteChart } from "./DashboardHorasPorClienteChart";
 import { DashboardHorasPorUsuarioChart } from "./DashboardHorasPorUsuarioChart";
 import { DashboardTendenciaSemanalChart } from "./DashboardTendenciaSemanalChart";
 import { DashboardHorasPorAsuntoTable } from "./DashboardHorasPorAsuntoTable";
+import { DashboardImportePorAbogadoCard } from "./DashboardImportePorAbogadoCard";
 import { useGetDashboardHoras } from "../../hooks/useGetDashboardHoras.hook";
 import type { DashboardHorasFilters } from "../../server/dtos/DashboardHorasDto.dto";
 
@@ -39,6 +40,12 @@ export function DashboardHorasView() {
         </div>
       ) : (
         <>
+          {/* REQ-DH-100: "Lo que se le debe a cada abogado" card. */}
+          <DashboardImportePorAbogadoCard
+            data={data}
+            isLoading={isPending || isFetching}
+          />
+
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             <DashboardHorasPorEquipoChart
               data={data?.horasPorEquipo ?? []}
