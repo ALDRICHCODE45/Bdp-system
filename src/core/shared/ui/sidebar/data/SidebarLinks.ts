@@ -87,6 +87,10 @@ export const sidebarLinks = {
           url: "/juridico/horas",
         },
         {
+          title: "Tarifas",
+          url: "/juridico/tarifas",
+        },
+        {
           title: "Dashboard Horas",
           url: "/juridico/horas/dashboard",
           icon: BarChart3,

@@ -499,6 +499,21 @@ const JURIDICO_PERMISSIONS: PermissionDefinition[] = [
     action: "gestionar",
     description: "Gestión completa del módulo de horas",
   },
+
+  // Tarifas Jurídicas - Granulares
+  {
+    name: "juridico-tarifas:acceder",
+    resource: "juridico-tarifas",
+    action: "acceder",
+    description: "Acceder al módulo de tarifas por abogado y asunto",
+  },
+  // Tarifas Jurídicas - Modular
+  {
+    name: "juridico-tarifas:gestionar",
+    resource: "juridico-tarifas",
+    action: "gestionar",
+    description: "Administrar tarifas por abogado y asunto",
+  },
 ];
 
 /**

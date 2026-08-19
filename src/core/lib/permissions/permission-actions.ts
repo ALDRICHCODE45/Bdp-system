@@ -99,6 +99,10 @@ export const PermissionActions = {
     "ver-reportes": "juridico-horas:ver-reportes",
     gestionar: "juridico-horas:gestionar",
   },
+  "juridico-tarifas": {
+    acceder: "juridico-tarifas:acceder",
+    gestionar: "juridico-tarifas:gestionar",
+  },
 } as const;
 
 /**
