@@ -13,7 +13,7 @@ export type ReporteAgrupadoFilters = {
   /** Abogado: `RegistroHora.usuarioId` (modelo `User`, NO `Colaborador`). */
   usuarioId?: string;
   asuntoJuridicoId?: string;
-  clienteJuridicoId?: string;
+  clienteProveedorId?: string;
   equipoJuridicoId?: string;
   socioId?: string;
   /** Rango de horas (Decimal inclusivo). */
@@ -35,7 +35,7 @@ export type ReporteAgrupadoFilters = {
 export type ReporteGrupoDto = {
   usuarioId: string;
   usuarioNombre: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   clienteNombre: string;
   asuntoJuridicoId: string;
   asuntoNombre: string;

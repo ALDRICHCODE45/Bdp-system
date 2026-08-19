@@ -15,8 +15,8 @@ export function toReporteGrupoDto(
   return {
     usuarioId: row.usuarioId,
     usuarioNombre: labels.usuarios.get(row.usuarioId) ?? "—",
-    clienteJuridicoId: row.clienteJuridicoId,
-    clienteNombre: labels.clientes.get(row.clienteJuridicoId) ?? "—",
+    clienteProveedorId: row.clienteProveedorId,
+    clienteNombre: labels.clientes.get(row.clienteProveedorId) ?? "—",
     asuntoJuridicoId: row.asuntoJuridicoId,
     asuntoNombre: labels.asuntos.get(row.asuntoJuridicoId) ?? "—",
     equipoJuridicoId: row.equipoJuridicoId,

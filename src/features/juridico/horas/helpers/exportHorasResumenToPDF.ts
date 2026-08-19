@@ -27,7 +27,7 @@ const ESTADO_LABELS: Record<string, string> = {
 export interface ReportePdfFilterLabels {
   usuarioId?: Record<string, string>;
   asuntoJuridicoId?: Record<string, string>;
-  clienteJuridicoId?: Record<string, string>;
+  clienteProveedorId?: Record<string, string>;
   equipoJuridicoId?: Record<string, string>;
   socioId?: Record<string, string>;
 }
@@ -54,10 +54,10 @@ function filtersToReadable(
       label: "Asunto",
       value: idToName(filters.asuntoJuridicoId, labels?.asuntoJuridicoId),
     });
-  if (filters.clienteJuridicoId)
+  if (filters.clienteProveedorId)
     out.push({
       label: "Cliente",
-      value: idToName(filters.clienteJuridicoId, labels?.clienteJuridicoId),
+      value: idToName(filters.clienteProveedorId, labels?.clienteProveedorId),
     });
   if (filters.equipoJuridicoId)
     out.push({

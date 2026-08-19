@@ -52,7 +52,7 @@ interface ReporteHorasAgrupadoFiltersProps {
 
 interface AdvancedDraft {
   asuntoJuridicoId: string | undefined;
-  clienteJuridicoId: string | undefined;
+  clienteProveedorId: string | undefined;
   equipoJuridicoId: string | undefined;
   socioId: string | undefined;
   estado: ReporteHorasAgrupadoFiltersState["estado"];
@@ -63,7 +63,7 @@ interface AdvancedDraft {
 function emptyDraft(): AdvancedDraft {
   return {
     asuntoJuridicoId: undefined,
-    clienteJuridicoId: undefined,
+    clienteProveedorId: undefined,
     equipoJuridicoId: undefined,
     socioId: undefined,
     estado: undefined,
@@ -75,7 +75,7 @@ function emptyDraft(): AdvancedDraft {
 function draftFromFilters(f: ReporteHorasAgrupadoFiltersState): AdvancedDraft {
   return {
     asuntoJuridicoId: f.asuntoJuridicoId,
-    clienteJuridicoId: f.clienteJuridicoId,
+    clienteProveedorId: f.clienteProveedorId,
     equipoJuridicoId: f.equipoJuridicoId,
     socioId: f.socioId,
     estado: f.estado,
@@ -87,7 +87,7 @@ function draftFromFilters(f: ReporteHorasAgrupadoFiltersState): AdvancedDraft {
 function countActiveAdvancedFilters(f: ReporteHorasAgrupadoFiltersState): number {
   let count = 0;
   if (f.asuntoJuridicoId) count++;
-  if (f.clienteJuridicoId) count++;
+  if (f.clienteProveedorId) count++;
   if (f.equipoJuridicoId) count++;
   if (f.socioId) count++;
   if (f.estado) count++;
@@ -268,10 +268,10 @@ function AdvancedFields({
             { value: TODOS_VALUE, label: "Todos" },
             ...(clientes?.map((c) => ({ value: c.id, label: c.nombre })) ?? []),
           ]}
-          value={draft.clienteJuridicoId ?? TODOS_VALUE}
+          value={draft.clienteProveedorId ?? TODOS_VALUE}
           onChange={(val) =>
             update(
-              "clienteJuridicoId",
+              "clienteProveedorId",
               val === TODOS_VALUE ? undefined : val,
             )
           }
@@ -422,7 +422,7 @@ export function ReporteHorasAgrupadoFilters({
     onFiltersChange({
       ...filters,
       asuntoJuridicoId: draft.asuntoJuridicoId,
-      clienteJuridicoId: draft.clienteJuridicoId,
+      clienteProveedorId: draft.clienteProveedorId,
       equipoJuridicoId: draft.equipoJuridicoId,
       socioId: draft.socioId,
       estado: draft.estado,
@@ -441,7 +441,7 @@ export function ReporteHorasAgrupadoFilters({
       // Ignore the 7 advanced fields when counting here — they are summarized by advancedCount.
       ![
         filters.asuntoJuridicoId,
-        filters.clienteJuridicoId,
+        filters.clienteProveedorId,
         filters.equipoJuridicoId,
         filters.socioId,
         filters.estado,
@@ -472,7 +472,7 @@ export function ReporteHorasAgrupadoFilters({
                       v !== "" &&
                       ![
                         filters.asuntoJuridicoId,
-                        filters.clienteJuridicoId,
+                        filters.clienteProveedorId,
                         filters.equipoJuridicoId,
                         filters.socioId,
                         filters.estado,

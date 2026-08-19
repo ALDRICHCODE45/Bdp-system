@@ -12,7 +12,7 @@ const exportFiltersSchema = z
   .object({
     usuarioId: z.string().min(1).optional(),
     asuntoJuridicoId: z.string().min(1).optional(),
-    clienteJuridicoId: z.string().min(1).optional(),
+    clienteProveedorId: z.string().min(1).optional(),
     equipoJuridicoId: z.string().min(1).optional(),
     socioId: z.string().min(1).optional(),
     horasDesde: z.number().nonnegative().optional(),
