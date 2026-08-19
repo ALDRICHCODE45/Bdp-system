@@ -33,6 +33,15 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
         asuntoJuridicoId: data.asuntoJuridicoId,
         socioId: data.socioId,
         horas: new Prisma.Decimal(data.horas),
+        // REQ-RH-202: tarifaHora snapshot from active tariff at insert time.
+        // Immutable post-insert — never written by update().
+        tarifaHora: new Prisma.Decimal(
+          data.tarifaHora as number | Prisma.Decimal
+        ),
+        // REQ-RH-203: importe = horas × tarifaHora, persisted.
+        importe: new Prisma.Decimal(
+          data.importe as number | Prisma.Decimal
+        ),
         descripcion: data.descripcion ?? null,
         ano: data.ano,
         semana: data.semana,
@@ -51,6 +60,18 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
         asuntoJuridicoId: data.asuntoJuridicoId,
         socioId: data.socioId,
         horas: new Prisma.Decimal(data.horas),
+        // REQ-RH-203: update recomputes importe from FROZEN existing
+        // tarifaHora. `tarifaHora` is NEVER written here.
+        // If `importe` is null/undefined the caller opted out — we
+        // intentionally leave the column untouched at the repo level
+        // (the service always recomputes it from `existing.tarifaHora`).
+        ...(data.importe !== undefined && data.importe !== null
+          ? {
+              importe: new Prisma.Decimal(
+                data.importe as number | Prisma.Decimal
+              ),
+            }
+          : {}),
         descripcion: data.descripcion ?? null,
       },
       include: registroHoraIncludes,

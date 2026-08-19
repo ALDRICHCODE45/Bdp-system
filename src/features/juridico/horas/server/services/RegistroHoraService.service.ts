@@ -1,12 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 import type {
   RegistroHoraRepository,
   RegistroHoraEntity,
   CreateRegistroHoraArgs,
   UpdateRegistroHoraArgs,
 } from "../repositories/RegistroHoraRepository.repository";
+import type { TarifaAbogadoAsuntoRepository } from "@/features/juridico/tarifas/server/repositories/TarifaAbogadoAsuntoRepository.repository";
 import type { RegistroHoraHistorialService } from "./RegistroHoraHistorialService.service";
 import { Result, Ok, Err } from "@/core/shared/result/result";
+import { ValidationError } from "@/core/shared/errors/domain";
 import {
   isValidISOWeek,
   isWithinDeadline,
@@ -17,11 +19,12 @@ export class RegistroHoraService {
   constructor(
     private repo: RegistroHoraRepository,
     private historialService: RegistroHoraHistorialService,
+    private tarifaRepo: TarifaAbogadoAsuntoRepository,
     private prisma: PrismaClient
   ) {}
 
   async create(
-    input: Omit<CreateRegistroHoraArgs, never>
+    input: Omit<CreateRegistroHoraArgs, "tarifaHora" | "importe">
   ): Promise<Result<RegistroHoraEntity, Error>> {
     try {
       // 1. Validate ISO week
@@ -71,8 +74,31 @@ export class RegistroHoraService {
         return Err(new Error("El socio seleccionado no existe"));
       }
 
-      // 4. Create with editable=true (default)
-      const created = await this.repo.create(input);
+      // 4. REQ-RH-201: Lookup active tariff. Block if missing.
+      const tarifa = await this.tarifaRepo.findActiveByUsuarioAndAsunto(
+        input.usuarioId,
+        input.asuntoJuridicoId
+      );
+      if (!tarifa) {
+        return Err(
+          new ValidationError(
+            "No tienes tarifa configurada para este asunto. Contacta al administrador."
+          )
+        );
+      }
+
+      // 5. REQ-RH-203: importe = horas × tarifaHora, persisted.
+      // REQ-RH-202: tarifaHora snapshot from active tariff, frozen.
+      const importe = new Prisma.Decimal(input.horas)
+        .mul(tarifa.tarifaHora)
+        .toDecimalPlaces(2);
+
+      // 6. Create with editable=true (default) + frozen tarifa + importe
+      const created = await this.repo.create({
+        ...input,
+        tarifaHora: tarifa.tarifaHora,
+        importe,
+      });
       return Ok(created);
     } catch (error) {
       return Err(
@@ -107,6 +133,16 @@ export class RegistroHoraService {
         );
       }
 
+      // 2.5. REQ-RH-203-b: Recompute importe from FROZEN existing tarifaHora.
+      // REQ-RH-202-b: tarifaHora is NEVER written on update.
+      // If existing.tarifaHora is null (pre-tarifa-feature row) the importe is null.
+      const importeRecomputed =
+        existing.tarifaHora === null || existing.tarifaHora === undefined
+          ? null
+          : new Prisma.Decimal(input.horas)
+              .mul(existing.tarifaHora)
+              .toDecimalPlaces(2);
+
       // 3. Use transaction: update + historial + conditionally set editable=false
       const updated = await this.prisma.$transaction(async (tx) => {
         let autorizacionAutorizadaId: string | null = null;
@@ -130,7 +166,7 @@ export class RegistroHoraService {
           autorizacionAutorizadaId = autorizacionActiva.id;
         }
 
-        // Update registro
+        // Update registro (sin tocar tarifaHora — siempre frozen)
         const updatedRegistro = await tx.registroHora.update({
           where: { id: input.id },
           data: {
@@ -139,6 +175,7 @@ export class RegistroHoraService {
             asuntoJuridicoId: input.asuntoJuridicoId,
             socioId: input.socioId,
             horas: input.horas,
+            importe: importeRecomputed,
             descripcion: input.descripcion ?? null,
           },
           include: {

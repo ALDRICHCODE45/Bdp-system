@@ -25,6 +25,17 @@ export type CreateRegistroHoraArgs = {
   asuntoJuridicoId: string;
   socioId: string;
   horas: number;
+  /**
+   * Snapshot de la tarifa activa al momento de registrar (frozen).
+   * Persistido en la columna `tarifaHora` de RegistroHora.
+   * Inmutable después del insert (ver UpdateRegistroHoraArgs).
+   */
+  tarifaHora: import("@prisma/client").Prisma.Decimal | number;
+  /**
+   * Importe derivado = horas × tarifaHora, persistido.
+   * Recomputado en update SOLO si `horas` cambia.
+   */
+  importe: import("@prisma/client").Prisma.Decimal | number;
   descripcion?: string | null;
   ano: number;
   semana: number;
@@ -37,6 +48,15 @@ export type UpdateRegistroHoraArgs = {
   asuntoJuridicoId: string;
   socioId: string;
   horas: number;
+  /**
+   * Importe recomputado por el service en update().
+   * Si el caller no lo pasa, el service lo calcula a partir de la
+   * `tarifaHora` congelada en la fila existente.
+   *
+   * `tarifaHora` NO está aquí: el repo update() nunca escribe esa
+   * columna (REQ-RH-202: tarifaHora immutable post-insert).
+   */
+  importe?: import("@prisma/client").Prisma.Decimal | number | null;
   descripcion?: string | null;
 };
 
