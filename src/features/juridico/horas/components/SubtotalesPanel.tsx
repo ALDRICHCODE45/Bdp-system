@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, Clock, BarChart3 } from "lucide-react";
+import { ChevronDown, Clock, BarChart3, Banknote } from "lucide-react";
 import { Card, CardContent } from "@/core/shared/ui/card";
 import { Badge } from "@/core/shared/ui/badge";
 import {
@@ -31,8 +31,21 @@ interface SubtotalesPanelProps {
   isLoading: boolean;
 }
 
-type BreakdownRow = { id: string; nombre: string; horas: number; grupos: number };
+type BreakdownRow = {
+  id: string;
+  nombre: string;
+  horas: number;
+  importe: number;
+  grupos: number;
+};
 type BreakdownKey = "abogado" | "cliente" | "asunto";
+
+const mxn = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 interface BreakdownTableProps {
   rows: BreakdownRow[];
@@ -113,7 +126,7 @@ export function SubtotalesPanel({
     <Card className="p-2">
       <CardContent className="space-y-3">
         {/* KPI row — always visible, even when the panel is collapsed */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="rounded-lg border bg-card p-3 flex items-center gap-2">
             <div className="p-1.5 bg-blue-100 rounded-md shrink-0">
               <Clock className="h-3.5 w-3.5 text-blue-700" />
@@ -125,6 +138,21 @@ export function SubtotalesPanel({
                   <span className="text-muted-foreground text-sm">—</span>
                 ) : (
                   formatHoras(subtotales.totalHoras)
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border bg-card p-3 flex items-center gap-2">
+            <div className="p-1.5 bg-emerald-100 rounded-md shrink-0">
+              <Banknote className="h-3.5 w-3.5 text-emerald-700" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs text-muted-foreground">Total Importe</div>
+              <div className="text-xl font-bold tabular-nums">
+                {isLoading || !subtotales ? (
+                  <span className="text-muted-foreground text-sm">—</span>
+                ) : (
+                  mxn.format(subtotales.totalImporte)
                 )}
               </div>
             </div>

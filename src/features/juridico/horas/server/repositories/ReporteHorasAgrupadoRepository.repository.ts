@@ -29,6 +29,8 @@ export type ReporteAgrupadoGroupRow = {
   ano: number;
   semana: number;
   horas: number;
+  /** REQ-RHA-100: suma de importe (MXN) por grupo. */
+  importe: number;
 };
 
 export type ReporteAgrupadoPageArgs = {

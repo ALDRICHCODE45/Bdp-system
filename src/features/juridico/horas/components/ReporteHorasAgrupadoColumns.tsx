@@ -11,6 +11,13 @@ const ESTADO_LABELS: Record<string, string> = {
   CERRADO: "Cerrado",
 };
 
+const mxn = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 function formatPeriodo(ano: number, semana: number): string {
   return `Sem ${semana} · ${ano}`;
 }
@@ -117,5 +124,16 @@ export const createReporteHorasAgrupadoColumns =
         </span>
       ),
       size: 10,
+    },
+    {
+      id: "importe",
+      header: "Importe",
+      accessorFn: (row) => row.importe,
+      cell: ({ row }) => (
+        <span className="text-right font-mono tabular-nums block">
+          {mxn.format(row.original.importe)}
+        </span>
+      ),
+      size: 12,
     },
   ];

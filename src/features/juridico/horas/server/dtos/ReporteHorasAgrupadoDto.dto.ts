@@ -47,6 +47,8 @@ export type ReporteGrupoDto = {
   ano: number;
   semana: number;
   horas: number;
+  /** REQ-RHA-100: suma de importe (MXN) por grupo. */
+  importe: number;
 };
 
 /** Subtotal por dimensión (abogado / cliente / asunto). */
@@ -54,11 +56,15 @@ export type ReporteAgrupadoSubtotalItemDto = {
   id: string;
   nombre: string;
   horas: number;
+  /** REQ-RHA-101: suma de importe (MXN) por dimensión. */
+  importe: number;
   grupos: number;
 };
 
 export type SubtotalesDto = {
   totalHoras: number;
+  /** REQ-RHA-101: suma de importe (MXN) en el set filtrado. */
+  totalImporte: number;
   totalGrupos: number;
   porAbogado: ReporteAgrupadoSubtotalItemDto[];
   porCliente: ReporteAgrupadoSubtotalItemDto[];

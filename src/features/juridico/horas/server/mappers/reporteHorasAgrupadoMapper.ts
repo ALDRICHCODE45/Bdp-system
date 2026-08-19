@@ -27,6 +27,7 @@ export function toReporteGrupoDto(
     ano: row.ano,
     semana: row.semana,
     horas: roundHoras(row.horas),
+    importe: roundHoras(row.importe),
   };
 }
 

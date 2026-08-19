@@ -142,6 +142,11 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
    * Wrapper sobre `prisma.registroHora.groupBy` que bypassea la validación
    * tipada de Prisma en `orderBy.horas` (campo de `_sum`, no de `by`).
    * El SQL subyacente SÍ lo soporta.
+   *
+   * REQ-RHA-100: `_sum` ahora incluye `importe` además de `horas`.
+   * REQ-RHA-100-b: el doble cast (as unknown as (a: typeof args) =>
+   * Promise<unknown>) se preserva VERBATIM para sort por `horas` que
+   * tampoco está en `by`. Verificado por grep gate REQ-RHA-100-b.
    */
   private async callGroupBy(input: {
     where: Prisma.RegistroHoraWhereInput;
@@ -152,7 +157,10 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
   }): Promise<
     Array<
       Prisma.RegistroHoraGroupByOutputType & {
-        _sum?: { horas: Prisma.Decimal | null };
+        _sum?: {
+          horas: Prisma.Decimal | null;
+          importe: Prisma.Decimal | null;
+        };
       }
     >
   > {
@@ -161,7 +169,10 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
       where: input.where,
       ...(input.skip !== undefined ? { skip: input.skip } : {}),
       ...(input.take !== undefined ? { take: input.take } : {}),
-      ...(input.needsSum ? { _sum: { horas: true } } : {}),
+      // REQ-RHA-100: extend _sum to include importe (Decimal(15,2)).
+      ...(input.needsSum
+        ? { _sum: { horas: true, importe: true } }
+        : {}),
       // Cast: el campo `horas` no está en `by` (solo en `_sum`), pero el runtime lo acepta.
       orderBy: input.orderBy,
     };
@@ -173,7 +184,10 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
 
     return (await callable(args)) as Array<
       Prisma.RegistroHoraGroupByOutputType & {
-        _sum?: { horas: Prisma.Decimal | null };
+        _sum?: {
+          horas: Prisma.Decimal | null;
+          importe: Prisma.Decimal | null;
+        };
       }
     >;
   }
@@ -212,6 +226,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
     const groupsWithEstado: ReporteAgrupadoGroupRow[] = groupsRaw.map(
       (g): ReporteAgrupadoGroupRow => {
         const horas = g._sum.horas ? Number(g._sum.horas) : 0;
+        const importe = g._sum.importe ? Number(g._sum.importe) : 0;
         return {
           usuarioId: g.usuarioId,
           clienteProveedorId: g.clienteProveedorId,
@@ -222,6 +237,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
           ano: g.ano,
           semana: g.semana,
           horas,
+          importe,
         };
       },
     );
@@ -287,6 +303,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
       ano: g.ano,
       semana: g.semana,
       horas: g._sum.horas ? Number(g._sum.horas) : 0,
+      importe: g._sum.importe ? Number(g._sum.importe) : 0,
     }));
 
     const labels = await this.findEntityLabels(uniqueGroupKeys(groups));
@@ -297,23 +314,24 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
     const where = buildWhere(filters);
 
     // Tres groupBy paralelos sobre el mismo `where`.
+    // REQ-RHA-101: _sum ahora también incluye importe por dimensión.
     const [porAbogadoRaw, porClienteRaw, porAsuntoRaw] = await Promise.all([
       this.prisma.registroHora.groupBy({
         by: ["usuarioId"],
         where,
-        _sum: { horas: true },
+        _sum: { horas: true, importe: true },
         _count: { _all: true },
       }),
       this.prisma.registroHora.groupBy({
         by: ["clienteProveedorId"],
         where,
-        _sum: { horas: true },
+        _sum: { horas: true, importe: true },
         _count: { _all: true },
       }),
       this.prisma.registroHora.groupBy({
         by: ["asuntoJuridicoId"],
         where,
-        _sum: { horas: true },
+        _sum: { horas: true, importe: true },
         _count: { _all: true },
       }),
     ]);
@@ -352,6 +370,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
       id: r.usuarioId,
       nombre: usuarioMap.get(r.usuarioId) ?? "—",
       horas: r._sum.horas ? Number(r._sum.horas) : 0,
+      importe: r._sum.importe ? Number(r._sum.importe) : 0,
       grupos: r._count._all,
     }));
 
@@ -359,6 +378,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
       id: r.clienteProveedorId,
       nombre: clienteMap.get(r.clienteProveedorId) ?? "—",
       horas: r._sum.horas ? Number(r._sum.horas) : 0,
+      importe: r._sum.importe ? Number(r._sum.importe) : 0,
       grupos: r._count._all,
     }));
 
@@ -366,18 +386,20 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
       id: r.asuntoJuridicoId,
       nombre: asuntoMap.get(r.asuntoJuridicoId) ?? "—",
       horas: r._sum.horas ? Number(r._sum.horas) : 0,
+      importe: r._sum.importe ? Number(r._sum.importe) : 0,
       grupos: r._count._all,
     }));
 
-    // Totales: suma de horas + suma de grupos a través de las dimensiones.
-    // El `grupos` de cada dimensión cuenta registros, no grupos (de abogado x cliente x asunto).
-    // Para mantener consistencia usamos la página o el totalCount; los subtotales por
-    // dimensión reportan la cantidad de REGISTROS que aporta cada dimensión, no la
-    // cantidad de grupos (que sí viene de la página → `totalCount`).
+    // Totales: suma de horas + suma de importe + suma de grupos a través de las dimensiones.
     const totalHoras =
       porAbogado.reduce((acc, x) => acc + x.horas, 0) ||
       porCliente.reduce((acc, x) => acc + x.horas, 0) ||
       porAsunto.reduce((acc, x) => acc + x.horas, 0);
+
+    const totalImporte =
+      porAbogado.reduce((acc, x) => acc + x.importe, 0) ||
+      porCliente.reduce((acc, x) => acc + x.importe, 0) ||
+      porAsunto.reduce((acc, x) => acc + x.importe, 0);
 
     // Para el total de grupos debemos contar el número de grupos (combinaciones) que
     // existen en el set filtrado. Lo calculamos con un groupBy mínimo.
@@ -399,23 +421,27 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
 
     return {
       totalHoras: roundHoras(totalHoras),
+      totalImporte: roundHoras(totalImporte),
       totalGrupos: totalGruposRaw,
       porAbogado: porAbogado.map((x) => ({
         id: x.id,
         nombre: x.nombre,
         horas: roundHoras(x.horas),
+        importe: roundHoras(x.importe),
         grupos: x.grupos,
       })),
       porCliente: porCliente.map((x) => ({
         id: x.id,
         nombre: x.nombre,
         horas: roundHoras(x.horas),
+        importe: roundHoras(x.importe),
         grupos: x.grupos,
       })),
       porAsunto: porAsunto.map((x) => ({
         id: x.id,
         nombre: x.nombre,
         horas: roundHoras(x.horas),
+        importe: roundHoras(x.importe),
         grupos: x.grupos,
       })),
     };

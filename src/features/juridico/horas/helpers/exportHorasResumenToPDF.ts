@@ -22,6 +22,13 @@ const ESTADO_LABELS: Record<string, string> = {
   CERRADO: "Cerrado",
 };
 
+const mxn = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 // ─── Etiquetas legibles para los filtros (id → nombre) ─────────────────────
 
 export interface ReportePdfFilterLabels {
@@ -94,6 +101,7 @@ function filtersToReadable(
 interface BreakdownRow {
   nombre: string;
   horas: number;
+  importe: number;
   grupos: number;
 }
 
@@ -109,12 +117,13 @@ function drawBreakdownTable(
   sectionLabel(doc, title, L, y);
   y += 5;
 
-  // Header
+  // Header (Nombre | Horas | Importe | Grupos)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(F.section);
   setMuted(doc);
   doc.text("Nombre", L, y);
-  doc.text("Horas", R - 35, y, { align: "right" });
+  doc.text("Horas", R - 80, y, { align: "right" });
+  doc.text("Importe", R - 45, y, { align: "right" });
   doc.text("Grupos", R, y, { align: "right" });
   y += 1.5;
   hRule(doc, y, L, R, 0.3);
@@ -137,9 +146,10 @@ function drawBreakdownTable(
 
   for (const row of sorted) {
     if (y > 270) break; // simple overflow guard
-    const nameLines = doc.splitTextToSize(row.nombre, R - L - 60);
+    const nameLines = doc.splitTextToSize(row.nombre, R - L - 85);
     doc.text(nameLines, L, y);
-    doc.text(formatHoras(row.horas), R - 35, y, { align: "right" });
+    doc.text(formatHoras(row.horas), R - 80, y, { align: "right" });
+    doc.text(mxn.format(row.importe), R - 45, y, { align: "right" });
     doc.text(row.grupos.toLocaleString("es-MX"), R, y, { align: "right" });
     y += Math.max(nameLines.length * 4, 5);
   }
@@ -270,6 +280,13 @@ export const exportHorasResumenToPDF = async (
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.label);
     setInk(doc);
+    doc.text("Importe total", L, y);
+    doc.text(mxn.format(subtotales.totalImporte), R, y, { align: "right" });
+    y += 6;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(F.label);
+    setInk(doc);
     doc.text("Grupos totales", L, y);
     doc.text(subtotales.totalGrupos.toLocaleString("es-MX"), R, y, {
       align: "right",
@@ -289,6 +306,7 @@ export const exportHorasResumenToPDF = async (
       subtotales.porAbogado.map((r) => ({
         nombre: r.nombre,
         horas: r.horas,
+        importe: r.importe,
         grupos: r.grupos,
       })),
     );
@@ -305,6 +323,7 @@ export const exportHorasResumenToPDF = async (
       subtotales.porCliente.map((r) => ({
         nombre: r.nombre,
         horas: r.horas,
+        importe: r.importe,
         grupos: r.grupos,
       })),
     );
@@ -321,6 +340,7 @@ export const exportHorasResumenToPDF = async (
       subtotales.porAsunto.map((r) => ({
         nombre: r.nombre,
         horas: r.horas,
+        importe: r.importe,
         grupos: r.grupos,
       })),
     );
