@@ -16,25 +16,24 @@ const historialIncludes = {
  * El historial es read-only después del insert (audit / regulatorio).
  * Para cumplir ese contrato, evitamos incluso definir esos métodos.
  */
-export class PrismaTarifaAbogadoAsuntoHistorialRepository
-  implements TarifaAbogadoAsuntoHistorialRepository
-{
+export class PrismaTarifaAbogadoAsuntoHistorialRepository implements TarifaAbogadoAsuntoHistorialRepository {
   constructor(private prisma: PrismaClient) {}
 
   async create(
-    data: CreateTarifaAbogadoAsuntoHistorialArgs
+    data: CreateTarifaAbogadoAsuntoHistorialArgs,
   ): Promise<TarifaAbogadoAsuntoHistorialEntity> {
     return await this.prisma.tarifaAbogadoAsuntoHistorial.create({
       data: {
         tarifaId: data.tarifaId,
         tarifaHoraAnterior:
-          data.tarifaHoraAnterior === null || data.tarifaHoraAnterior === undefined
+          data.tarifaHoraAnterior === null ||
+          data.tarifaHoraAnterior === undefined
             ? null
             : new Prisma.Decimal(
-                data.tarifaHoraAnterior as number | Prisma.Decimal
+                data.tarifaHoraAnterior as number | Prisma.Decimal,
               ),
         tarifaHoraNueva: new Prisma.Decimal(
-          data.tarifaHoraNueva as number | Prisma.Decimal
+          data.tarifaHoraNueva as number | Prisma.Decimal,
         ),
         changedById: data.changedById,
         motivo: data.motivo ?? null,
@@ -44,7 +43,7 @@ export class PrismaTarifaAbogadoAsuntoHistorialRepository
   }
 
   async findByTarifaId(
-    tarifaId: string
+    tarifaId: string,
   ): Promise<TarifaAbogadoAsuntoHistorialEntity[]> {
     return await this.prisma.tarifaAbogadoAsuntoHistorial.findMany({
       where: { tarifaId },

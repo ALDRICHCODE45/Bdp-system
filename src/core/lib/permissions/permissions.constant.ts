@@ -561,7 +561,7 @@ export function getAllPermissionNames(): string[] {
  * Obtener permisos por recurso
  */
 export function getPermissionsByResource(
-  resource: string
+  resource: string,
 ): PermissionDefinition[] {
   return ALL_PERMISSIONS.filter((p) => p.resource === resource);
 }

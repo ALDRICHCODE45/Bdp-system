@@ -126,7 +126,7 @@ export function EditRegistroHoraSheet({
    * does not require a NEW active tariff to be edited).
    */
   const tariffedAsuntos = new Set(
-    (activeTarifasQuery.data ?? []).map((t) => t.asuntoJuridicoId)
+    (activeTarifasQuery.data ?? []).map((t) => t.asuntoJuridicoId),
   );
   const asuntoOptions = asuntos.map((asunto) => {
     const tariffed = tariffedAsuntos.has(asunto.id);
@@ -247,7 +247,9 @@ export function EditRegistroHoraSheet({
               disabled={loadingOptions || clientesLoading}
             />
             {errors.clienteProveedorId && (
-              <p className="text-xs text-red-500">{errors.clienteProveedorId}</p>
+              <p className="text-xs text-red-500">
+                {errors.clienteProveedorId}
+              </p>
             )}
           </div>
 

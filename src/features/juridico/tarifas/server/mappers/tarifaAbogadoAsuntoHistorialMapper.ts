@@ -2,7 +2,7 @@ import type { TarifaAbogadoAsuntoHistorialDto } from "../dtos/TarifaAbogadoAsunt
 import type { TarifaAbogadoAsuntoHistorialEntity } from "../repositories/TarifaAbogadoAsuntoHistorialRepository.repository";
 
 export function toTarifaAbogadoAsuntoHistorialDto(
-  entity: TarifaAbogadoAsuntoHistorialEntity
+  entity: TarifaAbogadoAsuntoHistorialEntity,
 ): TarifaAbogadoAsuntoHistorialDto {
   return {
     id: entity.id,
@@ -20,7 +20,7 @@ export function toTarifaAbogadoAsuntoHistorialDto(
 }
 
 export function toTarifaAbogadoAsuntoHistorialDtoArray(
-  entities: TarifaAbogadoAsuntoHistorialEntity[]
+  entities: TarifaAbogadoAsuntoHistorialEntity[],
 ): TarifaAbogadoAsuntoHistorialDto[] {
   return entities.map(toTarifaAbogadoAsuntoHistorialDto);
 }

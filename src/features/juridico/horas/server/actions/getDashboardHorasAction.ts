@@ -9,10 +9,12 @@ import type {
 } from "../dtos/DashboardHorasDto.dto";
 import { makeDashboardHorasService } from "../services/makeDashboardHorasService";
 
-export const getDashboardHorasAction = async (filters: DashboardHorasFilters) => {
+export const getDashboardHorasAction = async (
+  filters: DashboardHorasFilters,
+) => {
   await requireAnyPermission(
     [PermissionActions["juridico-horas"].gestionar],
-    "No tienes permiso para ver el dashboard de horas"
+    "No tienes permiso para ver el dashboard de horas",
   );
 
   const session = await auth();

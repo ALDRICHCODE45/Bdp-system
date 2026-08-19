@@ -13,14 +13,16 @@ export class DashboardHorasService {
 
   async getDashboardData(
     filters: DashboardHorasFilters,
-    scope?: DashboardHorasScope
+    scope?: DashboardHorasScope,
   ): Promise<Result<DashboardHorasDto, Error>> {
     try {
       const where: Prisma.RegistroHoraWhereInput = {};
 
       if (filters.ano) where.ano = filters.ano;
-      if (filters.equipoJuridicoId) where.equipoJuridicoId = filters.equipoJuridicoId;
-      if (filters.clienteProveedorId) where.clienteProveedorId = filters.clienteProveedorId;
+      if (filters.equipoJuridicoId)
+        where.equipoJuridicoId = filters.equipoJuridicoId;
+      if (filters.clienteProveedorId)
+        where.clienteProveedorId = filters.clienteProveedorId;
 
       if (filters.semanaDesde || filters.semanaHasta) {
         where.semana = {};
@@ -53,27 +55,53 @@ export class DashboardHorasService {
         },
       });
 
-      const totalHoras = registros.reduce((acc, item) => acc + Number(item.horas), 0);
+      const totalHoras = registros.reduce(
+        (acc, item) => acc + Number(item.horas),
+        0,
+      );
       const totalRegistros = registros.length;
-      const totalUsuarios = new Set(registros.map((item) => item.usuarioId)).size;
-      const totalClientes = new Set(registros.map((item) => item.clienteProveedorId)).size;
+      const totalUsuarios = new Set(registros.map((item) => item.usuarioId))
+        .size;
+      const totalClientes = new Set(
+        registros.map((item) => item.clienteProveedorId),
+      ).size;
       // REQ-DH-100: totalImporte is the persisted sum, not recomputed.
       const totalImporte = registros.reduce(
         (acc, item) => acc + (item.importe ? Number(item.importe) : 0),
-        0
+        0,
       );
 
-      const horasPorEquipoMap = new Map<string, { nombre: string; horas: number; registros: number }>();
-      const horasPorClienteMap = new Map<string, { nombre: string; horas: number; registros: number }>();
+      const horasPorEquipoMap = new Map<
+        string,
+        { nombre: string; horas: number; registros: number }
+      >();
+      const horasPorClienteMap = new Map<
+        string,
+        { nombre: string; horas: number; registros: number }
+      >();
       const horasPorAsuntoMap = new Map<
         string,
-        { nombre: string; clienteNombre: string; horas: number; registros: number }
+        {
+          nombre: string;
+          clienteNombre: string;
+          horas: number;
+          registros: number;
+        }
       >();
       const horasPorUsuarioMap = new Map<
         string,
-        { nombre: string; email: string; horas: number; registros: number; importe: number }
+        {
+          nombre: string;
+          email: string;
+          horas: number;
+          registros: number;
+          importe: number;
+        }
       >();
-      const horasPorSemanaMap = new Map<string, { semana: number; ano: number; horas: number; registros: number }>();
+      const horasPorSemanaMap = new Map<
+        string,
+        { semana: number; ano: number; horas: number; registros: number }
+      >();
 
       registros.forEach((registro) => {
         const horas = Number(registro.horas);
@@ -88,7 +116,9 @@ export class DashboardHorasService {
         equipoPrev.registros += 1;
         horasPorEquipoMap.set(registro.equipoJuridicoId, equipoPrev);
 
-        const clientePrev = horasPorClienteMap.get(registro.clienteProveedorId) ?? {
+        const clientePrev = horasPorClienteMap.get(
+          registro.clienteProveedorId,
+        ) ?? {
           nombre: registro.clienteProveedor.nombre,
           horas: 0,
           registros: 0,
@@ -136,7 +166,7 @@ export class DashboardHorasService {
       // Both cases are already enforced by the WHERE clause (with or
       // without `where.usuarioId = scope.usuarioId`).
       const horasPorUsuario = Array.from(horasPorUsuarioMap.values()).sort(
-        (a, b) => b.horas - a.horas
+        (a, b) => b.horas - a.horas,
       );
       const importePorUsuario = horasPorUsuario.map((u) => ({
         nombre: u.nombre,
@@ -152,17 +182,27 @@ export class DashboardHorasService {
         totalUsuarios,
         totalClientes,
         totalImporte,
-        horasPorEquipo: Array.from(horasPorEquipoMap.values()).sort((a, b) => b.horas - a.horas),
-        horasPorCliente: Array.from(horasPorClienteMap.values()).sort((a, b) => b.horas - a.horas),
-        horasPorAsunto: Array.from(horasPorAsuntoMap.values()).sort((a, b) => b.horas - a.horas),
+        horasPorEquipo: Array.from(horasPorEquipoMap.values()).sort(
+          (a, b) => b.horas - a.horas,
+        ),
+        horasPorCliente: Array.from(horasPorClienteMap.values()).sort(
+          (a, b) => b.horas - a.horas,
+        ),
+        horasPorAsunto: Array.from(horasPorAsuntoMap.values()).sort(
+          (a, b) => b.horas - a.horas,
+        ),
         horasPorUsuario,
         importePorUsuario,
         horasPorSemana: Array.from(horasPorSemanaMap.values()).sort((a, b) =>
-          a.ano === b.ano ? a.semana - b.semana : a.ano - b.ano
+          a.ano === b.ano ? a.semana - b.semana : a.ano - b.ano,
         ),
       });
     } catch (error) {
-      return Err(error instanceof Error ? error : new Error("Error al obtener dashboard de horas"));
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener dashboard de horas"),
+      );
     }
   }
 }

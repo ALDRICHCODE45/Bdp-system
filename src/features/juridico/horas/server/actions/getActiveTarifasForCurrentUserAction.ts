@@ -29,7 +29,7 @@ export const getActiveTarifasForCurrentUserAction = async (): Promise<
       PermissionActions["juridico-horas"].registrar,
       PermissionActions["juridico-horas"].gestionar,
     ],
-    "No tienes permiso para registrar horas"
+    "No tienes permiso para registrar horas",
   );
 
   const session = await auth();
@@ -40,13 +40,14 @@ export const getActiveTarifasForCurrentUserAction = async (): Promise<
   const service = makeTarifaAbogadoAsuntoService({ prisma });
 
   const isAdminOrSocio = ADMIN_SOCIO_ROLES.has(
-    (session.user.role ?? "").toString().toLowerCase()
+    (session.user.role ?? "").toString().toLowerCase(),
   );
 
   try {
     if (isAdminOrSocio) {
       const result = await service.getAllActive();
-      if (!result.ok) return { ok: false as const, error: result.error.message };
+      if (!result.ok)
+        return { ok: false as const, error: result.error.message };
       return {
         ok: true as const,
         data: result.value.map((t) => ({

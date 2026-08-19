@@ -109,7 +109,7 @@ export const PermissionActions = {
  * Helper para obtener permisos de un recurso de forma type-safe
  */
 export function getResourcePermissions(
-  resource: keyof typeof PermissionActions
+  resource: keyof typeof PermissionActions,
 ) {
   return PermissionActions[resource];
 }

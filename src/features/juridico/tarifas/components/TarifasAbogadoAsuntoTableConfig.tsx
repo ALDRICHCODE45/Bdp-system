@@ -23,7 +23,8 @@ export const TarifasAbogadoAsuntoTableConfig: TableConfig<TarifaAbogadoAsuntoDto
       showPageSizeSelector: true,
       showPaginationInfo: true,
     },
-    emptyStateMessage: "No hay tarifas activas. Crea la primera para habilitar el registro de horas con importe.",
+    emptyStateMessage:
+      "No hay tarifas activas. Crea la primera para habilitar el registro de horas con importe.",
     enableSorting: true,
     enableColumnVisibility: true,
     enableRowSelection: false,

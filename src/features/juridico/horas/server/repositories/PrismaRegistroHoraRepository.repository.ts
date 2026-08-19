@@ -36,12 +36,10 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
         // REQ-RH-202: tarifaHora snapshot from active tariff at insert time.
         // Immutable post-insert — never written by update().
         tarifaHora: new Prisma.Decimal(
-          data.tarifaHora as number | Prisma.Decimal
+          data.tarifaHora as number | Prisma.Decimal,
         ),
         // REQ-RH-203: importe = horas × tarifaHora, persisted.
-        importe: new Prisma.Decimal(
-          data.importe as number | Prisma.Decimal
-        ),
+        importe: new Prisma.Decimal(data.importe as number | Prisma.Decimal),
         descripcion: data.descripcion ?? null,
         ano: data.ano,
         semana: data.semana,
@@ -68,7 +66,7 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
         ...(data.importe !== undefined && data.importe !== null
           ? {
               importe: new Prisma.Decimal(
-                data.importe as number | Prisma.Decimal
+                data.importe as number | Prisma.Decimal,
               ),
             }
           : {}),
@@ -92,7 +90,7 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
   async findByUsuarioAndWeek(
     usuarioId: string,
     ano: number,
-    semana: number
+    semana: number,
   ): Promise<RegistroHoraEntity[]> {
     return await this.prisma.registroHora.findMany({
       where: { usuarioId, ano, semana },
@@ -124,7 +122,7 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
   }
 
   async getPaginated(
-    params: RegistroHorasFilterParams
+    params: RegistroHorasFilterParams,
   ): Promise<{ data: RegistroHoraEntity[]; totalCount: number }> {
     const {
       page = 1,

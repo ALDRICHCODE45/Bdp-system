@@ -10,7 +10,7 @@ import { getTarifaHistorialSchema } from "../validators/tarifasValidator";
 export const getTarifaHistorialAction = async (input: unknown) => {
   await requireAnyPermission(
     [PermissionActions["juridico-tarifas"].gestionar],
-    "No tienes permiso para ver el historial de tarifas"
+    "No tienes permiso para ver el historial de tarifas",
   );
 
   const parsed = getTarifaHistorialSchema.parse(input);

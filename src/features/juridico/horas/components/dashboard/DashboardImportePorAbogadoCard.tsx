@@ -85,7 +85,9 @@ export function DashboardImportePorAbogadoCard({
         </div>
 
         {isLoading || !data ? (
-          <div className="px-4 py-3 text-xs text-muted-foreground">Cargando…</div>
+          <div className="px-4 py-3 text-xs text-muted-foreground">
+            Cargando…
+          </div>
         ) : rows.length === 0 ? (
           <div className="px-4 py-3 text-xs text-muted-foreground">
             Sin registros con importe en el set filtrado.

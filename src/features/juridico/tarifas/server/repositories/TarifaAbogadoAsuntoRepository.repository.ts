@@ -1,8 +1,4 @@
-import type {
-  TarifaAbogadoAsunto,
-  User,
-  AsuntoJuridico,
-} from "@prisma/client";
+import type { TarifaAbogadoAsunto, User, AsuntoJuridico } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 /**
@@ -38,13 +34,13 @@ export type DeactivateTarifaAbogadoAsuntoArgs = {
 
 export interface TarifaAbogadoAsuntoRepository {
   create(
-    data: CreateTarifaAbogadoAsuntoArgs
+    data: CreateTarifaAbogadoAsuntoArgs,
   ): Promise<TarifaAbogadoAsuntoEntity>;
   update(
-    data: UpdateTarifaAbogadoAsuntoArgs
+    data: UpdateTarifaAbogadoAsuntoArgs,
   ): Promise<TarifaAbogadoAsuntoEntity>;
   deactivate(
-    data: DeactivateTarifaAbogadoAsuntoArgs
+    data: DeactivateTarifaAbogadoAsuntoArgs,
   ): Promise<TarifaAbogadoAsuntoEntity>;
   findById(id: string): Promise<TarifaAbogadoAsuntoEntity | null>;
   /**
@@ -54,7 +50,7 @@ export interface TarifaAbogadoAsuntoRepository {
    */
   findActiveByUsuarioAndAsunto(
     usuarioId: string,
-    asuntoJuridicoId: string
+    asuntoJuridicoId: string,
   ): Promise<{ id: string; tarifaHora: Prisma.Decimal } | null>;
   /**
    * Devuelve todas las tarifas activas. Para la matriz del módulo jurídico
@@ -65,9 +61,12 @@ export interface TarifaAbogadoAsuntoRepository {
    * Devuelve las tarifas activas de un usuario específico. El sheet de
    * horas pide solo las del session.user (filtrado a su propio par).
    */
-  findActiveByUsuario(
-    usuarioId: string
-  ): Promise<
-    Array<{ id: string; usuarioId: string; asuntoJuridicoId: string; tarifaHora: Prisma.Decimal }>
+  findActiveByUsuario(usuarioId: string): Promise<
+    Array<{
+      id: string;
+      usuarioId: string;
+      asuntoJuridicoId: string;
+      tarifaHora: Prisma.Decimal;
+    }>
   >;
 }

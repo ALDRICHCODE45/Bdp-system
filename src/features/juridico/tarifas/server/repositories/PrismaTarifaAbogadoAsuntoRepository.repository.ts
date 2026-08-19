@@ -14,19 +14,19 @@ const tarifaIncludes = {
   updatedBy: { select: { id: true, name: true } },
 } as const;
 
-export class PrismaTarifaAbogadoAsuntoRepository
-  implements TarifaAbogadoAsuntoRepository
-{
+export class PrismaTarifaAbogadoAsuntoRepository implements TarifaAbogadoAsuntoRepository {
   constructor(private prisma: PrismaClient) {}
 
   async create(
-    data: CreateTarifaAbogadoAsuntoArgs
+    data: CreateTarifaAbogadoAsuntoArgs,
   ): Promise<TarifaAbogadoAsuntoEntity> {
     return await this.prisma.tarifaAbogadoAsunto.create({
       data: {
         usuarioId: data.usuarioId,
         asuntoJuridicoId: data.asuntoJuridicoId,
-        tarifaHora: new Prisma.Decimal(data.tarifaHora as number | Prisma.Decimal),
+        tarifaHora: new Prisma.Decimal(
+          data.tarifaHora as number | Prisma.Decimal,
+        ),
         createdById: data.createdById,
         updatedById: data.updatedById,
       },
@@ -35,12 +35,14 @@ export class PrismaTarifaAbogadoAsuntoRepository
   }
 
   async update(
-    data: UpdateTarifaAbogadoAsuntoArgs
+    data: UpdateTarifaAbogadoAsuntoArgs,
   ): Promise<TarifaAbogadoAsuntoEntity> {
     return await this.prisma.tarifaAbogadoAsunto.update({
       where: { id: data.id },
       data: {
-        tarifaHora: new Prisma.Decimal(data.tarifaHora as number | Prisma.Decimal),
+        tarifaHora: new Prisma.Decimal(
+          data.tarifaHora as number | Prisma.Decimal,
+        ),
         updatedById: data.updatedById,
       },
       include: tarifaIncludes,
@@ -48,7 +50,7 @@ export class PrismaTarifaAbogadoAsuntoRepository
   }
 
   async deactivate(
-    data: DeactivateTarifaAbogadoAsuntoArgs
+    data: DeactivateTarifaAbogadoAsuntoArgs,
   ): Promise<TarifaAbogadoAsuntoEntity> {
     return await this.prisma.tarifaAbogadoAsunto.update({
       where: { id: data.id },
@@ -69,7 +71,7 @@ export class PrismaTarifaAbogadoAsuntoRepository
 
   async findActiveByUsuarioAndAsunto(
     usuarioId: string,
-    asuntoJuridicoId: string
+    asuntoJuridicoId: string,
   ): Promise<{ id: string; tarifaHora: Prisma.Decimal } | null> {
     const row = await this.prisma.tarifaAbogadoAsunto.findFirst({
       where: { usuarioId, asuntoJuridicoId, activa: true },
@@ -81,15 +83,21 @@ export class PrismaTarifaAbogadoAsuntoRepository
   async findAllActive(): Promise<TarifaAbogadoAsuntoEntity[]> {
     return await this.prisma.tarifaAbogadoAsunto.findMany({
       where: { activa: true },
-      orderBy: [{ usuario: { name: "asc" } }, { asuntoJuridico: { nombre: "asc" } }],
+      orderBy: [
+        { usuario: { name: "asc" } },
+        { asuntoJuridico: { nombre: "asc" } },
+      ],
       include: tarifaIncludes,
     });
   }
 
-  async findActiveByUsuario(
-    usuarioId: string
-  ): Promise<
-    Array<{ id: string; usuarioId: string; asuntoJuridicoId: string; tarifaHora: Prisma.Decimal }>
+  async findActiveByUsuario(usuarioId: string): Promise<
+    Array<{
+      id: string;
+      usuarioId: string;
+      asuntoJuridicoId: string;
+      tarifaHora: Prisma.Decimal;
+    }>
   > {
     return await this.prisma.tarifaAbogadoAsunto.findMany({
       where: { usuarioId, activa: true },

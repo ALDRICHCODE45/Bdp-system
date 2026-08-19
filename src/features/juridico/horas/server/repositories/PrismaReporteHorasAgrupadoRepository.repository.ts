@@ -170,9 +170,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
       ...(input.skip !== undefined ? { skip: input.skip } : {}),
       ...(input.take !== undefined ? { take: input.take } : {}),
       // REQ-RHA-100: extend _sum to include importe (Decimal(15,2)).
-      ...(input.needsSum
-        ? { _sum: { horas: true, importe: true } }
-        : {}),
+      ...(input.needsSum ? { _sum: { horas: true, importe: true } } : {}),
       // Cast: el campo `horas` no está en `by` (solo en `_sum`), pero el runtime lo acepta.
       orderBy: input.orderBy,
     };

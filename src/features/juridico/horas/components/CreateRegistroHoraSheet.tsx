@@ -114,7 +114,7 @@ export function CreateRegistroHoraSheet({
    * tariff are disabled and carry the exact block message as tooltip.
    */
   const tariffedAsuntos = new Set(
-    (activeTarifasQuery.data ?? []).map((t) => t.asuntoJuridicoId)
+    (activeTarifasQuery.data ?? []).map((t) => t.asuntoJuridicoId),
   );
   const asuntoOptions = asuntos.map((asunto) => {
     const tariffed = tariffedAsuntos.has(asunto.id);
@@ -228,7 +228,9 @@ export function CreateRegistroHoraSheet({
               disabled={loadingOptions || clientesLoading}
             />
             {errors.clienteProveedorId && (
-              <p className="text-xs text-red-500">{errors.clienteProveedorId}</p>
+              <p className="text-xs text-red-500">
+                {errors.clienteProveedorId}
+              </p>
             )}
           </div>
 

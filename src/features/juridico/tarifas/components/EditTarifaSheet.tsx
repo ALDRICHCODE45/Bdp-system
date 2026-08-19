@@ -109,7 +109,9 @@ export function EditTarifaSheet({
             />
             <p className="text-xs text-muted-foreground">
               Valor actual:{" "}
-              <span className="font-mono">{mxn.format(Number(tarifa.tarifaHora))}</span>
+              <span className="font-mono">
+                {mxn.format(Number(tarifa.tarifaHora))}
+              </span>
               {" · "}
               Vista previa: <span className="font-mono">{previewImporte}</span>
             </p>

@@ -20,19 +20,19 @@ export class RegistroHoraService {
     private repo: RegistroHoraRepository,
     private historialService: RegistroHoraHistorialService,
     private tarifaRepo: TarifaAbogadoAsuntoRepository,
-    private prisma: PrismaClient
+    private prisma: PrismaClient,
   ) {}
 
   async create(
-    input: Omit<CreateRegistroHoraArgs, "tarifaHora" | "importe">
+    input: Omit<CreateRegistroHoraArgs, "tarifaHora" | "importe">,
   ): Promise<Result<RegistroHoraEntity, Error>> {
     try {
       // 1. Validate ISO week
       if (!isValidISOWeek(input.ano, input.semana)) {
         return Err(
           new Error(
-            `Semana ${input.semana} no es válida para el año ${input.ano}`
-          )
+            `Semana ${input.semana} no es válida para el año ${input.ano}`,
+          ),
         );
       }
 
@@ -40,8 +40,8 @@ export class RegistroHoraService {
       if (!isWithinDeadline(input.ano, input.semana)) {
         return Err(
           new Error(
-            "El plazo para registrar horas de esta semana ha vencido. Solo puedes registrar horas de la semana actual."
-          )
+            "El plazo para registrar horas de esta semana ha vencido. Solo puedes registrar horas de la semana actual.",
+          ),
         );
       }
 
@@ -62,13 +62,23 @@ export class RegistroHoraService {
       ]);
 
       if (!equipo || !equipo.activo) {
-        return Err(new Error("El equipo jurídico seleccionado no existe o está inactivo"));
+        return Err(
+          new Error(
+            "El equipo jurídico seleccionado no existe o está inactivo",
+          ),
+        );
       }
       if (!cliente || !cliente.activo) {
-        return Err(new Error("El cliente seleccionado no existe o está inactivo"));
+        return Err(
+          new Error("El cliente seleccionado no existe o está inactivo"),
+        );
       }
       if (!asunto || asunto.estado !== "ACTIVO") {
-        return Err(new Error("El asunto jurídico seleccionado no existe o no está activo"));
+        return Err(
+          new Error(
+            "El asunto jurídico seleccionado no existe o no está activo",
+          ),
+        );
       }
       if (!socio) {
         return Err(new Error("El socio seleccionado no existe"));
@@ -77,13 +87,13 @@ export class RegistroHoraService {
       // 4. REQ-RH-201: Lookup active tariff. Block if missing.
       const tarifa = await this.tarifaRepo.findActiveByUsuarioAndAsunto(
         input.usuarioId,
-        input.asuntoJuridicoId
+        input.asuntoJuridicoId,
       );
       if (!tarifa) {
         return Err(
           new ValidationError(
-            "No tienes tarifa configurada para este asunto. Contacta al administrador."
-          )
+            "No tienes tarifa configurada para este asunto. Contacta al administrador.",
+          ),
         );
       }
 
@@ -104,7 +114,7 @@ export class RegistroHoraService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al crear registro de horas")
+          : new Error("Error al crear registro de horas"),
       );
     }
   }
@@ -112,7 +122,7 @@ export class RegistroHoraService {
   async update(
     input: UpdateRegistroHoraArgs,
     usuarioId: string,
-    options?: { canOverrideDeadline?: boolean }
+    options?: { canOverrideDeadline?: boolean },
   ): Promise<Result<RegistroHoraEntity, Error>> {
     try {
       // 1. Find existing
@@ -128,8 +138,8 @@ export class RegistroHoraService {
       if (withinDeadline && !existing.editable) {
         return Err(
           new Error(
-            "Este registro no es editable. Solicita autorización al administrador."
-          )
+            "Este registro no es editable. Solicita autorización al administrador.",
+          ),
         );
       }
 
@@ -159,7 +169,7 @@ export class RegistroHoraService {
 
           if (!autorizacionActiva) {
             throw new Error(
-              "El plazo de edición ha vencido. Solicita autorización al administrador."
+              "El plazo de edición ha vencido. Solicita autorización al administrador.",
             );
           }
 
@@ -216,7 +226,7 @@ export class RegistroHoraService {
       await this.historialService.createHistorialForUpdate(
         existing,
         updated,
-        usuarioId
+        usuarioId,
       );
 
       return Ok(updated);
@@ -224,7 +234,7 @@ export class RegistroHoraService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al actualizar registro de horas")
+          : new Error("Error al actualizar registro de horas"),
       );
     }
   }
@@ -241,8 +251,8 @@ export class RegistroHoraService {
       if (!isWithinDeadline(existing.ano, existing.semana)) {
         return Err(
           new Error(
-            "No se puede eliminar un registro fuera del plazo de edición."
-          )
+            "No se puede eliminar un registro fuera del plazo de edición.",
+          ),
         );
       }
 
@@ -253,7 +263,7 @@ export class RegistroHoraService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al eliminar registro de horas")
+          : new Error("Error al eliminar registro de horas"),
       );
     }
   }
@@ -266,13 +276,13 @@ export class RegistroHoraService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener registros de horas")
+          : new Error("Error al obtener registros de horas"),
       );
     }
   }
 
   async getByUsuario(
-    usuarioId: string
+    usuarioId: string,
   ): Promise<Result<RegistroHoraEntity[], Error>> {
     try {
       const registros = await this.repo.getAllByUsuario(usuarioId);
@@ -281,7 +291,7 @@ export class RegistroHoraService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener registros del usuario")
+          : new Error("Error al obtener registros del usuario"),
       );
     }
   }
@@ -289,26 +299,26 @@ export class RegistroHoraService {
   async getByUsuarioAndWeek(
     usuarioId: string,
     ano: number,
-    semana: number
+    semana: number,
   ): Promise<Result<RegistroHoraEntity[], Error>> {
     try {
       const registros = await this.repo.findByUsuarioAndWeek(
         usuarioId,
         ano,
-        semana
+        semana,
       );
       return Ok(registros);
     } catch (error) {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener registros por semana")
+          : new Error("Error al obtener registros por semana"),
       );
     }
   }
 
   async getPaginated(
-    params: RegistroHorasFilterParams
+    params: RegistroHorasFilterParams,
   ): Promise<
     Result<{ data: RegistroHoraEntity[]; totalCount: number }, Error>
   > {
@@ -319,7 +329,7 @@ export class RegistroHoraService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener registros de horas paginados")
+          : new Error("Error al obtener registros de horas paginados"),
       );
     }
   }

@@ -21,7 +21,7 @@ const CreateTarifaSheet = dynamic(
     import("../components/CreateTarifaSheet").then((mod) => ({
       default: mod.CreateTarifaSheet,
     })),
-  { ssr: false, loading: () => <LoadingModalState /> }
+  { ssr: false, loading: () => <LoadingModalState /> },
 );
 
 export function TarifasAbogadoAsuntoTablePage() {
@@ -39,7 +39,7 @@ export function TarifasAbogadoAsuntoTablePage() {
       (r) =>
         r.usuarioNombre.toLowerCase().includes(term) ||
         r.asuntoJuridicoNombre.toLowerCase().includes(term) ||
-        r.usuarioEmail.toLowerCase().includes(term)
+        r.usuarioEmail.toLowerCase().includes(term),
     );
   }, [data, search]);
 
@@ -53,7 +53,7 @@ export function TarifasAbogadoAsuntoTablePage() {
         onAdd: openModal,
         serverSide: { enabled: false },
       }),
-    [openModal]
+    [openModal],
   );
 
   return (
@@ -88,9 +88,7 @@ export function TarifasAbogadoAsuntoTablePage() {
           <PermissionGuard
             permissions={[PermissionActions["juridico-tarifas"].gestionar]}
           >
-            {isOpen && (
-              <CreateTarifaSheet isOpen={true} onClose={closeModal} />
-            )}
+            {isOpen && <CreateTarifaSheet isOpen={true} onClose={closeModal} />}
           </PermissionGuard>
         </div>
       </CardContent>

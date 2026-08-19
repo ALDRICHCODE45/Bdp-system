@@ -13,7 +13,7 @@ import { toTarifaAbogadoAsuntoDtoArray } from "../mappers/tarifaAbogadoAsuntoMap
 export const getActiveTarifasAction = async () => {
   await requireAnyPermission(
     [PermissionActions["juridico-tarifas"].gestionar],
-    "No tienes permiso para ver tarifas"
+    "No tienes permiso para ver tarifas",
   );
 
   const service = makeTarifaAbogadoAsuntoService({ prisma });

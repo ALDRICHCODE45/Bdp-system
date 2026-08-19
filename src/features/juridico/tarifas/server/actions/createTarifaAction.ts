@@ -12,7 +12,7 @@ import { toTarifaAbogadoAsuntoDto } from "../mappers/tarifaAbogadoAsuntoMapper";
 export const createTarifaAction = async (input: unknown) => {
   await requireAnyPermission(
     [PermissionActions["juridico-tarifas"].gestionar],
-    "No tienes permiso para administrar tarifas"
+    "No tienes permiso para administrar tarifas",
   );
 
   const session = await auth();

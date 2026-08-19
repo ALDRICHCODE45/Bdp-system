@@ -31,10 +31,11 @@ export function DeactivateTarifaAlertDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>¿Desactivar esta tarifa?</AlertDialogTitle>
           <AlertDialogDescription>
-            La tarifa <b>{tarifaLabel}</b> se marcará como inactiva. Los registros de
-            horas existentes NO se modifican — conservan el <code>tarifaHora</code>{" "}
-            que tenían al momento del registro. Para volver a usar esta combinación
-            (abogado, asunto), crea una nueva tarifa.
+            La tarifa <b>{tarifaLabel}</b> se marcará como inactiva. Los
+            registros de horas existentes NO se modifican — conservan el{" "}
+            <code>tarifaHora</code> que tenían al momento del registro. Para
+            volver a usar esta combinación (abogado, asunto), crea una nueva
+            tarifa.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

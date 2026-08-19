@@ -7,7 +7,7 @@ import type { TarifaAbogadoAsuntoEntity } from "../repositories/TarifaAbogadoAsu
  * decimal a través de la frontera server → client.
  */
 export function toTarifaAbogadoAsuntoDto(
-  entity: TarifaAbogadoAsuntoEntity
+  entity: TarifaAbogadoAsuntoEntity,
 ): TarifaAbogadoAsuntoDto {
   return {
     id: entity.id,
@@ -28,7 +28,7 @@ export function toTarifaAbogadoAsuntoDto(
 }
 
 export function toTarifaAbogadoAsuntoDtoArray(
-  entities: TarifaAbogadoAsuntoEntity[]
+  entities: TarifaAbogadoAsuntoEntity[],
 ): TarifaAbogadoAsuntoDto[] {
   return entities.map(toTarifaAbogadoAsuntoDto);
 }

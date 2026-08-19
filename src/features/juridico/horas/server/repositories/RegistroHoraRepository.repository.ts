@@ -68,12 +68,12 @@ export interface RegistroHoraRepository {
   findByUsuarioAndWeek(
     usuarioId: string,
     ano: number,
-    semana: number
+    semana: number,
   ): Promise<RegistroHoraEntity[]>;
   getAll(): Promise<RegistroHoraEntity[]>;
   getAllByUsuario(usuarioId: string): Promise<RegistroHoraEntity[]>;
   setEditable(id: string, editable: boolean): Promise<void>;
   getPaginated(
-    params: RegistroHorasFilterParams
+    params: RegistroHorasFilterParams,
   ): Promise<{ data: RegistroHoraEntity[]; totalCount: number }>;
 }

@@ -6,9 +6,7 @@ import type {
   UpdateTarifaAbogadoAsuntoArgs,
   DeactivateTarifaAbogadoAsuntoArgs,
 } from "../repositories/TarifaAbogadoAsuntoRepository.repository";
-import type {
-  TarifaAbogadoAsuntoHistorialRepository,
-} from "../repositories/TarifaAbogadoAsuntoHistorialRepository.repository";
+import type { TarifaAbogadoAsuntoHistorialRepository } from "../repositories/TarifaAbogadoAsuntoHistorialRepository.repository";
 import { Result, Ok, Err } from "@/core/shared/result/result";
 import { ValidationError } from "@/core/shared/errors/domain";
 
@@ -16,7 +14,7 @@ export class TarifaAbogadoAsuntoService {
   constructor(
     private repo: TarifaAbogadoAsuntoRepository,
     private historialRepo: TarifaAbogadoAsuntoHistorialRepository,
-    private prisma: PrismaClient
+    private prisma: PrismaClient,
   ) {}
 
   /**
@@ -26,7 +24,7 @@ export class TarifaAbogadoAsuntoService {
    * un `@@unique` en la DB hace cumplir el constraint.
    */
   async create(
-    args: CreateTarifaAbogadoAsuntoArgs
+    args: CreateTarifaAbogadoAsuntoArgs,
   ): Promise<Result<TarifaAbogadoAsuntoEntity, Error>> {
     try {
       const tarifaHoraNum =
@@ -37,9 +35,7 @@ export class TarifaAbogadoAsuntoService {
       // REQ-TAA-006: tarifaHora > 0 (rechaza 0 y negativos)
       if (tarifaHoraNum <= 0) {
         return Err(
-          new ValidationError(
-            "La tarifa por hora debe ser mayor a 0"
-          )
+          new ValidationError("La tarifa por hora debe ser mayor a 0"),
         );
       }
 
@@ -51,24 +47,28 @@ export class TarifaAbogadoAsuntoService {
         }),
       ]);
       if (!usuario || !usuario.isActive) {
-        return Err(new Error("El abogado seleccionado no existe o está inactivo"));
+        return Err(
+          new Error("El abogado seleccionado no existe o está inactivo"),
+        );
       }
       if (!asunto || asunto.estado !== "ACTIVO") {
         return Err(
-          new Error("El asunto jurídico seleccionado no existe o no está activo")
+          new Error(
+            "El asunto jurídico seleccionado no existe o no está activo",
+          ),
         );
       }
 
       // Si ya existe una tarifa activa para el par, devolvemos Conflict.
       const existing = await this.repo.findActiveByUsuarioAndAsunto(
         args.usuarioId,
-        args.asuntoJuridicoId
+        args.asuntoJuridicoId,
       );
       if (existing) {
         return Err(
           new Error(
-            "Ya existe una tarifa activa para este abogado y asunto. Edítala o desactívala primero."
-          )
+            "Ya existe una tarifa activa para este abogado y asunto. Edítala o desactívala primero.",
+          ),
         );
       }
 
@@ -88,16 +88,14 @@ export class TarifaAbogadoAsuntoService {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === "P2002") {
           return Err(
-            new Error(
-              "Ya existe una tarifa para este par (abogado, asunto)."
-            )
+            new Error("Ya existe una tarifa para este par (abogado, asunto)."),
           );
         }
       }
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al crear tarifa de abogado por asunto")
+          : new Error("Error al crear tarifa de abogado por asunto"),
       );
     }
   }
@@ -107,7 +105,7 @@ export class TarifaAbogadoAsuntoService {
    * de historial que registra el cambio (REQ-TAA-004: both-or-neither).
    */
   async update(
-    args: UpdateTarifaAbogadoAsuntoArgs
+    args: UpdateTarifaAbogadoAsuntoArgs,
   ): Promise<Result<TarifaAbogadoAsuntoEntity, Error>> {
     try {
       const tarifaHoraNum =
@@ -117,9 +115,7 @@ export class TarifaAbogadoAsuntoService {
 
       if (tarifaHoraNum <= 0) {
         return Err(
-          new ValidationError(
-            "La tarifa por hora debe ser mayor a 0"
-          )
+          new ValidationError("La tarifa por hora debe ser mayor a 0"),
         );
       }
 
@@ -129,7 +125,9 @@ export class TarifaAbogadoAsuntoService {
       }
       if (!existing.activa) {
         return Err(
-          new Error("La tarifa está desactivada. Créala nuevamente si necesitas reactivarla.")
+          new Error(
+            "La tarifa está desactivada. Créala nuevamente si necesitas reactivarla.",
+          ),
         );
       }
 
@@ -139,7 +137,7 @@ export class TarifaAbogadoAsuntoService {
           where: { id: args.id },
           data: {
             tarifaHora: new Prisma.Decimal(
-              args.tarifaHora as number | Prisma.Decimal
+              args.tarifaHora as number | Prisma.Decimal,
             ),
             updatedById: args.updatedById,
           },
@@ -169,7 +167,7 @@ export class TarifaAbogadoAsuntoService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al actualizar tarifa de abogado por asunto")
+          : new Error("Error al actualizar tarifa de abogado por asunto"),
       );
     }
   }
@@ -179,7 +177,7 @@ export class TarifaAbogadoAsuntoService {
    * frozen en `RegistroHora` (REQ-TAA-005).
    */
   async deactivate(
-    args: DeactivateTarifaAbogadoAsuntoArgs
+    args: DeactivateTarifaAbogadoAsuntoArgs,
   ): Promise<Result<TarifaAbogadoAsuntoEntity, Error>> {
     try {
       const existing = await this.repo.findById(args.id);
@@ -192,14 +190,12 @@ export class TarifaAbogadoAsuntoService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al desactivar tarifa")
+          : new Error("Error al desactivar tarifa"),
       );
     }
   }
 
-  async getAllActive(): Promise<
-    Result<TarifaAbogadoAsuntoEntity[], Error>
-  > {
+  async getAllActive(): Promise<Result<TarifaAbogadoAsuntoEntity[], Error>> {
     try {
       const tarifas = await this.repo.findAllActive();
       return Ok(tarifas);
@@ -207,7 +203,7 @@ export class TarifaAbogadoAsuntoService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener tarifas activas")
+          : new Error("Error al obtener tarifas activas"),
       );
     }
   }
@@ -216,9 +212,7 @@ export class TarifaAbogadoAsuntoService {
    * Devuelve las tarifas activas de un usuario específico. Usado por
    * el sheet de horas para greyar asuntos sin tarifa.
    */
-  async getActiveByUsuario(
-    usuarioId: string
-  ): Promise<
+  async getActiveByUsuario(usuarioId: string): Promise<
     Result<
       Array<{
         id: string;
@@ -236,7 +230,7 @@ export class TarifaAbogadoAsuntoService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener tarifas del usuario")
+          : new Error("Error al obtener tarifas del usuario"),
       );
     }
   }
@@ -244,9 +238,7 @@ export class TarifaAbogadoAsuntoService {
   /**
    * Devuelve el historial append-only de una tarifa, newest-first.
    */
-  async getHistorialByTarifaId(
-    tarifaId: string
-  ): Promise<
+  async getHistorialByTarifaId(tarifaId: string): Promise<
     Result<
       Array<{
         id: string;
@@ -268,7 +260,7 @@ export class TarifaAbogadoAsuntoService {
       return Err(
         error instanceof Error
           ? error
-          : new Error("Error al obtener historial de la tarifa")
+          : new Error("Error al obtener historial de la tarifa"),
       );
     }
   }

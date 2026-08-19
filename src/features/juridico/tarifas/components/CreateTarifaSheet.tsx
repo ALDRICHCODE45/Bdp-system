@@ -83,11 +83,17 @@ export function CreateTarifaSheet({ isOpen, onClose }: CreateTarifaSheetProps) {
     ]).then(([usersRes, asuntosRes]) => {
       if (usersRes.ok) {
         setAbogados(
-          usersRes.data.map((u) => ({ id: u.id, name: u.name, email: u.email }))
+          usersRes.data.map((u) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+          })),
         );
       }
       if (asuntosRes.ok) {
-        setAsuntos(asuntosRes.data.map((a) => ({ id: a.id, nombre: a.nombre })));
+        setAsuntos(
+          asuntosRes.data.map((a) => ({ id: a.id, nombre: a.nombre })),
+        );
       }
       setLoadingOptions(false);
     });
@@ -134,7 +140,9 @@ export function CreateTarifaSheet({ isOpen, onClose }: CreateTarifaSheetProps) {
   };
 
   const previewImporte =
-    form.tarifaHora && !isNaN(Number(form.tarifaHora)) && Number(form.tarifaHora) > 0
+    form.tarifaHora &&
+    !isNaN(Number(form.tarifaHora)) &&
+    Number(form.tarifaHora) > 0
       ? mxn.format(Number(form.tarifaHora))
       : "—";
 
@@ -144,7 +152,8 @@ export function CreateTarifaSheet({ isOpen, onClose }: CreateTarifaSheetProps) {
         <SheetHeader>
           <SheetTitle>Nueva Tarifa por Hora</SheetTitle>
           <SheetDescription>
-            Define el valor por hora (MXN) que se le paga a un abogado para un asunto específico.
+            Define el valor por hora (MXN) que se le paga a un abogado para un
+            asunto específico.
           </SheetDescription>
         </SheetHeader>
 
@@ -205,7 +214,8 @@ export function CreateTarifaSheet({ isOpen, onClose }: CreateTarifaSheetProps) {
               <p className="text-xs text-red-500">{errors.tarifaHora}</p>
             )}
             <p className="text-xs text-muted-foreground">
-              Vista previa: <span className="font-mono">{previewImporte}</span> por hora
+              Vista previa: <span className="font-mono">{previewImporte}</span>{" "}
+              por hora
             </p>
           </div>
 

@@ -35,7 +35,8 @@ export function DashboardHorasView() {
       {!isPending && !hasData ? (
         <div className="rounded-xl border bg-card shadow-sm p-10 text-center">
           <p className="text-sm text-muted-foreground">
-            No encontramos datos para esos filtros. Probá ampliando el rango semanal o cambiando el año.
+            No encontramos datos para esos filtros. Probá ampliando el rango
+            semanal o cambiando el año.
           </p>
         </div>
       ) : (

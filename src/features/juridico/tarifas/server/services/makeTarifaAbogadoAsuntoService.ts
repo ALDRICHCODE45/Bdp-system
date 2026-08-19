@@ -9,6 +9,8 @@ export function makeTarifaAbogadoAsuntoService({
   prisma: PrismaClient;
 }): TarifaAbogadoAsuntoService {
   const repo = new PrismaTarifaAbogadoAsuntoRepository(prisma);
-  const historialRepo = new PrismaTarifaAbogadoAsuntoHistorialRepository(prisma);
+  const historialRepo = new PrismaTarifaAbogadoAsuntoHistorialRepository(
+    prisma,
+  );
   return new TarifaAbogadoAsuntoService(repo, historialRepo, prisma);
 }

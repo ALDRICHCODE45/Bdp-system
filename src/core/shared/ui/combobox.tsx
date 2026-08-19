@@ -104,7 +104,9 @@ export function Combobox({
           disabled={disabled}
           className={cn("w-full justify-between font-normal", className)}
         >
-          <span className={cn("truncate", !selected && "text-muted-foreground")}>
+          <span
+            className={cn("truncate", !selected && "text-muted-foreground")}
+          >
             {selected ? selected.label : placeholder}
           </span>
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
@@ -130,7 +132,7 @@ export function Combobox({
                     <Check
                       className={cn(
                         "mr-2 size-4",
-                        option.value === value ? "opacity-100" : "opacity-0"
+                        option.value === value ? "opacity-100" : "opacity-0",
                       )}
                     />
                     {option.label}

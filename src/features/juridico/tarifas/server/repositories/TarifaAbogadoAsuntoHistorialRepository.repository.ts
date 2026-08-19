@@ -1,7 +1,4 @@
-import type {
-  TarifaAbogadoAsuntoHistorial,
-  User,
-} from "@prisma/client";
+import type { TarifaAbogadoAsuntoHistorial, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 /**
@@ -28,13 +25,13 @@ export interface TarifaAbogadoAsuntoHistorialRepository {
    * sostiene en el contrato del repo: NO se exponen `update` ni `delete`.
    */
   create(
-    data: CreateTarifaAbogadoAsuntoHistorialArgs
+    data: CreateTarifaAbogadoAsuntoHistorialArgs,
   ): Promise<TarifaAbogadoAsuntoHistorialEntity>;
   /**
    * Devuelve el historial de una tarifa, newest-first (cambios más recientes
    * primero), con el nombre del autor de cada cambio.
    */
   findByTarifaId(
-    tarifaId: string
+    tarifaId: string,
   ): Promise<TarifaAbogadoAsuntoHistorialEntity[]>;
 }

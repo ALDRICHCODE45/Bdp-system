@@ -13,8 +13,10 @@ import type { TarifaAbogadoAsuntoDto } from "../server/dtos/TarifaAbogadoAsuntoD
 
 const EditTarifaSheet = dynamic(
   () =>
-    import("./EditTarifaSheet").then((mod) => ({ default: mod.EditTarifaSheet })),
-  { ssr: false, loading: () => <LoadingModalState /> }
+    import("./EditTarifaSheet").then((mod) => ({
+      default: mod.EditTarifaSheet,
+    })),
+  { ssr: false, loading: () => <LoadingModalState /> },
 );
 
 const DeactivateTarifaAlertDialog = dynamic(
@@ -22,7 +24,7 @@ const DeactivateTarifaAlertDialog = dynamic(
     import("./DeactivateTarifaAlertDialog").then((mod) => ({
       default: mod.DeactivateTarifaAlertDialog,
     })),
-  { ssr: false, loading: () => <LoadingModalState /> }
+  { ssr: false, loading: () => <LoadingModalState /> },
 );
 
 const TarifaHistorialSheet = dynamic(
@@ -30,7 +32,7 @@ const TarifaHistorialSheet = dynamic(
     import("./TarifaHistorialSheet").then((mod) => ({
       default: mod.TarifaHistorialSheet,
     })),
-  { ssr: false, loading: () => <LoadingModalState /> }
+  { ssr: false, loading: () => <LoadingModalState /> },
 );
 
 interface TarifaRowActionsProps {
@@ -38,8 +40,11 @@ interface TarifaRowActionsProps {
 }
 
 export function TarifaRowActions({ tarifa }: TarifaRowActionsProps) {
-  const { isOpen: isEditOpen, openModal: openEdit, closeModal: closeEdit } =
-    useModalState();
+  const {
+    isOpen: isEditOpen,
+    openModal: openEdit,
+    closeModal: closeEdit,
+  } = useModalState();
   const {
     isOpen: isDeactivateOpen,
     openModal: openDeactivate,
@@ -88,11 +93,7 @@ export function TarifaRowActions({ tarifa }: TarifaRowActionsProps) {
         permissions={[PermissionActions["juridico-tarifas"].gestionar]}
       >
         {isEditOpen && (
-          <EditTarifaSheet
-            tarifa={tarifa}
-            isOpen={true}
-            onClose={closeEdit}
-          />
+          <EditTarifaSheet tarifa={tarifa} isOpen={true} onClose={closeEdit} />
         )}
         {isDeactivateOpen && (
           <DeactivateTarifaAlertDialog
