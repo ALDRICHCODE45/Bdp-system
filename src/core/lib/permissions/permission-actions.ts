@@ -76,13 +76,6 @@ export const PermissionActions = {
   permisos: {
     acceder: "permisos:acceder",
   },
-  "juridico-clientes": {
-    acceder: "juridico-clientes:acceder",
-    crear: "juridico-clientes:crear",
-    editar: "juridico-clientes:editar",
-    eliminar: "juridico-clientes:eliminar",
-    gestionar: "juridico-clientes:gestionar",
-  },
   "juridico-asuntos": {
     acceder: "juridico-asuntos:acceder",
     crear: "juridico-asuntos:crear",

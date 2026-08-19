@@ -29,7 +29,6 @@ export const ROUTE_PERMISSIONS: Record<string, string | string[]> = {
   "/register-qr-entry": "recepcion:acceder",
 
   // Módulo Jurídico
-  "/juridico/clientes": "juridico-clientes:acceder",
   "/juridico/asuntos": "juridico-asuntos:acceder",
   "/juridico/equipos": "juridico-equipos:acceder",
   "/juridico/horas": "juridico-horas:acceder",
