@@ -259,6 +259,10 @@ model User {
   registrosHora              RegistroHora[]
   autorizacionesSolicitadas  AutorizacionEdicion[]   @relation("AutorizacionSolicitante")
   autorizacionesResueltas    AutorizacionEdicion[]   @relation("AutorizacionAutorizador")
+  tarifasAbogadoAsunto       TarifaAbogadoAsunto[]   @relation("TarifaAbogadoUsuario")
+  tarifasCreadas             TarifaAbogadoAsunto[]   @relation("TarifaCreador")
+  tarifasEditadas            TarifaAbogadoAsunto[]   @relation("TarifaEditor")
+  tarifasHistorialCambios    TarifaAbogadoAsuntoHistorial[] @relation("TarifaHistorialCambiador")
 }
 
 model Role {
@@ -704,6 +708,8 @@ model AsuntoJuridico {
 
   registrosHora RegistroHora[]
 
+  tarifasAbogadoAsunto TarifaAbogadoAsunto[]
+
   @@index([clienteProveedorId])
   @@index([socioId])
   @@index([estado])
@@ -750,6 +756,8 @@ model RegistroHora {
   socioId            String
   socio              Socio           @relation(fields: [socioId], references: [id], onDelete: Restrict)
   horas              Decimal         @db.Decimal(5, 2)
+  tarifaHora         Decimal?        @db.Decimal(15, 2)
+  importe            Decimal?        @db.Decimal(15, 2)
   descripcion        String?
   ano                Int
   semana             Int
@@ -802,4 +810,42 @@ model AutorizacionEdicion {
   @@index([registroHoraId])
   @@index([solicitanteId])
   @@index([estado])
+}
+
+model TarifaAbogadoAsunto {
+  id               String   @id @default(uuid())
+  usuarioId        String
+  usuario          User     @relation("TarifaAbogadoUsuario", fields: [usuarioId], references: [id], onDelete: Restrict)
+  asuntoJuridicoId String
+  asuntoJuridico   AsuntoJuridico @relation(fields: [asuntoJuridicoId], references: [id], onDelete: Restrict)
+  tarifaHora       Decimal  @db.Decimal(15, 2)
+  activa           Boolean  @default(true)
+  createdById      String
+  createdBy        User     @relation("TarifaCreador", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById      String
+  updatedBy        User     @relation("TarifaEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  historial TarifaAbogadoAsuntoHistorial[]
+
+  @@unique([usuarioId, asuntoJuridicoId])
+  @@index([usuarioId])
+  @@index([asuntoJuridicoId])
+  @@index([activa])
+}
+
+model TarifaAbogadoAsuntoHistorial {
+  id                 String   @id @default(uuid())
+  tarifaId           String
+  tarifa             TarifaAbogadoAsunto @relation(fields: [tarifaId], references: [id], onDelete: Cascade)
+  tarifaHoraAnterior Decimal? @db.Decimal(15, 2)
+  tarifaHoraNueva    Decimal  @db.Decimal(15, 2)
+  changedById        String
+  changedBy          User     @relation("TarifaHistorialCambiador", fields: [changedById], references: [id], onDelete: Restrict)
+  changedAt          DateTime @default(now())
+  motivo             String?
+
+  @@index([tarifaId])
+  @@index([changedAt])
 }
