@@ -332,6 +332,8 @@ model ClienteProveedor {
   movimientosComoProveedor Movimiento[]                @relation("MovimientoProveedor")
   movimientosComoCliente   Movimiento[]                @relation("MovimientoCliente")
   historial                ClienteProveedorHistorial[]
+  asuntosJuridicos         AsuntoJuridico[]
+  registrosHoraJuridico    RegistroHora[]
   createdAt                DateTime                    @default(now())
   updatedAt                DateTime                    @updatedAt
 
@@ -688,41 +690,21 @@ enum AutorizacionEstado {
   UTILIZADA
 }
 
-model ClienteJuridico {
-  id        String   @id @default(uuid())
-  nombre    String
-  rfc       String?
-  contacto  String?
-  email     String?
-  telefono  String?
-  direccion String?
-  notas     String?
-  activo    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  asuntos       AsuntoJuridico[]
-  registrosHora RegistroHora[]
-
-  @@index([activo])
-  @@index([nombre])
-}
-
 model AsuntoJuridico {
-  id                String               @id @default(uuid())
-  nombre            String
-  descripcion       String?
-  estado            AsuntoJuridicoEstado @default(ACTIVO)
-  clienteJuridicoId String
-  clienteJuridico   ClienteJuridico      @relation(fields: [clienteJuridicoId], references: [id], onDelete: Restrict)
-  socioId           String
-  socio             Socio                @relation(fields: [socioId], references: [id], onDelete: Restrict)
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
+  id                  String               @id @default(uuid())
+  nombre              String
+  descripcion         String?
+  estado              AsuntoJuridicoEstado @default(ACTIVO)
+  clienteProveedorId  String
+  clienteProveedor    ClienteProveedor     @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
+  socioId             String
+  socio               Socio                @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
   registrosHora RegistroHora[]
 
-  @@index([clienteJuridicoId])
+  @@index([clienteProveedorId])
   @@index([socioId])
   @@index([estado])
 }
@@ -756,31 +738,31 @@ model EquipoJuridicoUsuario {
 }
 
 model RegistroHora {
-  id                String          @id @default(uuid())
-  usuarioId         String
-  usuario           User            @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  equipoJuridicoId  String
-  equipoJuridico    EquipoJuridico  @relation(fields: [equipoJuridicoId], references: [id], onDelete: Restrict)
-  clienteJuridicoId String
-  clienteJuridico   ClienteJuridico @relation(fields: [clienteJuridicoId], references: [id], onDelete: Restrict)
-  asuntoJuridicoId  String
-  asuntoJuridico    AsuntoJuridico  @relation(fields: [asuntoJuridicoId], references: [id], onDelete: Restrict)
-  socioId           String
-  socio             Socio           @relation(fields: [socioId], references: [id], onDelete: Restrict)
-  horas             Decimal         @db.Decimal(5, 2)
-  descripcion       String?
-  ano               Int
-  semana            Int
-  editable          Boolean         @default(true)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                 String          @id @default(uuid())
+  usuarioId          String
+  usuario            User            @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  equipoJuridicoId   String
+  equipoJuridico     EquipoJuridico  @relation(fields: [equipoJuridicoId], references: [id], onDelete: Restrict)
+  clienteProveedorId String
+  clienteProveedor   ClienteProveedor @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
+  asuntoJuridicoId   String
+  asuntoJuridico     AsuntoJuridico  @relation(fields: [asuntoJuridicoId], references: [id], onDelete: Restrict)
+  socioId            String
+  socio              Socio           @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  horas              Decimal         @db.Decimal(5, 2)
+  descripcion        String?
+  ano                Int
+  semana             Int
+  editable           Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
 
   historial      RegistroHoraHistorial[]
   autorizaciones AutorizacionEdicion[]
 
   @@index([usuarioId])
   @@index([equipoJuridicoId])
-  @@index([clienteJuridicoId])
+  @@index([clienteProveedorId])
   @@index([asuntoJuridicoId])
   @@index([socioId])
   @@index([ano, semana])
