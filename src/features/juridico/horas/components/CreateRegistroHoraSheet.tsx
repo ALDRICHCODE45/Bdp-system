@@ -27,12 +27,21 @@ import { getEquiposJuridicosAction } from "@/features/juridico/equipos/server/ac
 import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { getAsuntosJuridicosAction } from "@/features/juridico/asuntos/server/actions/getAsuntosJuridicosAction";
 import { getAllSociosAction } from "@/features/RecursosHumanos/socios/server/actions/getAllSociosAction";
+import { useGetActiveTarifasForCurrentUser } from "../hooks/useGetActiveTarifasForCurrentUser.hook";
 import type { EquipoJuridicoDto } from "@/features/juridico/equipos/server/dtos/EquipoJuridicoDto.dto";
 import type { JuridicoClienteDirectorioDto } from "@/features/juridico/clientes-directorio/server/dtos/JuridicoClienteDirectorioDto.dto";
 import type { AsuntoJuridicoDto } from "@/features/juridico/asuntos/server/dtos/AsuntoJuridicoDto.dto";
 import type { SocioDto } from "@/features/RecursosHumanos/socios/server/dtos/SocioDto.dto";
 import { Combobox } from "@/core/shared/ui/combobox";
 import { CalendarClock } from "lucide-react";
+
+/**
+ * Texto exacto de bloqueo (REQ-RH-204). Se muestra como tooltip sobre
+ * las opciones de asunto sin tarifa activa y también aparece en el
+ * `ValidationError` que devuelve el service.
+ */
+const TARIFF_BLOCK_TOOLTIP =
+  "No tienes tarifa configurada para este asunto. Contacta al administrador.";
 
 const MINUTOS_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
@@ -80,6 +89,7 @@ export function CreateRegistroHoraSheet({
 
   const createMutation = useCreateRegistroHora();
   const clientesQuery = useGetJuridicoClientes();
+  const activeTarifasQuery = useGetActiveTarifasForCurrentUser();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -98,6 +108,25 @@ export function CreateRegistroHoraSheet({
 
   const clientes: JuridicoClienteDirectorioDto[] = clientesQuery.data ?? [];
   const clientesLoading = clientesQuery.isLoading || clientesQuery.isFetching;
+
+  /**
+   * REQ-RH-204: asunto Combobox options for those WITHOUT an active
+   * tariff are disabled and carry the exact block message as tooltip.
+   */
+  const tariffedAsuntos = new Set(
+    (activeTarifasQuery.data ?? []).map((t) => t.asuntoJuridicoId)
+  );
+  const asuntoOptions = asuntos.map((asunto) => {
+    const tariffed = tariffedAsuntos.has(asunto.id);
+    return tariffed
+      ? { value: asunto.id, label: asunto.nombre }
+      : {
+          value: asunto.id,
+          label: `${asunto.nombre} — sin tarifa`,
+          disabled: true,
+          tooltip: TARIFF_BLOCK_TOOLTIP,
+        };
+  });
 
   const handleSelectChange = (field: keyof FormState) => (value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -209,10 +238,7 @@ export function CreateRegistroHoraSheet({
               Asunto Jurídico <span className="text-red-500">*</span>
             </Label>
             <Combobox
-              options={asuntos.map((asunto) => ({
-                value: asunto.id,
-                label: asunto.nombre,
-              }))}
+              options={asuntoOptions}
               value={form.asuntoJuridicoId}
               onChange={handleSelectChange("asuntoJuridicoId")}
               placeholder="Selecciona un asunto"

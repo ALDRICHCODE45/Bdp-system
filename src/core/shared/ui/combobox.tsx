@@ -17,11 +17,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/core/shared/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/core/shared/ui/tooltip";
 
 export interface ComboboxOption {
   value: string;
   label: string;
   disabled?: boolean;
+  /**
+   * Optional tooltip text — surfaced when the option is disabled (e.g.
+   * "No tienes tarifa configurada para este asunto. Contacta al
+   * administrador."). On enabled options the tooltip is ignored to
+   * avoid noise.
+   */
+  tooltip?: string;
 }
 
 interface ComboboxProps {
@@ -107,22 +119,36 @@ export function Combobox({
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label}
-                  disabled={option.disabled}
-                  onSelect={() => handleSelect(option.value)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 size-4",
-                      option.value === value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
+              {options.map((option) => {
+                const item = (
+                  <CommandItem
+                    key={option.value}
+                    value={option.label}
+                    disabled={option.disabled}
+                    onSelect={() => handleSelect(option.value)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 size-4",
+                        option.value === value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                );
+
+                if (option.disabled && option.tooltip) {
+                  return (
+                    <Tooltip key={option.value} delayDuration={200}>
+                      <TooltipTrigger asChild>{item}</TooltipTrigger>
+                      <TooltipContent side="right">
+                        {option.tooltip}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                }
+                return item;
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

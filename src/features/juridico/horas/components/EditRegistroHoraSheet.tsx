@@ -26,6 +26,7 @@ import { getEquiposJuridicosAction } from "@/features/juridico/equipos/server/ac
 import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { getAsuntosJuridicosAction } from "@/features/juridico/asuntos/server/actions/getAsuntosJuridicosAction";
 import { getAllSociosAction } from "@/features/RecursosHumanos/socios/server/actions/getAllSociosAction";
+import { useGetActiveTarifasForCurrentUser } from "../hooks/useGetActiveTarifasForCurrentUser.hook";
 import type { EquipoJuridicoDto } from "@/features/juridico/equipos/server/dtos/EquipoJuridicoDto.dto";
 import type { JuridicoClienteDirectorioDto } from "@/features/juridico/clientes-directorio/server/dtos/JuridicoClienteDirectorioDto.dto";
 import type { AsuntoJuridicoDto } from "@/features/juridico/asuntos/server/dtos/AsuntoJuridicoDto.dto";
@@ -37,6 +38,10 @@ import { isWithinDeadline } from "@/core/shared/helpers/weekUtils";
 import { decimalToHorasMinutos } from "../helpers/formatHoras";
 import { usePermissions } from "@/core/shared/hooks/use-permissions";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+
+/** REQ-RH-204: texto exacto de bloqueo, mismo string que el service. */
+const TARIFF_BLOCK_TOOLTIP =
+  "No tienes tarifa configurada para este asunto. Contacta al administrador.";
 
 const MINUTOS_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
@@ -88,6 +93,7 @@ export function EditRegistroHoraSheet({
 
   const updateMutation = useUpdateRegistroHora();
   const clientesQuery = useGetJuridicoClientes();
+  const activeTarifasQuery = useGetActiveTarifasForCurrentUser();
   const withinDeadline = isWithinDeadline(registro.ano, registro.semana);
   const { hasAnyPermission } = usePermissions();
   const canManage = hasAnyPermission([
@@ -111,6 +117,30 @@ export function EditRegistroHoraSheet({
 
   const clientes: JuridicoClienteDirectorioDto[] = clientesQuery.data ?? [];
   const clientesLoading = clientesQuery.isLoading || clientesQuery.isFetching;
+
+  /**
+   * REQ-RH-204: asunto Combobox options. Untariffed asuntos are
+   * disabled and carry the block message as tooltip, EXCEPT the row's
+   * CURRENT `asuntoJuridicoId` — that one stays enabled (the row
+   * already has a frozen `tarifaHora` from registration time, so it
+   * does not require a NEW active tariff to be edited).
+   */
+  const tariffedAsuntos = new Set(
+    (activeTarifasQuery.data ?? []).map((t) => t.asuntoJuridicoId)
+  );
+  const asuntoOptions = asuntos.map((asunto) => {
+    const tariffed = tariffedAsuntos.has(asunto.id);
+    const isCurrent = asunto.id === registro.asuntoJuridicoId;
+    if (tariffed || isCurrent) {
+      return { value: asunto.id, label: asunto.nombre };
+    }
+    return {
+      value: asunto.id,
+      label: `${asunto.nombre} — sin tarifa`,
+      disabled: true,
+      tooltip: TARIFF_BLOCK_TOOLTIP,
+    };
+  });
 
   const handleSelectChange = (field: keyof FormState) => (value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -227,10 +257,7 @@ export function EditRegistroHoraSheet({
               Asunto Jurídico <span className="text-red-500">*</span>
             </Label>
             <Combobox
-              options={asuntos.map((asunto) => ({
-                value: asunto.id,
-                label: asunto.nombre,
-              }))}
+              options={asuntoOptions}
               value={form.asuntoJuridicoId}
               onChange={handleSelectChange("asuntoJuridicoId")}
               placeholder="Selecciona un asunto"
