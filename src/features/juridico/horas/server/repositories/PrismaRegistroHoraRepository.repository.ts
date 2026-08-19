@@ -10,7 +10,7 @@ import type { RegistroHorasFilterParams } from "../../types/RegistroHorasFilterP
 const registroHoraIncludes = {
   usuario: { select: { id: true, name: true, email: true } },
   equipoJuridico: { select: { id: true, nombre: true } },
-  clienteJuridico: { select: { id: true, nombre: true } },
+  clienteProveedor: { select: { id: true, nombre: true } },
   asuntoJuridico: { select: { id: true, nombre: true } },
   socio: { select: { id: true, nombre: true } },
   autorizaciones: {
@@ -29,7 +29,7 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
       data: {
         usuarioId: data.usuarioId,
         equipoJuridicoId: data.equipoJuridicoId,
-        clienteJuridicoId: data.clienteJuridicoId,
+        clienteProveedorId: data.clienteProveedorId,
         asuntoJuridicoId: data.asuntoJuridicoId,
         socioId: data.socioId,
         horas: new Prisma.Decimal(data.horas),
@@ -47,7 +47,7 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
       where: { id: data.id },
       data: {
         equipoJuridicoId: data.equipoJuridicoId,
-        clienteJuridicoId: data.clienteJuridicoId,
+        clienteProveedorId: data.clienteProveedorId,
         asuntoJuridicoId: data.asuntoJuridicoId,
         socioId: data.socioId,
         horas: new Prisma.Decimal(data.horas),
@@ -112,12 +112,12 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
       sortOrder,
       search,
       equipoJuridicoId,
-      clienteJuridicoId,
+      clienteProveedorId,
       asuntoJuridicoId,
       socioId,
       usuarioId,
       equipoJuridicoIds,
-      clienteJuridicoIds,
+      clienteProveedorIds,
       asuntoJuridicoIds,
       socioIds,
       usuarioIds,
@@ -138,10 +138,10 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
         : equipoJuridicoId
           ? { equipoJuridicoId }
           : {}),
-      ...(clienteJuridicoIds && clienteJuridicoIds.length > 0
-        ? { clienteJuridicoId: { in: clienteJuridicoIds } }
-        : clienteJuridicoId
-          ? { clienteJuridicoId }
+      ...(clienteProveedorIds && clienteProveedorIds.length > 0
+        ? { clienteProveedorId: { in: clienteProveedorIds } }
+        : clienteProveedorId
+          ? { clienteProveedorId }
           : {}),
       ...(asuntoJuridicoIds && asuntoJuridicoIds.length > 0
         ? { asuntoJuridicoId: { in: asuntoJuridicoIds } }
@@ -201,7 +201,7 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
                 },
               },
               {
-                clienteJuridico: {
+                clienteProveedor: {
                   nombre: { contains: search, mode: "insensitive" },
                 },
               },
@@ -242,7 +242,7 @@ export class PrismaRegistroHoraRepository implements RegistroHoraRepository {
         editable: { editable: direction },
         createdAt: { createdAt: direction },
         equipoJuridicoNombre: { equipoJuridico: { nombre: direction } },
-        clienteJuridicoNombre: { clienteJuridico: { nombre: direction } },
+        clienteProveedorNombre: { clienteProveedor: { nombre: direction } },
         asuntoJuridicoNombre: { asuntoJuridico: { nombre: direction } },
         socioNombre: { socio: { nombre: direction } },
         usuarioNombre: { usuario: { name: direction } },

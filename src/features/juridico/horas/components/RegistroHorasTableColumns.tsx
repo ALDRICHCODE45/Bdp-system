@@ -55,10 +55,10 @@ export function createRegistroHorasColumns(
   },
   {
     header: "Cliente",
-    accessorKey: "clienteJuridicoNombre",
+    accessorKey: "clienteProveedorNombre",
     cell: ({ row }) => (
       <div className="text-sm truncate max-w-[120px]">
-        {row.getValue("clienteJuridicoNombre")}
+        {row.getValue("clienteProveedorNombre")}
       </div>
     ),
     size: 15,

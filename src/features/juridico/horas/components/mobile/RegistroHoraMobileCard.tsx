@@ -137,7 +137,7 @@ export function RegistroHoraMobileCard({
         <p className="text-xs text-muted-foreground truncate mb-0.5">
           {registro.equipoJuridicoNombre} —{" "}
           <span className="font-medium text-foreground">
-            {registro.clienteJuridicoNombre}
+            {registro.clienteProveedorNombre}
           </span>
         </p>
 

@@ -2,7 +2,7 @@ export interface RegistroHoraType {
   id: string;
   usuarioId: string;
   equipoJuridicoId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   socioId: string;
   horas: number;
@@ -16,7 +16,7 @@ export interface RegistroHoraType {
 
 export type CreateRegistroHoraInput = {
   equipoJuridicoId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   socioId: string;
   horas: number;
@@ -26,7 +26,7 @@ export type CreateRegistroHoraInput = {
 export type UpdateRegistroHoraInput = {
   id: string;
   equipoJuridicoId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   socioId: string;
   horas: number;

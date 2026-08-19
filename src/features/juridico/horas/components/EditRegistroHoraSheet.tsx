@@ -23,11 +23,11 @@ import { useUpdateRegistroHora } from "../hooks/useUpdateRegistroHora.hook";
 import { updateRegistroHoraSchemaUI } from "../schemas/updateRegistroHoraSchema";
 import { ZodError } from "zod";
 import { getEquiposJuridicosAction } from "@/features/juridico/equipos/server/actions/getEquiposJuridicosAction";
-import { getClientesJuridicosAction } from "@/features/juridico/clientes/server/actions/getClientesJuridicosAction";
+import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { getAsuntosJuridicosAction } from "@/features/juridico/asuntos/server/actions/getAsuntosJuridicosAction";
 import { getAllSociosAction } from "@/features/RecursosHumanos/socios/server/actions/getAllSociosAction";
 import type { EquipoJuridicoDto } from "@/features/juridico/equipos/server/dtos/EquipoJuridicoDto.dto";
-import type { ClienteJuridicoDto } from "@/features/juridico/clientes/server/dtos/ClienteJuridicoDto.dto";
+import type { JuridicoClienteDirectorioDto } from "@/features/juridico/clientes-directorio/server/dtos/JuridicoClienteDirectorioDto.dto";
 import type { AsuntoJuridicoDto } from "@/features/juridico/asuntos/server/dtos/AsuntoJuridicoDto.dto";
 import type { SocioDto } from "@/features/RecursosHumanos/socios/server/dtos/SocioDto.dto";
 import type { RegistroHoraDto } from "../server/dtos/RegistroHoraDto.dto";
@@ -48,7 +48,7 @@ interface EditRegistroHoraSheetProps {
 
 type FormState = {
   equipoJuridicoId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   socioId: string;
   horas: string;
@@ -71,7 +71,7 @@ export function EditRegistroHoraSheet({
 
   const [form, setForm] = useState<FormState>({
     equipoJuridicoId: registro.equipoJuridicoId,
-    clienteJuridicoId: registro.clienteJuridicoId,
+    clienteProveedorId: registro.clienteProveedorId,
     asuntoJuridicoId: registro.asuntoJuridicoId,
     socioId: registro.socioId,
     horas: String(horasInit),
@@ -82,12 +82,12 @@ export function EditRegistroHoraSheet({
     Partial<Record<keyof FormState, string>>
   >({});
   const [equipos, setEquipos] = useState<EquipoJuridicoDto[]>([]);
-  const [clientes, setClientes] = useState<ClienteJuridicoDto[]>([]);
   const [asuntos, setAsuntos] = useState<AsuntoJuridicoDto[]>([]);
   const [socios, setSocios] = useState<SocioDto[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
   const updateMutation = useUpdateRegistroHora();
+  const clientesQuery = useGetJuridicoClientes();
   const withinDeadline = isWithinDeadline(registro.ano, registro.semana);
   const { hasAnyPermission } = usePermissions();
   const canManage = hasAnyPermission([
@@ -99,17 +99,18 @@ export function EditRegistroHoraSheet({
     setLoadingOptions(true);
     Promise.all([
       getEquiposJuridicosAction(),
-      getClientesJuridicosAction(),
       getAsuntosJuridicosAction(),
       getAllSociosAction(),
-    ]).then(([equiposRes, clientesRes, asuntosRes, sociosRes]) => {
+    ]).then(([equiposRes, asuntosRes, sociosRes]) => {
       if (equiposRes.ok) setEquipos(equiposRes.data);
-      if (clientesRes.ok) setClientes(clientesRes.data);
       if (asuntosRes.ok) setAsuntos(asuntosRes.data);
       if (sociosRes.ok && sociosRes.data) setSocios(sociosRes.data);
       setLoadingOptions(false);
     });
   }, [isOpen]);
+
+  const clientes: JuridicoClienteDirectorioDto[] = clientesQuery.data ?? [];
+  const clientesLoading = clientesQuery.isLoading || clientesQuery.isFetching;
 
   const handleSelectChange = (field: keyof FormState) => (value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -127,7 +128,7 @@ export function EditRegistroHoraSheet({
     const payload = {
       id: registro.id,
       equipoJuridicoId: form.equipoJuridicoId,
-      clienteJuridicoId: form.clienteJuridicoId,
+      clienteProveedorId: form.clienteProveedorId,
       asuntoJuridicoId: form.asuntoJuridicoId,
       socioId: form.socioId,
       horas: horasNum,
@@ -199,24 +200,24 @@ export function EditRegistroHoraSheet({
             )}
           </div>
 
-          {/* Cliente Jurídico */}
+          {/* Cliente */}
           <div className="space-y-1">
-            <Label htmlFor="clienteJuridicoId">
-              Cliente Jurídico <span className="text-red-500">*</span>
+            <Label htmlFor="clienteProveedorId">
+              Cliente <span className="text-red-500">*</span>
             </Label>
             <Combobox
               options={clientes.map((cliente) => ({
                 value: cliente.id,
                 label: cliente.nombre,
               }))}
-              value={form.clienteJuridicoId}
-              onChange={handleSelectChange("clienteJuridicoId")}
+              value={form.clienteProveedorId}
+              onChange={handleSelectChange("clienteProveedorId")}
               placeholder="Selecciona un cliente"
               searchPlaceholder="Buscar..."
-              disabled={loadingOptions}
+              disabled={loadingOptions || clientesLoading}
             />
-            {errors.clienteJuridicoId && (
-              <p className="text-xs text-red-500">{errors.clienteJuridicoId}</p>
+            {errors.clienteProveedorId && (
+              <p className="text-xs text-red-500">{errors.clienteProveedorId}</p>
             )}
           </div>
 

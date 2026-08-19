@@ -5,8 +5,8 @@ export type RegistroHoraDto = {
   usuarioEmail: string;
   equipoJuridicoId: string;
   equipoJuridicoNombre: string;
-  clienteJuridicoId: string;
-  clienteJuridicoNombre: string;
+  clienteProveedorId: string;
+  clienteProveedorNombre: string;
   asuntoJuridicoId: string;
   asuntoJuridicoNombre: string;
   socioId: string;

@@ -24,7 +24,7 @@ const FIELD_LABELS: Record<string, string> = {
   horas: "Horas",
   descripcion: "Descripción",
   equipoJuridicoId: "Equipo Jurídico",
-  clienteJuridicoId: "Cliente Jurídico",
+  clienteProveedorId: "Cliente",
   asuntoJuridicoId: "Asunto Jurídico",
   socioId: "Socio",
 };

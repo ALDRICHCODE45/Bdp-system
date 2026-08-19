@@ -7,7 +7,7 @@ type RegistroHoraDataSnapshot = {
   horas: string;
   descripcion: string;
   equipoJuridicoId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   socioId: string;
 };
@@ -16,7 +16,7 @@ const TRACKED_FIELDS: (keyof RegistroHoraDataSnapshot)[] = [
   "horas",
   "descripcion",
   "equipoJuridicoId",
-  "clienteJuridicoId",
+  "clienteProveedorId",
   "asuntoJuridicoId",
   "socioId",
 ];
@@ -26,7 +26,7 @@ function toSnapshot(registro: RegistroHoraEntity): RegistroHoraDataSnapshot {
     horas: String(Number(registro.horas)),
     descripcion: registro.descripcion ?? "",
     equipoJuridicoId: registro.equipoJuridicoId,
-    clienteJuridicoId: registro.clienteJuridicoId,
+    clienteProveedorId: registro.clienteProveedorId,
     asuntoJuridicoId: registro.asuntoJuridicoId,
     socioId: registro.socioId,
   };

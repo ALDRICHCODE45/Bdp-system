@@ -11,7 +11,7 @@ import { FilterMultiSelect } from "@/core/shared/components/DataTable/FilterMult
 import { ColumnVisibilitySelector } from "@/core/shared/components/DataTable/ColumnVisibilitySelector";
 import type { BaseFilterProps } from "@/core/shared/components/DataTable/types";
 import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
+import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
 import {
   countActiveRegistroHorasAdvancedFilters,
@@ -23,10 +23,10 @@ interface RegistroHorasTableFiltersProps extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
   equipoJuridicoIds?: string[];
-  clienteJuridicoIds?: string[];
+  clienteProveedorIds?: string[];
   usuarioIds?: string[];
   onEquipoJuridicoIdsChange?: (value: string[]) => void;
-  onClienteJuridicoIdsChange?: (value: string[]) => void;
+  onClienteProveedorIdsChange?: (value: string[]) => void;
   onUsuarioIdsChange?: (value: string[]) => void;
   canFilterByUsuario?: boolean;
   onClearFilters?: () => void;
@@ -42,10 +42,10 @@ export function RegistroHorasTableFilters({
   addButtonText = "Registrar Horas",
   onAdd,
   equipoJuridicoIds = [],
-  clienteJuridicoIds = [],
+  clienteProveedorIds = [],
   usuarioIds = [],
   onEquipoJuridicoIdsChange,
-  onClienteJuridicoIdsChange,
+  onClienteProveedorIdsChange,
   onUsuarioIdsChange,
   canFilterByUsuario = false,
   onClearFilters,
@@ -54,7 +54,7 @@ export function RegistroHorasTableFilters({
 }: RegistroHorasTableFiltersProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
+  const { data: clientes } = useGetJuridicoClientes();
   const { data: usuarios } = useGetActiveUsersForReporte(canFilterByUsuario);
 
   const equipoOptions = useMemo(
@@ -118,8 +118,8 @@ export function RegistroHorasTableFilters({
             <FilterMultiSelect
               label="Cliente"
               options={clienteOptions}
-              selected={clienteJuridicoIds}
-              onChange={(v) => onClienteJuridicoIdsChange?.(v)}
+              selected={clienteProveedorIds}
+              onChange={(v) => onClienteProveedorIdsChange?.(v)}
               placeholder="Todos"
             />
             {canFilterByUsuario ? (

@@ -33,7 +33,7 @@ export const createRegistroHoraAction = async (input: unknown) => {
   const service = makeRegistroHoraService({ prisma });
   const result = await service.create({
     equipoJuridicoId: parsed.equipoJuridicoId,
-    clienteJuridicoId: parsed.clienteJuridicoId,
+    clienteProveedorId: parsed.clienteProveedorId,
     asuntoJuridicoId: parsed.asuntoJuridicoId,
     socioId: parsed.socioId,
     horas: horasDecimal,

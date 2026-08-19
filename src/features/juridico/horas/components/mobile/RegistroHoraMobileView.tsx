@@ -53,7 +53,7 @@ interface RegistroHoraMobileViewProps {
   // Filtros adicionales
   equipoJuridicoIds: string[];
   onEquipoChange: (ids: string[]) => void;
-  clienteJuridicoIds: string[];
+  clienteProveedorIds: string[];
   onClienteChange: (ids: string[]) => void;
   usuarioIds: string[];
   onUsuarioChange: (ids: string[]) => void;
@@ -75,7 +75,7 @@ export function RegistroHoraMobileView({
   onSearchChange,
   equipoJuridicoIds,
   onEquipoChange,
-  clienteJuridicoIds,
+  clienteProveedorIds,
   onClienteChange,
   usuarioIds,
   onUsuarioChange,
@@ -92,7 +92,7 @@ export function RegistroHoraMobileView({
   const activeFilterCount = [
     search.length > 0,
     equipoJuridicoIds.length > 0,
-    clienteJuridicoIds.length > 0,
+    clienteProveedorIds.length > 0,
     usuarioIds.length > 0,
     advancedFilters.asuntoJuridicoIds.length > 0,
     advancedFilters.socioIds.length > 0,
@@ -221,7 +221,7 @@ export function RegistroHoraMobileView({
         onSearchChange={onSearchChange}
         equipoJuridicoIds={equipoJuridicoIds}
         onEquipoChange={onEquipoChange}
-        clienteJuridicoIds={clienteJuridicoIds}
+        clienteProveedorIds={clienteProveedorIds}
         onClienteChange={onClienteChange}
         usuarioIds={usuarioIds}
         onUsuarioChange={onUsuarioChange}
