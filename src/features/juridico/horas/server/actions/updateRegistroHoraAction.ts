@@ -39,7 +39,7 @@ export const updateRegistroHoraAction = async (input: unknown) => {
     {
       id: parsed.id,
       equipoJuridicoId: parsed.equipoJuridicoId,
-      clienteJuridicoId: parsed.clienteJuridicoId,
+      clienteProveedorId: parsed.clienteProveedorId,
       asuntoJuridicoId: parsed.asuntoJuridicoId,
       socioId: parsed.socioId,
       horas: horasDecimal,

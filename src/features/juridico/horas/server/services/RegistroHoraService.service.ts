@@ -47,8 +47,8 @@ export class RegistroHoraService {
         this.prisma.equipoJuridico.findUnique({
           where: { id: input.equipoJuridicoId },
         }),
-        this.prisma.clienteJuridico.findUnique({
-          where: { id: input.clienteJuridicoId },
+        this.prisma.clienteProveedor.findUnique({
+          where: { id: input.clienteProveedorId },
         }),
         this.prisma.asuntoJuridico.findUnique({
           where: { id: input.asuntoJuridicoId },
@@ -62,7 +62,7 @@ export class RegistroHoraService {
         return Err(new Error("El equipo jurídico seleccionado no existe o está inactivo"));
       }
       if (!cliente || !cliente.activo) {
-        return Err(new Error("El cliente jurídico seleccionado no existe o está inactivo"));
+        return Err(new Error("El cliente seleccionado no existe o está inactivo"));
       }
       if (!asunto || asunto.estado !== "ACTIVO") {
         return Err(new Error("El asunto jurídico seleccionado no existe o no está activo"));
@@ -135,7 +135,7 @@ export class RegistroHoraService {
           where: { id: input.id },
           data: {
             equipoJuridicoId: input.equipoJuridicoId,
-            clienteJuridicoId: input.clienteJuridicoId,
+            clienteProveedorId: input.clienteProveedorId,
             asuntoJuridicoId: input.asuntoJuridicoId,
             socioId: input.socioId,
             horas: input.horas,
@@ -144,7 +144,7 @@ export class RegistroHoraService {
           include: {
             usuario: { select: { id: true, name: true, email: true } },
             equipoJuridico: { select: { id: true, nombre: true } },
-            clienteJuridico: { select: { id: true, nombre: true } },
+            clienteProveedor: { select: { id: true, nombre: true } },
             asuntoJuridico: { select: { id: true, nombre: true } },
             socio: { select: { id: true, nombre: true } },
             autorizaciones: {

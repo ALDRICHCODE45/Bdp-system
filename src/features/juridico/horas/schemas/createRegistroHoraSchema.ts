@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createRegistroHoraSchemaUI = z
   .object({
     equipoJuridicoId: z.string().uuid({ message: "Selecciona un equipo" }),
-    clienteJuridicoId: z.string().uuid({ message: "Selecciona un cliente" }),
+    clienteProveedorId: z.string().uuid({ message: "Selecciona un cliente" }),
     asuntoJuridicoId: z.string().uuid({ message: "Selecciona un asunto" }),
     socioId: z.string().uuid({ message: "Selecciona un socio" }),
     horas: z

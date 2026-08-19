@@ -10,7 +10,7 @@ import type { AsuntosJuridicosFilterParams } from "../../types/AsuntosJuridicosF
 type CreateAsuntoJuridicoInput = {
   nombre: string;
   descripcion?: string | null;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   socioId: string;
 };
 
@@ -18,7 +18,7 @@ type UpdateAsuntoJuridicoInput = {
   id: string;
   nombre: string;
   descripcion?: string | null;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   socioId: string;
   estado: "ACTIVO" | "INACTIVO" | "CERRADO";
 };
@@ -33,12 +33,12 @@ export class AsuntoJuridicoService {
     input: CreateAsuntoJuridicoInput
   ): Promise<Result<AsuntoJuridicoEntity, Error>> {
     try {
-      // Verify clienteJuridicoId exists and is activo
-      const cliente = await this.prisma.clienteJuridico.findUnique({
-        where: { id: input.clienteJuridicoId },
+      // Verify clienteProveedorId exists and is activo
+      const cliente = await this.prisma.clienteProveedor.findUnique({
+        where: { id: input.clienteProveedorId },
       });
       if (!cliente || !cliente.activo) {
-        return Err(new Error("Cliente jurídico no encontrado o inactivo"));
+        return Err(new Error("Cliente/proveedor no encontrado o inactivo"));
       }
 
       // Verify socioId exists and is activo
@@ -81,12 +81,12 @@ export class AsuntoJuridicoService {
         return Err(new Error("Asunto jurídico no encontrado"));
       }
 
-      // Verify clienteJuridicoId exists and is activo
-      const cliente = await this.prisma.clienteJuridico.findUnique({
-        where: { id: input.clienteJuridicoId },
+      // Verify clienteProveedorId exists and is activo
+      const cliente = await this.prisma.clienteProveedor.findUnique({
+        where: { id: input.clienteProveedorId },
       });
       if (!cliente || !cliente.activo) {
-        return Err(new Error("Cliente jurídico no encontrado o inactivo"));
+        return Err(new Error("Cliente/proveedor no encontrado o inactivo"));
       }
 
       // Verify socioId exists and is activo

@@ -21,7 +21,7 @@ export type EntityLabels = {
 /** Group keys (Prisma `groupBy` por dimensión — sin labels). */
 export type ReporteAgrupadoGroupRow = {
   usuarioId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   equipoJuridicoId: string;
   socioId: string;
@@ -64,7 +64,7 @@ export interface ReporteHorasAgrupadoRepository {
    */
   findEntityLabels(input: {
     usuarioIds: string[];
-    clienteJuridicoIds: string[];
+    clienteProveedorIds: string[];
     asuntoJuridicoIds: string[];
     equipoJuridicoIds: string[];
     socioIds: string[];

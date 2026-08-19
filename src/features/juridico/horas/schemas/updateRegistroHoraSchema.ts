@@ -4,7 +4,7 @@ export const updateRegistroHoraSchemaUI = z
   .object({
     id: z.string().uuid({ message: "ID inválido" }),
     equipoJuridicoId: z.string().uuid({ message: "Selecciona un equipo" }),
-    clienteJuridicoId: z.string().uuid({ message: "Selecciona un cliente" }),
+    clienteProveedorId: z.string().uuid({ message: "Selecciona un cliente" }),
     asuntoJuridicoId: z.string().uuid({ message: "Selecciona un asunto" }),
     socioId: z.string().uuid({ message: "Selecciona un socio" }),
     horas: z

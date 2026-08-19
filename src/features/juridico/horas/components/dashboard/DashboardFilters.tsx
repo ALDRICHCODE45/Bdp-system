@@ -20,7 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/core/shared/ui/sheet";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
+import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
 import type { DashboardHorasFilters } from "../../server/dtos/DashboardHorasDto.dto";
 
@@ -50,7 +50,7 @@ function FilterFields({
   triggerClass: string;
 }) {
   const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
+  const { data: clientes } = useGetJuridicoClientes();
   const weeks = generateWeeks();
   const years = generateYears();
   const weekOptions = [
@@ -159,10 +159,10 @@ function FilterFields({
               label: cliente.nombre,
             })) ?? []),
           ]}
-          value={filters.clienteJuridicoId ?? TODOS_VALUE}
+          value={filters.clienteProveedorId ?? TODOS_VALUE}
           onChange={(value) =>
             update(
-              "clienteJuridicoId",
+              "clienteProveedorId",
               value === TODOS_VALUE ? undefined : value,
             )
           }

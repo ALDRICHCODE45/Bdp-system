@@ -3,8 +3,8 @@ export type AsuntoJuridicoDto = {
   nombre: string;
   descripcion: string | null;
   estado: string;
-  clienteJuridicoId: string;
-  clienteJuridicoNombre: string | null;
+  clienteProveedorId: string;
+  clienteProveedorNombre: string | null;
   socioId: string;
   socioNombre: string | null;
   createdAt: string;

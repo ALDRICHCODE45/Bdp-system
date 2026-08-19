@@ -2,7 +2,7 @@ import type {
   RegistroHora,
   User,
   EquipoJuridico,
-  ClienteJuridico,
+  ClienteProveedor,
   AsuntoJuridico,
   Socio,
   AutorizacionEdicion,
@@ -12,7 +12,7 @@ import type { RegistroHorasFilterParams } from "../../types/RegistroHorasFilterP
 export type RegistroHoraEntity = RegistroHora & {
   usuario: Pick<User, "id" | "name" | "email">;
   equipoJuridico: Pick<EquipoJuridico, "id" | "nombre">;
-  clienteJuridico: Pick<ClienteJuridico, "id" | "nombre">;
+  clienteProveedor: Pick<ClienteProveedor, "id" | "nombre">;
   asuntoJuridico: Pick<AsuntoJuridico, "id" | "nombre">;
   socio: Pick<Socio, "id" | "nombre">;
   autorizaciones: Pick<AutorizacionEdicion, "id" | "estado">[];
@@ -21,7 +21,7 @@ export type RegistroHoraEntity = RegistroHora & {
 export type CreateRegistroHoraArgs = {
   usuarioId: string;
   equipoJuridicoId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   socioId: string;
   horas: number;
@@ -33,7 +33,7 @@ export type CreateRegistroHoraArgs = {
 export type UpdateRegistroHoraArgs = {
   id: string;
   equipoJuridicoId: string;
-  clienteJuridicoId: string;
+  clienteProveedorId: string;
   asuntoJuridicoId: string;
   socioId: string;
   horas: number;

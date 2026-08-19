@@ -9,7 +9,7 @@ import type { AsuntoJuridicoDto } from "../server/dtos/AsuntoJuridicoDto.dto";
 export const asuntosJuridicosDefaultColumnVisibility = {
   nombre: true,
   estado: true,
-  clienteJuridicoNombre: true,
+  clienteProveedorNombre: true,
   socioNombre: true,
   descripcion: false,
   createdAt: false,

@@ -3,7 +3,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 
 import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
+import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
 import { useGetSocios } from "../hooks/useGetSocios.hook";
 import { useGetActiveUsersForReporte } from "../hooks/useGetActiveUsersForReporte.hook";
@@ -33,7 +33,7 @@ export function ReporteHorasAgrupadoProvider({
   children,
 }: ReporteHorasAgrupadoProviderProps) {
   const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
+  const { data: clientes } = useGetJuridicoClientes();
   const { data: asuntos } = useGetAsuntosJuridicos();
   const { data: socios } = useGetSocios();
   const { data: usuarios } = useGetActiveUsersForReporte();

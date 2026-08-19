@@ -10,7 +10,7 @@ import { RegistroHorasTableFilters } from "./RegistroHorasTableFilters";
 export const registroHorasDefaultColumnVisibility = {
   semana: true,
   equipoJuridicoNombre: true,
-  clienteJuridicoNombre: true,
+  clienteProveedorNombre: true,
   asuntoJuridicoNombre: true,
   horas: true,
   editable: true,

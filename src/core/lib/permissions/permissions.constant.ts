@@ -385,38 +385,9 @@ const SISTEMA_PERMISSIONS: PermissionDefinition[] = [
  * Permisos del módulo Jurídico
  */
 const JURIDICO_PERMISSIONS: PermissionDefinition[] = [
-  // Clientes Jurídicos - Granulares
-  {
-    name: "juridico-clientes:acceder",
-    resource: "juridico-clientes",
-    action: "acceder",
-    description: "Acceder al módulo de clientes jurídicos",
-  },
-  {
-    name: "juridico-clientes:crear",
-    resource: "juridico-clientes",
-    action: "crear",
-    description: "Crear clientes jurídicos",
-  },
-  {
-    name: "juridico-clientes:editar",
-    resource: "juridico-clientes",
-    action: "editar",
-    description: "Editar clientes jurídicos",
-  },
-  {
-    name: "juridico-clientes:eliminar",
-    resource: "juridico-clientes",
-    action: "eliminar",
-    description: "Eliminar clientes jurídicos",
-  },
-  // Clientes Jurídicos - Modular
-  {
-    name: "juridico-clientes:gestionar",
-    resource: "juridico-clientes",
-    action: "gestionar",
-    description: "Gestión completa de clientes jurídicos",
-  },
+  // Clientes Jurídicos — REMOVED in sdd/unificar-clientes-juridico.
+  // Juridico clients now reuse ClienteProveedor (filtered by tipo).
+  // Creation goes through `clientes-proovedores:crear` (finanzas).
 
   // Asuntos Jurídicos - Granulares
   {

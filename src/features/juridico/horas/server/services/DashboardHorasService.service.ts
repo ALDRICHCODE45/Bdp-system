@@ -16,7 +16,7 @@ export class DashboardHorasService {
 
       if (filters.ano) where.ano = filters.ano;
       if (filters.equipoJuridicoId) where.equipoJuridicoId = filters.equipoJuridicoId;
-      if (filters.clienteJuridicoId) where.clienteJuridicoId = filters.clienteJuridicoId;
+      if (filters.clienteProveedorId) where.clienteProveedorId = filters.clienteProveedorId;
 
       if (filters.semanaDesde || filters.semanaHasta) {
         where.semana = {};
@@ -28,7 +28,7 @@ export class DashboardHorasService {
         where,
         include: {
           equipoJuridico: { select: { nombre: true } },
-          clienteJuridico: { select: { nombre: true } },
+          clienteProveedor: { select: { nombre: true } },
           asuntoJuridico: { select: { nombre: true } },
           usuario: { select: { name: true, email: true } },
         },
@@ -37,7 +37,7 @@ export class DashboardHorasService {
       const totalHoras = registros.reduce((acc, item) => acc + Number(item.horas), 0);
       const totalRegistros = registros.length;
       const totalUsuarios = new Set(registros.map((item) => item.usuarioId)).size;
-      const totalClientes = new Set(registros.map((item) => item.clienteJuridicoId)).size;
+      const totalClientes = new Set(registros.map((item) => item.clienteProveedorId)).size;
 
       const horasPorEquipoMap = new Map<string, { nombre: string; horas: number; registros: number }>();
       const horasPorClienteMap = new Map<string, { nombre: string; horas: number; registros: number }>();
@@ -63,18 +63,18 @@ export class DashboardHorasService {
         equipoPrev.registros += 1;
         horasPorEquipoMap.set(registro.equipoJuridicoId, equipoPrev);
 
-        const clientePrev = horasPorClienteMap.get(registro.clienteJuridicoId) ?? {
-          nombre: registro.clienteJuridico.nombre,
+        const clientePrev = horasPorClienteMap.get(registro.clienteProveedorId) ?? {
+          nombre: registro.clienteProveedor.nombre,
           horas: 0,
           registros: 0,
         };
         clientePrev.horas += horas;
         clientePrev.registros += 1;
-        horasPorClienteMap.set(registro.clienteJuridicoId, clientePrev);
+        horasPorClienteMap.set(registro.clienteProveedorId, clientePrev);
 
         const asuntoPrev = horasPorAsuntoMap.get(registro.asuntoJuridicoId) ?? {
           nombre: registro.asuntoJuridico.nombre,
-          clienteNombre: registro.clienteJuridico.nombre,
+          clienteNombre: registro.clienteProveedor.nombre,
           horas: 0,
           registros: 0,
         };

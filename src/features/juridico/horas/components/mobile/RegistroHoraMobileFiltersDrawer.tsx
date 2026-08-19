@@ -13,7 +13,7 @@ import {
 import { DatePicker } from "@/core/shared/ui/date-picker";
 import { FilterMultiSelect } from "@/core/shared/components/DataTable/FilterMultiSelect";
 import { useGetEquiposJuridicos } from "@/features/juridico/equipos/hooks/useGetEquiposJuridicos.hook";
-import { useGetClientesJuridicos } from "@/features/juridico/clientes/hooks/useGetClientesJuridicos.hook";
+import { useGetJuridicoClientes } from "@/features/juridico/clientes-directorio/hooks/useGetJuridicoClientes.hook";
 import { useGetAsuntosJuridicos } from "@/features/juridico/asuntos/hooks/useGetAsuntosJuridicos.hook";
 import { useGetSocios } from "../../hooks/useGetSocios.hook";
 import { useGetActiveUsersForReporte } from "../../hooks/useGetActiveUsersForReporte.hook";
@@ -26,7 +26,7 @@ interface RegistroHoraMobileFiltersDrawerProps {
   onSearchChange: (v: string) => void;
   equipoJuridicoIds: string[];
   onEquipoChange: (ids: string[]) => void;
-  clienteJuridicoIds: string[];
+  clienteProveedorIds: string[];
   onClienteChange: (ids: string[]) => void;
   usuarioIds: string[];
   onUsuarioChange: (ids: string[]) => void;
@@ -60,7 +60,7 @@ export function RegistroHoraMobileFiltersDrawer({
   onSearchChange,
   equipoJuridicoIds,
   onEquipoChange,
-  clienteJuridicoIds,
+  clienteProveedorIds,
   onClienteChange,
   usuarioIds,
   onUsuarioChange,
@@ -73,7 +73,7 @@ export function RegistroHoraMobileFiltersDrawer({
   const weeks = generateWeeks();
 
   const { data: equipos } = useGetEquiposJuridicos();
-  const { data: clientes } = useGetClientesJuridicos();
+  const { data: clientes } = useGetJuridicoClientes();
   const { data: asuntos } = useGetAsuntosJuridicos();
   const { data: socios } = useGetSocios();
   const { data: usuarios } = useGetActiveUsersForReporte(canFilterByUsuario);
@@ -121,7 +121,7 @@ export function RegistroHoraMobileFiltersDrawer({
           <FilterMultiSelect
             label="Cliente"
             options={(clientes ?? []).map((c) => ({ value: c.id, label: c.nombre }))}
-            selected={clienteJuridicoIds}
+            selected={clienteProveedorIds}
             onChange={onClienteChange}
             placeholder="Todos"
           />

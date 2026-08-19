@@ -3,7 +3,7 @@ export type DashboardHorasFilters = {
   semanaDesde?: number;
   semanaHasta?: number;
   equipoJuridicoId?: string;
-  clienteJuridicoId?: string;
+  clienteProveedorId?: string;
 };
 
 export type DashboardHorasPorEquipoDto = {

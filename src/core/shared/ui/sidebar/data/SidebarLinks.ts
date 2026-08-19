@@ -75,10 +75,6 @@ export const sidebarLinks = {
       icon: Scale,
       items: [
         {
-          title: "Clientes",
-          url: "/juridico/clientes",
-        },
-        {
           title: "Asuntos",
           url: "/juridico/asuntos",
         },

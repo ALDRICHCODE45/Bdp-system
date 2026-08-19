@@ -68,7 +68,7 @@ export function RegistroHorasTablePage() {
   const debouncedSearch = useDebounce(search, 300);
 
   const [desktopEquipoIds, setDesktopEquipoIds] = useState<string[]>([]);
-  const [desktopClienteIds, setDesktopClienteIds] = useState<string[]>([]);
+  const [desktopClienteProveedorIds, setDesktopClienteProveedorIds] = useState<string[]>([]);
   const [desktopUsuarioIds, setDesktopUsuarioIds] = useState<string[]>([]);
   const [desktopAdvancedFilters, setDesktopAdvancedFilters] =
     useState<RegistroHorasAdvancedFilters>(
@@ -80,7 +80,7 @@ export function RegistroHorasTablePage() {
   const [mobileSearch, setMobileSearch] = useState("");
   const debouncedMobileSearch = useDebounce(mobileSearch, 300);
   const [mobileEquipoIds, setMobileEquipoIds] = useState<string[]>([]);
-  const [mobileClienteIds, setMobileClienteIds] = useState<string[]>([]);
+  const [mobileClienteProveedorIds, setMobileClienteProveedorIds] = useState<string[]>([]);
   const [mobileUsuarioIds, setMobileUsuarioIds] = useState<string[]>([]);
   const [mobileAdvancedFilters, setMobileAdvancedFilters] =
     useState<RegistroHorasAdvancedFilters>(
@@ -139,7 +139,7 @@ export function RegistroHorasTablePage() {
     }, []);
 
   const handleMobileClienteChange = useCallback((ids: string[]) => {
-      setMobileClienteIds(ids);
+      setMobileClienteProveedorIds(ids);
       setMobilePage(1);
     }, []);
 
@@ -151,7 +151,7 @@ export function RegistroHorasTablePage() {
   const handleMobileClearFilters = useCallback(() => {
     setMobileSearch("");
     setMobileEquipoIds([]);
-    setMobileClienteIds([]);
+    setMobileClienteProveedorIds([]);
     setMobileUsuarioIds([]);
     setMobileAdvancedFilters(EMPTY_REGISTRO_HORAS_ADVANCED_FILTERS);
     setMobilePage(1);
@@ -159,7 +159,7 @@ export function RegistroHorasTablePage() {
 
   const handleDesktopClearFilters = useCallback(() => {
     setDesktopEquipoIds([]);
-    setDesktopClienteIds([]);
+    setDesktopClienteProveedorIds([]);
     setDesktopUsuarioIds([]);
     setDesktopAdvancedFilters(EMPTY_REGISTRO_HORAS_ADVANCED_FILTERS);
     setSearch("");
@@ -174,7 +174,7 @@ export function RegistroHorasTablePage() {
     sortOrder: sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined,
     search: debouncedSearch || undefined,
     equipoJuridicoIds: desktopEquipoIds,
-    clienteJuridicoIds: desktopClienteIds,
+    clienteProveedorIds: desktopClienteProveedorIds,
     usuarioIds: canFilterByUsuario ? desktopUsuarioIds : undefined,
     asuntoJuridicoIds: desktopAdvancedFilters.asuntoJuridicoIds,
     socioIds: desktopAdvancedFilters.socioIds,
@@ -197,7 +197,7 @@ export function RegistroHorasTablePage() {
     pageSize: 20,
     search: debouncedMobileSearch || undefined,
     equipoJuridicoIds: mobileEquipoIds,
-    clienteJuridicoIds: mobileClienteIds,
+    clienteProveedorIds: mobileClienteProveedorIds,
     usuarioIds: canFilterByUsuario ? mobileUsuarioIds : undefined,
     asuntoJuridicoIds: mobileAdvancedFilters.asuntoJuridicoIds,
     socioIds: mobileAdvancedFilters.socioIds,
@@ -221,15 +221,15 @@ export function RegistroHorasTablePage() {
           onAdd: openModal,
           customFilterProps: {
             equipoJuridicoIds: desktopEquipoIds,
-            clienteJuridicoIds: desktopClienteIds,
+            clienteProveedorIds: desktopClienteProveedorIds,
             usuarioIds: desktopUsuarioIds,
             canFilterByUsuario,
             onEquipoJuridicoIdsChange: (value: string[]) => {
               setDesktopEquipoIds(value);
               resetPage();
             },
-            onClienteJuridicoIdsChange: (value: string[]) => {
-              setDesktopClienteIds(value);
+            onClienteProveedorIdsChange: (value: string[]) => {
+              setDesktopClienteProveedorIds(value);
               resetPage();
             },
             onUsuarioIdsChange: (value: string[]) => {
@@ -254,7 +254,7 @@ export function RegistroHorasTablePage() {
       data?.totalCount,
       data?.pageCount,
       desktopEquipoIds,
-      desktopClienteIds,
+      desktopClienteProveedorIds,
       desktopUsuarioIds,
       canFilterByUsuario,
       desktopAdvancedFilters,
@@ -304,7 +304,7 @@ export function RegistroHorasTablePage() {
           onSearchChange={handleMobileSearchChange}
           equipoJuridicoIds={mobileEquipoIds}
           onEquipoChange={handleMobileEquipoChange}
-          clienteJuridicoIds={mobileClienteIds}
+          clienteProveedorIds={mobileClienteProveedorIds}
           onClienteChange={handleMobileClienteChange}
           usuarioIds={mobileUsuarioIds}
           onUsuarioChange={handleMobileUsuarioChange}

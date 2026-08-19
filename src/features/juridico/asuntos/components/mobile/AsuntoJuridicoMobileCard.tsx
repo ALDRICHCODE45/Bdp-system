@@ -113,7 +113,7 @@ export function AsuntoJuridicoMobileCard({
 
         {/* ── Línea 2: clienteNombre → socioNombre ────────────────────── */}
         <div className="mb-1 text-xs text-muted-foreground truncate">
-          {[asunto.clienteJuridicoNombre, asunto.socioNombre]
+          {[asunto.clienteProveedorNombre, asunto.socioNombre]
             .filter(Boolean)
             .join(" → ")}
         </div>

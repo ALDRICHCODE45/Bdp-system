@@ -3,7 +3,7 @@ import {
   ClienteProveedorEntity,
 } from "../repositories/ClienteProveedorRepository.repository";
 import { Result, Err, Ok } from "@/core/shared/result/result";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { ClienteProveedorHistorialService } from "./ClienteProveedorHistorialService.service";
 
 type CreateClienteProveedorInput = {
@@ -215,6 +215,19 @@ export class ClienteProveedorService {
 
       return Ok(undefined);
     } catch (error) {
+      // Map FK constraint violation (P2003) to a friendly message.
+      // AsuntoJuridico / RegistroHora reference ClienteProveedor with
+      // onDelete: Restrict, so a referenced row surfaces here.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2003"
+      ) {
+        return Err(
+          new Error(
+            "No se puede eliminar: el cliente/proveedor tiene asuntos u horas jurídicas asociados."
+          )
+        );
+      }
       return Err(
         error instanceof Error
           ? error

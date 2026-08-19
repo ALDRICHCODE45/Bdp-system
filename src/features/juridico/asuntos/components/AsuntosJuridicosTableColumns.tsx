@@ -56,10 +56,10 @@ export const asuntosJuridicosColumns: ColumnDef<AsuntoJuridicoDto>[] = [
     size: 12,
   },
   {
-    header: "Cliente Jurídico",
-    accessorKey: "clienteJuridicoNombre",
+    header: "Cliente",
+    accessorKey: "clienteProveedorNombre",
     cell: ({ row }) => {
-      const nombre = row.getValue("clienteJuridicoNombre") as string | null;
+      const nombre = row.getValue("clienteProveedorNombre") as string | null;
       return nombre ? (
         <div className="text-sm truncate max-w-[180px]">{nombre}</div>
       ) : (

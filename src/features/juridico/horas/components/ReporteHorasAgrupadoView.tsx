@@ -70,7 +70,7 @@ export function ReporteHorasAgrupadoView() {
     return {
       usuarioId: toMap(usuarios ?? []),
       asuntoJuridicoId: toMap(asuntos ?? []),
-      clienteJuridicoId: toMap(clientes ?? []),
+      clienteProveedorId: toMap(clientes ?? []),
       equipoJuridicoId: toMap(equipos ?? []),
       socioId: toMap(socios ?? []),
     };

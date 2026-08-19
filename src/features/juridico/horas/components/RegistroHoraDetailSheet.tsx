@@ -174,7 +174,7 @@ function InformacionTab({ registro }: { registro: RegistroHoraDto }) {
         <div className="grid grid-cols-2 gap-4">
           <InfoRow label="Equipo" value={registro.equipoJuridicoNombre} />
           <InfoRow label="Socio" value={registro.socioNombre} />
-          <InfoRow label="Cliente" value={registro.clienteJuridicoNombre} />
+          <InfoRow label="Cliente" value={registro.clienteProveedorNombre} />
           <InfoRow label="Asunto" value={registro.asuntoJuridicoNombre} />
         </div>
       </div>

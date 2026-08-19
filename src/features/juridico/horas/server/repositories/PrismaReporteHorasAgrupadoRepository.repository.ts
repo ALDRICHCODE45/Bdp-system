@@ -31,8 +31,8 @@ function buildWhere(
   if (filters.usuarioId) where.usuarioId = filters.usuarioId;
   if (filters.asuntoJuridicoId)
     where.asuntoJuridicoId = filters.asuntoJuridicoId;
-  if (filters.clienteJuridicoId)
-    where.clienteJuridicoId = filters.clienteJuridicoId;
+  if (filters.clienteProveedorId)
+    where.clienteProveedorId = filters.clienteProveedorId;
   if (filters.equipoJuridicoId)
     where.equipoJuridicoId = filters.equipoJuridicoId;
   if (filters.socioId) where.socioId = filters.socioId;
@@ -86,7 +86,7 @@ function buildOrderBy(sort: ReporteAgrupadoSort | undefined): OrderByItem[] {
 
 type GroupByByField =
   | "usuarioId"
-  | "clienteJuridicoId"
+  | "clienteProveedorId"
   | "asuntoJuridicoId"
   | "equipoJuridicoId"
   | "socioId"
@@ -95,7 +95,7 @@ type GroupByByField =
 
 const GROUP_BY_BY_FIELDS: GroupByByField[] = [
   "usuarioId",
-  "clienteJuridicoId",
+  "clienteProveedorId",
   "asuntoJuridicoId",
   "equipoJuridicoId",
   "socioId",
@@ -107,7 +107,7 @@ const GROUP_BY_BY_FIELDS: GroupByByField[] = [
 
 function uniqueGroupKeys(rows: ReporteAgrupadoGroupRow[]): {
   usuarioIds: string[];
-  clienteJuridicoIds: string[];
+  clienteProveedorIds: string[];
   asuntoJuridicoIds: string[];
   equipoJuridicoIds: string[];
   socioIds: string[];
@@ -119,14 +119,14 @@ function uniqueGroupKeys(rows: ReporteAgrupadoGroupRow[]): {
   const socios = new Set<string>();
   for (const r of rows) {
     usuarios.add(r.usuarioId);
-    clientes.add(r.clienteJuridicoId);
+    clientes.add(r.clienteProveedorId);
     asuntos.add(r.asuntoJuridicoId);
     equipos.add(r.equipoJuridicoId);
     socios.add(r.socioId);
   }
   return {
     usuarioIds: [...usuarios],
-    clienteJuridicoIds: [...clientes],
+    clienteProveedorIds: [...clientes],
     asuntoJuridicoIds: [...asuntos],
     equipoJuridicoIds: [...equipos],
     socioIds: [...socios],
@@ -214,7 +214,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
         const horas = g._sum.horas ? Number(g._sum.horas) : 0;
         return {
           usuarioId: g.usuarioId,
-          clienteJuridicoId: g.clienteJuridicoId,
+          clienteProveedorId: g.clienteProveedorId,
           asuntoJuridicoId: g.asuntoJuridicoId,
           equipoJuridicoId: g.equipoJuridicoId,
           socioId: g.socioId,
@@ -279,7 +279,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
 
     const groups: ReporteAgrupadoGroupRow[] = groupsRaw.map((g) => ({
       usuarioId: g.usuarioId,
-      clienteJuridicoId: g.clienteJuridicoId,
+      clienteProveedorId: g.clienteProveedorId,
       asuntoJuridicoId: g.asuntoJuridicoId,
       equipoJuridicoId: g.equipoJuridicoId,
       socioId: g.socioId,
@@ -305,7 +305,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
         _count: { _all: true },
       }),
       this.prisma.registroHora.groupBy({
-        by: ["clienteJuridicoId"],
+        by: ["clienteProveedorId"],
         where,
         _sum: { horas: true },
         _count: { _all: true },
@@ -320,7 +320,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
 
     // Batch-load labels para los IDs únicos de cada dimensión.
     const usuarioIds = porAbogadoRaw.map((r) => r.usuarioId);
-    const clienteIds = porClienteRaw.map((r) => r.clienteJuridicoId);
+    const clienteIds = porClienteRaw.map((r) => r.clienteProveedorId);
     const asuntoIds = porAsuntoRaw.map((r) => r.asuntoJuridicoId);
 
     const [usuarios, clientes, asuntos] = await Promise.all([
@@ -332,7 +332,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
           }),
       clienteIds.length === 0
         ? Promise.resolve([])
-        : this.prisma.clienteJuridico.findMany({
+        : this.prisma.clienteProveedor.findMany({
             where: { id: { in: clienteIds } },
             select: { id: true, nombre: true },
           }),
@@ -356,8 +356,8 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
     }));
 
     const porCliente = porClienteRaw.map((r) => ({
-      id: r.clienteJuridicoId,
-      nombre: clienteMap.get(r.clienteJuridicoId) ?? "—",
+      id: r.clienteProveedorId,
+      nombre: clienteMap.get(r.clienteProveedorId) ?? "—",
       horas: r._sum.horas ? Number(r._sum.horas) : 0,
       grupos: r._count._all,
     }));
@@ -385,7 +385,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
       .groupBy({
         by: [
           "usuarioId",
-          "clienteJuridicoId",
+          "clienteProveedorId",
           "asuntoJuridicoId",
           "equipoJuridicoId",
           "socioId",
@@ -423,7 +423,7 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
 
   async findEntityLabels(input: {
     usuarioIds: string[];
-    clienteJuridicoIds: string[];
+    clienteProveedorIds: string[];
     asuntoJuridicoIds: string[];
     equipoJuridicoIds: string[];
     socioIds: string[];
@@ -435,10 +435,10 @@ export class PrismaReporteHorasAgrupadoRepository implements ReporteHorasAgrupad
             where: { id: { in: input.usuarioIds } },
             select: { id: true, name: true },
           }),
-      input.clienteJuridicoIds.length === 0
+      input.clienteProveedorIds.length === 0
         ? Promise.resolve([])
-        : this.prisma.clienteJuridico.findMany({
-            where: { id: { in: input.clienteJuridicoIds } },
+        : this.prisma.clienteProveedor.findMany({
+            where: { id: { in: input.clienteProveedorIds } },
             select: { id: true, nombre: true },
           }),
       input.asuntoJuridicoIds.length === 0
