@@ -35,4 +35,6 @@ export const createUserAction = async (input: FormData) => {
   if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath("/usuarios");
+
+  return { ok: true };
 };

@@ -1,10 +1,13 @@
 "use client";
 import { useForm } from "@tanstack/react-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { createUserSchemaUI } from "../schemas/createUserSchema";
 import { showToast } from "@/core/shared/helpers/CustomToast";
 import { createUserAction } from "../server/actions/createUserAction";
 
 export const useCreateUserForm = () => {
+  const queryClient = useQueryClient();
+
   const form = useForm({
     defaultValues: {
       email: "",
@@ -22,7 +25,22 @@ export const useCreateUserForm = () => {
       formData.append("password", value.password);
       formData.append("roles", JSON.stringify(value.roles));
 
-      await createUserAction(formData);
+      const result = await createUserAction(formData);
+
+      if (!result.ok) {
+        showToast({
+          type: "error",
+          description: result.error || "Error al crear usuario",
+          title: "Error",
+        });
+        throw new Error(result.error || "Error al crear usuario");
+      }
+
+      // Invalidar la query de lista para que el usuario nuevo aparezca
+      // inmediatamente en la tabla sin refrescar manualmente
+      await queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
 
       showToast({
         type: "success",
