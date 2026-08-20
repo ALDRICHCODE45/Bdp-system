@@ -7,9 +7,11 @@ import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import type { TableConfig } from "@/core/shared/components/DataTable/types";
 import { ExportActions } from "@/core/shared/components/DataTable/ExportActions";
 import { Badge } from "@/core/shared/ui/badge";
+import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 import { ReporteHorasAgrupadoFilters } from "./ReporteHorasAgrupadoFilters";
 import { createReporteHorasAgrupadoColumns } from "./ReporteHorasAgrupadoColumns";
 import { SubtotalesPanel } from "./SubtotalesPanel";
+import { ReporteMobileView } from "./mobile/ReporteMobileView";
 import { useReporteEntities } from "./ReporteHorasAgrupadoProvider";
 import { useReporteHorasAgrupado } from "../hooks/useReporteHorasAgrupado.hook";
 import { useExportHorasAgrupadas } from "../hooks/useExportHorasAgrupadas.hook";
@@ -31,6 +33,7 @@ import type {
 const DEFAULT_PAGE_SIZE = 20;
 
 export function ReporteHorasAgrupadoView() {
+  const isMobile = useIsMobile();
   const [filters, setFilters] = useState<ReporteHorasAgrupadoFiltersState>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -77,6 +80,7 @@ export function ReporteHorasAgrupadoView() {
   }, [equipos, clientes, asuntos, socios, usuarios]);
 
   const grupos: ReporteGrupoDto[] = data?.grupos ?? [];
+  const pageCount = Math.max(1, Math.ceil((data?.totalCount ?? 0) / pageSize));
 
   const handleExportExcel = useCallback(async () => {
     const toastId = toast.loading("Preparando exportación a Excel...");
@@ -161,10 +165,7 @@ export function ReporteHorasAgrupadoView() {
       "Total",
       "Total",
       "Total",
-      <span
-        key="horas"
-        className="font-mono tabular-nums"
-      >
+      <span key="horas" className="font-mono tabular-nums">
         {formatHoras(totalHoras)}
       </span>,
     ];
@@ -205,56 +206,86 @@ export function ReporteHorasAgrupadoView() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Filters */}
-      <ReporteHorasAgrupadoFilters
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-      />
-
-      {/* Toolbar row: result count + ExportActions */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="font-normal">
-            {isInitialLoading
-              ? "Cargando…"
-              : `${(data?.totalCount ?? 0).toLocaleString("es-MX")} resultados`}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportActions
-            onExportExcel={handleExportExcel}
-            onExportPDF={handleExportPDF}
-            isExporting={exportMutation.isPending}
-            resultCount={data?.totalCount}
-            disablePDF={!data?.subtotales || isInitialLoading}
-          />
-        </div>
-      </div>
-
-      {/* Subtotals panel */}
-      <SubtotalesPanel
-        subtotales={data?.subtotales}
-        isLoading={isInitialLoading}
-      />
-
-      {/* Data table */}
-      {errorMessage ? (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center text-sm text-destructive">
-          {errorMessage}
-        </div>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={grupos}
-          config={tableConfig}
+      {isMobile ? (
+        <ReporteMobileView
+          data={data}
           isLoading={isInitialLoading}
-          isFetching={isFetchingMore}
-          pagination={paginationState}
-          sorting={sortingState}
-          onPaginationChange={handlePaginationChange}
-          onSortingChange={handleSortingChange}
-          totalsRow={totalsRow}
+          errorMessage={errorMessage}
+          page={page}
+          pageCount={pageCount}
+          totalCount={data?.totalCount ?? 0}
+          onPageChange={setPage}
+          subtotales={data?.subtotales}
+          filters={
+            <ReporteHorasAgrupadoFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+            />
+          }
+          exportActions={
+            <ExportActions
+              onExportExcel={handleExportExcel}
+              onExportPDF={handleExportPDF}
+              isExporting={exportMutation.isPending}
+              resultCount={data?.totalCount}
+              disablePDF={!data?.subtotales || isInitialLoading}
+            />
+          }
         />
+      ) : (
+        <>
+          {/* Filters */}
+          <ReporteHorasAgrupadoFilters
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+          />
+
+          {/* Toolbar row: result count + ExportActions */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="font-normal">
+                {isInitialLoading
+                  ? "Cargando…"
+                  : `${(data?.totalCount ?? 0).toLocaleString("es-MX")} resultados`}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <ExportActions
+                onExportExcel={handleExportExcel}
+                onExportPDF={handleExportPDF}
+                isExporting={exportMutation.isPending}
+                resultCount={data?.totalCount}
+                disablePDF={!data?.subtotales || isInitialLoading}
+              />
+            </div>
+          </div>
+
+          {/* Subtotals panel */}
+          <SubtotalesPanel
+            subtotales={data?.subtotales}
+            isLoading={isInitialLoading}
+          />
+
+          {/* Data table */}
+          {errorMessage ? (
+            <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center text-sm text-destructive">
+              {errorMessage}
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={grupos}
+              config={tableConfig}
+              isLoading={isInitialLoading}
+              isFetching={isFetchingMore}
+              pagination={paginationState}
+              sorting={sortingState}
+              onPaginationChange={handlePaginationChange}
+              onSortingChange={handleSortingChange}
+              totalsRow={totalsRow}
+            />
+          )}
+        </>
       )}
     </div>
   );

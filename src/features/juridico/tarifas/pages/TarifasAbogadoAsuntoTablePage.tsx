@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { useModalState } from "@/core/shared/hooks/useModalState";
+import { useIsMobile } from "@/core/shared/hooks/use-mobile";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
@@ -15,6 +16,7 @@ import { Card, CardContent } from "@/core/shared/ui/card";
 import { useGetActiveTarifas } from "../hooks/useGetActiveTarifas.hook";
 import { tarifasAbogadoAsuntoColumns } from "../components/TarifasAbogadoAsuntoTableColumns";
 import { TarifasAbogadoAsuntoTableConfig } from "../components/TarifasAbogadoAsuntoTableConfig";
+import { TarifaMobileView } from "../components/mobile/TarifaMobileView";
 
 const CreateTarifaSheet = dynamic(
   () =>
@@ -25,6 +27,7 @@ const CreateTarifaSheet = dynamic(
 );
 
 export function TarifasAbogadoAsuntoTablePage() {
+  const isMobile = useIsMobile();
   const { isOpen, openModal, closeModal } = useModalState();
   const [search, setSearch] = useState("");
 
@@ -55,6 +58,27 @@ export function TarifasAbogadoAsuntoTablePage() {
       }),
     [openModal],
   );
+
+  // ── Mobile view ───────────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <>
+        <TarifaMobileView
+          data={filteredData}
+          isLoading={isPending && !data}
+          search={search}
+          onSearchChange={setSearch}
+          onCreateClick={openModal}
+        />
+
+        <PermissionGuard
+          permissions={[PermissionActions["juridico-tarifas"].gestionar]}
+        >
+          {isOpen && <CreateTarifaSheet isOpen={true} onClose={closeModal} />}
+        </PermissionGuard>
+      </>
+    );
+  }
 
   return (
     <Card className="p-2 m-1">
