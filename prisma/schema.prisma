@@ -244,24 +244,24 @@ model EntradasSalidas {
 }
 
 model User {
-  id                         String                  @id @default(uuid())
-  email                      String                  @unique
+  id                         String                         @id @default(uuid())
+  email                      String                         @unique
   name                       String
   password                   String
   roles                      UserRole[]
-  isActive                   Boolean                 @default(true)
-  createdAt                  DateTime                @default(now())
-  updatedAt                  DateTime                @updatedAt
-  clientesProveedoresCreados ClienteProveedor[]      @relation("ClienteProveedorIngresadoPor")
-  movimientosCreados         Movimiento[]            @relation("MovimientoIngresadoPor")
-  facturasCreadas            Factura[]               @relation("FacturaIngresadoPor")
+  isActive                   Boolean                        @default(true)
+  createdAt                  DateTime                       @default(now())
+  updatedAt                  DateTime                       @updatedAt
+  clientesProveedoresCreados ClienteProveedor[]             @relation("ClienteProveedorIngresadoPor")
+  movimientosCreados         Movimiento[]                   @relation("MovimientoIngresadoPor")
+  facturasCreadas            Factura[]                      @relation("FacturaIngresadoPor")
   equiposJuridicos           EquipoJuridicoUsuario[]
   registrosHora              RegistroHora[]
-  autorizacionesSolicitadas  AutorizacionEdicion[]   @relation("AutorizacionSolicitante")
-  autorizacionesResueltas    AutorizacionEdicion[]   @relation("AutorizacionAutorizador")
-  tarifasAbogadoAsunto       TarifaAbogadoAsunto[]   @relation("TarifaAbogadoUsuario")
-  tarifasCreadas             TarifaAbogadoAsunto[]   @relation("TarifaCreador")
-  tarifasEditadas            TarifaAbogadoAsunto[]   @relation("TarifaEditor")
+  autorizacionesSolicitadas  AutorizacionEdicion[]          @relation("AutorizacionSolicitante")
+  autorizacionesResueltas    AutorizacionEdicion[]          @relation("AutorizacionAutorizador")
+  tarifasAbogadoAsunto       TarifaAbogadoAsunto[]          @relation("TarifaAbogadoUsuario")
+  tarifasCreadas             TarifaAbogadoAsunto[]          @relation("TarifaCreador")
+  tarifasEditadas            TarifaAbogadoAsunto[]          @relation("TarifaEditor")
   tarifasHistorialCambios    TarifaAbogadoAsuntoHistorial[] @relation("TarifaHistorialCambiador")
 }
 
@@ -695,16 +695,16 @@ enum AutorizacionEstado {
 }
 
 model AsuntoJuridico {
-  id                  String               @id @default(uuid())
-  nombre              String
-  descripcion         String?
-  estado              AsuntoJuridicoEstado @default(ACTIVO)
-  clienteProveedorId  String
-  clienteProveedor    ClienteProveedor     @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
-  socioId             String
-  socio               Socio                @relation(fields: [socioId], references: [id], onDelete: Restrict)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  id                 String               @id @default(uuid())
+  nombre             String
+  descripcion        String?
+  estado             AsuntoJuridicoEstado @default(ACTIVO)
+  clienteProveedorId String
+  clienteProveedor   ClienteProveedor     @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
+  socioId            String
+  socio              Socio                @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   registrosHora RegistroHora[]
 
@@ -744,26 +744,26 @@ model EquipoJuridicoUsuario {
 }
 
 model RegistroHora {
-  id                 String          @id @default(uuid())
+  id                 String           @id @default(uuid())
   usuarioId          String
-  usuario            User            @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  usuario            User             @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
   equipoJuridicoId   String
-  equipoJuridico     EquipoJuridico  @relation(fields: [equipoJuridicoId], references: [id], onDelete: Restrict)
+  equipoJuridico     EquipoJuridico   @relation(fields: [equipoJuridicoId], references: [id], onDelete: Restrict)
   clienteProveedorId String
   clienteProveedor   ClienteProveedor @relation(fields: [clienteProveedorId], references: [id], onDelete: Restrict)
   asuntoJuridicoId   String
-  asuntoJuridico     AsuntoJuridico  @relation(fields: [asuntoJuridicoId], references: [id], onDelete: Restrict)
+  asuntoJuridico     AsuntoJuridico   @relation(fields: [asuntoJuridicoId], references: [id], onDelete: Restrict)
   socioId            String
-  socio              Socio           @relation(fields: [socioId], references: [id], onDelete: Restrict)
-  horas              Decimal         @db.Decimal(5, 2)
-  tarifaHora         Decimal?        @db.Decimal(15, 2)
-  importe            Decimal?        @db.Decimal(15, 2)
+  socio              Socio            @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  horas              Decimal          @db.Decimal(5, 2)
+  tarifaHora         Decimal?         @db.Decimal(15, 2)
+  importe            Decimal?         @db.Decimal(15, 2)
   descripcion        String?
   ano                Int
   semana             Int
-  editable           Boolean         @default(true)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  editable           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   historial      RegistroHoraHistorial[]
   autorizaciones AutorizacionEdicion[]
@@ -813,19 +813,19 @@ model AutorizacionEdicion {
 }
 
 model TarifaAbogadoAsunto {
-  id               String   @id @default(uuid())
+  id               String         @id @default(uuid())
   usuarioId        String
-  usuario          User     @relation("TarifaAbogadoUsuario", fields: [usuarioId], references: [id], onDelete: Restrict)
+  usuario          User           @relation("TarifaAbogadoUsuario", fields: [usuarioId], references: [id], onDelete: Restrict)
   asuntoJuridicoId String
   asuntoJuridico   AsuntoJuridico @relation(fields: [asuntoJuridicoId], references: [id], onDelete: Restrict)
-  tarifaHora       Decimal  @db.Decimal(15, 2)
-  activa           Boolean  @default(true)
+  tarifaHora       Decimal        @db.Decimal(15, 2)
+  activa           Boolean        @default(true)
   createdById      String
-  createdBy        User     @relation("TarifaCreador", fields: [createdById], references: [id], onDelete: Restrict)
+  createdBy        User           @relation("TarifaCreador", fields: [createdById], references: [id], onDelete: Restrict)
   updatedById      String
-  updatedBy        User     @relation("TarifaEditor", fields: [updatedById], references: [id], onDelete: Restrict)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedBy        User           @relation("TarifaEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   historial TarifaAbogadoAsuntoHistorial[]
 
@@ -836,14 +836,14 @@ model TarifaAbogadoAsunto {
 }
 
 model TarifaAbogadoAsuntoHistorial {
-  id                 String   @id @default(uuid())
+  id                 String              @id @default(uuid())
   tarifaId           String
   tarifa             TarifaAbogadoAsunto @relation(fields: [tarifaId], references: [id], onDelete: Cascade)
-  tarifaHoraAnterior Decimal? @db.Decimal(15, 2)
-  tarifaHoraNueva    Decimal  @db.Decimal(15, 2)
+  tarifaHoraAnterior Decimal?            @db.Decimal(15, 2)
+  tarifaHoraNueva    Decimal             @db.Decimal(15, 2)
   changedById        String
-  changedBy          User     @relation("TarifaHistorialCambiador", fields: [changedById], references: [id], onDelete: Restrict)
-  changedAt          DateTime @default(now())
+  changedBy          User                @relation("TarifaHistorialCambiador", fields: [changedById], references: [id], onDelete: Restrict)
+  changedAt          DateTime            @default(now())
   motivo             String?
 
   @@index([tarifaId])
