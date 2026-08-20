@@ -1,4 +1,5 @@
 import { UserWithRoles } from "../mappers/userMapper";
+import type { UserFilterParams } from "../../types/filters/UserFilterParams";
 
 type CreateUserArgs = {
   email: string;
@@ -26,5 +27,7 @@ export interface UserRepository {
   }): Promise<UserWithRoles | null>;
   findById(data: { id: string }): Promise<UserWithRoles | null>;
   getAllUsers(): Promise<UserWithRoles[]>;
-  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: UserWithRoles[]; totalCount: number }>;
+  getPaginated(
+    params: UserFilterParams,
+  ): Promise<{ data: UserWithRoles[]; totalCount: number }>;
 }

@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { UserRepository } from "./UserRepository.repository";
 import { UserWithRoles } from "../mappers/userMapper";
+import type { UserFilterParams } from "../../types/filters/UserFilterParams";
 
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -61,7 +62,7 @@ export class PrismaUserRepository implements UserRepository {
         });
 
         return { id: role.id };
-      })
+      }),
     );
 
     // Crear el usuario con los roles asociados
@@ -98,14 +99,41 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: UserWithRoles[]; totalCount: number }> {
+  async getPaginated(
+    params: UserFilterParams,
+  ): Promise<{ data: UserWithRoles[]; totalCount: number }> {
     const skip = (params.page - 1) * params.pageSize;
-    const orderBy = params.sortBy
-      ? { [params.sortBy]: params.sortOrder || "desc" }
-      : { createdAt: "desc" as const };
+
+    // Filtros: búsqueda por nombre/email + estado activo
+    const where: Prisma.UserWhereInput = {
+      ...(params.search
+        ? {
+            OR: [
+              { name: { contains: params.search, mode: "insensitive" } },
+              { email: { contains: params.search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(params.isActive !== undefined ? { isActive: params.isActive } : {}),
+    };
+
+    // Mapeo seguro de ordenamiento: solo columnas escalares soportadas
+    // (sortBy "roles" no es una columna escalar → se ignora, se cae al default)
+    const direction: Prisma.SortOrder =
+      params.sortOrder === "asc" ? "asc" : "desc";
+    const orderByMap: Record<string, Prisma.UserOrderByWithRelationInput> = {
+      id: { id: direction },
+      email: { email: direction },
+      name: { name: direction },
+      createdAt: { createdAt: direction },
+      isActive: { isActive: direction },
+    };
+    const orderBy: Prisma.UserOrderByWithRelationInput = (params.sortBy &&
+      orderByMap[params.sortBy]) || { createdAt: "desc" };
 
     const [data, totalCount] = await Promise.all([
       this.prisma.user.findMany({
+        where,
         skip,
         take: params.pageSize,
         orderBy,
@@ -117,7 +145,7 @@ export class PrismaUserRepository implements UserRepository {
           },
         },
       }),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where }),
     ]);
 
     return { data: data as UserWithRoles[], totalCount };
@@ -141,7 +169,7 @@ export class PrismaUserRepository implements UserRepository {
         });
 
         return { id: role.id };
-      })
+      }),
     );
 
     // Preparar los datos de actualización

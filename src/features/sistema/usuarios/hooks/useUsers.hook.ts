@@ -1,11 +1,19 @@
 "use client";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getPaginatedUsersAction } from "../server/actions/getPaginatedUsersAction";
-import { PaginationParams } from "@/core/shared/types/pagination.types";
+import { UserFilterParams } from "../types/filters/UserFilterParams";
 
-export const useUsers = (params: PaginationParams) => {
+export const useUsers = (params: UserFilterParams) => {
   return useQuery({
-    queryKey: ["users", params.page, params.pageSize, params.sortBy, params.sortOrder],
+    queryKey: [
+      "users",
+      params.page,
+      params.pageSize,
+      params.sortBy,
+      params.sortOrder,
+      params.search,
+      params.isActive,
+    ],
     queryFn: async () => {
       const result = await getPaginatedUsersAction(params);
       if (!result.ok) {

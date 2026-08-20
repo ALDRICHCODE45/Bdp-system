@@ -4,12 +4,13 @@ import { CreateUserDto } from "../dtos/CreateUserDto.dto";
 import { Err, Ok } from "@/core/shared/result/result";
 import { ConflictError } from "@/core/shared/errors/domain";
 import { toUserDto, toUserDtoArray } from "../mappers/userMapper";
+import type { UserFilterParams } from "../../types/filters/UserFilterParams";
 
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
-  ) { }
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const exists = await this.userRepository.findByEmail({
@@ -52,12 +53,26 @@ export class UserService {
     return Ok(toUserDtoArray(users));
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<import("@/core/shared/result/result").Result<{ data: import("../mappers/userMapper").UserWithRoles[]; totalCount: number }, Error>> {
+  async getPaginated(
+    params: UserFilterParams,
+  ): Promise<
+    import("@/core/shared/result/result").Result<
+      {
+        data: import("../mappers/userMapper").UserWithRoles[];
+        totalCount: number;
+      },
+      Error
+    >
+  > {
     try {
       const result = await this.userRepository.getPaginated(params);
       return Ok(result);
     } catch (error) {
-      return Err(error instanceof Error ? error : new Error("Error al obtener usuarios paginados"));
+      return Err(
+        error instanceof Error
+          ? error
+          : new Error("Error al obtener usuarios paginados"),
+      );
     }
   }
 }

@@ -7,13 +7,15 @@ import { Table } from "@tanstack/react-table";
 import { Filter, Search } from "lucide-react";
 import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
-import { useUsersTableFilters } from "../hooks/useUsersTableFilters.hook";
 import { estadosUser } from "../types/filters/UserFilterOptions";
 
 interface UsersTableFilters extends BaseFilterProps {
   table: Table<unknown>;
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
+  /** Estado seleccionado ("todos" | "activo" | "inactivo") — controlado desde la página (server-side) */
+  estado?: string;
+  onEstadoChange?: (value: string) => void;
 }
 
 export const UsersTableFilters = ({
@@ -23,10 +25,9 @@ export const UsersTableFilters = ({
   showAddButton,
   addButtonText = "Agregar",
   onAdd,
+  estado = "todos",
+  onEstadoChange,
 }: UsersTableFilters) => {
-  const { clearFilters, handleEstadoChange, selectedEstado } =
-    useUsersTableFilters(table);
-
   return (
     <>
       <Card className="mb-6 border-0 shadow-md w-full min-w-0 overflow-hidden">
@@ -44,7 +45,7 @@ export const UsersTableFilters = ({
               addButtonText={addButtonText}
               buttonTooltipText="Agregar Usuario"
               onClearFilters={() => {
-                clearFilters();
+                onEstadoChange?.("todos");
                 onGlobalFilterChange?.("");
               }}
               onAdd={onAdd}
@@ -76,16 +77,13 @@ export const UsersTableFilters = ({
               </div>
             </div>
 
-            {/* Filtro de categoría */}
-
+            {/* Filtro de estado */}
             <FilterSelect
               label="Estado"
-              onValueChange={handleEstadoChange}
+              onValueChange={onEstadoChange ?? (() => {})}
               options={estadosUser}
-              value={selectedEstado}
+              value={estado}
             />
-
-            {/* Filtro de rango de fechas */}
           </div>
         </CardContent>
       </Card>

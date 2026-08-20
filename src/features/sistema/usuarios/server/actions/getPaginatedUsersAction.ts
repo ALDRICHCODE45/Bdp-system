@@ -2,17 +2,27 @@
 import { makeUserService } from "../services/makeUserService";
 import { toUserDtoArray } from "../mappers/userMapper";
 import prisma from "@/core/lib/prisma";
-import { PaginationParams, PaginatedResult } from "@/core/shared/types/pagination.types";
+import { PaginatedResult } from "@/core/shared/types/pagination.types";
 import { UserDto } from "../dtos/UserDto.dto";
+import { UserFilterParams } from "../../types/filters/UserFilterParams";
 
 export const getPaginatedUsersAction = async (
-  params: PaginationParams
-): Promise<{ ok: true; data: PaginatedResult<UserDto> } | { ok: false; error: string }> => {
+  params: UserFilterParams,
+): Promise<
+  { ok: true; data: PaginatedResult<UserDto> } | { ok: false; error: string }
+> => {
   const page = Math.max(1, params.page);
   const pageSize = Math.min(Math.max(1, params.pageSize), 100);
 
   const service = makeUserService({ prisma });
-  const result = await service.getPaginated({ page, pageSize, sortBy: params.sortBy, sortOrder: params.sortOrder });
+  const result = await service.getPaginated({
+    page,
+    pageSize,
+    sortBy: params.sortBy,
+    sortOrder: params.sortOrder,
+    search: params.search,
+    isActive: params.isActive,
+  });
 
   if (!result.ok) {
     return { ok: false, error: result.error.message };

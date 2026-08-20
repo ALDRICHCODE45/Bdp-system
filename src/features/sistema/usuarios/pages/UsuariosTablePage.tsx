@@ -1,6 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
-import { SortingState } from "@tanstack/react-table";
+import { useCallback, useMemo, useState } from "react";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { UserTableColumns } from "../components/UsersTableColumns";
@@ -12,6 +12,7 @@ import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { useUsers } from "../hooks/useUsers.hook";
+import { useDebounce } from "@/core/shared/hooks/use-debounce";
 
 const CreateUserSheet = dynamic(
   () =>
@@ -21,41 +22,94 @@ const CreateUserSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 export const UsuariosTablePage = () => {
   const { isOpen, openModal, closeModal } = useModalState();
 
-  const tableConfig = createTableConfig(UsersTableConfig, {
-    onAdd: () => openModal(),
-  });
-
-  const [pagination, setPagination] = useState({
+  // ── Paginación / ordenamiento / búsqueda / estado (server-side) ──────────
+  const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: tableConfig.pagination?.defaultPageSize ?? 10,
+    pageSize: UsersTableConfig.pagination?.defaultPageSize ?? 10,
   });
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [estadoFilter, setEstadoFilter] = useState<string>("todos");
+
+  const resetPage = useCallback(
+    () => setPagination((prev) => ({ ...prev, pageIndex: 0 })),
+    [],
+  );
+
+  const handlePaginationChange = useCallback(
+    (p: PaginationState) => setPagination(p),
+    [],
+  );
+
+  const handleSortingChange = useCallback(
+    (s: SortingState) => {
+      setSorting(s);
+      resetPage();
+    },
+    [resetPage],
+  );
+
+  const handleGlobalFilterChange = useCallback(
+    (value: string) => {
+      setSearch(value);
+      resetPage();
+    },
+    [resetPage],
+  );
+
+  const handleEstadoChange = useCallback(
+    (value: string) => {
+      setEstadoFilter(value);
+      resetPage();
+    },
+    [resetPage],
+  );
+
+  const isActive =
+    estadoFilter === "activo"
+      ? true
+      : estadoFilter === "inactivo"
+        ? false
+        : undefined;
 
   const { data, isPending, isFetching } = useUsers({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
     sortBy: sorting[0]?.id,
-    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    sortOrder: sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined,
+    search: debouncedSearch || undefined,
+    isActive,
   });
 
-  const serverConfig = useMemo(() => ({
-    ...tableConfig,
-    pagination: {
-      ...tableConfig.pagination,
-      manualPagination: true,
-      pageCount: data?.pageCount ?? 0,
-      totalCount: data?.totalCount ?? 0,
-      onPaginationChange: setPagination,
-    },
-    manualSorting: true,
-    onSortingChange: setSorting,
-  }), [tableConfig, data?.pageCount, data?.totalCount]);
+  const tableConfig = useMemo(
+    () =>
+      createTableConfig(UsersTableConfig, {
+        onAdd: () => openModal(),
+        serverSide: {
+          enabled: true,
+          totalCount: data?.totalCount ?? 0,
+          pageCount: data?.pageCount ?? 0,
+        },
+        customFilterProps: {
+          estado: estadoFilter,
+          onEstadoChange: handleEstadoChange,
+        },
+      }),
+    [
+      data?.totalCount,
+      data?.pageCount,
+      openModal,
+      estadoFilter,
+      handleEstadoChange,
+    ],
+  );
 
   return (
     <>
@@ -74,8 +128,13 @@ export const UsuariosTablePage = () => {
           <DataTable
             columns={UserTableColumns}
             data={data?.data ?? []}
-            config={serverConfig}
+            config={tableConfig}
             isLoading={isPending && !isFetching}
+            pagination={pagination}
+            sorting={sorting}
+            onPaginationChange={handlePaginationChange}
+            onSortingChange={handleSortingChange}
+            onGlobalFilterChange={handleGlobalFilterChange}
           />
         </PermissionGuard>
 
