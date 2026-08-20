@@ -8,6 +8,11 @@ import {
   FieldError,
 } from "@/core/shared/ui/field";
 import { Input } from "@/core/shared/ui/input";
+import {
+  PasswordInput,
+  PasswordInputAdornmentToggle,
+  PasswordInputInput,
+} from "@/core/shared/ui/password-input";
 import MultipleSelector from "@/core/shared/ui/multiselect";
 import type { Option } from "@/core/shared/ui/multiselect";
 import { useCreateUserForm } from "../../hooks/useCreateUserForm.hook";
@@ -86,18 +91,20 @@ export const CreateUserForm = () => {
               return (
                 <Field data-invalid={isInvalid}>
                   <FieldLabel htmlFor={field.name}>Contraseña</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="password"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                    placeholder="*******"
-                    // Previene el guardado de la contraseña por el navegador
-                    autoComplete="new-password"
-                  />
+                  <PasswordInput>
+                    <PasswordInputInput
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      placeholder="*******"
+                      // Previene el guardado de la contraseña por el navegador
+                      autoComplete="new-password"
+                    />
+                    <PasswordInputAdornmentToggle />
+                  </PasswordInput>
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
               );

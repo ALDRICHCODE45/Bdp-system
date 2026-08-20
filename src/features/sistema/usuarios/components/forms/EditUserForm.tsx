@@ -9,6 +9,11 @@ import {
   FieldError,
 } from "@/core/shared/ui/field";
 import { Input } from "@/core/shared/ui/input";
+import {
+  PasswordInput,
+  PasswordInputAdornmentToggle,
+  PasswordInputInput,
+} from "@/core/shared/ui/password-input";
 import MultipleSelector from "@/core/shared/ui/multiselect";
 import type { Option } from "@/core/shared/ui/multiselect";
 import { useEditUserForm } from "../../hooks/useEditUserForm.hook";
@@ -138,17 +143,19 @@ export const EditUserForm = ({ userId }: EditUserFormProps) => {
               return (
                 <Field data-invalid={isInvalid}>
                   <FieldLabel htmlFor={field.name}>Nueva Contraseña</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="password"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                    placeholder="*******"
-                    autoComplete="off"
-                  />
+                  <PasswordInput>
+                    <PasswordInputInput
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      placeholder="*******"
+                      autoComplete="off"
+                    />
+                    <PasswordInputAdornmentToggle />
+                  </PasswordInput>
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
               );
