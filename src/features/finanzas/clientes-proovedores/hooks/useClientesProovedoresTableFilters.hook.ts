@@ -1,110 +1,159 @@
-import { Table } from "@tanstack/react-table";
-import { useCallback, useState } from "react";
+"use client";
+import { useCallback, useMemo, useState } from "react";
+import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
+import { useDebounce } from "@/core/shared/hooks/use-debounce";
+import type { ClientesProveedoresFilterParams } from "../types/ClientesProveedoresFilterParams";
 
-export const useClientesProovedoresTableFilters = (table: Table<unknown>) => {
-  const [selectedTipo, setSelectedTipo] = useState<string>("todos");
-  const [selectedEstado, setSelectedEstado] = useState<string>("todos");
-  const [selectedBanco, setSelectedBanco] = useState<string>("todos");
-  const [socioResponsableFilter, setSocioResponsableFilter] = useState<string>("");
+const ALL = "todos";
+
+/** Filter fields forwarded to the server (pagination/sort are owned by the page). */
+type ServerFilterFields = Pick<
+  ClientesProveedoresFilterParams,
+  | "search"
+  | "tipo"
+  | "activo"
+  | "banco"
+  | "socioResponsable"
+  | "fechaRegistroFrom"
+  | "fechaRegistroTo"
+>;
+
+/**
+ * Owns the Clientes/Proveedores filter state and exposes:
+ * - the values the filter UI renders (controlled inputs)
+ * - `filterParams` — the server-ready filter payload
+ * - handlers that notify the page so it can reset to page 1
+ *
+ * The search term is debounced (300ms) before it reaches `filterParams`, so
+ * keystrokes do not trigger a request per character.
+ */
+export const useClientesProovedoresTableFilters = (options?: {
+  onFiltersChange?: () => void;
+}) => {
+  const onFiltersChange = options?.onFiltersChange;
+
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [selectedTipo, setSelectedTipo] = useState<string>(ALL);
+  const [selectedEstado, setSelectedEstado] = useState<string>(ALL);
+  const [selectedBanco, setSelectedBanco] = useState<string>(ALL);
+  const [socioResponsableFilter, setSocioResponsableFilter] =
+    useState<string>("");
   const [selectedDateRange, setDateRange] = useState<DateRange | undefined>();
 
-  const handleTipoChange = useCallback(
-    (newTipo: string) => {
-      setSelectedTipo(newTipo);
-      if (newTipo === "todos") {
-        table.getColumn("tipo")?.setFilterValue(undefined);
-        return;
-      }
-      table.getColumn("tipo")?.setFilterValue(newTipo);
-      table.setPageIndex(0);
+  const notifyChange = useCallback(() => {
+    onFiltersChange?.();
+  }, [onFiltersChange]);
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearch(value);
+      notifyChange();
     },
-    [table]
+    [notifyChange],
+  );
+
+  const handleTipoChange = useCallback(
+    (value: string) => {
+      setSelectedTipo(value);
+      notifyChange();
+    },
+    [notifyChange],
   );
 
   const handleEstadoChange = useCallback(
-    (newEstado: string) => {
-      setSelectedEstado(newEstado);
-
-      if (newEstado === "todos") {
-        table.getColumn("activo")?.setFilterValue(undefined);
-        return;
-      }
-
-      switch (newEstado) {
-        case "activo":
-          table.getColumn("activo")?.setFilterValue(true);
-          table.setPageIndex(0);
-          break;
-        case "inactivo":
-          table.getColumn("activo")?.setFilterValue(false);
-          table.setPageIndex(0);
-          break;
-        default:
-          break;
-      }
+    (value: string) => {
+      setSelectedEstado(value);
+      notifyChange();
     },
-    [table]
+    [notifyChange],
   );
 
   const handleBancoChange = useCallback(
-    (banco: string) => {
-      setSelectedBanco(banco);
-      if (banco === "todos") {
-        table.getColumn("banco")?.setFilterValue(undefined);
-      } else {
-        table.getColumn("banco")?.setFilterValue(banco);
-      }
-      table.setPageIndex(0);
+    (value: string) => {
+      setSelectedBanco(value);
+      notifyChange();
     },
-    [table]
+    [notifyChange],
   );
 
   const handleSocioResponsableChange = useCallback(
     (value: string) => {
       setSocioResponsableFilter(value);
-      table.getColumn("socioResponsable")?.setFilterValue(value || undefined);
-      table.setPageIndex(0);
+      notifyChange();
     },
-    [table]
+    [notifyChange],
   );
 
   const handleDateRangeChange = useCallback(
     (range: DateRange | undefined) => {
       setDateRange(range);
-      if (!range || (!range.from && !range.to)) {
-        table.getColumn("fechaRegistro")?.setFilterValue(undefined);
-        return;
-      }
-      table.getColumn("fechaRegistro")?.setFilterValue(range);
-      table.setPageIndex(0);
+      notifyChange();
     },
-    [table]
+    [notifyChange],
   );
 
   const clearFilters = useCallback(() => {
-    setSelectedEstado("todos");
-    setSelectedTipo("todos");
-    setSelectedBanco("todos");
+    setSearch("");
+    setSelectedTipo(ALL);
+    setSelectedEstado(ALL);
+    setSelectedBanco(ALL);
     setSocioResponsableFilter("");
     setDateRange(undefined);
-    table.getColumn("activo")?.setFilterValue(undefined);
-    table.getColumn("tipo")?.setFilterValue(undefined);
-    table.getColumn("banco")?.setFilterValue(undefined);
-    table.getColumn("socioResponsable")?.setFilterValue(undefined);
-    table.getColumn("fechaRegistro")?.setFilterValue(undefined);
-  }, [table]);
+    notifyChange();
+  }, [notifyChange]);
 
-  return {
-    //constants
+  const filterParams = useMemo<ServerFilterFields>(() => {
+    const tipo: ServerFilterFields["tipo"] =
+      selectedTipo === "cliente"
+        ? "CLIENTE"
+        : selectedTipo === "proveedor"
+          ? "PROVEEDOR"
+          : undefined;
+
+    const activo =
+      selectedEstado === "activo"
+        ? true
+        : selectedEstado === "inactivo"
+          ? false
+          : undefined;
+
+    return {
+      search: debouncedSearch.trim() || undefined,
+      tipo,
+      activo,
+      banco: selectedBanco !== ALL ? selectedBanco : undefined,
+      socioResponsable: socioResponsableFilter.trim() || undefined,
+      fechaRegistroFrom: selectedDateRange?.from
+        ? format(selectedDateRange.from, "yyyy-MM-dd")
+        : undefined,
+      fechaRegistroTo: selectedDateRange?.to
+        ? format(selectedDateRange.to, "yyyy-MM-dd")
+        : undefined,
+    };
+  }, [
+    debouncedSearch,
     selectedTipo,
     selectedEstado,
     selectedBanco,
     socioResponsableFilter,
     selectedDateRange,
-    //methods
-    handleEstadoChange,
+  ]);
+
+  return {
+    // values
+    search,
+    selectedTipo,
+    selectedEstado,
+    selectedBanco,
+    socioResponsableFilter,
+    selectedDateRange,
+    filterParams,
+    // handlers
+    handleSearchChange,
     handleTipoChange,
+    handleEstadoChange,
     handleBancoChange,
     handleSocioResponsableChange,
     handleDateRangeChange,

@@ -5,6 +5,7 @@ import {
 import { Result, Err, Ok } from "@/core/shared/result/result";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { ClienteProveedorHistorialService } from "./ClienteProveedorHistorialService.service";
+import type { ClientesProveedoresFilterParams } from "../../types/ClientesProveedoresFilterParams";
 
 type CreateClienteProveedorInput = {
   nombre: string;
@@ -270,7 +271,11 @@ export class ClienteProveedorService {
     }
   }
 
-  async getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<Result<{ data: ClienteProveedorEntity[]; totalCount: number }, Error>> {
+  async getPaginated(
+    params: ClientesProveedoresFilterParams,
+  ): Promise<
+    Result<{ data: ClienteProveedorEntity[]; totalCount: number }, Error>
+  > {
     try {
       const result = await this.clienteProveedorRepository.getPaginated(params);
       return Ok(result);

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useMemo, useState } from "react";
-import { SortingState } from "@tanstack/react-table";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { createClientesProveedoresColumns } from "../components/ClientesProveedoresTableColumns";
 import { ClienteProveedorDetailSheet } from "../components/ClienteProveedorDetailSheet";
@@ -14,6 +14,7 @@ import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { Card, CardContent } from "@/core/shared/ui/card";
 import { useClientesProveedoresPaginated } from "../hooks/useClientesProveedoresPaginated.hook";
+import { useClientesProovedoresTableFilters } from "../hooks/useClientesProovedoresTableFilters.hook";
 import type { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
 
 const CreateClienteProveedorSheet = dynamic(
@@ -48,37 +49,117 @@ export const ClientesProovedoresTablePage = () => {
     [handleViewDetail],
   );
 
-  const tableConfig = createTableConfig(ClientesProovedoresTableConfig, {
-    onAdd: () => openModal(),
-  });
-
-  const [pagination, setPagination] = useState({
+  // ── Pagination / sorting ────────────────────────────────────────────────
+  const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: tableConfig.pagination?.defaultPageSize ?? 10,
+    pageSize: ClientesProovedoresTableConfig.pagination?.defaultPageSize ?? 10,
   });
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  const resetPage = useCallback(
+    () => setPagination((prev) => ({ ...prev, pageIndex: 0 })),
+    [],
+  );
+
+  // ── Filters (server-side) ───────────────────────────────────────────────
+  // Every filter/search change resets to page 1.
+  const {
+    search,
+    selectedTipo,
+    selectedEstado,
+    selectedBanco,
+    socioResponsableFilter,
+    selectedDateRange,
+    filterParams,
+    handleSearchChange,
+    handleTipoChange,
+    handleEstadoChange,
+    handleBancoChange,
+    handleSocioResponsableChange,
+    handleDateRangeChange,
+    clearFilters,
+  } = useClientesProovedoresTableFilters({ onFiltersChange: resetPage });
+
+  const handlePaginationChange = useCallback(
+    (nextPagination: PaginationState) => setPagination(nextPagination),
+    [],
+  );
+
+  const handleSortingChange = useCallback(
+    (nextSorting: SortingState) => {
+      setSorting(nextSorting);
+      resetPage();
+    },
+    [resetPage],
+  );
+
+  // ── Data fetching ───────────────────────────────────────────────────────
   const { data, isPending, isFetching } = useClientesProveedoresPaginated({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
     sortBy: sorting[0]?.id,
-    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    sortOrder: sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined,
+    ...filterParams,
   });
 
+  // ── Table config (server-side pagination, sorting and filtering) ────────
   const serverConfig = useMemo(
+    () =>
+      createTableConfig(ClientesProovedoresTableConfig, {
+        onAdd: openModal,
+        serverSide: {
+          enabled: true,
+          totalCount: data?.totalCount ?? 0,
+          pageCount: data?.pageCount ?? 0,
+        },
+        customFilterProps: {
+          search,
+          selectedTipo,
+          selectedEstado,
+          selectedBanco,
+          socioResponsableFilter,
+          selectedDateRange,
+          totalCount: data?.totalCount ?? 0,
+          onSearchChange: handleSearchChange,
+          onTipoChange: handleTipoChange,
+          onEstadoChange: handleEstadoChange,
+          onBancoChange: handleBancoChange,
+          onSocioResponsableChange: handleSocioResponsableChange,
+          onDateRangeChange: handleDateRangeChange,
+          onClearFilters: clearFilters,
+        },
+      }),
+    [
+      openModal,
+      data?.totalCount,
+      data?.pageCount,
+      search,
+      selectedTipo,
+      selectedEstado,
+      selectedBanco,
+      socioResponsableFilter,
+      selectedDateRange,
+      handleSearchChange,
+      handleTipoChange,
+      handleEstadoChange,
+      handleBancoChange,
+      handleSocioResponsableChange,
+      handleDateRangeChange,
+      clearFilters,
+    ],
+  );
+
+  const tableConfig = useMemo(
     () => ({
-      ...tableConfig,
+      ...serverConfig,
       pagination: {
-        ...tableConfig.pagination,
+        ...serverConfig.pagination,
         manualPagination: true,
         pageCount: data?.pageCount ?? 0,
         totalCount: data?.totalCount ?? 0,
-        onPaginationChange: setPagination,
       },
-      manualSorting: true,
-      onSortingChange: setSorting,
     }),
-    [tableConfig, data?.pageCount, data?.totalCount],
+    [serverConfig, data?.pageCount, data?.totalCount],
   );
 
   return (
@@ -99,8 +180,13 @@ export const ClientesProovedoresTablePage = () => {
             <DataTable
               columns={columns}
               data={data?.data ?? []}
-              config={serverConfig}
-              isLoading={isPending && !isFetching}
+              config={tableConfig}
+              isLoading={isPending && !data}
+              isFetching={isFetching && !!data}
+              pagination={pagination}
+              sorting={sorting}
+              onPaginationChange={handlePaginationChange}
+              onSortingChange={handleSortingChange}
             />
           </PermissionGuard>
 

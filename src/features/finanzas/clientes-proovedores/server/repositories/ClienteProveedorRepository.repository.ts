@@ -1,4 +1,5 @@
 import { ClienteProveedor, Socio, User } from "@prisma/client";
+import type { ClientesProveedoresFilterParams } from "../../types/ClientesProveedoresFilterParams";
 
 export type ClienteProveedorEntity = ClienteProveedor & {
   socio?: Pick<Socio, 'id' | 'nombre'> | null;
@@ -48,5 +49,7 @@ export interface ClienteProveedorRepository {
   findById(data: { id: string }): Promise<ClienteProveedorEntity | null>;
   findByRfcAndTipo(data: { rfc: string; tipo: string }): Promise<boolean>;
   getAll(): Promise<ClienteProveedorEntity[]>;
-  getPaginated(params: import("@/core/shared/types/pagination.types").PaginationParams): Promise<{ data: ClienteProveedorEntity[]; totalCount: number }>;
+  getPaginated(
+    params: ClientesProveedoresFilterParams,
+  ): Promise<{ data: ClienteProveedorEntity[]; totalCount: number }>;
 }

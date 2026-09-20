@@ -14,8 +14,8 @@ import { Table } from "@tanstack/react-table";
 import { Filter, Search, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { DateRange } from "react-day-picker";
 import { cn } from "@/core/lib/utils";
-import { useClientesProovedoresTableFilters } from "../hooks/useClientesProovedoresTableFilters.hook";
 import { FilterSelect } from "@/core/shared/components/DataTable/FilterSelect";
 import {
   estadosClienteProovedor,
@@ -30,31 +30,46 @@ interface ClientesProovedoresTableFilters extends BaseFilterProps {
   onGlobalFilterChange?: (value: string) => void;
   onAdd?: () => void;
   onExport?: (table: Table<unknown>) => void;
+  // ── Controlled filter state (owned by the page) ──────────────────────────
+  search?: string;
+  selectedTipo?: string;
+  selectedEstado?: string;
+  selectedBanco?: string;
+  socioResponsableFilter?: string;
+  selectedDateRange?: DateRange;
+  totalCount?: number;
+  // ── Change handlers (forwarded to the server query via the page) ─────────
+  onSearchChange?: (value: string) => void;
+  onTipoChange?: (value: string) => void;
+  onEstadoChange?: (value: string) => void;
+  onBancoChange?: (value: string) => void;
+  onSocioResponsableChange?: (value: string) => void;
+  onDateRangeChange?: (range: DateRange | undefined) => void;
+  onClearFilters?: () => void;
 }
 
 export const ClientesProovedoresTableFilters = ({
   table,
-  onGlobalFilterChange,
   addButtonIcon: AddButtonIcon,
   showAddButton,
   addButtonText = "Agregar",
   onAdd,
   onExport,
+  search = "",
+  selectedTipo = "todos",
+  selectedEstado = "todos",
+  selectedBanco = "todos",
+  socioResponsableFilter = "",
+  selectedDateRange,
+  totalCount,
+  onSearchChange,
+  onTipoChange,
+  onEstadoChange,
+  onBancoChange,
+  onSocioResponsableChange,
+  onDateRangeChange,
+  onClearFilters,
 }: ClientesProovedoresTableFilters) => {
-  const {
-    clearFilters,
-    handleEstadoChange,
-    handleTipoChange,
-    handleBancoChange,
-    handleSocioResponsableChange,
-    handleDateRangeChange,
-    selectedEstado,
-    selectedTipo,
-    selectedBanco,
-    socioResponsableFilter,
-    selectedDateRange,
-  } = useClientesProovedoresTableFilters(table);
-
   return (
     <>
       <Card className="mb-6 w-full min-w-0 overflow-hidden">
@@ -62,7 +77,7 @@ export const ClientesProovedoresTableFilters = ({
           <div className="flex items-center gap-2 min-w-0">
             <Filter className="h-5 w-5 text-primary flex-shrink-0" />
             <Badge variant="outline" className="ml-2 flex-shrink-0">
-              {table.getRowCount()} resultados
+              {totalCount ?? table.getRowCount()} resultados
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
@@ -72,10 +87,7 @@ export const ClientesProovedoresTableFilters = ({
               AddButtonIcon={AddButtonIcon}
               addButtonText={addButtonText}
               buttonTooltipText="Agregar Cliente/Proovedor"
-              onClearFilters={() => {
-                clearFilters();
-                onGlobalFilterChange?.("");
-              }}
+              onClearFilters={() => onClearFilters?.()}
               onAdd={onAdd}
               onExport={onExport}
               table={table}
@@ -86,7 +98,7 @@ export const ClientesProovedoresTableFilters = ({
 
         <CardContent className="pt-4 pb-3 px-4 sm:px-6 w-full min-w-0">
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full min-w-0">
-            {/* Búsqueda global */}
+            {/* Búsqueda global — server-side, debounced in the filter hook */}
             <div className="space-y-2 w-full min-w-0">
               <Label htmlFor="search" className="text-xs font-medium">
                 Búsqueda
@@ -96,14 +108,8 @@ export const ClientesProovedoresTableFilters = ({
                   id="search"
                   className="w-full pl-9 min-w-0"
                   placeholder="Buscar clientes/proveedores..."
-                  value={
-                    (table.getColumn("nombre")?.getFilterValue() ??
-                      "") as string
-                  }
-                  onChange={(e) => {
-                    table.getColumn("nombre")?.setFilterValue(e.target.value);
-                    onGlobalFilterChange?.(e.target.value);
-                  }}
+                  value={search}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
                 />
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
@@ -113,13 +119,13 @@ export const ClientesProovedoresTableFilters = ({
 
             <FilterSelect
               label="Tipo"
-              onValueChange={handleTipoChange}
+              onValueChange={(value) => onTipoChange?.(value)}
               options={tipoClienteProovedorOptions}
               value={selectedTipo}
             />
             <FilterSelect
               label="Estado"
-              onValueChange={handleEstadoChange}
+              onValueChange={(value) => onEstadoChange?.(value)}
               options={estadosClienteProovedor}
               value={selectedEstado}
             />
@@ -127,7 +133,7 @@ export const ClientesProovedoresTableFilters = ({
             {/* Filtro de Banco */}
             <FilterSelect
               label="Banco"
-              onValueChange={handleBancoChange}
+              onValueChange={(value) => onBancoChange?.(value)}
               options={bancosOptions}
               value={selectedBanco}
             />
@@ -141,7 +147,7 @@ export const ClientesProovedoresTableFilters = ({
                 id="socio-filter"
                 placeholder="Buscar socio..."
                 value={socioResponsableFilter}
-                onChange={(e) => handleSocioResponsableChange(e.target.value)}
+                onChange={(e) => onSocioResponsableChange?.(e.target.value)}
                 className="w-full min-w-0"
               />
             </div>
@@ -192,7 +198,7 @@ export const ClientesProovedoresTableFilters = ({
                     mode="range"
                     defaultMonth={selectedDateRange?.from}
                     selected={selectedDateRange}
-                    onSelect={handleDateRangeChange}
+                    onSelect={onDateRangeChange}
                     numberOfMonths={2}
                   />
                 </PopoverContent>
