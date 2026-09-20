@@ -263,6 +263,7 @@ model User {
   tarifasCreadas             TarifaAbogadoAsunto[]          @relation("TarifaCreador")
   tarifasEditadas            TarifaAbogadoAsunto[]          @relation("TarifaEditor")
   tarifasHistorialCambios    TarifaAbogadoAsuntoHistorial[] @relation("TarifaHistorialCambiador")
+  otpChallenges              OtpChallenge[]
 }
 
 model Role {
@@ -312,6 +313,37 @@ model UserRole {
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
+}
+
+/// Hashed, single-use email OTP challenge issued after a valid password check.
+/// Only the HMAC-SHA256 hash of the 6-digit code is stored; the code itself
+/// never touches the database. `revokedAt`/`revokedReason` keep a minimal
+/// revocation audit trail (superseded, smtp_failure, max_attempts).
+///
+/// `activeUserId` mirrors `userId` while the challenge is the active one and is
+/// nulled on consumption/revocation. Its unique index is the DB-level backstop
+/// that makes at most one active challenge per user possible, so only the
+/// newest issued code can ever verify. Postgres treats nulls as distinct, so
+/// unlimited inactive rows may coexist.
+model OtpChallenge {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash      String
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(5)
+  expiresAt     DateTime
+  consumedAt    DateTime?
+  revokedAt     DateTime?
+  revokedReason String?
+  activeUserId  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([activeUserId])
+  @@index([userId, consumedAt, revokedAt])
+  @@index([userId, createdAt])
+  @@index([expiresAt])
 }
 
 model ClienteProveedor {
