@@ -1,21 +1,26 @@
 "use client";
 
 import { useMemo } from "react";
+import type {
+  PaginationState,
+  SortingState,
+  Table,
+} from "@tanstack/react-table";
+import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
+import type { TableConfig } from "@/core/shared/components/DataTable/types";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
+import { createTableConfig } from "@/core/shared/helpers/createTableConfig";
 import { TooltipProvider } from "@/core/shared/ui/tooltip";
 import { cn } from "@/core/lib/utils";
 import type { MovimientoListItemDto } from "../server/dtos/MovimientoListDto.dto";
 import type { MovimientoFilterInput } from "../server/actions/getMovimientosAction";
-import {
-  getMovimientosColumns,
-  MOVIMIENTOS_DEFAULT_VISIBILITY,
-} from "./MovimientosColumns";
+import { getMovimientosColumns } from "./MovimientosColumns";
+import { MovimientosTableConfig } from "./MovimientosTableConfig";
 import {
   MovimientoAggregates,
   type MovimientoAggregatesData,
 } from "./MovimientoAggregates";
-import { MovimientoFilters, type MovimientoFiltersProps } from "./MovimientoFilters";
-import type { PaginationState, SortingState } from "@tanstack/react-table";
+import type { MovimientoFiltersProps } from "./MovimientoFilters";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -41,6 +46,10 @@ export interface MovimientosTableProps {
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  /** Excel export handler (all filtered rows or the selected ones). */
+  onExport?: (table: Table<unknown>, options?: ExportOptions) => void;
+  /** Bulk delete handler; omit it to hide the bulk delete action. */
+  onBulkDelete?: (rows: MovimientoListItemDto[]) => void;
   // Filter bar extra callbacks
   onImport?: () => void;
   onAdd?: () => void;
@@ -70,6 +79,8 @@ export function MovimientosTable({
   onView,
   onEdit,
   onDelete,
+  onExport,
+  onBulkDelete,
   onImport,
   onAdd,
   onClearFilters,
@@ -81,28 +92,45 @@ export function MovimientosTable({
     [onView, onEdit, onDelete],
   );
 
-  // Build filter props for the custom filter component.
-  // The shared DataTable's CustomFilterComponent requires `props` extending
-  // Record<string, unknown>. We keep a typed local object and satisfy the
-  // shared-layer constraint with a single narrow cast at the boundary so
-  // MovimientoFiltersProps stays strictly typed (no index signature).
-  const filterProps = {
-    filters,
-    onFiltersChange,
-    onImport,
+  const baseConfig = createTableConfig(MovimientosTableConfig, {
     onAdd,
-    onClearFilters,
-    titulares,
-  } satisfies Omit<MovimientoFiltersProps, "table">;
+    onImport,
+    onBulkDelete,
+    serverSide: {
+      enabled: true,
+      totalCount: total,
+      pageCount,
+      isLoading,
+      isFetching,
+    },
+    customFilterProps: {
+      filters,
+      onFiltersChange,
+      onImport,
+      onAdd,
+      onClearFilters,
+      titulares,
+      // El shared DataTable inyecta `config.actions.onExport` como prop
+      // `onExport` del customFilter, así que el handler tiene que vivir en
+      // `actions` (ver `config` más abajo).
+    } satisfies Omit<MovimientoFiltersProps, "table">,
+  });
+
+  const config: TableConfig<MovimientoListItemDto> = {
+    ...baseConfig,
+    actions: {
+      ...baseConfig.actions,
+      // `onBulkDelete` ya lo inyecta createTableConfig desde los handlers;
+      // `onExport` solo se puede fijar acá (la config base es estática).
+      onExport,
+    },
+  };
 
   return (
     <TooltipProvider>
       <div className="space-y-4 w-full">
         {/* Aggregates bar */}
-        <MovimientoAggregates
-          aggregates={aggregates}
-          isLoading={isLoading}
-        />
+        <MovimientoAggregates aggregates={aggregates} isLoading={isLoading} />
 
         {/* DataTable — server-side mode */}
         <DataTable
@@ -110,41 +138,12 @@ export function MovimientosTable({
           data={data}
           isLoading={isLoading}
           isFetching={isFetching}
+          config={config}
           pagination={pagination}
           onPaginationChange={onPaginationChange}
           sorting={sorting}
           onSortingChange={onSortingChange}
           onGlobalFilterChange={onGlobalFilterChange}
-          config={{
-            serverSide: {
-              enabled: true,
-              totalCount: total,
-              pageCount,
-              isLoading,
-              isFetching,
-            },
-            pagination: {
-              defaultPageSize: 20,
-              pageSizeOptions: [10, 20, 50, 100],
-              showPageSizeSelector: true,
-              showPaginationInfo: true,
-            },
-            enableSorting: true,
-            enableColumnVisibility: true,
-            enableRowSelection: true,
-            defaultColumnVisibility: MOVIMIENTOS_DEFAULT_VISIBILITY,
-            filters: {
-              showSearch: false, // Search handled by parent page
-              customFilter: {
-                component: MovimientoFilters as React.ComponentType<
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  any
-                >,
-                props: filterProps,
-              },
-            },
-            emptyStateMessage: "No se encontraron movimientos.",
-          }}
         />
       </div>
     </TooltipProvider>
@@ -159,8 +158,6 @@ export function MovimientosTable({
  * supports custom row classNames. For now, the visual convention is enforced at the
  * column-cell level in MovimientosColumns (monto cell: INGRESO=bold, EGRESO=red).
  */
-export function getMovimientoRowClassName(
-  row: MovimientoListItemDto,
-): string {
+export function getMovimientoRowClassName(row: MovimientoListItemDto): string {
   return cn(row.tipo === "INGRESO" && "font-semibold");
 }

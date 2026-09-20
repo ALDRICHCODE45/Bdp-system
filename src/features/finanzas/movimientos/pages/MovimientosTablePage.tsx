@@ -1,13 +1,19 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type { PaginationState, SortingState } from "@tanstack/react-table";
+import {
+  type PaginationState,
+  type SortingState,
+  type Table,
+} from "@tanstack/react-table";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
   CircleDollarSign,
   Search,
 } from "lucide-react";
+import { toast } from "sonner";
+import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { DataTableMultiTabs, type MultiTabConfig } from "@/core/shared/components/DataTable/DataTableMultiTabs";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
@@ -36,7 +42,12 @@ import {
 } from "@/core/shared/ui/dialog";
 import { Input } from "@/core/shared/ui/input";
 import type { MovimientoFilterInput } from "../server/actions/getMovimientosAction";
-import type { MovimientoListDto } from "../server/dtos/MovimientoListDto.dto";
+import { getMovimientosForExportAction } from "../server/actions/getMovimientosForExportAction";
+import type {
+  MovimientoListDto,
+  MovimientoListItemDto,
+} from "../server/dtos/MovimientoListDto.dto";
+import { exportMovimientosToExcel } from "../helpers/exportMovimientosToExcel";
 import { CreateEgresoSheet } from "../components/CreateEgresoSheet";
 import { CreateIngresoSheet } from "../components/CreateIngresoSheet";
 import { EditMovimientoSheet } from "../components/EditMovimientoSheet";
@@ -100,6 +111,13 @@ export function MovimientosTablePage({
     open: false,
     movimientoId: null,
   });
+  const [bulkDeleteState, setBulkDeleteState] = useState<{
+    open: boolean;
+    ids: string[];
+  }>({
+    open: false,
+    ids: [],
+  });
 
   const queryParams = useMemo<MovimientoFilterInput>(
     () => ({
@@ -133,6 +151,13 @@ export function MovimientosTablePage({
     isAdmin ||
     hasAnyPermission([
       PermissionActions.movimientos.importar,
+      PermissionActions.movimientos.gestionar,
+    ]);
+  // Mismo permiso que exige `deleteMovimientoAction`; el action revalida igual.
+  const canDeleteMovimiento =
+    isAdmin ||
+    hasAnyPermission([
+      PermissionActions.movimientos.eliminar,
       PermissionActions.movimientos.gestionar,
     ]);
 
@@ -198,6 +223,77 @@ export function MovimientosTablePage({
       // Toast feedback is handled in the mutation hook.
     }
   }, [deleteMovimiento, deleteState.movimientoId]);
+
+  // ── Bulk delete (reusa el delete existente, sin cambiar permisos) ────────
+  const handleBulkDelete = useCallback((rows: MovimientoListItemDto[]) => {
+    setBulkDeleteState({ open: true, ids: rows.map((row) => row.id) });
+  }, []);
+
+  const handleBulkDeleteConfirm = useCallback(async () => {
+    const ids = bulkDeleteState.ids;
+    setBulkDeleteState({ open: false, ids: [] });
+
+    for (const id of ids) {
+      try {
+        await deleteMovimiento.mutateAsync(id);
+      } catch {
+        // Per-item errors are surfaced by the mutation hook.
+      }
+    }
+  }, [bulkDeleteState.ids, deleteMovimiento]);
+
+  // ── Excel export ─────────────────────────────────────────────────────────
+  const handleExportMovimientos = useCallback(
+    async (table: Table<unknown>, options?: ExportOptions) => {
+      if (options?.selectedOnly) {
+        // Filas ya cargadas en memoria → exportar directamente
+        const selected = table
+          .getSelectedRowModel()
+          .rows.map((row) => row.original as MovimientoListItemDto);
+
+        if (selected.length === 0) {
+          toast.error("No hay filas seleccionadas para exportar.");
+          return;
+        }
+
+        exportMovimientosToExcel(selected, "movimientos_seleccionados");
+        toast.success(
+          `${selected.length} movimientos exportados correctamente.`,
+        );
+        return;
+      }
+
+      // Exportar todas / filtradas → traer del servidor con los filtros activos
+      const toastId = toast.loading("Preparando exportación...");
+
+      try {
+        // `page`/`size` viajan de más: el action pagina internamente y los ignora
+        const result = await getMovimientosForExportAction({
+          ...filters,
+          tipo: filters.tipo ?? "ALL",
+          search: debouncedSearch || undefined,
+          sortBy: sorting[0]?.id,
+          sortDir: sorting[0] ? (sorting[0].desc ? "desc" : "asc") : undefined,
+        });
+
+        if (!result.ok) {
+          toast.dismiss(toastId);
+          toast.error("Error al exportar los movimientos.");
+          return;
+        }
+
+        exportMovimientosToExcel(result.data, "movimientos");
+        toast.dismiss(toastId);
+        toast.success(
+          `${result.data.length} movimientos exportados correctamente.`,
+        );
+      } catch {
+        toast.dismiss(toastId);
+        toast.error("Error al exportar los movimientos.");
+      }
+    },
+    [debouncedSearch, filters, sorting],
+  );
 
   const aggregates = data?.aggregates ?? initialData?.aggregates;
   const totalCount = data?.pagination.total ?? initialData?.pagination.total ?? 0;
@@ -288,6 +384,8 @@ export function MovimientosTablePage({
           onDelete={(movimientoId) =>
             setDeleteState({ open: true, movimientoId })
           }
+          onExport={handleExportMovimientos}
+          onBulkDelete={canDeleteMovimiento ? handleBulkDelete : undefined}
           onImport={canImportMovimiento ? () => setImportDialogOpen(true) : undefined}
           onAdd={canCreateMovimiento ? handleAddMovimiento : undefined}
           onClearFilters={handleClearFilters}
@@ -362,6 +460,38 @@ export function MovimientosTablePage({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
+              disabled={deleteMovimiento.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={bulkDeleteState.open}
+        onOpenChange={(open) =>
+          setBulkDeleteState((current) => ({ ...current, open }))
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ¿Eliminar {bulkDeleteState.ids.length} movimiento
+              {bulkDeleteState.ids.length !== 1 ? "s" : ""}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminarán permanentemente
+              los movimientos seleccionados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMovimiento.isPending}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDeleteConfirm}
               disabled={deleteMovimiento.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
