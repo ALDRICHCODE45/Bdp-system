@@ -13,8 +13,11 @@ import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { Card, CardContent } from "@/core/shared/ui/card";
+import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import { usePermissions } from "@/core/shared/hooks/use-permissions";
 import { useClientesProveedoresPaginated } from "../hooks/useClientesProveedoresPaginated.hook";
 import { useClientesProovedoresTableFilters } from "../hooks/useClientesProovedoresTableFilters.hook";
+import { ClienteProveedorMobileView } from "../components/mobile/ClienteProveedorMobileView";
 import type { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
 
 const CreateClienteProveedorSheet = dynamic(
@@ -29,6 +32,8 @@ const CreateClienteProveedorSheet = dynamic(
 );
 
 export const ClientesProovedoresTablePage = () => {
+  const { hasAnyPermission, isAdmin } = usePermissions();
+  const isMobile = useIsMobile();
   const { isOpen, openModal, closeModal } = useModalState();
 
   // ── Detail sheet ────────────────────────────────────────────────────────
@@ -84,6 +89,15 @@ export const ClientesProovedoresTablePage = () => {
     (nextPagination: PaginationState) => setPagination(nextPagination),
     [],
   );
+
+  // Mobile shares the same server query state as desktop; only the page index
+  // changes from the card view.
+  const handleMobilePageChange = useCallback((nextPage: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: Math.max(0, nextPage - 1),
+    }));
+  }, []);
 
   const handleSortingChange = useCallback(
     (nextSorting: SortingState) => {
@@ -162,6 +176,75 @@ export const ClientesProovedoresTablePage = () => {
     [serverConfig, data?.pageCount, data?.totalCount],
   );
 
+  const canCreate =
+    isAdmin ||
+    hasAnyPermission([
+      PermissionActions["clientes-proovedores"].crear,
+      PermissionActions["clientes-proovedores"].gestionar,
+    ]);
+
+  // ── Shared modals — rendered for both mobile and desktop ─────────────────
+  const sharedModals = (
+    <>
+      {/* Modal con lazy loading */}
+      <PermissionGuard
+        permissions={[
+          PermissionActions["clientes-proovedores"].crear,
+          PermissionActions["clientes-proovedores"].gestionar,
+        ]}
+      >
+        {isOpen && (
+          <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
+        )}
+      </PermissionGuard>
+
+      {/* Detail sheet */}
+      <ClienteProveedorDetailSheet
+        key={selectedClienteProveedor?.id ?? "empty"}
+        clienteProveedor={selectedClienteProveedor}
+        open={detailSheetOpen}
+        onOpenChange={setDetailSheetOpen}
+      />
+    </>
+  );
+
+  // ── Mobile card view ─────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <>
+        <PermissionGuard
+          permissions={[
+            PermissionActions["clientes-proovedores"].acceder,
+            PermissionActions["clientes-proovedores"].gestionar,
+          ]}
+        >
+          <ClienteProveedorMobileView
+            data={data}
+            isLoading={isPending && !data}
+            onCreateClick={canCreate ? openModal : undefined}
+            onViewDetail={handleViewDetail}
+            page={pagination.pageIndex + 1}
+            onPageChange={handleMobilePageChange}
+            search={search}
+            onSearchChange={handleSearchChange}
+            selectedTipo={selectedTipo}
+            onTipoChange={handleTipoChange}
+            selectedEstado={selectedEstado}
+            onEstadoChange={handleEstadoChange}
+            selectedBanco={selectedBanco}
+            onBancoChange={handleBancoChange}
+            socioResponsableFilter={socioResponsableFilter}
+            onSocioResponsableChange={handleSocioResponsableChange}
+            selectedDateRange={selectedDateRange}
+            onDateRangeChange={handleDateRangeChange}
+            onClearFilters={clearFilters}
+          />
+        </PermissionGuard>
+        {sharedModals}
+      </>
+    );
+  }
+
   return (
     <Card className="p-2 m-1">
       <CardContent>
@@ -190,26 +273,7 @@ export const ClientesProovedoresTablePage = () => {
             />
           </PermissionGuard>
 
-          {/* Modal con lazy loading */}
-
-          <PermissionGuard
-            permissions={[
-              PermissionActions["clientes-proovedores"].crear,
-              PermissionActions["clientes-proovedores"].gestionar,
-            ]}
-          >
-            {isOpen && (
-              <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
-            )}
-          </PermissionGuard>
-
-          {/* Detail sheet */}
-          <ClienteProveedorDetailSheet
-            key={selectedClienteProveedor?.id ?? "empty"}
-            clienteProveedor={selectedClienteProveedor}
-            open={detailSheetOpen}
-            onOpenChange={setDetailSheetOpen}
-          />
+          {sharedModals}
         </div>
       </CardContent>
     </Card>
