@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import { LoadingModalState } from "@/core/shared/components/LoadingModalState";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
+import { Card, CardContent } from "@/core/shared/ui/card";
 import { useClientesProveedoresPaginated } from "../hooks/useClientesProveedoresPaginated.hook";
 
 const CreateClienteProveedorSheet = dynamic(
@@ -21,7 +22,7 @@ const CreateClienteProveedorSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 export const ClientesProovedoresTablePage = () => {
@@ -44,52 +45,59 @@ export const ClientesProovedoresTablePage = () => {
     sortOrder: sorting[0]?.desc ? "desc" : "asc",
   });
 
-  const serverConfig = useMemo(() => ({
-    ...tableConfig,
-    pagination: {
-      ...tableConfig.pagination,
-      manualPagination: true,
-      pageCount: data?.pageCount ?? 0,
-      totalCount: data?.totalCount ?? 0,
-      onPaginationChange: setPagination,
-    },
-    manualSorting: true,
-    onSortingChange: setSorting,
-  }), [tableConfig, data?.pageCount, data?.totalCount]);
+  const serverConfig = useMemo(
+    () => ({
+      ...tableConfig,
+      pagination: {
+        ...tableConfig.pagination,
+        manualPagination: true,
+        pageCount: data?.pageCount ?? 0,
+        totalCount: data?.totalCount ?? 0,
+        onPaginationChange: setPagination,
+      },
+      manualSorting: true,
+      onSortingChange: setSorting,
+    }),
+    [tableConfig, data?.pageCount, data?.totalCount],
+  );
 
   return (
-    <div className="container mx-auto py-6">
-      <TablePresentation
-        subtitle="Administra los clientes y los proveedores"
-        title="Clientes y Proveedores"
-      />
+    <Card className="p-2 m-1">
+      <CardContent>
+        <div className="space-y-6">
+          <TablePresentation
+            subtitle="Administra los clientes y los proveedores"
+            title="Clientes y Proveedores"
+          />
 
-      <PermissionGuard
-        permissions={[
-          PermissionActions["clientes-proovedores"].acceder,
-          PermissionActions["clientes-proovedores"].gestionar,
-        ]}
-      >
-        <DataTable
-          columns={columns}
-          data={data?.data ?? []}
-          config={serverConfig}
-          isLoading={isPending && !isFetching}
-        />
-      </PermissionGuard>
+          <PermissionGuard
+            permissions={[
+              PermissionActions["clientes-proovedores"].acceder,
+              PermissionActions["clientes-proovedores"].gestionar,
+            ]}
+          >
+            <DataTable
+              columns={columns}
+              data={data?.data ?? []}
+              config={serverConfig}
+              isLoading={isPending && !isFetching}
+            />
+          </PermissionGuard>
 
-      {/* Modal con lazy loading */}
+          {/* Modal con lazy loading */}
 
-      <PermissionGuard
-        permissions={[
-          PermissionActions["clientes-proovedores"].crear,
-          PermissionActions["clientes-proovedores"].gestionar,
-        ]}
-      >
-        {isOpen && (
-          <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
-        )}
-      </PermissionGuard>
-    </div>
+          <PermissionGuard
+            permissions={[
+              PermissionActions["clientes-proovedores"].crear,
+              PermissionActions["clientes-proovedores"].gestionar,
+            ]}
+          >
+            {isOpen && (
+              <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
+            )}
+          </PermissionGuard>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

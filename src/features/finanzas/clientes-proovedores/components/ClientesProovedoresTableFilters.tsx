@@ -23,6 +23,7 @@ import {
   bancosOptions,
 } from "../types/ClientesProovedoresFiltersOptions";
 import { FilterHeaderActions } from "@/core/shared/components/DataTable/FilterHeaderActions";
+import { ColumnVisibilitySelector } from "@/core/shared/components/DataTable/ColumnVisibilitySelector";
 
 interface ClientesProovedoresTableFilters extends BaseFilterProps {
   table: Table<unknown>;
@@ -65,6 +66,7 @@ export const ClientesProovedoresTableFilters = ({
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
+            <ColumnVisibilitySelector table={table} />
             <FilterHeaderActions
               showAddButton={showAddButton}
               AddButtonIcon={AddButtonIcon}
