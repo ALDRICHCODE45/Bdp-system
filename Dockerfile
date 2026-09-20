@@ -36,6 +36,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Son valores DUMMY — las reales las inyecta Dockploy en runtime.
 # Estas ENVs NO viajan al runner stage (multi-stage aislado).
 ENV AUTH_SECRET="build-time-placeholder-secret-xxxxxxxxxxxxxxxx" \
+    OTP_HASH_SECRET="build-time-placeholder-otp-hash-secret-xxxxxxxx" \
     NEXTAUTH_URL="http://localhost:3000" \
     AUTH_ORIGIN="http://localhost:3000" \
     AUTH_TRUST_HOST="true" \

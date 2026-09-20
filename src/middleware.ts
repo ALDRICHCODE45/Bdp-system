@@ -1,8 +1,16 @@
-import { auth } from "@/core/lib/auth/auth";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
+import authConfig from "@/core/lib/auth/auth.config";
 import { RoutePermissionGuard } from "@/core/lib/permissions/route-permission-guard";
 import { MiddlewarePermissionsService } from "@/core/lib/permissions/middleware-permissions.service";
 import { getDefaultRoute } from "@/core/lib/permissions/get-default-route";
+
+// Edge-safe Auth.js instance: built only from `auth.config.ts`, so the
+// middleware bundle never reaches the Node-only Credentials/OTP/Prisma auth
+// implementation. The session cookie is decoded and mapped through the shared
+// `session` callback, which keeps `req.auth.user.permissions` available to the
+// route guard below.
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;

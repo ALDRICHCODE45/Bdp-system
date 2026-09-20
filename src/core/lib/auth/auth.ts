@@ -1,14 +1,14 @@
+import "server-only";
+
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { env } from "@/core/shared/config/env.config";
+import authConfig from "@/core/lib/auth/auth.config";
 import prisma from "@/core/lib/prisma";
 import { PrismaUserRepository } from "@/features/sistema/usuarios/server/repositories/PrismaUserRepository.repository";
 import type { UserWithRoles } from "@/features/sistema/usuarios/server/mappers/userMapper";
 import { makeOtpVerifier } from "@/features/Auth/server/services/makeOtpVerifier";
-
-/** 7-day session lifetime, per the mandatory-OTP auth contract. */
-const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
 /**
  * How often the JWT flow re-reads the user's active flag, roles and
@@ -16,33 +16,6 @@ const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
  * permission change by more than this window.
  */
 const ACTIVE_USER_REVALIDATION_MS = 15 * 60 * 1000;
-
-// Extender los tipos de NextAuth para incluir el rol y permisos
-declare module "next-auth" {
-  interface User {
-    role?: string;
-    permissions?: string[];
-  }
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      role?: string;
-      permissions?: string[];
-    };
-  }
-}
-
-declare module "next-auth" {
-  interface JWT {
-    role?: string;
-    permissions?: string[];
-    /** Epoch ms of the last active-user/role/permission revalidation. */
-    validatedAt?: number;
-  }
-}
 
 /** Authorization snapshot embedded in the session/JWT. */
 type AuthorizedUser = {
@@ -95,6 +68,7 @@ async function toAuthorizedUser(user: UserWithRoles): Promise<AuthorizedUser> {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: "credentials",
@@ -153,6 +127,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async jwt({ token, user }) {
       // Initial sign-in: snapshot the authorization state returned by
       // `authorize` and stamp the revalidation clock.
@@ -206,27 +181,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       return token;
     },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.sub || "";
-        if (token.role) {
-          session.user.role = token.role as string;
-        }
-        if (token.permissions) {
-          session.user.permissions = token.permissions as string[];
-        }
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/sign-in",
-    error: "/error",
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-    updateAge: 3600,
   },
   secret: env.AUTH_SECRET,
 });
