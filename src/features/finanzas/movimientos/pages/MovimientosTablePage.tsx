@@ -15,7 +15,10 @@ import {
 import { toast } from "sonner";
 import type { ExportOptions } from "@/core/shared/components/DataTable/ExportButton";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
-import { DataTableMultiTabs, type MultiTabConfig } from "@/core/shared/components/DataTable/DataTableMultiTabs";
+import {
+  DataTableMultiTabs,
+  type MultiTabConfig,
+} from "@/core/shared/components/DataTable/DataTableMultiTabs";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
 import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { useDebounce } from "@/core/shared/hooks/use-debounce";
@@ -57,6 +60,11 @@ import { MovimientosTable } from "../components/MovimientosTable";
 import { useDeleteMovimiento } from "../hooks/useDeleteMovimiento.hook";
 import { useDistinctTitulares } from "../hooks/useDistinctTitulares.hook";
 import { useMovimientos } from "../hooks/useMovimientos.hook";
+import { useIsMobile } from "@/core/shared/hooks/use-mobile";
+import {
+  MovimientoMobileView,
+  type MovimientoMobileTab,
+} from "../components/mobile/MovimientoMobileView";
 
 interface MovimientosTablePageProps {
   initialData?: MovimientoListDto;
@@ -85,6 +93,7 @@ export function MovimientosTablePage({
   initialDataUpdatedAt,
 }: MovimientosTablePageProps) {
   const { hasAnyPermission, isAdmin } = usePermissions();
+  const isMobile = useIsMobile();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -102,7 +111,9 @@ export function MovimientosTablePage({
   const [createEgresoOpen, setCreateEgresoOpen] = useState(false);
   const [createTypeDialogOpen, setCreateTypeDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [detailMovimientoId, setDetailMovimientoId] = useState<string | null>(null);
+  const [detailMovimientoId, setDetailMovimientoId] = useState<string | null>(
+    null,
+  );
   const [editMovimientoId, setEditMovimientoId] = useState<string | null>(null);
   const [deleteState, setDeleteState] = useState<{
     open: boolean;
@@ -128,16 +139,20 @@ export function MovimientosTablePage({
       sortBy: sorting[0]?.id,
       sortDir: sorting[0] ? (sorting[0].desc ? "desc" : "asc") : undefined,
     }),
-    [debouncedSearch, filters, pagination.pageIndex, pagination.pageSize, sorting],
+    [
+      debouncedSearch,
+      filters,
+      pagination.pageIndex,
+      pagination.pageSize,
+      sorting,
+    ],
   );
 
-  const {
-    data,
-    error,
-    isError,
-    isPending,
-    isFetching,
-  } = useMovimientos(queryParams, initialData, initialDataUpdatedAt);
+  const { data, error, isError, isPending, isFetching } = useMovimientos(
+    queryParams,
+    initialData,
+    initialDataUpdatedAt,
+  );
   const { data: titulares = [] } = useDistinctTitulares();
   const deleteMovimiento = useDeleteMovimiento();
 
@@ -167,7 +182,8 @@ export function MovimientosTablePage({
   );
 
   const handleTabsChange = useCallback((nextTabs: string[]) => {
-    const selectedTab = (nextTabs[nextTabs.length - 1] ?? "all") as MovimientoTabId;
+    const selectedTab = (nextTabs[nextTabs.length - 1] ??
+      "all") as MovimientoTabId;
     const nextTipo = getTipoFromTabId(selectedTab);
 
     setActiveTabId(getTabIdFromTipo(nextTipo));
@@ -179,18 +195,21 @@ export function MovimientosTablePage({
     setPagination((current) => ({ ...current, pageIndex: 0 }));
   }, []);
 
-  const handleFiltersChange = useCallback((nextFilters: MovimientoFilterInput) => {
-    const nextTipo = nextFilters.tipo ?? filters.tipo ?? "ALL";
+  const handleFiltersChange = useCallback(
+    (nextFilters: MovimientoFilterInput) => {
+      const nextTipo = nextFilters.tipo ?? filters.tipo ?? "ALL";
 
-    setActiveTabId(getTabIdFromTipo(nextTipo));
+      setActiveTabId(getTabIdFromTipo(nextTipo));
 
-    setFilters((current) => ({
-      ...current,
-      ...nextFilters,
-      tipo: nextTipo,
-    }));
-    setPagination((current) => ({ ...current, pageIndex: 0 }));
-  }, [filters.tipo]);
+      setFilters((current) => ({
+        ...current,
+        ...nextFilters,
+        tipo: nextTipo,
+      }));
+      setPagination((current) => ({ ...current, pageIndex: 0 }));
+    },
+    [filters.tipo],
+  );
 
   const handleClearFilters = useCallback(() => {
     setSearch("");
@@ -198,6 +217,26 @@ export function MovimientosTablePage({
     setFilters((current) => ({ tipo: current.tipo ?? "ALL" }));
     setPagination((current) => ({ ...current, pageIndex: 0 }));
   }, []);
+
+  // ── Mobile handlers (reusan el mismo query state que desktop) ────────────
+  const handleMobilePageChange = useCallback((page: number) => {
+    setPagination((current) => ({
+      ...current,
+      pageIndex: Math.max(0, page - 1),
+    }));
+  }, []);
+
+  const handleMobileSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPagination((current) => ({ ...current, pageIndex: 0 }));
+  }, []);
+
+  const handleMobileTabChange = useCallback(
+    (tab: MovimientoMobileTab) => {
+      handleTabsChange(tab === "all" ? [] : [tab]);
+    },
+    [handleTabsChange],
+  );
 
   const handleAddMovimiento = useCallback(() => {
     if (filters.tipo === "INGRESO") {
@@ -296,109 +335,49 @@ export function MovimientosTablePage({
   );
 
   const aggregates = data?.aggregates ?? initialData?.aggregates;
-  const totalCount = data?.pagination.total ?? initialData?.pagination.total ?? 0;
+  const totalCount =
+    data?.pagination.total ?? initialData?.pagination.total ?? 0;
   const allTabCount = aggregates
     ? (aggregates.countIngresos ?? 0) + (aggregates.countEgresos ?? 0)
     : totalCount;
 
-  const tabs = useMemo<MultiTabConfig[]>(() => [
-    {
-      id: "all",
-      label: "Todos",
-      count: allTabCount,
-      icon: CircleDollarSign,
-    },
-    {
-      id: "ingresos",
-      label: "Ingresos",
-      count: aggregates?.countIngresos ?? 0,
-      icon: ArrowUpCircle,
-    },
-    {
-      id: "egresos",
-      label: "Egresos",
-      count: aggregates?.countEgresos ?? 0,
-      icon: ArrowDownCircle,
-    },
-  ], [aggregates?.countEgresos, aggregates?.countIngresos, allTabCount]);
+  const tabs = useMemo<MultiTabConfig[]>(
+    () => [
+      {
+        id: "all",
+        label: "Todos",
+        count: allTabCount,
+        icon: CircleDollarSign,
+      },
+      {
+        id: "ingresos",
+        label: "Ingresos",
+        count: aggregates?.countIngresos ?? 0,
+        icon: ArrowUpCircle,
+      },
+      {
+        id: "egresos",
+        label: "Egresos",
+        count: aggregates?.countEgresos ?? 0,
+        icon: ArrowDownCircle,
+      },
+    ],
+    [aggregates?.countEgresos, aggregates?.countIngresos, allTabCount],
+  );
 
-  return (
-    <div className="container mx-auto space-y-6 py-6">
-      <TablePresentation
-        title="Ingresos / Egresos"
-        subtitle="Administra movimientos unificados con filtros, agregados, importación y acciones por fila"
-      />
-
-      <DataTableMultiTabs
-        tabs={tabs}
-        activeTabs={activeTabs}
-        onTabsChange={handleTabsChange}
-      />
-
-      <Card>
-        <CardContent className="py-4">
-          <div className="relative max-w-xl">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar por descripción, concepto, titular, cliente o proveedor"
-              className="pl-9"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {isError ? (
-        <Card className="border-destructive/40 bg-destructive/5">
-          <CardContent className="py-4 text-sm text-destructive">
-            {error instanceof Error
-              ? error.message
-              : "No se pudieron cargar los movimientos."}
-          </CardContent>
-        </Card>
-      ) : null}
-
-      <PermissionGuard
-        permissions={[
-          PermissionActions.movimientos.acceder,
-          PermissionActions.movimientos.gestionar,
-        ]}
+  // ── Modales compartidos — se renderizan en mobile y desktop ──────────────
+  const sharedModals = (
+    <>
+      <Dialog
+        open={createTypeDialogOpen}
+        onOpenChange={setCreateTypeDialogOpen}
       >
-        <MovimientosTable
-          data={data?.data ?? []}
-          total={data?.pagination.total ?? 0}
-          pageCount={data?.pagination.totalPages ?? 0}
-          aggregates={aggregates}
-          filters={queryParams}
-          onFiltersChange={handleFiltersChange}
-          isLoading={isPending}
-          isFetching={isFetching}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-          sorting={sorting}
-          onSortingChange={setSorting}
-          onGlobalFilterChange={setSearch}
-          onView={setDetailMovimientoId}
-          onEdit={setEditMovimientoId}
-          onDelete={(movimientoId) =>
-            setDeleteState({ open: true, movimientoId })
-          }
-          onExport={handleExportMovimientos}
-          onBulkDelete={canDeleteMovimiento ? handleBulkDelete : undefined}
-          onImport={canImportMovimiento ? () => setImportDialogOpen(true) : undefined}
-          onAdd={canCreateMovimiento ? handleAddMovimiento : undefined}
-          onClearFilters={handleClearFilters}
-          titulares={titulares}
-        />
-      </PermissionGuard>
-
-      <Dialog open={createTypeDialogOpen} onOpenChange={setCreateTypeDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Elegí el tipo de movimiento</DialogTitle>
             <DialogDescription>
-              Desde la pestaña Todos necesitás indicar si querés registrar un ingreso o un egreso.
+              Desde la pestaña Todos necesitás indicar si querés registrar un
+              ingreso o un egreso.
             </DialogDescription>
           </DialogHeader>
 
@@ -451,7 +430,8 @@ export function MovimientosTablePage({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar movimiento?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará el movimiento seleccionado.
+              Esta acción no se puede deshacer. Se eliminará el movimiento
+              seleccionado.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -523,6 +503,125 @@ export function MovimientosTablePage({
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
       />
+    </>
+  );
+
+  // ── Mobile card view ───────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <>
+        <PermissionGuard
+          permissions={[
+            PermissionActions.movimientos.acceder,
+            PermissionActions.movimientos.gestionar,
+          ]}
+        >
+          <MovimientoMobileView
+            data={data}
+            isLoading={isPending}
+            onCreateClick={
+              canCreateMovimiento ? handleAddMovimiento : undefined
+            }
+            onImportClick={
+              canImportMovimiento ? () => setImportDialogOpen(true) : undefined
+            }
+            onView={setDetailMovimientoId}
+            onEdit={setEditMovimientoId}
+            onDelete={(movimientoId) =>
+              setDeleteState({ open: true, movimientoId })
+            }
+            page={pagination.pageIndex + 1}
+            onPageChange={handleMobilePageChange}
+            activeTab={activeTabId}
+            onTabChange={handleMobileTabChange}
+            search={search}
+            onSearchChange={handleMobileSearchChange}
+            filters={filters}
+            onApplyFilters={handleFiltersChange}
+            onClearFilters={handleClearFilters}
+            titulares={titulares}
+            aggregates={aggregates}
+          />
+        </PermissionGuard>
+        {sharedModals}
+      </>
+    );
+  }
+
+  return (
+    <div className="container mx-auto space-y-6 py-6">
+      <TablePresentation
+        title="Ingresos / Egresos"
+        subtitle="Administra movimientos unificados con filtros, agregados, importación y acciones por fila"
+      />
+
+      <DataTableMultiTabs
+        tabs={tabs}
+        activeTabs={activeTabs}
+        onTabsChange={handleTabsChange}
+      />
+
+      <Card>
+        <CardContent className="py-4">
+          <div className="relative max-w-xl">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por descripción, concepto, titular, cliente o proveedor"
+              className="pl-9"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {isError ? (
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardContent className="py-4 text-sm text-destructive">
+            {error instanceof Error
+              ? error.message
+              : "No se pudieron cargar los movimientos."}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <PermissionGuard
+        permissions={[
+          PermissionActions.movimientos.acceder,
+          PermissionActions.movimientos.gestionar,
+        ]}
+      >
+        <MovimientosTable
+          data={data?.data ?? []}
+          total={data?.pagination.total ?? 0}
+          pageCount={data?.pagination.totalPages ?? 0}
+          aggregates={aggregates}
+          filters={queryParams}
+          onFiltersChange={handleFiltersChange}
+          isLoading={isPending}
+          isFetching={isFetching}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          onGlobalFilterChange={setSearch}
+          onView={setDetailMovimientoId}
+          onEdit={setEditMovimientoId}
+          onDelete={(movimientoId) =>
+            setDeleteState({ open: true, movimientoId })
+          }
+          onExport={handleExportMovimientos}
+          onBulkDelete={canDeleteMovimiento ? handleBulkDelete : undefined}
+          onImport={
+            canImportMovimiento ? () => setImportDialogOpen(true) : undefined
+          }
+          onAdd={canCreateMovimiento ? handleAddMovimiento : undefined}
+          onClearFilters={handleClearFilters}
+          titulares={titulares}
+        />
+      </PermissionGuard>
+
+      {sharedModals}
     </div>
   );
 }
