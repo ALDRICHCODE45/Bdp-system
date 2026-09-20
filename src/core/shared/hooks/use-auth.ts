@@ -9,27 +9,35 @@ export function useAuth() {
   const { data: session, status } = useSession();
   const { setTheme } = useTheme();
 
-  const login = async (email: string, password: string) => {
+  /**
+   * Second login step: exchanges the emailed single-use code for a NextAuth
+   * session. The password step (`requestOtpAction`) always runs first and never
+   * mints a session on its own — NextAuth only mints one after the code is
+   * consumed by `authorize`.
+   */
+  const loginWithOtp = async (email: string, otp: string) => {
     const result = await TryCatch(
       signIn("credentials", {
         email,
-        password,
+        otp,
         redirect: false,
-      })
+      }),
     );
 
     if (!result.ok || result.value?.error) {
+      // Generic message: never reveal whether the account or the code was the
+      // reason the verification failed.
       showToast({
-        title: "Ocurrio un error",
-        description: "Credenciales inválidas",
+        title: "No se pudo verificar",
+        description: "El código es inválido o expiró.",
         type: "error",
       });
-      throw new Error("Credenciales inválidas");
+      throw new Error("El código es inválido o expiró.");
     }
 
     showToast({
       title: "Bienvenido",
-      description: "Iniciaste Sesión Correctamente",
+      description: "Iniciaste sesión correctamente.",
       type: "success",
     });
     return result.value;
@@ -55,7 +63,7 @@ export function useAuth() {
     user: session?.user,
     isAuthenticated,
     isLoading,
-    login,
+    loginWithOtp,
     logout,
   };
 }

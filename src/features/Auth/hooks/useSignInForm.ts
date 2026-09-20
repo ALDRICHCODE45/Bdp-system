@@ -1,14 +1,16 @@
 "use client";
 import { useForm } from "@tanstack/react-form";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/core/shared/hooks/use-auth";
-import { TryCatch } from "@/core/shared/helpers/tryCatch";
+import { showToast } from "@/core/shared/helpers/CustomToast";
 import { userLoginSchema } from "@/features/Auth/schemas/userLogin.schema";
+import { requestOtpAction } from "@/features/Auth/server/actions/requestOtpAction";
 
-export function useSignInForm() {
-  const { login } = useAuth();
-  const router = useRouter();
-
+/**
+ * First login step: proves email + password and asks the server to email a
+ * single-use OTP. No session is created here; `onOtpRequested` only advances
+ * the page to the OTP step, and NextAuth issues the JWT after the code is
+ * consumed by `authorize`.
+ */
+export function useSignInForm(onOtpRequested: (email: string) => void) {
   const form = useForm({
     defaultValues: {
       email: "",
@@ -18,14 +20,24 @@ export function useSignInForm() {
       onSubmit: userLoginSchema,
     },
     onSubmit: async ({ value }) => {
-      const result = await TryCatch(login(value.email, value.password));
+      const result = await requestOtpAction({
+        email: value.email,
+        password: value.password,
+      });
 
       if (!result.ok) {
-        //Cambiar esta línea por un logger
-        console.error("Error en login:", result.error);
-        throw new Error("Error al iniciar sesión");
+        // The action returns a generic message for every rejection (wrong
+        // password, inactive account, throttle, delivery failure), so it is
+        // safe to surface verbatim and never enumerates accounts.
+        showToast({
+          type: "error",
+          title: "No se pudo iniciar sesión",
+          description: result.error,
+        });
+        throw new Error(result.error);
       }
-      router.push("/");
+
+      onOtpRequested(value.email.trim().toLowerCase());
     },
   });
 

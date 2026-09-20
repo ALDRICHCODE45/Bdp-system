@@ -23,8 +23,12 @@ import {
   PasswordInputInput,
 } from "@/core/shared/ui/password-input";
 
-export function SignInForm() {
-  const form = useSignInForm();
+export function SignInForm({
+  onOtpRequested,
+}: {
+  onOtpRequested: (email: string) => void;
+}) {
+  const form = useSignInForm(onOtpRequested);
 
   return (
     <Card className="w-full max-w-sm mx-auto">
@@ -101,8 +105,13 @@ export function SignInForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="submit" className="w-full" form="sign-in-form">
-            Ingresar
+          <Button
+            type="submit"
+            className="w-full"
+            form="sign-in-form"
+            disabled={form.state.isSubmitting}
+          >
+            {form.state.isSubmitting ? "Enviando código..." : "Ingresar"}
           </Button>
         </Field>
       </CardFooter>
