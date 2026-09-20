@@ -18,7 +18,7 @@ const EditClienteProveedorSheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const DeleteClienteProveedorAlertDialog = dynamic(
@@ -29,7 +29,7 @@ const DeleteClienteProveedorAlertDialog = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 const ClienteProveedorHistorySheet = dynamic(
@@ -40,13 +40,15 @@ const ClienteProveedorHistorySheet = dynamic(
   {
     ssr: false,
     loading: () => <LoadingModalState />,
-  }
+  },
 );
 
 export function ClienteProveedorRowActions({
   row,
+  onViewDetail,
 }: {
   row: Row<ClienteProveedorDto>;
+  onViewDetail?: (clienteProveedor: ClienteProveedorDto) => void;
 }) {
   const clienteProveedor = row.original;
   const { isOpen, openModal, closeModal } = useModalState();
@@ -69,9 +71,10 @@ export function ClienteProveedorRowActions({
   };
 
   const actions = createClienteProveedorActions(
+    onViewDetail ? () => onViewDetail(clienteProveedor) : undefined,
     openModal,
     openDeleteModal,
-    openHistory
+    openHistory,
   );
 
   return (

@@ -1,8 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { SortingState } from "@tanstack/react-table";
 import { TablePresentation } from "@/core/shared/components/DataTable/TablePresentation";
-import { columns } from "../components/ClientesProveedoresTableColumns";
+import { createClientesProveedoresColumns } from "../components/ClientesProveedoresTableColumns";
+import { ClienteProveedorDetailSheet } from "../components/ClienteProveedorDetailSheet";
 import { ClientesProovedoresTableConfig } from "../components/ClientesProovedoresTableConfig";
 import { DataTable } from "@/core/shared/components/DataTable/DataTable";
 import { useModalState } from "@/core/shared/hooks/useModalState";
@@ -13,6 +14,7 @@ import { PermissionGuard } from "@/core/shared/components/PermissionGuard";
 import { PermissionActions } from "@/core/lib/permissions/permission-actions";
 import { Card, CardContent } from "@/core/shared/ui/card";
 import { useClientesProveedoresPaginated } from "../hooks/useClientesProveedoresPaginated.hook";
+import type { ClienteProveedorDto } from "../server/dtos/ClienteProveedorDto.dto";
 
 const CreateClienteProveedorSheet = dynamic(
   () =>
@@ -27,6 +29,24 @@ const CreateClienteProveedorSheet = dynamic(
 
 export const ClientesProovedoresTablePage = () => {
   const { isOpen, openModal, closeModal } = useModalState();
+
+  // ── Detail sheet ────────────────────────────────────────────────────────
+  const [selectedClienteProveedor, setSelectedClienteProveedor] =
+    useState<ClienteProveedorDto | null>(null);
+  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+
+  const handleViewDetail = useCallback(
+    (clienteProveedor: ClienteProveedorDto) => {
+      setSelectedClienteProveedor(clienteProveedor);
+      setDetailSheetOpen(true);
+    },
+    [],
+  );
+
+  const columns = useMemo(
+    () => createClientesProveedoresColumns(handleViewDetail),
+    [handleViewDetail],
+  );
 
   const tableConfig = createTableConfig(ClientesProovedoresTableConfig, {
     onAdd: () => openModal(),
@@ -96,6 +116,14 @@ export const ClientesProovedoresTablePage = () => {
               <CreateClienteProveedorSheet isOpen={true} onClose={closeModal} />
             )}
           </PermissionGuard>
+
+          {/* Detail sheet */}
+          <ClienteProveedorDetailSheet
+            key={selectedClienteProveedor?.id ?? "empty"}
+            clienteProveedor={selectedClienteProveedor}
+            open={detailSheetOpen}
+            onOpenChange={setDetailSheetOpen}
+          />
         </div>
       </CardContent>
     </Card>
