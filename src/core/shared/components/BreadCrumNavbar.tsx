@@ -15,14 +15,16 @@ export const BreadcrumbNavbar = () => {
   const pathNameToShow = pathname.split("/").at(1)?.toUpperCase();
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem className="block">
+    <Breadcrumb className="min-w-0">
+      <BreadcrumbList className="min-w-0 flex-nowrap gap-1.5 overflow-hidden break-normal sm:gap-2.5">
+        <BreadcrumbItem className="hidden shrink-0 sm:inline-flex">
           <BreadcrumbLink>BDP System</BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator className="block" />
-        <BreadcrumbItem>
-          <BreadcrumbPage>{pathNameToShow}</BreadcrumbPage>
+        <BreadcrumbSeparator className="hidden shrink-0 sm:block" />
+        <BreadcrumbItem className="min-w-0 flex-1">
+          <BreadcrumbPage className="block truncate whitespace-nowrap">
+            {pathNameToShow}
+          </BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
