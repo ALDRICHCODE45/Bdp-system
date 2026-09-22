@@ -58,7 +58,7 @@ export function TitularSelect({
           options={comboboxOptions}
           placeholder="Seleccioná un titular existente"
           searchPlaceholder="Buscar titular..."
-          className="w-full"
+          className="min-w-0 flex-1"
         />
 
         {!showNewInput && (
