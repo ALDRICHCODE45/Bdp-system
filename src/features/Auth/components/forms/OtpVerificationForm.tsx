@@ -26,6 +26,7 @@ import {
 type OtpVerificationFormProps = {
   email: string;
   onBack: () => void;
+  onVerified: () => void;
 };
 
 /**
@@ -36,6 +37,7 @@ type OtpVerificationFormProps = {
 export function OtpVerificationForm({
   email,
   onBack,
+  onVerified,
 }: OtpVerificationFormProps) {
   const { loginWithOtp } = useAuth();
   const router = useRouter();
@@ -49,6 +51,7 @@ export function OtpVerificationForm({
     },
     onSubmit: async ({ value }) => {
       await loginWithOtp(email, value.code);
+      onVerified();
       router.push("/");
     },
   });

@@ -523,9 +523,10 @@ Configuración y administración del sistema.
 
 ### Autenticación
 
-1. **Login**: Usa las credenciales del usuario administrador creado con el seed
-2. **Redirección**: Después del login, serás redirigido según tus permisos
-3. **Sesión**: La sesión se mantiene con JWT tokens
+1. **Login**: Ingresá tu correo y contraseña, y luego el código recibido por correo.
+2. **Código pendiente**: El paso OTP se recupera al recargar o volver del correo en la misma pestaña, mientras la solicitud siga vigente (10 minutos). Solo se guardan el correo y el vencimiento en `sessionStorage`, nunca la contraseña ni el código. Al elegir **Volver** o ingresar correctamente se elimina ese estado. Si el navegador cierra la pestaña o bloquea el almacenamiento, puede ser necesario iniciar otra solicitud; la validación del servidor no cambia.
+3. **Redirección**: Después del login, serás redirigido según tus permisos.
+4. **Sesión**: La sesión se mantiene con JWT tokens.
 
 ### Navegación
 
