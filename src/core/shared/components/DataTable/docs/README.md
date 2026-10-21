@@ -11,6 +11,10 @@ El componente `DataTable` ha sido refactorizado para ser completamente reutiliza
 - ✅ **Estado vacío personalizable**: Mensaje cuando no hay datos
 - ✅ **Funcionalidades opcionales**: Ordenamiento, selección de filas, visibilidad de columnas
 
+## Orden de columnas
+
+El orden usa el `id` explícito de cada columna antes de `accessorKey`, igual que TanStack Table. Las preferencias mantienen el orden de las columnas de datos; `actions` queda al final tanto con preferencias nuevas como con un orden guardado. Esto no borra las preferencias ni cambia los identificadores usados para ordenar o filtrar.
+
 ## Uso Básico
 
 ```tsx

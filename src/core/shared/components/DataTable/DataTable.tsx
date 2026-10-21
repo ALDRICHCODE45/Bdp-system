@@ -21,6 +21,7 @@ import {
 import { Trash2 } from "lucide-react";
 
 import { TableBodyDataTable } from "./DataTableBody";
+import { reconcileColumnOrder } from "./helpers/reconcileColumnOrder.helper";
 import { DataTablePagination } from "./DataTablePagination";
 import { TableConfig } from "./types";
 import { TableSkeleton } from "./TableSkeleton";
@@ -177,53 +178,10 @@ export function DataTable<TData, TValue>({
   });
 
   // Sincronizar columnOrder con las columnas actuales
-  const columnOrder = useMemo(() => {
-    const currentColumnIds = columns
-      .map((col) =>
-        "accessorKey" in col ? String(col.accessorKey) : (col.id ?? ""),
-      )
-      .filter(Boolean);
-
-    // Si no hay orden guardado, usar el orden de las columnas definidas
-    if (storedColumnOrder.length === 0) {
-      return currentColumnIds;
-    }
-
-    // Encontrar columnas que no están en el orden guardado
-    const storedSet = new Set(storedColumnOrder);
-    const newColumns = currentColumnIds.filter((id) => !storedSet.has(id));
-
-    // Si no hay columnas nuevas, usar el orden guardado
-    if (newColumns.length === 0) {
-      return storedColumnOrder;
-    }
-
-    // Agregar columnas nuevas: "select" al principio, otras antes de "actions"
-    const selectColumn = newColumns.find((id) => id === "select");
-    const otherNewColumns = newColumns.filter((id) => id !== "select" && id !== "actions");
-
-    let result = [...storedColumnOrder];
-    if (selectColumn) {
-      result = [selectColumn, ...result.filter((id) => id !== "select")];
-    }
-
-    // Insertar nuevas columnas antes de "actions"
-    const actionsIdx = result.indexOf("actions");
-    if (actionsIdx !== -1) {
-      result.splice(actionsIdx, 0, ...otherNewColumns);
-    } else {
-      result = [...result, ...otherNewColumns];
-    }
-
-    // Garantizar que "actions" siempre sea la última columna
-    const finalActionsIdx = result.indexOf("actions");
-    if (finalActionsIdx !== -1 && finalActionsIdx !== result.length - 1) {
-      result = result.filter((id) => id !== "actions");
-      result.push("actions");
-    }
-
-    return result;
-  }, [columns, storedColumnOrder]);
+  const columnOrder = useMemo(
+    () => reconcileColumnOrder(columns, storedColumnOrder),
+    [columns, storedColumnOrder],
+  );
 
   // Usar estado del padre si es server-side, sino usar estado interno
   const pagination =
